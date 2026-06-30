@@ -1,0 +1,9 @@
+{
+  "name": "edassess",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EdAssess — Advanced Assessment Platform",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
