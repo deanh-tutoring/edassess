@@ -9,9 +9,13 @@ const KEY = 'state';
 const EMPTY_STATE = { tests: [], submissions: [], assignments: [] };
 
 function store() {
-  return getStore({ name: 'edassess-data', consistency: 'strong' });
+  return getStore({
+    name: 'edassess-data',
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_BLOBS_TOKEN,
+    consistency: 'strong'
+  });
 }
-
 async function readState() {
   const s = store();
   const data = await s.get(KEY, { type: 'json' });
