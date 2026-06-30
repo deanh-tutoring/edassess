@@ -1557,6 +1557,14 @@ function openAssignModal(testId){
       </label>
     </div>
     <div class="assign-section">
+      <div class="assign-section-title">Tools</div>
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="as-desmos">
+        <span style="font-size:13px">Allow Desmos Graphing Calculator during the exam</span>
+      </label>
+      <div class="form-hint mt-2">Students will see a button to open a movable, resizable Desmos calculator window while taking this test.</div>
+    </div>
+    <div class="assign-section">
       <div class="assign-section-title">Security</div>
       <label class="checkbox-wrap">
         <input type="checkbox" id="as-locked">
@@ -1582,6 +1590,7 @@ function createAssignment(testId){
     maxMinutes:parseInt(document.getElementById('as-minutes').value)||60,
     shuffleItems:document.getElementById('as-shuffle-items').checked,
     shuffleChoices:document.getElementById('as-shuffle-choices').checked,
+    allowDesmos:document.getElementById('as-desmos').checked,
     locked:document.getElementById('as-locked').checked,
     createdAt:new Date().toISOString(),
   };
@@ -1620,6 +1629,10 @@ function createAssignment(testId){
       <div style="background:var(--paper-warm);border-radius:var(--r);padding:12px;border:1px solid var(--border)">
         <div class="text-xs text-muted mb-1">Shuffle</div>
         <div style="font-weight:600;font-size:13px">${a.shuffleItems?'Questions ':''}${a.shuffleChoices?'Choices':''}${!a.shuffleItems&&!a.shuffleChoices?'None':''}</div>
+      </div>
+      <div style="background:var(--paper-warm);border-radius:var(--r);padding:12px;border:1px solid var(--border)">
+        <div class="text-xs text-muted mb-1">Desmos Calculator</div>
+        <div style="font-weight:600;font-size:13px">${a.allowDesmos?'Allowed':'Not allowed'}</div>
       </div>
     </div>
   </div>
@@ -2272,6 +2285,92 @@ function startExam(aid){
   if(a.timed) startExamTimer(sub.id,a.maxMinutes);
 }
 
+/* ══════════════════════════════════════════════════════════
+   DESMOS GRAPHING CALCULATOR — optional student tool
+   A draggable, resizable, closable floating window embedding
+   desmos.com/calculator. Mounted on <body> (not inside
+   #student-wrapper) so it survives question-to-question re-renders.
+══════════════════════════════════════════════════════════ */
+let _desmosDrag=null;
+function ensureDesmosPanel(){
+  let panel=document.getElementById('desmos-panel');
+  if(panel) return panel;
+  panel=document.createElement('div');
+  panel.id='desmos-panel';
+  panel.style.cssText=`position:fixed;top:70px;left:calc(50% - 220px);width:440px;height:520px;min-width:300px;min-height:260px;max-width:96vw;max-height:90vh;background:#fff;border:1px solid var(--border-dark);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);z-index:5000;display:none;flex-direction:column;overflow:hidden;resize:both;`;
+  panel.dataset.open='false';
+  panel.innerHTML=`
+    <div id="desmos-handle" style="background:var(--ink);color:var(--paper);padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:move;flex-shrink:0;user-select:none">
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
+        Desmos Graphing Calculator
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="resetDesmosPanel()" title="Reset size/position" style="background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;padding:4px;display:flex">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M3 12a9 9 0 1015-6.7M21 3v6h-6"/></svg>
+        </button>
+        <button onclick="closeDesmosPanel()" title="Close" style="background:transparent;border:none;color:rgba(255,255,255,.85);cursor:pointer;padding:4px;display:flex">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div style="flex:1;position:relative;background:#fff">
+      <iframe id="desmos-iframe" src="https://www.desmos.com/calculator" title="Desmos Graphing Calculator" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="fullscreen"></iframe>
+      <div id="desmos-drag-shield" style="position:absolute;inset:0;display:none"></div>
+    </div>`;
+  document.body.appendChild(panel);
+  const handle=panel.querySelector('#desmos-handle');
+  const shield=panel.querySelector('#desmos-drag-shield');
+  handle.addEventListener('mousedown',e=>{
+    if(e.target.closest('button')) return;
+    const rect=panel.getBoundingClientRect();
+    _desmosDrag={offX:e.clientX-rect.left,offY:e.clientY-rect.top};
+    shield.style.display='block';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!_desmosDrag) return;
+    const w=panel.offsetWidth,h=panel.offsetHeight;
+    let nx=e.clientX-_desmosDrag.offX;
+    let ny=e.clientY-_desmosDrag.offY;
+    nx=Math.max(-w+80,Math.min(window.innerWidth-80,nx));
+    ny=Math.max(0,Math.min(window.innerHeight-40,ny));
+    panel.style.left=nx+'px';
+    panel.style.top=ny+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    if(_desmosDrag){_desmosDrag=null;shield.style.display='none';}
+  });
+  // Disable iframe pointer interception while resizing via the native resize handle
+  panel.addEventListener('mousedown',e=>{
+    const r=panel.getBoundingClientRect();
+    const nearCorner=(r.right-e.clientX)<20 && (r.bottom-e.clientY)<20;
+    if(nearCorner){shield.style.display='block';}
+  });
+  document.addEventListener('mouseup',()=>{ shield.style.display='none'; });
+  return panel;
+}
+function toggleDesmos(){
+  const panel=ensureDesmosPanel();
+  if(panel.dataset.open==='true'){
+    panel.style.display='none';panel.dataset.open='false';
+  } else {
+    panel.style.display='flex';panel.dataset.open='true';
+  }
+}
+function closeDesmosPanel(){
+  const panel=document.getElementById('desmos-panel');
+  if(panel){panel.style.display='none';panel.dataset.open='false';}
+}
+function resetDesmosPanel(){
+  const panel=document.getElementById('desmos-panel');
+  if(!panel) return;
+  panel.style.top='70px';
+  panel.style.left='calc(50% - 220px)';
+  panel.style.width='440px';
+  panel.style.height='520px';
+}
+
 function groupQuestionsForShuffle(questions){
   return questions.map(q=>[q]);
 }
@@ -2298,6 +2397,10 @@ function renderStudentExam(){
       <div class="student-header-title">${t.title}</div>
       ${timerSection}
       <div class="student-header-tools">
+        ${a.allowDesmos?`<button class="btn btn-secondary btn-sm" onclick="toggleDesmos()" style="margin-right:10px">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
+          Calculator
+        </button>`:''}
         <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.06em">${sub.studentName}</div>
       </div>
     </div>
@@ -2533,6 +2636,7 @@ function submitExam(){
   autoScore(sub,t);save();
   if(examTimer)clearInterval(examTimer);
   if(document.fullscreenElement)document.exitFullscreen();
+  closeDesmosPanel();
   const totalPts=calcTotalPoints(t);
   document.getElementById('student-wrapper').innerHTML=`
   <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px;position:relative;overflow:hidden">
@@ -2649,6 +2753,7 @@ function forceSubmitStudent(sid){
   s.status='submitted';s.submittedAt=new Date().toISOString();
   autoScore(s);save();
   if(document.fullscreenElement)document.exitFullscreen();
+  closeDesmosPanel();
   const ol=document.getElementById('lock-overlay');
   if(ol)ol.classList.add('hidden');
   document.getElementById('student-wrapper').innerHTML=`
