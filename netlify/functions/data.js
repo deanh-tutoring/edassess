@@ -112,6 +112,34 @@ exports.handler = async (event) => {
           if (Array.isArray(body.submissions)) state.submissions = body.submissions;
           break;
         }
+        case 'importBackup': {
+          const backup = body.backup;
+        
+          if (
+            !backup ||
+            !Array.isArray(backup.tests) ||
+            !Array.isArray(backup.assignments) ||
+            !Array.isArray(backup.submissions)
+          ) {
+            return {
+              statusCode: 400,
+              headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+              body: JSON.stringify({ error: 'Invalid backup file.' }),
+            };
+          }
+        
+          await writeState({
+            tests: backup.tests,
+            assignments: backup.assignments,
+            submissions: backup.submissions,
+          });
+        
+          return {
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+            body: JSON.stringify({ ok: true }),
+          };
+        }
         default:
           return {
             statusCode: 400,
