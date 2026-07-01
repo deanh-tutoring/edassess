@@ -1811,10 +1811,20 @@ function openAssignModal(testId){
     <div class="assign-section">
       <div class="assign-section-title">Security</div>
       <label class="checkbox-wrap">
-        <input type="checkbox" id="as-locked">
+        <input type="checkbox" id="as-locked" onchange="document.getElementById('as-strikes-wrap').style.display=this.checked?'block':'none'">
         <span style="font-size:13px">Locked / Secure Mode — forces fullscreen, tracks exits</span>
       </label>
-      <div class="form-hint mt-2">Students who leave fullscreen twice will have their test auto-submitted.</div>
+      <div id="as-strikes-wrap" style="display:none;margin-top:12px;padding-left:4px">
+        <label class="form-label">Fullscreen violations before auto-submit</label>
+        <select id="as-max-strikes" class="form-control" style="width:220px">
+          <option value="1">1 violation (strictest)</option>
+          <option value="2" selected>2 violations (default)</option>
+          <option value="3">3 violations</option>
+          <option value="5">5 violations</option>
+          <option value="0">Unlimited — never auto-submit</option>
+        </select>
+        <div class="form-hint mt-2">After reaching the limit the exam is auto-submitted. "Unlimited" still shows warnings but never force-submits.</div>
+      </div>
     </div>
   </div>
   <div class="modal-footer">
@@ -1836,6 +1846,7 @@ function createAssignment(testId){
     shuffleChoices:document.getElementById('as-shuffle-choices').checked,
     allowDesmos:document.getElementById('as-desmos').checked,
     locked:document.getElementById('as-locked').checked,
+    maxStrikes:parseInt(document.getElementById('as-max-strikes').value)||2,
     createdAt:new Date().toISOString(),
   };
   APP.assignments.push(a);save();closeModal();
@@ -2482,6 +2493,53 @@ function loadStudentExam(){
   sw.innerHTML=renderNameEntry(a,t);
 }
 
+let _studentTestPollInterval=null;
+
+function startStudentTestPoll(){
+  // Poll every 10s so teacher edits (fixed typos, changed questions) propagate
+  // to the student without requiring a refresh.
+  if(_studentTestPollInterval) clearInterval(_studentTestPollInterval);
+  _studentTestPollInterval=setInterval(async ()=>{
+    if(!APP.currentStudentExam) return;
+    const {sub,a}=APP.currentStudentExam;
+    if(sub.status!=='in-progress') return;
+    try{
+      const res=await fetch(API_URL,{cache:'no-store'});
+      if(!res.ok) return;
+      const data=await res.json();
+      // Update tests in APP
+      if(Array.isArray(data.tests)){
+        APP.tests=data.tests;
+        // Refresh the test reference in currentStudentExam so next render picks up changes
+        const updated=data.tests.find(t=>t.id===a.testId);
+        if(updated) APP.currentStudentExam.t=updated;
+      }
+    }catch(e){}
+  },10000);
+}
+
+/* ── Local resume: save exam-in-progress state by (aid + name) key ── */
+function localResumeKey(aid,name){
+  return 'ea_resume_'+aid+'_'+name.toLowerCase().replace(/\s+/g,'_');
+}
+function saveLocalResume(){
+  const ex=APP.currentStudentExam;
+  if(!ex||!ex.sub) return;
+  try{
+    localStorage.setItem(localResumeKey(ex.a.id,ex.sub.studentName),JSON.stringify({
+      subId:ex.sub.id,
+      currentQ:studentState.currentQ,
+      flagged:studentState.flagged||{},
+    }));
+  }catch(e){}
+}
+function clearLocalResume(aid,name){
+  try{localStorage.removeItem(localResumeKey(aid,name));}catch(e){}
+}
+function getLocalResume(aid,name){
+  try{return JSON.parse(localStorage.getItem(localResumeKey(aid,name)));}catch(e){return null;}
+}
+
 function renderNameEntry(a,t){
   return`<div style="min-height:100vh;background:var(--ink);display:flex;align-items:stretch;font-family:'Josefin Sans',sans-serif">
   <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:60px;position:relative;overflow:hidden">
@@ -2506,11 +2564,12 @@ function renderNameEntry(a,t){
       ${a.locked?`<span style="background:var(--rust-pale);padding:4px 10px;border-radius:2px;font-size:10px;color:var(--rust);font-weight:600;letter-spacing:.08em;border:1px solid var(--rust)">🔒 SECURE</span>`:''}
     </div>
     <div style="margin-bottom:20px">
-      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">First Name + Last Initial</label>
-      <input type="text" id="student-name-input" style="width:100%;padding:11px 14px;border:1px solid var(--border-dark);border-radius:var(--r);font-size:14px;outline:none;font-family:'Josefin Sans',sans-serif;background:var(--cream);color:var(--ink);letter-spacing:.04em" placeholder="e.g. Dean H" onkeydown="if(event.key==='Enter')startExam('${a.id}')">
+      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">Your Full Name</label>
+      <input type="text" id="student-name-input" style="width:100%;padding:11px 14px;border:1px solid var(--border-dark);border-radius:var(--r);font-size:14px;outline:none;font-family:'Josefin Sans',sans-serif;background:var(--cream);color:var(--ink);letter-spacing:.04em" placeholder="First Last" oninput="checkResumeHint('${a.id}',this.value)" onkeydown="if(event.key==='Enter')startExam('${a.id}')">
+      <div id="resume-hint" style="display:none;margin-top:8px;background:var(--sage-pale);border:1px solid var(--sage);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--sage);letter-spacing:.04em">↩ A saved session was found — clicking Begin will resume where you left off.</div>
     </div>
     ${a.locked?`<div style="background:var(--ochre-pale);border:1px solid var(--ochre);border-radius:var(--r);padding:12px;font-size:12px;color:var(--ochre);margin-bottom:16px;letter-spacing:.04em">
-      <strong>⚠ Secure Mode:</strong> This exam will enter fullscreen. Exiting fullscreen twice will auto-submit your exam.
+      <strong>⚠ Secure Mode:</strong> This exam will enter fullscreen. ${a.maxStrikes===0?'Exiting fullscreen will show a warning but will not auto-submit your exam.':`Exiting fullscreen ${a.maxStrikes||2} time${(a.maxStrikes||2)!==1?'s':''} will auto-submit your exam.`}
     </div>`:''}
     <button style="width:100%;padding:13px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:'Josefin Sans',sans-serif;transition:background .15s" onclick="startExam('${a.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
       Begin Exam →
@@ -2525,25 +2584,50 @@ function startExam(aid){
   if(!name){nameInput.style.borderColor='var(--rust)';return;}
   const a=APP.assignments.find(aa=>aa.id===aid);
   const t=APP.tests.find(tt=>tt.id===a.testId);
+
+  // ── Check for an existing in-progress submission (server or local cache) ──
+  const existing=APP.submissions.find(s=>
+    s.assignmentId===aid &&
+    s.studentName.toLowerCase()===name.toLowerCase() &&
+    s.status==='in-progress'
+  );
+  if(existing){
+    // Resume from server state
+    const resume=getLocalResume(aid,name);
+    APP.currentStudentExam={sub:existing,a,t,orderedQuestions:existing._orderedQuestions||t.questions};
+    studentState={
+      currentQ:(resume&&resume.currentQ)||0,
+      flagged:(resume&&resume.flagged)||existing.flags||{}
+    };
+    startStudentTestPoll();
+    if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
+    renderStudentExam();
+    if(a.timed) startExamTimer(existing.id,a.maxMinutes);
+    return;
+  }
+
+  // ── New submission ──
   const sub={
     id:uid(),testId:t.id,assignmentId:aid,studentName:name,
     status:'in-progress',startedAt:new Date().toISOString(),
     answers:{},flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,
   };
   APP.submissions.push(sub);save();
-  APP.currentStudentExam={sub,a,t};
-  studentState={currentQ:0,flagged:{}};
+
+  let orderedQuestions=t.questions;
   if(a.shuffleItems){
     const groups=groupQuestionsForShuffle(t.questions);
     shuffleArray(groups);
-    APP.currentStudentExam.orderedQuestions=groups.flat();
-  } else {
-    APP.currentStudentExam.orderedQuestions=t.questions;
+    orderedQuestions=groups.flat();
+    sub._orderedQuestions=orderedQuestions; // persist shuffle order
+    save();
   }
-  if(a.locked){
-    requestFullscreen();
-    setupFullscreenMonitor(sub.id);
-  }
+
+  APP.currentStudentExam={sub,a,t,orderedQuestions};
+  studentState={currentQ:0,flagged:{}};
+  saveLocalResume();
+  startStudentTestPoll();
+  if(a.locked){requestFullscreen();setupFullscreenMonitor(sub.id);}
   renderStudentExam();
   if(a.timed) startExamTimer(sub.id,a.maxMinutes);
 }
@@ -2859,6 +2943,20 @@ function renderStem(html){
   return html;
 }
 
+function checkResumeHint(aid,name){
+  const hint=document.getElementById('resume-hint');
+  if(!hint) return;
+  const n=name.trim();
+  if(!n){hint.style.display='none';return;}
+  const hasServer=APP.submissions.some(s=>
+    s.assignmentId===aid &&
+    s.studentName.toLowerCase()===n.toLowerCase() &&
+    s.status==='in-progress'
+  );
+  const hasLocal=!!getLocalResume(aid,n);
+  hint.style.display=(hasServer||hasLocal)?'block':'none';
+}
+
 function groupQuestionsForShuffle(questions){
   return questions.map(q=>[q]);
 }
@@ -3072,7 +3170,7 @@ function selectAnswer(key,displayJ,type){
   }
   if(type==='mc'){sub.answers[key]=j;}
   else{if(!Array.isArray(sub.answers[key]))sub.answers[key]=[];const arr=sub.answers[key];const idx=arr.indexOf(j);if(idx>=0)arr.splice(idx,1);else arr.push(j);}
-  save();renderStudentExam();
+  save();saveLocalResume();renderStudentExam();
 }
 
 const studentEssayEditors={};
@@ -3093,10 +3191,9 @@ function saveShortEditorValue(key,el){
 }
 
 function setShortAnswer(key,val){
-  // Legacy fallback — prefer saveShortEditorValue
   if(!APP.currentStudentExam) return;
   APP.currentStudentExam.sub.answers[key]=val;
-  save();
+  save();saveLocalResume();
 }
 
 function updateShortPreview(key,val){ /* no-op — inline rendering replaces preview */ }
@@ -3246,8 +3343,8 @@ function showCheckWork(){
   renderMath(sw);
 }
 
-function nextQ(){studentState.currentQ++;renderStudentExam();}
-function prevQ(){studentState.currentQ--;renderStudentExam();}
+function nextQ(){studentState.currentQ++;saveLocalResume();renderStudentExam();}
+function prevQ(){studentState.currentQ--;saveLocalResume();renderStudentExam();}
 
 function toggleFlag(key){
   if(!studentState.flagged)studentState.flagged={};
@@ -3263,8 +3360,10 @@ function submitExam(){
   sub.status='submitted';sub.submittedAt=new Date().toISOString();
   autoScore(sub,t);save();
   if(examTimer)clearInterval(examTimer);
+  if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   closeDesmosPanel();closeReferencePanel();
+  clearLocalResume(sub.assignmentId,sub.studentName);
   const totalPts=calcTotalPoints(t);
   document.getElementById('student-wrapper').innerHTML=`
   <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px;position:relative;overflow:hidden">
@@ -3347,19 +3446,26 @@ function handleFullscreenExit(sid){
   if(!s||s.status!=='in-progress') return;
   s.strikes=(s.strikes||0)+1;
   save();
-  if(s.strikes>=2){
-    s.note='Auto-submitted: 2 fullscreen violations';
+  // Determine limit: 0 means unlimited (never auto-submit)
+  const a=APP.currentStudentExam&&APP.currentStudentExam.a;
+  const limit=(a&&a.maxStrikes!=null)?a.maxStrikes:2;
+  const unlimited=limit===0;
+  if(!unlimited&&s.strikes>=limit){
+    s.note=`Auto-submitted: ${limit} fullscreen violation${limit!==1?'s':''}`;
     forceSubmitStudent(sid);
     return;
   }
-  // Show lock overlay — require they re-enter fullscreen
   const ol=document.getElementById('lock-overlay');
   if(ol){
     ol.classList.remove('hidden');
-    const strikes=document.getElementById('lock-strikes');
-    if(strikes){
-      strikes.style.display='block';
-      strikes.innerHTML=`⚠ Warning ${s.strikes} of 2 — One more violation will auto-submit your exam.`;
+    const strikesEl=document.getElementById('lock-strikes');
+    if(strikesEl){
+      strikesEl.style.display='block';
+      if(unlimited){
+        strikesEl.innerHTML=`⚠ Warning — you have exited fullscreen ${s.strikes} time${s.strikes!==1?'s':''}.`;
+      } else {
+        strikesEl.innerHTML=`⚠ Warning ${s.strikes} of ${limit} — ${limit-s.strikes} more violation${limit-s.strikes!==1?'s':''} will auto-submit your exam.`;
+      }
     }
     document.getElementById('lock-message').textContent='You have exited fullscreen mode. Click below to return.';
   }
@@ -3380,8 +3486,10 @@ function forceSubmitStudent(sid){
   if(!s) return;
   s.status='submitted';s.submittedAt=new Date().toISOString();
   autoScore(s);save();
+  if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   closeDesmosPanel();closeReferencePanel();
+  clearLocalResume(s.assignmentId,s.studentName);
   const ol=document.getElementById('lock-overlay');
   if(ol)ol.classList.add('hidden');
   document.getElementById('student-wrapper').innerHTML=`
