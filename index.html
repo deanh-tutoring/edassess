@@ -13,19 +13,19 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --ink:#1A1410;--ink-mid:#2C2218;--ink-soft:#6B5A4A;
-  --paper:#F5F0E8;--paper-warm:#EDE5D4;--paper-aged:#E8DCC8;
-  --cream:#FAF7F2;
-  --rust:#8B3A2A;--rust-light:#B05540;--rust-pale:#F5EAE7;
-  --sage:#3D6B5A;--sage-pale:#E8F0EC;
-  --ochre:#8B6914;--ochre-pale:#F5EDD8;
-  --slate-blue:#3A4E6B;--slate-pale:#E8EDF5;
-  --burgundy:#6B1E3A;--burgundy-pale:#F0E8EC;
-  --gold:#B8962E;--gold-pale:#FAF3DC;
-  --border:#C8B89A;--border-dark:#A89070;
-  --shadow-sm:0 2px 8px rgba(26,20,16,.08);
-  --shadow:0 6px 24px rgba(26,20,16,.12);
-  --shadow-lg:0 16px 48px rgba(26,20,16,.18);
+  --ink:#101826;--ink-mid:#1C2A3D;--ink-soft:#57708A;
+  --paper:#EEF3F8;--paper-warm:#E3ECF5;--paper-aged:#D6E2EE;
+  --cream:#F8FBFD;
+  --rust:#B03A5B;--rust-light:#C85878;--rust-pale:#F5E7EC;
+  --sage:#2E7D6B;--sage-pale:#E1F1EC;
+  --ochre:#2E7DA0;--ochre-pale:#E1F0F6;
+  --slate-blue:#3A5A8C;--slate-pale:#E4EBF5;
+  --burgundy:#5A3A8C;--burgundy-pale:#ECE5F5;
+  --gold:#3A8CA8;--gold-pale:#E1F2F5;
+  --border:#B9C7D6;--border-dark:#8CA0B5;
+  --shadow-sm:0 2px 8px rgba(16,24,38,.08);
+  --shadow:0 6px 24px rgba(16,24,38,.12);
+  --shadow-lg:0 16px 48px rgba(16,24,38,.18);
   --r:4px;--r-lg:6px;--r-xl:8px;
 }
 body{font-family:'Josefin Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6;letter-spacing:.02em}
@@ -65,8 +65,8 @@ input,textarea,select{font-family:'Josefin Sans',sans-serif;font-size:13px;lette
 .btn-primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}.btn-primary:hover{background:var(--ink-mid);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .btn-secondary{background:transparent;color:var(--ink);border:1px solid var(--border-dark)}.btn-secondary:hover{background:var(--paper-warm)}
 .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid transparent}.btn-ghost:hover{background:var(--paper-aged);color:var(--ink)}
-.btn-danger{background:var(--rust-pale);color:var(--rust);border:1px solid #D4A89A}.btn-danger:hover{background:#EDD8D3}
-.btn-success{background:var(--sage-pale);color:var(--sage);border:1px solid #A0C4B4}.btn-success:hover{background:#D5E8E0}
+.btn-danger{background:var(--rust-pale);color:var(--rust);border:1px solid #DBA3B5}.btn-danger:hover{background:#F0D6E0}
+.btn-success{background:var(--sage-pale);color:var(--sage);border:1px solid #94C9BC}.btn-success:hover{background:#D2EFE7}
 .btn-rust{background:var(--rust);color:#fff;border-color:var(--rust)}.btn-rust:hover{background:var(--rust-light)}
 .btn-sm{padding:5px 12px;font-size:10px;letter-spacing:.08em}
 .btn-lg{padding:12px 28px;font-size:13px}
@@ -76,12 +76,12 @@ input,textarea,select{font-family:'Josefin Sans',sans-serif;font-size:13px;lette
 
 /* ── BADGE ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:'Josefin Sans',sans-serif}
-.badge-rust{background:var(--rust-pale);color:var(--rust);border:1px solid #D4A89A}
-.badge-sage{background:var(--sage-pale);color:var(--sage);border:1px solid #A0C4B4}
-.badge-ochre{background:var(--ochre-pale);color:var(--ochre);border:1px solid #D4B86A}
+.badge-rust{background:var(--rust-pale);color:var(--rust);border:1px solid #DBA3B5}
+.badge-sage{background:var(--sage-pale);color:var(--sage);border:1px solid #94C9BC}
+.badge-ochre{background:var(--ochre-pale);color:var(--ochre);border:1px solid #8FCADC}
 .badge-slate{background:var(--slate-pale);color:var(--slate-blue);border:1px solid #B0BFD4}
 .badge-gray{background:var(--paper-aged);color:var(--ink-soft);border:1px solid var(--border)}
-.badge-burgundy{background:var(--burgundy-pale);color:var(--burgundy);border:1px solid #C4A0B0}
+.badge-burgundy{background:var(--burgundy-pale);color:var(--burgundy);border:1px solid #C3AEDD}
 
 /* ── CARD ── */
 .card{background:var(--cream);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden}
@@ -106,7 +106,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 .tab.active{color:var(--rust);border-bottom-color:var(--rust)}
 
 /* ── MODAL ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(26,20,16,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(16,24,38,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
 .modal{background:var(--cream);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);width:100%;max-height:90vh;overflow:auto;border:1px solid var(--border)}
 .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--cream);z-index:1}
 .modal-body{padding:24px}
@@ -165,6 +165,7 @@ textarea.form-control{resize:vertical;min-height:80px}
    DASHBOARD
 ═══════════════════════════════════════════ */
 .stat-card{background:var(--cream);border-radius:var(--r-lg);border:1px solid var(--border);padding:20px 24px;position:relative;overflow:hidden}
+.qb-chevron.open{transform:rotate(180deg)}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--rust)}
 .stat-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;font-family:'Josefin Sans',sans-serif}
 .stat-value{font-size:42px;font-family:'PT Serif',serif;color:var(--ink);line-height:1;font-weight:300}
@@ -333,8 +334,8 @@ textarea.form-control{resize:vertical;min-height:80px}
 .assign-section{background:var(--paper-warm);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
 .assign-section-title{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;font-family:'Josefin Sans',sans-serif}
 .status-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:2px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:'Josefin Sans',sans-serif}
-.status-in-progress{background:var(--ochre-pale);color:var(--ochre);border:1px solid #D4B86A}
-.status-submitted{background:var(--sage-pale);color:var(--sage);border:1px solid #A0C4B4}
+.status-in-progress{background:var(--ochre-pale);color:var(--ochre);border:1px solid #8FCADC}
+.status-submitted{background:var(--sage-pale);color:var(--sage);border:1px solid #94C9BC}
 .status-not-started{background:var(--paper-aged);color:var(--ink-soft);border:1px solid var(--border)}
 
 /* ── LOCK OVERLAY ── */
@@ -372,7 +373,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 </div>
 
 <!-- ═══════════ LOADING OVERLAY ═══════════ -->
-<div id="ea-loading-overlay" style="position:fixed;inset:0;background:#F5F0E8;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:14px;font-family:'Josefin Sans',sans-serif">
+<div id="ea-loading-overlay" style="position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:14px;font-family:'Josefin Sans',sans-serif">
   <div style="width:34px;height:34px;border:2px solid #C8B89A;border-top-color:#8B3A2A;border-radius:50%;animation:ea-spin 0.8s linear infinite"></div>
   <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4A">Connecting to EdAssess…</div>
 </div>
@@ -412,7 +413,7 @@ textarea.form-control{resize:vertical;min-height:80px}
       <label class="form-label">Password</label>
       <input type="password" id="login-password" class="form-control" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <div id="login-error" class="hidden" style="background:var(--rust-pale);color:var(--rust);padding:10px 14px;border-radius:var(--r);font-size:12px;letter-spacing:.04em;margin-bottom:14px;border:1px solid #D4A89A">Invalid username or password.</div>
+    <div id="login-error" class="hidden" style="background:var(--rust-pale);color:var(--rust);padding:10px 14px;border-radius:var(--r);font-size:12px;letter-spacing:.04em;margin-bottom:14px;border:1px solid #DBA3B5">Invalid username or password.</div>
     <button class="btn btn-primary btn-lg login-btn" onclick="doLogin()">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
       Sign In
@@ -1157,7 +1158,7 @@ function renderShortKey(i,q){
   const keys=q.correctAnswers&&q.correctAnswers.length?q.correctAnswers:[''];
   return keys.map((val,j)=>`
   <div class="flex gap-2 mb-2" style="align-items:center">
-    <div style="width:26px;height:26px;border-radius:2px;background:var(--sage-pale);border:1px solid #A0C4B4;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
+    <div style="width:26px;height:26px;border-radius:2px;background:var(--sage-pale);border:1px solid #94C9BC;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
     <input class="form-control" type="text" value="${val.replace(/"/g,'&quot;')}" placeholder="Accepted answer" oninput="setShortKeyAnswer(${i},${j},this.value)">
     <button class="btn btn-ghost btn-icon btn-sm" onclick="removeShortKeyAnswer(${i},${j})" style="opacity:.4">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1846,7 +1847,7 @@ function createAssignment(testId){
     shuffleChoices:document.getElementById('as-shuffle-choices').checked,
     allowDesmos:document.getElementById('as-desmos').checked,
     locked:document.getElementById('as-locked').checked,
-    maxStrikes:parseInt(document.getElementById('as-max-strikes').value)||2,
+    maxStrikes:(v=>Number.isNaN(v)?2:v)(parseInt(document.getElementById('as-max-strikes').value,10)),
     createdAt:new Date().toISOString(),
   };
   APP.assignments.push(a);save();closeModal();
@@ -1857,7 +1858,7 @@ function createAssignment(testId){
     <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
   <div class="modal-body">
-    <div style="background:var(--sage-pale);border:1px solid #A0C4B4;border-radius:var(--r-lg);padding:20px;text-align:center;margin-bottom:20px">
+    <div style="background:var(--sage-pale);border:1px solid #94C9BC;border-radius:var(--r-lg);padding:20px;text-align:center;margin-bottom:20px">
       <svg fill="none" stroke="var(--sage)" stroke-width="2" viewBox="0 0 24 24" width="32" height="32" style="margin:0 auto 8px;display:block"><path d="M5 13l4 4L19 7"/></svg>
       <div style="font-weight:600;color:var(--sage);font-size:14px;letter-spacing:.06em">Assignment is live!</div>
     </div>
@@ -2116,7 +2117,7 @@ function openStudentControl(sid){
       ${s.status==='submitted'?`<button class="btn btn-primary" onclick="closeModal();openGradingStudent('${sid}')">Open Grading View</button>`:''}
       <button class="btn btn-danger" onclick="deleteSubmission('${sid}')">Delete Response</button>
     </div>
-    ${s.note?`<div class="mt-3" style="background:var(--rust-pale);padding:12px;border-radius:var(--r);font-size:12px;color:var(--rust);border:1px solid #D4A89A">Note: ${s.note}</div>`:''}
+    ${s.note?`<div class="mt-3" style="background:var(--rust-pale);padding:12px;border-radius:var(--r);font-size:12px;color:var(--rust);border:1px solid #DBA3B5">Note: ${s.note}</div>`:''}
   </div>`,'440px');
 }
 
@@ -2419,19 +2420,27 @@ function renderAnalytics(){
 
 function renderAnalyticsContent(){
   const done=APP.submissions.filter(s=>s.status==='submitted');
-  const tests=APP.tests;
   let html='';
-  tests.forEach(t=>{
-    const tSubs=done.filter(s=>s.testId===t.id);
-    if(!tSubs.length) return;
+  APP.assignments.forEach(a=>{
+    const t=APP.tests.find(tt=>tt.id===a.testId);
+    if(!t) return;
+    const aSubs=done.filter(s=>s.assignmentId===a.id);
+    if(!aSubs.length) return;
     const totalPts=calcTotalPoints(t);
-    const scores=tSubs.map(s=>totalPts>0?Math.round((s.score||0)/totalPts*100):0);
+    const scores=aSubs.map(s=>totalPts>0?Math.round((s.score||0)/totalPts*100):0);
     const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
     const max=scores.length?Math.max(...scores):0;
     const min=scores.length?Math.min(...scores):0;
+    const breakdownId='qbreak-'+a.id;
     html+=`
     <div class="card mb-4">
-      <div class="card-header"><h3 class="serif" style="font-size:22px">${t.title}</h3><span class="badge badge-slate">${tSubs.length} submission${tSubs.length!==1?'s':''}</span></div>
+      <div class="card-header">
+        <div>
+          <h3 class="serif" style="font-size:22px">${t.title}</h3>
+          <div class="text-xs text-muted mt-1" style="font-style:italic">Assignment created ${formatDate(a.createdAt)}${a.timed?` · ${a.maxMinutes} min`:''}${a.locked?' · Locked':''}</div>
+        </div>
+        <span class="badge badge-slate">${aSubs.length} submission${aSubs.length!==1?'s':''}</span>
+      </div>
       <div class="card-body">
         <div class="grid-3 mb-4">
           <div class="stat-card"><div class="stat-label">Average</div><div class="stat-value" style="font-size:32px">${avg}%</div></div>
@@ -2442,12 +2451,19 @@ function renderAnalyticsContent(){
         ${renderScoreBar(scores)}
         <div class="mt-4">
           <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px">Student Scores</div>
-          ${tSubs.map(s=>`
+          ${aSubs.map(s=>`
           <div class="flex items-center gap-3" style="margin-bottom:8px">
             <div style="font-size:13px;font-weight:500;width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'PT Serif',serif">${s.studentName}</div>
             <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${totalPts>0?Math.round((s.score||0)/totalPts*100):0}%;background:${scoreColor(totalPts>0?(s.score||0)/totalPts:0)}"></div></div>
             <div style="font-size:13px;font-weight:600;min-width:60px;text-align:right;font-family:'PT Serif',serif">${s.score||0}/${totalPts}</div>
           </div>`).join('')}
+        </div>
+        <div class="mt-6" style="border-top:1px solid var(--border);padding-top:16px">
+          <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('${breakdownId}').classList.toggle('hidden');this.querySelector('.qb-chevron').classList.toggle('open')">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Question Breakdown</div>
+            <svg class="qb-chevron" fill="none" stroke="var(--ink-soft)" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="transition:transform .15s"><path d="M5 15l7-7 7 7"/></svg>
+          </div>
+          <div id="${breakdownId}" class="hidden mt-3">${renderQuestionBreakdown(t,aSubs)}</div>
         </div>
       </div>
     </div>`;
@@ -2455,12 +2471,58 @@ function renderAnalyticsContent(){
   return html||`<p style="color:var(--ink-soft);font-family:'PT Serif',serif;font-size:16px">No completed submissions</p>`;
 }
 
+function renderQuestionBreakdown(t,subs){
+  const fqs=flatQuestions(t);
+  const total=subs.length;
+  if(!fqs.length||!total) return '';
+  const rows=fqs.map((item,i)=>{
+    const q=item.q;const qKey=item.key;
+    let correct=0;let pointsEarned=0;
+    const objective=(q.type==='mc'||q.type==='ms'||q.type==='short');
+    subs.forEach(s=>{
+      const ans=s.answers?s.answers[qKey]:undefined;
+      if(objective){
+        const overridden=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;
+        const isCorrect=overridden?(s.mcOverrides[qKey]>0):isAnswerCorrect(q,ans);
+        if(isCorrect) correct++;
+      } else {
+        const rubricTotal=(s.rubricScores&&s.rubricScores[qKey])?Object.values(s.rubricScores[qKey]).reduce((a,v)=>a+v,0):0;
+        const manual=(s.manualScores&&s.manualScores[qKey])||0;
+        pointsEarned+=(rubricTotal||manual);
+      }
+    });
+    const pct=objective?(total>0?Math.round(correct/total*100):0):(total>0?Math.round(pointsEarned/((q.points||1)*total)*100):0);
+    return{i,q,objective,correct,pointsEarned,pct,typeLabel:q.type==='mc'?'Multiple Choice':q.type==='ms'?'Select All':q.type==='short'?'Short Answer':'Essay'};
+  });
+  // Surface the toughest / most-missed questions first, for quick review.
+  rows.sort((r1,r2)=>r1.pct-r2.pct);
+  return`<div style="display:flex;flex-direction:column;gap:8px">
+    ${rows.map(r=>{
+      const preview=stripHtml(r.q.stem)||'(No question text)';
+      const barColor=scoreColor(r.pct/100);
+      const fraction=r.objective?`${r.correct}/${total} correct`:`avg ${r.pointsEarned?Math.round((r.pointsEarned/total)*10)/10:0}/${r.q.points||1} pts`;
+      return`<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;background:var(--cream)">
+        <div class="flex items-center gap-3" style="margin-bottom:6px">
+          <span style="font-size:10px;font-weight:700;color:var(--ink-soft);flex-shrink:0">Q${r.i+1}</span>
+          <span class="badge badge-gray" style="flex-shrink:0">${r.typeLabel}</span>
+          <div class="truncate" style="flex:1;font-family:'PT Serif',serif;font-size:14px" title="${preview.replace(/"/g,'&quot;')}">${preview}</div>
+          <span style="font-size:12px;font-weight:700;color:${barColor};flex-shrink:0">${r.pct}%</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${r.pct}%;background:${barColor}"></div></div>
+          <div style="font-size:11px;color:var(--ink-soft);min-width:110px;text-align:right">${fraction}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 function renderScoreBar(scores){
   const buckets=[0,0,0,0,0];
   scores.forEach(s=>{if(s>=90)buckets[4]++;else if(s>=80)buckets[3]++;else if(s>=70)buckets[2]++;else if(s>=60)buckets[1]++;else buckets[0]++;});
   const max=Math.max(...buckets,1);
   const labels=['F','D','C','B','A'];
-  const colors=['var(--rust)','#C47A2A','#C4A52A','var(--sage)','#1A6B4A'];
+  const colors=['var(--rust)','#8B4A78','#3A5A8C','var(--sage)','#1A6B5A'];
   return`<div style="display:flex;gap:8px;align-items:flex-end;height:100px">${buckets.map((b,i)=>`
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
       <div style="font-size:11px;font-weight:600;color:${colors[i]};font-family:'PT Serif',serif">${b}</div>
@@ -2469,7 +2531,7 @@ function renderScoreBar(scores){
     </div>`).join('')}</div>`;
 }
 
-function scoreColor(pct){return pct>=.9?'#1A6B4A':pct>=.8?'var(--sage)':pct>=.7?'#C4A52A':pct>=.6?'#C47A2A':'var(--rust)';}
+function scoreColor(pct){return pct>=.9?'#1A6B5A':pct>=.8?'var(--sage)':pct>=.7?'#3A5A8C':pct>=.6?'#8B4A78':'var(--rust)';}
 
 /* ══════════════════════════════════════════════════════════
    STUDENT EXAM
@@ -2601,8 +2663,8 @@ function startExam(aid){
     };
     startStudentTestPoll();
     if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
-    renderStudentExam();
     if(a.timed) startExamTimer(existing.id,a.maxMinutes);
+    renderStudentExam();
     return;
   }
 
@@ -2628,8 +2690,8 @@ function startExam(aid){
   saveLocalResume();
   startStudentTestPoll();
   if(a.locked){requestFullscreen();setupFullscreenMonitor(sub.id);}
-  renderStudentExam();
   if(a.timed) startExamTimer(sub.id,a.maxMinutes);
+  renderStudentExam();
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2974,7 +3036,7 @@ function renderStudentExam(){
   const timerSection=a.timed?`
   <div class="student-timer-center" onclick="toggleTimer()" title="Click to show/hide timer">
     <svg fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-    <span class="student-timer-display${timerHidden?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(a.maxMinutes*60)}</span>
+    <span class="student-timer-display${timerHidden?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(computeRemainingSecs())}</span>
     <span class="timer-toggle-btn" style="color:rgba(255,255,255,.3);font-size:10px;letter-spacing:.06em">${timerHidden?'SHOW':'HIDE'}</span>
   </div>`:`<div class="student-timer-center"><span style="font-size:12px;color:rgba(255,255,255,.3);letter-spacing:.08em">∞ NO TIME LIMIT</span></div>`;
   sw.innerHTML=`
@@ -3390,21 +3452,37 @@ function submitExam(){
   </div>`;
 }
 
-/* ── Timer ── */
+/* ── Timer ──
+   The timer is always derived from the submission's real startedAt
+   timestamp rather than a countdown that resets on resume. This way
+   it keeps rolling accurately no matter how many times the student
+   disconnects/reconnects, and re-rendering the exam UI never causes
+   the displayed time to jump back up to the full duration. */
 let _timerRemaining=0;
+let _timerStartedAtMs=null;
+let _timerTotalSecs=0;
+function computeRemainingSecs(){
+  if(_timerStartedAtMs==null) return _timerTotalSecs;
+  const elapsed=Math.floor((Date.now()-_timerStartedAtMs)/1000);
+  return Math.max(0,_timerTotalSecs-elapsed);
+}
 function startExamTimer(sid,minutes){
-  _timerRemaining=minutes*60;
+  const sub=APP.submissions.find(ss=>ss.id===sid);
+  _timerStartedAtMs=sub&&sub.startedAt?new Date(sub.startedAt).getTime():Date.now();
+  _timerTotalSecs=minutes*60;
+  _timerRemaining=computeRemainingSecs();
   const el=document.getElementById('timer-display');
   if(el)el.textContent=formatTimerDisplay(_timerRemaining);
+  if(examTimer)clearInterval(examTimer);
   examTimer=setInterval(()=>{
-    _timerRemaining--;
+    _timerRemaining=computeRemainingSecs();
     const d=document.getElementById('timer-display');
     if(d){
       d.textContent=formatTimerDisplay(_timerRemaining);
       if(_timerRemaining<=300)d.classList.add('warning');
       else d.classList.remove('warning');
     }
-    if(_timerRemaining<=0){clearInterval(examTimer);submitExam();}
+    if(_timerRemaining<=0){clearInterval(examTimer);examTimer=null;submitExam();}
   },1000);
 }
 
