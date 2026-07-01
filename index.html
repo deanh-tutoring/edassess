@@ -691,6 +691,7 @@ function toast(msg,type='success'){
 function openModal(html,maxWidth='560px'){
   const c=document.getElementById('modal-container');
   c.innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:${maxWidth}">${html}</div></div>`;
+  renderMath(c);
 }
 function closeModal(){document.getElementById('modal-container').innerHTML=''}
 
@@ -1087,6 +1088,7 @@ function renderStandardQEditor(i,q){
   <div class="form-group">
     <label class="form-label">Question Stem</label>
     <div id="editor-stem-${i}" style="background:var(--cream);border-radius:var(--r)"></div>
+    <div id="stem-math-preview-${i}" style="display:none;margin-top:8px;padding:10px 14px;background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r);font-family:'PT Serif',serif;font-size:16px;line-height:1.7;color:var(--ink)"></div>
   </div>
   ${q.image?`
   <div class="form-group">
@@ -1413,7 +1415,27 @@ function mkQuill(id,content){
 
 function initStemEditor(i,content){
   const q=mkQuill('editor-stem-'+i,content);
-  if(q)q.on('text-change',()=>{APP.currentTest.questions[i].stem=q.root.innerHTML;save();updateQSidebar(i);});
+  if(!q) return;
+  function updatePreview(){
+    const raw=q.root.innerHTML;
+    const preview=document.getElementById('stem-math-preview-'+i);
+    if(!preview) return;
+    // Only show preview if stem contains LaTeX
+    if(/\\\(|\\\[|\$\$/.test(raw)){
+      preview.style.display='block';
+      preview.innerHTML=renderStem(raw);
+    } else {
+      preview.style.display='none';
+      preview.innerHTML='';
+    }
+  }
+  setTimeout(updatePreview,120);
+  q.on('text-change',()=>{
+    APP.currentTest.questions[i].stem=q.root.innerHTML;
+    save();
+    updateQSidebar(i);
+    requestAnimationFrame(updatePreview);
+  });
 }
 
 function initPassageEditor(i){
@@ -1535,31 +1557,19 @@ function previewLatex(){
 function insertLatex(qi,target){
   const code=document.getElementById('latex-code').value.trim();
   if(!code) return;
-  let mathHtml;
-  try{
-    mathHtml=katex.renderToString(code,{throwOnError:false,displayMode:false});
-  }catch(e){
-    mathHtml=code;
-  }
-  const rendered=`<span class="math-inline" data-latex="${code.replace(/"/g,'&quot;')}" style="padding:0 2px">${mathHtml}</span>&#8203;`;
   const edId=target.startsWith('subq-')?`editor-subq-${qi}-${target.split('-')[1]}`:`editor-stem-${qi}`;
   const edEl=document.getElementById(edId);
-  const qlEd=edEl?.querySelector('.ql-editor');
-  if(qlEd){
-    // Insert at cursor if Quill has focus, otherwise append
+  if(edEl){
     const ql=Quill.find(edEl);
     if(ql){
-      const range=ql.getSelection();
-      if(range){
-        ql.clipboard.dangerouslyPasteHTML(range.index,rendered);
-      } else {
-        ql.clipboard.dangerouslyPasteHTML(ql.getLength()-1,rendered);
-      }
-    } else {
-      qlEd.innerHTML+=rendered;
+      const range=ql.getSelection()||{index:ql.getLength()-1,length:0};
+      // Insert as plain delimiter text — KaTeX auto-render will process \(...\) on render
+      const insert=' \\('+code+'\\) ';
+      ql.insertText(range.index,insert,'user');
+      ql.setSelection(range.index+insert.length);
     }
   }
-  closeModal();toast('Math inserted.','success');
+  closeModal();toast('Math inserted — will render as formatted math.','success');
 }
 
 /* ── Test Settings ── */
@@ -2162,7 +2172,7 @@ function openGradingStudent(sid){
           </div>
           ${scoreIndicator}
         </div>
-        <div style="font-size:15px;margin-bottom:8px;font-family:'PT Serif',serif;line-height:1.5">${stripHtml(q.stem)||'(No stem)'}</div>
+        <div style="font-size:15px;margin-bottom:8px;font-family:'PT Serif',serif;line-height:1.5">${renderStem(q.stem)||'(No stem)'}</div>
         ${q.image?`<img src="${q.image}" style="max-height:100px;border-radius:var(--r);margin-bottom:8px;">`:''}
         ${ansHtml}
         <div class="mt-2">
@@ -2641,6 +2651,52 @@ function resetReferencePanel(){
   panel.style.height='560px';
 }
 
+/* ── renderMath(el) — call after any innerHTML assignment that may contain \(...\) LaTeX ── */
+function renderMath(el){
+  if(!el||!window.renderMathInElement) return;
+  try{
+    renderMathInElement(el,{
+      delimiters:[
+        {left:'\\(',right:'\\)',display:false},
+        {left:'\\[',right:'\\]',display:true},
+        {left:'$$',right:'$$',display:true},
+        {left:'$',right:'$',display:false}
+      ],
+      throwOnError:false,
+      output:'html'
+    });
+  }catch(e){}
+}
+
+/* ── renderStem(html) ─────────────────────────────────────────────────────
+   Reliable synchronous LaTeX rendering. Replaces every \(...\) and \[...\]
+   pattern in HTML strings with pre-rendered KaTeX HTML BEFORE the string
+   is assigned to innerHTML. This avoids all timing/race issues with
+   renderMathInElement (which scans the live DOM and can miss content or
+   conflict with Quill). Use this everywhere a stem or option is displayed
+   to students or in the grading view.
+────────────────────────────────────────────────────────────────────────── */
+function renderStem(html){
+  if(!html||typeof html!=='string') return html||'';
+  if(!window.katex) return html; // katex not loaded yet — return as-is
+  // Replace \[...\] display math first (multiline)
+  html=html.replace(/\\\[([\s\S]*?)\\\]/g,function(_,tex){
+    try{ return katex.renderToString(tex.trim(),{throwOnError:false,displayMode:true}); }
+    catch(e){ return _; }
+  });
+  // Replace \(...\) inline math
+  html=html.replace(/\\\(([^]*?)\\\)/g,function(_,tex){
+    try{ return katex.renderToString(tex.trim(),{throwOnError:false,displayMode:false}); }
+    catch(e){ return _; }
+  });
+  // Replace $$...$$ display math
+  html=html.replace(/\$\$([\s\S]*?)\$\$/g,function(_,tex){
+    try{ return katex.renderToString(tex.trim(),{throwOnError:false,displayMode:true}); }
+    catch(e){ return _; }
+  });
+  return html;
+}
+
 function groupQuestionsForShuffle(questions){
   return questions.map(q=>[q]);
 }
@@ -2728,6 +2784,7 @@ function renderStudentExam(){
       </div>
     </div>
   </div>`;
+  renderMath(sw);
   if(q&&q.q.type==='essay'){
     setTimeout(()=>{
       const edEl=document.getElementById('essay-editor-'+q.key);
@@ -2740,9 +2797,6 @@ function renderStudentExam(){
         studentEssayEditors[q.key]=ed;
       }
     },80);
-  }
-  if(q&&q.q.type==='short'){
-    setTimeout(()=>updateShortPreview(q.key,APP.currentStudentExam.sub.answers[q.key]||''),0);
   }
 }
 
@@ -2801,7 +2855,7 @@ function renderSingleStudentQ(q,key,a,fqs){
     <div style="flex:1"></div>
     <div style="font-size:10px;color:var(--ink-soft);font-weight:600;letter-spacing:.08em;text-transform:uppercase">${q.type==='mc'?'Multiple Choice':q.type==='ms'?'Select All':q.type==='short'?'Short Answer':q.type==='essay'?'Essay':''} · ${q.points||1} pt${(q.points||1)!==1?'s':''}</div>
   </div>`;
-  html+=`<div style="font-family:'PT Serif',serif;font-size:19px;line-height:1.7;margin-bottom:24px;color:var(--ink)">${q.stem||'<em style="color:var(--ink-soft)">No question text</em>'}</div>`;
+  html+=`<div style="font-family:'PT Serif',serif;font-size:19px;line-height:1.7;margin-bottom:24px;color:var(--ink)">${renderStem(q.stem)||'<em style="color:var(--ink-soft)">No question text</em>'}</div>`;
   if(q.image) html+=`<img src="${q.image}" style="max-width:100%;max-height:280px;border-radius:var(--r);margin-bottom:24px;object-fit:contain;border:1px solid var(--border)">`;
   if(q.type==='mc'){
     html+=opts.map((opt,j)=>{
@@ -2809,7 +2863,7 @@ function renderSingleStudentQ(q,key,a,fqs){
       const selected=ans===origIdx;
       return`<button class="answer-btn ${selected?'selected':''}" onclick="selectAnswer('${key}',${j},'mc')">
         <div class="answer-letter">${letters[j]}</div>
-        <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.5">${opt||'(Empty option)'}</div>
+        <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.5">${renderStem(opt)||'(Empty option)'}</div>
       </button>`;
     }).join('');
   } else if(q.type==='ms'){
@@ -2821,26 +2875,21 @@ function renderSingleStudentQ(q,key,a,fqs){
         <div style="width:20px;height:20px;border-radius:2px;border:1px solid ${selected?'var(--rust)':'var(--border-dark)'};background:${selected?'var(--rust)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">
           ${selected?`<svg fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg>`:''}
         </div>
-        <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.5">${opt||'(Empty option)'}</div>
+        <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.5">${renderStem(opt)||'(Empty option)'}</div>
       </button>`;
     }).join('');
   } else if(q.type==='short'){
     const val=typeof ans==='string'?ans:'';
-    // Render the stored HTML value — it may contain pre-rendered KaTeX spans
-    const displayHtml=val||'';
     html+=`<div style="margin-bottom:8px">
-      <div class="flex gap-2" style="align-items:flex-start">
-        <div
-          class="form-control short-answer-editor"
-          id="short-editor-${key}"
-          contenteditable="true"
-          data-placeholder="Type your answer…"
-          style="min-height:52px;font-size:17px;padding:12px 14px;font-family:'PT Serif',serif;line-height:1.6;cursor:text;white-space:pre-wrap;word-break:break-word"
-          oninput="saveShortEditorValue('${key}',this)"
-        >${displayHtml}</div>
-        <button class="btn btn-secondary btn-icon" style="flex-shrink:0;height:52px;width:44px;font-size:18px" title="Insert math" onclick="openStudentMathInserter('${key}',false)">∑</button>
-      </div>
-      <div style="font-size:10px;color:var(--ink-soft);letter-spacing:.04em;margin-top:4px">Tip: type normally, or click ∑ to insert formatted math. LaTeX renders inline.</div>
+      <input
+        type="text"
+        class="form-control"
+        id="short-input-${key}"
+        style="font-size:17px;padding:12px 14px;font-family:'PT Serif',serif;line-height:1.6;width:100%"
+        placeholder="Type your answer…"
+        value="${val.replace(/"/g,'&quot;')}"
+        oninput="setShortAnswer('${key}',this.value)"
+      >
     </div>`;
   } else if(q.type==='essay'){
     html+=`<div class="flex justify-between items-center mb-2">
@@ -3038,6 +3087,7 @@ function showCheckWork(){
       </button>
     </div>
   </div>`;
+  renderMath(sw);
 }
 
 function nextQ(){studentState.currentQ++;renderStudentExam();}
@@ -3331,7 +3381,7 @@ function loadStudentResults(sid){
     questionsHtml+=`<div style="background:var(--cream);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <div style="width:28px;height:28px;border-radius:2px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'Josefin Sans',sans-serif">${idx+1}</div>
-        <div style="flex:1;font-family:'PT Serif',serif;font-size:17px">${stripHtml(q.stem)||'(No question text)'}</div>
+        <div style="flex:1;font-family:'PT Serif',serif;font-size:17px">${renderStem(q.stem)||'(No question text)'}</div>
         <div style="padding:3px 10px;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:${correct===null?'var(--paper-aged)':correct?'var(--sage-pale)':'var(--rust-pale)'};color:${correct===null?'var(--ink-soft)':correct?'var(--sage)':'var(--rust)'};border:1px solid ${correct===null?'var(--border)':correct?'var(--sage)':'var(--rust)'};font-family:'Josefin Sans',sans-serif">${statusLabel}</div>
       </div>
       ${q.image?`<img src="${q.image}" style="max-width:100%;max-height:160px;border-radius:var(--r);margin-bottom:12px;object-fit:contain">`:''}
@@ -3360,6 +3410,7 @@ function loadStudentResults(sid){
       ${questionsHtml}
     </div>
   </div>`;
+  renderMath(sw);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -3380,12 +3431,8 @@ window.addEventListener('DOMContentLoaded',async ()=>{
       toast('Could not connect to cloud storage — working from local cache only. Check your connection or Netlify Blobs setup.','error');
     }
   }
-  if(window.renderMathInElement){
-    const observer=new MutationObserver(()=>{
-      renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
-    });
-    observer.observe(document.body,{childList:true,subtree:true});
-  }
+  // Run on whole body once after load in case any static content has LaTeX
+  setTimeout(()=>renderMath(document.body),300);
 });
 </script>
 </body>
