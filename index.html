@@ -2660,34 +2660,23 @@ function markdownToHtml(md){
   return h;
 }
 
-function openDirectionsPanel(){
-  directionsOpen=true;
-  renderStudentExam();
-}
-
 function toggleDirections(){
   directionsOpen=!directionsOpen;
-  // Update the dropdown in-place without re-rendering the whole exam
   const dropdown=document.getElementById('directions-dropdown');
-  const btn=document.getElementById('directions-btn');
-  if(dropdown){
-    dropdown.style.display=directionsOpen?'block':'none';
-  }
-  if(btn){
-    const arrow=btn.querySelector('.dir-arrow');
-    if(arrow) arrow.style.transform=directionsOpen?'':'rotate(180deg)';
-    btn.setAttribute('aria-expanded',String(directionsOpen));
-  }
-  // Dismiss when clicking outside
+  const arrow=document.getElementById('directions-arrow');
+  if(dropdown) dropdown.style.display=directionsOpen?'block':'none';
+  if(arrow) arrow.style.transform=directionsOpen?'rotate(180deg)':'rotate(0deg)';
   if(directionsOpen){
+    // click-outside to close
     setTimeout(()=>{
       const handler=e=>{
-        const dropdown=document.getElementById('directions-dropdown');
+        const dd=document.getElementById('directions-dropdown');
         const btn=document.getElementById('directions-btn');
-        if(dropdown&&!dropdown.contains(e.target)&&btn&&!btn.contains(e.target)){
+        if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target)){
           directionsOpen=false;
-          dropdown.style.display='none';
-          if(btn){const a=btn.querySelector('.dir-arrow');if(a)a.style.transform='rotate(180deg)';}
+          if(dd) dd.style.display='none';
+          const ar=document.getElementById('directions-arrow');
+          if(ar) ar.style.transform='rotate(0deg)';
           document.removeEventListener('mousedown',handler,true);
         }
       };
@@ -2696,33 +2685,33 @@ function toggleDirections(){
   }
 }
 
+function openDirectionsPanel(){
+  directionsOpen=true;
+  const dropdown=document.getElementById('directions-dropdown');
+  const arrow=document.getElementById('directions-arrow');
+  if(dropdown) dropdown.style.display='block';
+  if(arrow) arrow.style.transform='rotate(180deg)';
+}
+
 function renderDirectionsBtn(t){
   const hasDirections=t&&t.instructions&&t.instructions.trim();
   const html=hasDirections?markdownToHtml(t.instructions):'';
-  return `
-    <div style="position:relative;flex-shrink:0">
-      <button id="directions-btn"
-        onclick="toggleDirections()"
-        aria-expanded="${directionsOpen}"
-        style="background:transparent;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;padding:4px 2px;white-space:nowrap">
-        Directions
-        <svg class="dir-arrow" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"
-          style="transition:transform .18s;transform:${directionsOpen?'':'rotate(180deg)'}">
-          <path d="M5 15l7-7 7 7"/>
-        </svg>
-      </button>
-      <div id="directions-dropdown"
-        style="display:${directionsOpen?'block':'none'};position:fixed;top:52px;left:0;width:min(680px,100vw);background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:4000;border-bottom:2px solid var(--border-dark)">
-        <div style="padding:28px 32px 12px;max-height:calc(100vh - 100px);overflow-y:auto">
-          <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.8;color:#1a1410">
-            ${hasDirections?html:'<em style="color:#888">No directions provided for this test.</em>'}
-          </div>
-        </div>
-        <div style="padding:16px 32px;display:flex;justify-content:flex-end;border-top:1px solid #e8e0d8">
-          <button onclick="toggleDirections()" style="background:#f5c842;color:#1a1410;border:none;border-radius:999px;padding:10px 28px;font-family:'Josefin Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer">Close</button>
+  return `<div style="position:relative;flex-shrink:0">
+    <button id="directions-btn" onclick="toggleDirections()" style="background:transparent;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;padding:4px 2px;white-space:nowrap">
+      Directions
+      <svg id="directions-arrow" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12" style="transition:transform .18s;transform:rotate(0deg)"><path d="M5 15l7-7 7 7"/></svg>
+    </button>
+    <div id="directions-dropdown" style="display:none;position:fixed;top:52px;left:0;width:min(680px,100vw);background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:4000;border-bottom:2px solid var(--border-dark)">
+      <div style="padding:28px 32px 20px;max-height:calc(100vh - 130px);overflow-y:auto">
+        <div style="font-family:'PT Serif',serif;font-size:17px;line-height:1.85;color:#1a1410">
+          ${hasDirections?html:'<em style="color:#888">No directions have been provided for this test.</em>'}
         </div>
       </div>
-    </div>`;
+      <div style="padding:14px 32px;display:flex;justify-content:flex-end;border-top:1px solid #e8e0d8;background:#faf8f5">
+        <button onclick="toggleDirections()" style="background:#f5c842;color:#1a1410;border:none;border-radius:999px;padding:10px 32px;font-family:'Josefin Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer">Close</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function escapeHtml(str){
@@ -2894,10 +2883,7 @@ function renderStudentExam(){
   <div id="student-page">
     <div class="student-header">
       <div class="flex items-center gap-3" style="min-width:0">
-        <button onclick="openDirectionsPanel()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:6px 12px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/></svg>
-          Directions
-        </button>
+        ${renderDirectionsBtn(t)}
         <div class="student-header-title">${t.title}</div>
       </div>
       ${timerSection}
@@ -2913,7 +2899,6 @@ function renderStudentExam(){
         <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.06em">${sub.studentName}</div>
       </div>
     </div>
-    ${renderDirectionsBanner(t)}
     <div class="student-content">
       ${renderStudentQuestion(q,fqs,a)}
     </div>
@@ -3217,10 +3202,7 @@ function showCheckWork(){
   <div id="student-page">
     <div class="student-header">
       <div class="flex items-center gap-3" style="min-width:0">
-        <button onclick="openDirectionsPanel()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:6px 12px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/></svg>
-          Directions
-        </button>
+        ${renderDirectionsBtn(t)}
         <div class="student-header-title">${t.title}</div>
       </div>
       <div></div>
