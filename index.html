@@ -85,6 +85,8 @@ input,textarea,select{font-family:'Josefin Sans',sans-serif;font-size:13px;lette
 
 /* ── CARD ── */
 .card{background:var(--cream);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden}
+.qbank-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--slate-blue),var(--burgundy));border-radius:var(--r-lg);padding:16px 22px;margin-bottom:24px;transition:filter .15s}
+.qbank-banner:hover{filter:brightness(1.08)}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-body{padding:20px}
 
@@ -193,6 +195,9 @@ textarea.form-control{resize:vertical;min-height:80px}
 .question-number{width:24px;height:24px;border-radius:2px;background:var(--ink);color:var(--paper);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Josefin Sans',sans-serif}
 .question-card-body{padding:0 14px 14px}
 .type-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:2px;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:var(--paper-aged);color:var(--ink-soft);border:1px solid var(--border);font-family:'Josefin Sans',sans-serif}
+.skill-chip{cursor:pointer;user-select:none;padding:6px 12px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:var(--paper);color:var(--ink-soft);transition:all .15s;font-family:'PT Serif',serif}
+.skill-chip:hover{border-color:var(--slate-blue);color:var(--ink)}
+.skill-chip.checked{background:var(--slate-blue);border-color:var(--slate-blue);color:#fff;font-weight:600}
 
 /* ── QUESTION TYPE BUTTONS ── */
 .q-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px}
@@ -502,6 +507,39 @@ const APP = {
 };
 
 /* ══════════════════════════════════════════════════════════
+   SAT DOMAIN / FOCUS SKILL TAXONOMY
+   Used when a test is tagged as an SAT Math or SAT R&W section.
+   Each question can carry exactly one domain and one-or-more
+   focus skills (drawn from that domain's list) for practice
+   analytics and Khan Academy recommendations.
+══════════════════════════════════════════════════════════ */
+const SAT_DOMAINS = {
+  'sat-math': {
+    label: 'SAT Math',
+    khanUrl: 'https://www.khanacademy.org/test-prep/v2-sat-math',
+    domains: {
+      'Algebra': ['Linear equations in 1 variable','Linear equations in 2 variables','Linear functions','Systems of 2 linear equations in 2 variables','Linear inequalities in 1 or 2 variables'],
+      'Advanced Math': ['Equivalent expressions','Nonlinear equations in 1 variable and systems of equations in 2 variables','Nonlinear functions'],
+      'Problem-Solving and Data Analysis': ['Ratios, rates, proportional relationships, and units','Percentages','One-variable data: distributions and measures of center and spread','Two-variable data: models and scatterplots','Probability and conditional probability','Inference from sample statistics and margin of error','Evaluating statistical claims: observational studies and experiments'],
+      'Geometry and Trigonometry': ['Area and volume','Lines, angles, and triangles','Right triangles and trigonometry','Circles'],
+    }
+  },
+  'sat-rw': {
+    label: 'SAT Reading & Writing',
+    khanUrl: 'https://www.khanacademy.org/test-prep/sat-reading-and-writing',
+    domains: {
+      'Information and Ideas': ['Central Ideas and Details','Inferences','Command of Evidence'],
+      'Craft and Structure': ['Words in Context','Text Structure and Purpose','Cross-Text Connections'],
+      'Expression of Ideas': ['Rhetorical Synthesis','Transitions'],
+      'Standard English Conventions': ['Boundaries','Form, Structure, and Sense'],
+    }
+  }
+};
+const COLLEGE_BOARD_QBANK_URL='https://mypractice.collegeboard.org/questionbank/search';
+function satDomainNames(subject){const s=SAT_DOMAINS[subject];return s?Object.keys(s.domains):[];}
+function satSkillsForDomain(subject,domain){const s=SAT_DOMAINS[subject];return (s&&s.domains[domain])||[];}
+
+/* ══════════════════════════════════════════════════════════
    CLOUD SYNC — makes EdAssess work across the internet
    Everything is persisted to a shared Netlify Function (backed by
    Netlify Blobs) so the instructor's dashboard and every student's
@@ -703,6 +741,19 @@ function toast(msg,type='success'){
   el.innerHTML=(icons[type]||'')+msg;
   t.appendChild(el);
   setTimeout(()=>el.remove(),3500);
+}
+
+/* A non-intrusive, bottom-right notice that — unlike toast() — does NOT
+   auto-dismiss. It stays until the student closes it themselves. Used for
+   the "5 minutes left" exam warning. */
+function showExamNotice(msg){
+  const t=document.getElementById('toast-container');
+  if(!t) return;
+  const el=document.createElement('div');
+  el.className='toast toast-info';
+  el.style.cursor='default';
+  el.innerHTML=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span style="flex:1">${msg}</span><button type="button" aria-label="Close" onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;opacity:.55;cursor:pointer;padding:0;display:flex;align-items:center;flex-shrink:0"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button>`;
+  t.appendChild(el);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1110,6 +1161,7 @@ function renderStandardQEditor(i,q){
     <div id="editor-stem-${i}" style="background:var(--cream);border-radius:var(--r)"></div>
     <div id="stem-math-preview-${i}" style="display:none;margin-top:8px;padding:10px 14px;background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r);font-family:'PT Serif',serif;font-size:16px;line-height:1.7;color:var(--ink)"></div>
   </div>
+  ${renderSatTagPicker(APP.currentTest,q,`d=>setQDomain(${i},d)`,`s=>toggleQFocusSkill(${i},s)`)}
   ${q.image?`
   <div class="form-group">
     <label class="form-label">Image</label>
@@ -1189,6 +1241,56 @@ function removeShortKeyAnswer(i,j){
   save();
   const el=document.getElementById('short-key-'+i);
   if(el) el.innerHTML=renderShortKey(i,q);
+}
+
+function renderSatTagPicker(t,q,onDomainChange,onSkillToggle){
+  if(!t.satSubject) return '';
+  const subject=t.satSubject;
+  const domains=satDomainNames(subject);
+  const domain=q.domain||'';
+  const skills=q.focusSkills||[];
+  const avail=domain?satSkillsForDomain(subject,domain):[];
+  return `<div class="form-group" style="background:var(--slate-pale);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+    <label class="form-label">SAT Domain <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft)">(one per question)</span></label>
+    <select class="form-control mb-2" onchange="(${onDomainChange})(this.value)">
+      <option value="">— Select Domain —</option>
+      ${domains.map(d=>`<option value="${d.replace(/"/g,'&quot;')}" ${domain===d?'selected':''}>${d}</option>`).join('')}
+    </select>
+    ${domain?`
+    <label class="form-label">Focus Skills <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft)">(select one or more)</span></label>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${avail.map(sk=>{
+        const checked=skills.includes(sk);
+        return`<div class="skill-chip${checked?' checked':''}" onclick="(${onSkillToggle})('${sk.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${checked?'✓ ':''}${sk}</div>`;
+      }).join('')}
+    </div>`:`<div class="form-hint">Select a domain to choose its focus skills</div>`}
+  </div>`;
+}
+function setQDomain(i,domain){
+  const q=APP.currentTest.questions[i];
+  q.domain=domain||'';
+  q.focusSkills=[];
+  save();selectQ(i);
+}
+function toggleQFocusSkill(i,skill){
+  const q=APP.currentTest.questions[i];
+  if(!q.focusSkills)q.focusSkills=[];
+  const idx=q.focusSkills.indexOf(skill);
+  if(idx>=0)q.focusSkills.splice(idx,1);else q.focusSkills.push(skill);
+  save();selectQ(i);
+}
+function setSubQDomain(pi,si,domain){
+  const sq=APP.currentTest.questions[pi].subQuestions[si];
+  sq.domain=domain||'';
+  sq.focusSkills=[];
+  save();selectQ(pi);
+}
+function toggleSubQFocusSkill(pi,si,skill){
+  const sq=APP.currentTest.questions[pi].subQuestions[si];
+  if(!sq.focusSkills)sq.focusSkills=[];
+  const idx=sq.focusSkills.indexOf(skill);
+  if(idx>=0)sq.focusSkills.splice(idx,1);else sq.focusSkills.push(skill);
+  save();selectQ(pi);
 }
 
 function renderMCOptions(i,q){
@@ -1392,6 +1494,7 @@ function renderSubQEditor(pi,si,sq){
     <label class="form-label">Question</label>
     <div id="editor-subq-${pi}-${si}" style="background:var(--cream);border-radius:var(--r)"></div>
   </div>
+  ${renderSatTagPicker(APP.currentTest,sq,`d=>setSubQDomain(${pi},${si},d)`,`s=>toggleSubQFocusSkill(${pi},${si},s)`)}
   ${sq.type==='mc'||sq.type==='ms'?`
   <div class="form-group">
     <label class="form-label">Choices — click letter for correct answer${sq.type==='ms'?' (multiple)':''}</label>
@@ -1697,6 +1800,14 @@ function openTestSettings(){
       <textarea id="ts-desc" class="form-control" rows="2">${t.description||''}</textarea>
     </div>
     <div class="form-group">
+      <label class="form-label">SAT Section <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft)">(enables Domain / Focus Skill tagging on each question, and practice recommendations in results)</span></label>
+      <select id="ts-sat-subject" class="form-control">
+        <option value="" ${!t.satSubject?'selected':''}>None — regular test</option>
+        <option value="sat-math" ${t.satSubject==='sat-math'?'selected':''}>SAT Math</option>
+        <option value="sat-rw" ${t.satSubject==='sat-rw'?'selected':''}>SAT Reading &amp; Writing</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label class="form-label">Directions / Instructions <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft)">(shown to students via a "Directions" button — not a question)</span></label>
       <textarea id="ts-instructions" class="form-control" rows="5" placeholder="e.g. Read each question carefully. You may use a calculator and the reference sheet provided. Show your work where applicable...">${t.instructions||''}</textarea>
     </div>
@@ -1728,6 +1839,7 @@ function saveTestSettings(){
   t.grade=document.getElementById('ts-grade').value.trim();
   t.description=document.getElementById('ts-desc').value.trim();
   t.instructions=document.getElementById('ts-instructions').value;
+  t.satSubject=document.getElementById('ts-sat-subject').value;
   save();closeModal();renderBuilder();toast('Settings saved.','success');
 }
 
@@ -2558,8 +2670,9 @@ function loadStudentExam(){
 let _studentTestPollInterval=null;
 
 function startStudentTestPoll(){
-  // Poll every 10s so teacher edits (fixed typos, changed questions) propagate
-  // to the student without requiring a refresh.
+  // Poll frequently so both teacher edits (fixed typos, changed questions)
+  // AND an instructor's "Force Submit" propagate to the student in near
+  // real time without requiring the student to do anything.
   if(_studentTestPollInterval) clearInterval(_studentTestPollInterval);
   _studentTestPollInterval=setInterval(async ()=>{
     if(!APP.currentStudentExam) return;
@@ -2576,8 +2689,39 @@ function startStudentTestPoll(){
         const updated=data.tests.find(t=>t.id===a.testId);
         if(updated) APP.currentStudentExam.t=updated;
       }
+      // Detect an instructor-side Force Submit and end the exam locally to match.
+      if(Array.isArray(data.submissions)){
+        const remoteSub=data.submissions.find(s=>s.id===sub.id);
+        if(remoteSub&&remoteSub.status==='submitted'&&sub.status==='in-progress'){
+          handleRemoteForceSubmit(remoteSub);
+        }
+      }
     }catch(e){}
-  },10000);
+  },4000);
+}
+
+function handleRemoteForceSubmit(remoteSub){
+  // The instructor already flipped this submission to 'submitted' server-side
+  // (scored, timestamped, noted) — just sync local state to match and end
+  // the exam on screen. Do NOT re-score or re-save; that would race with
+  // what the instructor already wrote.
+  const idx=APP.submissions.findIndex(ss=>ss.id===remoteSub.id);
+  if(idx>=0) APP.submissions[idx]=remoteSub; else APP.submissions.push(remoteSub);
+  if(examTimer){clearInterval(examTimer);examTimer=null;}
+  if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
+  if(document.fullscreenElement)document.exitFullscreen();
+  closeDesmosPanel();closeReferencePanel();
+  clearLocalResume(remoteSub.assignmentId,remoteSub.studentName);
+  const ol=document.getElementById('lock-overlay');
+  if(ol)ol.classList.add('hidden');
+  document.getElementById('student-wrapper').innerHTML=`
+  <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px">
+    <div style="max-width:480px">
+      <div style="width:1px;height:60px;background:rgba(220,38,38,.4);margin:0 auto 32px"></div>
+      <h2 style="font-family:'PT Serif',serif;font-size:44px;color:#fff;margin-bottom:12px;font-weight:300">Exam Submitted</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:14px;letter-spacing:.06em">Your instructor has submitted this exam on your behalf. You may close this window.</p>
+    </div>
+  </div>`;
 }
 
 /* ── Local resume: save exam-in-progress state by (aid + name) key ── */
@@ -2626,8 +2770,9 @@ function renderNameEntry(a,t){
       ${a.locked?`<span style="background:var(--rust-pale);padding:4px 10px;border-radius:2px;font-size:10px;color:var(--rust);font-weight:600;letter-spacing:.08em;border:1px solid var(--rust)">🔒 SECURE</span>`:''}
     </div>
     <div style="margin-bottom:20px">
-      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">First Name & Last Initial</label>
+      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">First Name &amp; Last Initial</label>
       <input type="text" id="student-name-input" style="width:100%;padding:11px 14px;border:1px solid var(--border-dark);border-radius:var(--r);font-size:14px;outline:none;font-family:'Josefin Sans',sans-serif;background:var(--cream);color:var(--ink);letter-spacing:.04em" placeholder="e.g. Dean H" oninput="checkResumeHint('${a.id}',this.value)" onkeydown="if(event.key==='Enter')startExam('${a.id}')">
+      <div class="form-hint" style="margin-top:6px">Example: Dean H</div>
       <div id="resume-hint" style="display:none;margin-top:8px;background:var(--sage-pale);border:1px solid var(--sage);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--sage);letter-spacing:.04em">↩ A saved session was found — clicking Begin will resume where you left off.</div>
     </div>
     ${a.locked?`<div style="background:var(--ochre-pale);border:1px solid var(--ochre);border-radius:var(--r);padding:12px;font-size:12px;color:var(--ochre);margin-bottom:16px;letter-spacing:.04em">
@@ -2642,8 +2787,9 @@ function renderNameEntry(a,t){
 
 function startExam(aid){
   const nameInput=document.getElementById('student-name-input');
-  const name=nameInput?.value.trim();
-  if(!name){nameInput.style.borderColor='var(--rust)';return;}
+  const rawName=nameInput?.value.trim();
+  if(!rawName){nameInput.style.borderColor='var(--rust)';return;}
+  const name=formatStudentName(rawName);
   const a=APP.assignments.find(aa=>aa.id===aid);
   const t=APP.tests.find(tt=>tt.id===a.testId);
 
@@ -3008,8 +3154,9 @@ function renderStem(html){
 function checkResumeHint(aid,name){
   const hint=document.getElementById('resume-hint');
   if(!hint) return;
-  const n=name.trim();
-  if(!n){hint.style.display='none';return;}
+  const raw=name.trim();
+  if(!raw){hint.style.display='none';return;}
+  const n=formatStudentName(raw);
   const hasServer=APP.submissions.some(s=>
     s.assignmentId===aid &&
     s.studentName.toLowerCase()===n.toLowerCase() &&
@@ -3034,10 +3181,10 @@ function renderStudentExam(){
   const answered=q&&sub.answers&&sub.answers[qKey]!==undefined;
   const answeredCount=fqs.filter(f=>sub.answers&&sub.answers[f.key]!==undefined).length;
   const timerSection=a.timed?`
-  <div class="student-timer-center" onclick="toggleTimer()" title="Click to show/hide timer">
+  <div class="student-timer-center"${_timerLocked?'':' onclick="toggleTimer()" title="Click to show/hide timer"'}>
     <svg fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-    <span class="student-timer-display${timerHidden?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(computeRemainingSecs())}</span>
-    <span class="timer-toggle-btn" style="color:rgba(255,255,255,.3);font-size:10px;letter-spacing:.06em">${timerHidden?'SHOW':'HIDE'}</span>
+    <span class="student-timer-display${(timerHidden&&!_timerLocked)?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(computeRemainingSecs())}</span>
+    ${_timerLocked?'':`<span class="timer-toggle-btn" style="color:rgba(255,255,255,.3);font-size:10px;letter-spacing:.06em">${timerHidden?'SHOW':'HIDE'}</span>`}
   </div>`:`<div class="student-timer-center"><span style="font-size:12px;color:rgba(255,255,255,.3);letter-spacing:.08em">∞ NO TIME LIMIT</span></div>`;
   sw.innerHTML=`
   <div id="student-page">
@@ -3120,6 +3267,7 @@ function renderStudentExam(){
 }
 
 function toggleTimer(){
+  if(_timerLocked) return;
   timerHidden=!timerHidden;
   renderStudentExam();
   // Re-sync timer if it's running
@@ -3461,16 +3609,47 @@ function submitExam(){
 let _timerRemaining=0;
 let _timerStartedAtMs=null;
 let _timerTotalSecs=0;
+let _timerLocked=false;      // once true, the HIDE/SHOW control is gone for good
+let _timerWarningShown=false;
 function computeRemainingSecs(){
   if(_timerStartedAtMs==null) return _timerTotalSecs;
   const elapsed=Math.floor((Date.now()-_timerStartedAtMs)/1000);
   return Math.max(0,_timerTotalSecs-elapsed);
 }
+function lockTimerVisibility(){
+  // Surgical DOM patch (not a full re-render) so we don't disrupt whatever
+  // the student is doing — e.g. mid-keystroke in a short-answer box —
+  // right when the 5-minute mark hits.
+  timerHidden=false;
+  const center=document.querySelector('.student-timer-center');
+  if(center){
+    center.onclick=null;
+    center.removeAttribute('title');
+    center.style.cursor='default';
+    const toggleBtn=center.querySelector('.timer-toggle-btn');
+    if(toggleBtn)toggleBtn.remove();
+  }
+  const disp=document.getElementById('timer-display');
+  if(disp)disp.classList.remove('hidden-timer');
+}
+function evaluateTimerThreshold(){
+  if(_timerRemaining<=300&&!_timerLocked){
+    _timerLocked=true;
+    lockTimerVisibility();
+    if(!_timerWarningShown){
+      _timerWarningShown=true;
+      showExamNotice('5 minutes left on this exam.');
+    }
+  }
+}
 function startExamTimer(sid,minutes){
   const sub=APP.submissions.find(ss=>ss.id===sid);
   _timerStartedAtMs=sub&&sub.startedAt?new Date(sub.startedAt).getTime():Date.now();
   _timerTotalSecs=minutes*60;
+  _timerLocked=false;
+  _timerWarningShown=false;
   _timerRemaining=computeRemainingSecs();
+  evaluateTimerThreshold();
   const el=document.getElementById('timer-display');
   if(el)el.textContent=formatTimerDisplay(_timerRemaining);
   if(examTimer)clearInterval(examTimer);
@@ -3482,7 +3661,15 @@ function startExamTimer(sid,minutes){
       if(_timerRemaining<=300)d.classList.add('warning');
       else d.classList.remove('warning');
     }
-    if(_timerRemaining<=0){clearInterval(examTimer);examTimer=null;submitExam();}
+    evaluateTimerThreshold();
+    if(_timerRemaining<=0){
+      clearInterval(examTimer);examTimer=null;
+      // Time's up bypasses the "unanswered questions" confirmation entirely —
+      // there's nothing left to confirm, the exam simply ends.
+      const s=APP.submissions.find(ss=>ss.id===sid);
+      if(s)s.note='Auto-submitted: time expired';
+      forceSubmitStudent(sid,'timeout');
+    }
   },1000);
 }
 
@@ -3559,23 +3746,32 @@ function reenterFullscreen(){
   },500);
 }
 
-function forceSubmitStudent(sid){
+function forceSubmitStudent(sid,reason){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
   s.status='submitted';s.submittedAt=new Date().toISOString();
   autoScore(s);save();
+  if(examTimer){clearInterval(examTimer);examTimer=null;}
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   closeDesmosPanel();closeReferencePanel();
   clearLocalResume(s.assignmentId,s.studentName);
   const ol=document.getElementById('lock-overlay');
   if(ol)ol.classList.add('hidden');
+  let heading='Exam Auto-Submitted',message='Your exam was auto-submitted due to repeated fullscreen violations. Your instructor has been notified.';
+  if(reason==='timeout'){
+    heading='Time\u2019s Up';
+    message='Your exam was automatically submitted because the time limit was reached.';
+  } else if(reason==='instructor'){
+    heading='Exam Submitted';
+    message='Your instructor has submitted this exam on your behalf.';
+  }
   document.getElementById('student-wrapper').innerHTML=`
   <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px">
     <div style="max-width:480px">
       <div style="width:1px;height:60px;background:rgba(220,38,38,.4);margin:0 auto 32px"></div>
-      <h2 style="font-family:'PT Serif',serif;font-size:44px;color:#fff;margin-bottom:12px;font-weight:300">Exam Auto-Submitted</h2>
-      <p style="color:rgba(255,255,255,.5);font-size:14px;letter-spacing:.06em">Your exam was auto-submitted due to 2 fullscreen violations. Your instructor has been notified.</p>
+      <h2 style="font-family:'PT Serif',serif;font-size:44px;color:#fff;margin-bottom:12px;font-weight:300">${heading}</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:14px;letter-spacing:.06em">${message}</p>
     </div>
   </div>`;
 }
@@ -3584,6 +3780,20 @@ function forceSubmitStudent(sid){
    HELPERS
 ══════════════════════════════════════════════════════════ */
 function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+
+// Normalizes whatever a student types into "First Name & Last Initial"
+// (e.g. "Dean Harrison" or "dean harrison" -> "Dean H"). This is what gets
+// stored as studentName, so results/portal matching stays consistent
+// regardless of how a student happens to type their name.
+function formatStudentName(raw){
+  const parts=(raw||'').trim().replace(/\s+/g,' ').split(' ').filter(Boolean);
+  if(!parts.length) return '';
+  const cap=w=>w.charAt(0).toUpperCase()+w.slice(1);
+  if(parts.length===1) return cap(parts[0]);
+  const first=cap(parts[0]);
+  const lastInitial=parts[parts.length-1][0].toUpperCase();
+  return `${first} ${lastInitial}`;
+}
 
 function flatQuestions(t){
   const result=[];
@@ -3658,7 +3868,120 @@ function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Ma
 /* ══════════════════════════════════════════════════════════
    STUDENT RESULTS PAGE
 ══════════════════════════════════════════════════════════ */
+/* ── SAT Domain / Focus Skill Practice Recommendations ── */
+function computeSkillStats(subs,subject){
+  const domainMap={};
+  subs.forEach(s=>{
+    const t=APP.tests.find(tt=>tt.id===s.testId);
+    if(!t||t.satSubject!==subject) return;
+    const fqs=flatQuestions(t);
+    fqs.forEach(item=>{
+      const q=item.q;
+      if(!q.domain||q.type==='essay') return;
+      const qKey=item.key;
+      const ans=s.answers?s.answers[qKey]:undefined;
+      const overridden=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;
+      const isCorrect=overridden?(s.mcOverrides[qKey]>0):isAnswerCorrect(q,ans);
+      if(!domainMap[q.domain])domainMap[q.domain]={correct:0,total:0,skills:{}};
+      domainMap[q.domain].total++;
+      if(isCorrect)domainMap[q.domain].correct++;
+      const skills=(q.focusSkills&&q.focusSkills.length)?q.focusSkills:['(Unspecified Skill)'];
+      skills.forEach(sk=>{
+        if(!domainMap[q.domain].skills[sk])domainMap[q.domain].skills[sk]={correct:0,total:0};
+        domainMap[q.domain].skills[sk].total++;
+        if(isCorrect)domainMap[q.domain].skills[sk].correct++;
+      });
+    });
+  });
+  return domainMap;
+}
+let _skillPanelData={};
+function renderSkillPanel(panelId,subject,domainMap,testCount){
+  _skillPanelData[panelId]=domainMap;
+  const meta=SAT_DOMAINS[subject];
+  const domains=Object.keys(domainMap);
+  return `<div class="card mb-4">
+    <div class="card-header">
+      <div>
+        <h3 class="serif" style="font-size:20px">${meta.label}</h3>
+        <div class="text-xs text-muted mt-1">${testCount} submission${testCount!==1?'s':''} on record</div>
+      </div>
+      <a href="${meta.khanUrl}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+        Practice on Khan Academy
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11" style="margin-left:4px"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </a>
+    </div>
+    <div class="card-body">
+      ${!domains.length?`<p style="color:var(--ink-soft);font-family:'PT Serif',serif;font-size:15px">No SAT-tagged questions have been answered yet for this section.</p>`:`
+      <div class="flex items-center gap-2 mb-4">
+        <label class="form-label" style="margin:0;white-space:nowrap">Filter by domain:</label>
+        <select class="form-control" style="width:auto" onchange="filterSkillPanel('${panelId}',this.value)">
+          <option value="__all__">All Domains</option>
+          ${domains.map(d=>`<option value="${d.replace(/"/g,'&quot;')}">${d}</option>`).join('')}
+        </select>
+      </div>
+      <div id="content-${panelId}">${buildSkillPanelContent(domainMap,'__all__')}</div>`}
+    </div>
+  </div>`;
+}
+function filterSkillPanel(panelId,domainVal){
+  const data=_skillPanelData[panelId];
+  const el=document.getElementById('content-'+panelId);
+  if(data&&el) el.innerHTML=buildSkillPanelContent(data,domainVal);
+}
+function buildSkillPanelContent(domainMap,filterDomain){
+  let domains=Object.keys(domainMap);
+  if(filterDomain&&filterDomain!=='__all__') domains=domains.filter(d=>d===filterDomain);
+  if(!domains.length) return `<p style="color:var(--ink-soft);font-family:'PT Serif',serif;font-size:14px">No data for this domain yet.</p>`;
+  // Least correct → most correct, so the weakest areas surface first for review.
+  domains.sort((a,b)=>{
+    const pa=domainMap[a].total?domainMap[a].correct/domainMap[a].total:1;
+    const pb=domainMap[b].total?domainMap[b].correct/domainMap[b].total:1;
+    return pa-pb;
+  });
+  return domains.map(d=>{
+    const dd=domainMap[d];
+    const dpct=dd.total?Math.round(dd.correct/dd.total*100):0;
+    const dColor=scoreColor(dd.total?dd.correct/dd.total:1);
+    let skills=Object.keys(dd.skills);
+    skills.sort((a,b)=>{
+      const pa=dd.skills[a].total?dd.skills[a].correct/dd.skills[a].total:1;
+      const pb=dd.skills[b].total?dd.skills[b].correct/dd.skills[b].total:1;
+      return pa-pb;
+    });
+    return `<div style="margin-bottom:22px">
+      <div class="flex items-center justify-between" style="margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">
+        <div style="font-family:'PT Serif',serif;font-size:16px;font-weight:600;color:var(--ink)">${d}</div>
+        <div style="font-size:13px;font-weight:700;color:${dColor}">${dd.correct}/${dd.total} · ${dpct}%</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+      ${skills.map(sk=>{
+        const sc=dd.skills[sk];
+        const pct=sc.total?Math.round(sc.correct/sc.total*100):0;
+        const barColor=scoreColor(sc.total?sc.correct/sc.total:1);
+        return`<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;background:var(--cream)">
+          <div class="flex items-center justify-between" style="margin-bottom:6px">
+            <div style="font-size:14px;font-family:'PT Serif',serif;color:var(--ink)">${sk}</div>
+            <div style="font-size:12px;font-weight:700;color:${barColor};flex-shrink:0;margin-left:12px">${sc.correct}/${sc.total} · ${pct}%</div>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderQBankBanner(){
+  return `<a href="${COLLEGE_BOARD_QBANK_URL}" target="_blank" rel="noopener" class="qbank-banner">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7">College Board</div>
+      <div style="font-family:'PT Serif',serif;font-size:16px;margin-top:2px">Search the official Question Bank for more practice questions</div>
+    </div>
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16" style="flex-shrink:0"><path d="M7 17L17 7M7 7h10v10"/></svg>
+  </a>`;
+}
 function loadStudentResults(sid){
+
   document.getElementById('login-page').classList.add('hidden');
   document.getElementById('app').classList.add('hidden');
   const sw=document.getElementById('student-wrapper');
@@ -3737,6 +4060,7 @@ function loadStudentResults(sid){
       <div style="font-size:11px;opacity:.5;letter-spacing:.08em;text-transform:uppercase">Score Report — ${s.studentName}</div>
     </div>
     <div style="max-width:820px;margin:0 auto;padding:32px 20px">
+      ${t.satSubject?renderQBankBanner():''}
       <div style="background:var(--cream);border-radius:var(--r-lg);padding:32px;margin-bottom:28px;display:flex;gap:28px;align-items:center;border:1px solid var(--border)">
         <div style="width:100px;height:100px;border-radius:2px;background:${scoreColor(totalPts>0?(s.score||0)/totalPts:0)};display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0">
           <div style="font-size:32px;font-weight:300;color:#fff;line-height:1;font-family:'PT Serif',serif">${pct}%</div>
@@ -3748,8 +4072,46 @@ function loadStudentResults(sid){
           ${s.note?`<div style="font-size:12px;color:var(--rust);margin-top:6px;letter-spacing:.04em">Note: ${s.note}</div>`:''}
         </div>
       </div>
+      ${t.satSubject?`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Practice Recommendations</div>
+        <a href="${location.href.split('?')[0]}?portal=${encodeURIComponent(s.studentName)}" style="font-size:12px;color:var(--slate-blue);font-weight:600;text-decoration:none">View combined portal across all your SAT tests →</a>
+      </div>
+      ${renderSkillPanel('results-'+s.id,t.satSubject,computeSkillStats([s],t.satSubject),1)}
+      `:''}
       <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:16px">Question Review</div>
       ${questionsHtml}
+    </div>
+  </div>`;
+  renderMath(sw);
+}
+
+function loadPracticePortal(name){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  const sw=document.getElementById('student-wrapper');
+  sw.classList.remove('hidden');
+  const norm=v=>(v||'').trim().toLowerCase();
+  const target=norm(name);
+  const subs=APP.submissions.filter(s=>s.status==='submitted'&&norm(s.studentName)===target);
+  const mathSubs=subs.filter(s=>{const t=APP.tests.find(tt=>tt.id===s.testId);return t&&t.satSubject==='sat-math';});
+  const rwSubs=subs.filter(s=>{const t=APP.tests.find(tt=>tt.id===s.testId);return t&&t.satSubject==='sat-rw';});
+  const mathMap=computeSkillStats(mathSubs,'sat-math');
+  const rwMap=computeSkillStats(rwSubs,'sat-rw');
+  sw.innerHTML=`<div style="min-height:100vh;background:var(--paper);font-family:'Josefin Sans',sans-serif">
+    <div style="background:var(--ink);color:var(--paper);padding:16px 28px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'PT Serif',serif;font-size:22px;font-weight:300">SAT Practice Portal</div>
+      <div style="font-size:11px;opacity:.5;letter-spacing:.08em;text-transform:uppercase">${name}</div>
+    </div>
+    <div style="max-width:860px;margin:0 auto;padding:32px 20px">
+      ${renderQBankBanner()}
+      <p style="color:var(--ink-soft);font-family:'PT Serif',serif;font-size:16px;margin-bottom:28px;line-height:1.6">This portal combines every SAT test submitted under the name <strong style="color:var(--ink)">${name}</strong> to surface the domains and focus skills most worth reviewing — least mastered first.</p>
+      ${subs.length===0?`<div style="text-align:center;padding:60px 20px;color:var(--ink-soft);font-family:'PT Serif',serif;font-size:16px;border:1px dashed var(--border);border-radius:var(--r-lg)">No submitted SAT tests found under this name yet.<br>Once you finish an SAT Math or Reading &amp; Writing test using this exact name, your results will appear here automatically.</div>`:`
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--slate-blue);margin-bottom:10px">Math</div>
+      ${renderSkillPanel('portal-math','sat-math',mathMap,mathSubs.length)}
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--burgundy);margin-bottom:10px;margin-top:8px">Reading &amp; Writing</div>
+      ${renderSkillPanel('portal-rw','sat-rw',rwMap,rwSubs.length)}
+      `}
     </div>
   </div>`;
   renderMath(sw);
@@ -3767,6 +4129,8 @@ window.addEventListener('DOMContentLoaded',async ()=>{
     loadStudentExam();
   } else if(params.get('results')){
     loadStudentResults(params.get('results'));
+  } else if(params.get('portal')){
+    loadPracticePortal(params.get('portal'));
   } else {
     document.getElementById('login-page').classList.remove('hidden');
     if(!_serverReachable){
