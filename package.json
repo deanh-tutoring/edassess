@@ -4,6 +4,7 @@
   "private": true,
   "description": "EdAssess — Advanced Assessment Platform",
   "dependencies": {
-    "@netlify/blobs": "^8.1.0"
+    "@netlify/blobs": "^8.1.0",
+    "googleapis": "^173.0.0"
   }
 }

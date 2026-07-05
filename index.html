@@ -2148,6 +2148,11 @@ function openAssignModal(testId){
         </select>
         <div class="form-hint mt-2">After reaching the limit the exam is auto-submitted. "Unlimited" still shows warnings but never force-submits.</div>
       </div>
+      <label class="checkbox-wrap mt-3" style="align-items:flex-start">
+        <input type="checkbox" id="as-ultra-lockdown">
+        <span style="font-size:13px"><strong>Ultra-Lockdown Mode</strong> — requires camera &amp; microphone for the entire exam</span>
+      </label>
+      <div class="form-hint mt-2" style="padding-left:26px">Independent of Locked/Secure Mode above (can be used together or alone). Students must complete a live 360° desk check before starting, and audio is monitored throughout — unusually loud or sudden sounds are flagged with a snapshot for your review in Grade Center.</div>
     </div>
   </div>
   <div class="modal-footer">
@@ -2170,6 +2175,7 @@ function createAssignment(testId){
     allowDesmos:document.getElementById('as-desmos').checked,
     locked:document.getElementById('as-locked').checked,
     maxStrikes:(v=>Number.isNaN(v)?2:v)(parseInt(document.getElementById('as-max-strikes').value,10)),
+    ultraLockdown:document.getElementById('as-ultra-lockdown').checked,
     createdAt:new Date().toISOString(),
   };
   APP.assignments.push(a);save();closeModal();
@@ -2211,6 +2217,10 @@ function createAssignment(testId){
       <div style="background:var(--paper-warm);border-radius:var(--r);padding:12px;border:1px solid var(--border)">
         <div class="text-xs text-muted mb-1">Desmos Calculator</div>
         <div style="font-weight:600;font-size:13px">${a.allowDesmos?'Allowed':'Not allowed'}</div>
+      </div>
+      <div style="background:${a.ultraLockdown?'var(--rust-pale)':'var(--paper-warm)'};border-radius:var(--r);padding:12px;border:1px solid ${a.ultraLockdown?'var(--rust)':'var(--border)'}">
+        <div class="text-xs text-muted mb-1">Ultra-Lockdown</div>
+        <div style="font-weight:600;font-size:13px;color:${a.ultraLockdown?'var(--rust)':'inherit'}">${a.ultraLockdown?'Camera + Mic Required':'Off'}</div>
       </div>
     </div>
   </div>
@@ -2492,6 +2502,7 @@ function renderGrading(){
             <div style="font-size:13px;font-weight:600;letter-spacing:.04em">${s.studentName}</div>
             <div class="text-sm text-muted" style="font-family:'PT Serif',serif;font-style:italic">${t.title} · Submitted ${formatTime(s.submittedAt)}</div>
             ${s.note?`<div style="font-size:10px;color:var(--rust);margin-top:2px;letter-spacing:.03em">Note: ${s.note}</div>`:''}
+            ${s.ultraLockdown?`<div style="margin-top:4px"><span class="badge ${s.noiseFlags&&s.noiseFlags.length?'badge-rust':'badge-slate'}" style="font-size:9px">🎥 Ultra-Lockdown${s.noiseFlags&&s.noiseFlags.length?` · ${s.noiseFlags.length} noise flag${s.noiseFlags.length!==1?'s':''}`:''}</span></div>`:''}
           </div>
           <div style="text-align:right;margin-right:12px">
             <div style="font-weight:700;font-size:18px;font-family:'PT Serif',serif">${s.score||0}/${totalPts}</div>
@@ -2503,6 +2514,43 @@ function renderGrading(){
           </button>
         </div>`}).join('')}
     </div>`}
+  </div>`;
+}
+
+function renderUltraLockdownReview(s){
+  const desk=s.deskCheckSnapshots||[];
+  const flags=s.noiseFlags||[];
+  return `
+  <div style="background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r-lg);padding:18px;margin-bottom:24px">
+    <div class="flex items-center gap-2 mb-3">
+      <svg fill="none" stroke="var(--rust)" stroke-width="1.8" viewBox="0 0 24 24" width="18" height="18"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <div style="font-family:'PT Serif',serif;font-size:16px;font-weight:600;color:var(--ink)">Ultra-Lockdown Monitoring</div>
+    </div>
+    <div style="margin-bottom:16px">
+      ${s.ultraRecordingDriveFileId?`
+      <a href="https://drive.google.com/file/d/${s.ultraRecordingDriveFileId}/view" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--sage);color:var(--sage);border-radius:var(--r);padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Open full recording in Google Drive
+      </a>`:`<div style="font-size:12px;color:var(--ink-soft);font-style:italic">No recording was uploaded for this session (Drive may not be configured, or the student's upload failed and they were offered a local download instead).</div>`}
+    </div>
+    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px">Desk Check (${desk.length} frame${desk.length!==1?'s':''})</div>
+    ${desk.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:16px">
+      ${desk.map(d=>`<div>
+        <img src="${d.dataUrl}" style="width:100%;border-radius:var(--r);border:1px solid var(--border);display:block;cursor:pointer" onclick="window.open(this.src,'_blank')">
+        <div style="font-size:9px;color:var(--ink-soft);margin-top:2px;text-align:center">${formatTime(d.time)}</div>
+      </div>`).join('')}
+    </div>`:`<p style="font-size:12px;color:var(--ink-soft);margin-bottom:16px">No desk check frames recorded.</p>`}
+    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px">Suspicious Noise Flags (${flags.length})</div>
+    ${flags.length?`<div style="display:flex;flex-direction:column;gap:8px">
+      ${flags.map(f=>`<div class="flex items-center gap-3" style="background:var(--cream);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px">
+        ${f.dataUrl?`<img src="${f.dataUrl}" style="width:56px;height:42px;object-fit:cover;border-radius:2px;cursor:pointer;flex-shrink:0" onclick="window.open(this.src,'_blank')">`:`<div style="width:56px;height:42px;background:var(--paper-aged);border-radius:2px;flex-shrink:0"></div>`}
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600">${formatTime(f.time)} · ${formatDate(f.time)}</div>
+          <div style="font-size:10px;color:var(--ink-soft)">Audio level ${f.level}</div>
+        </div>
+      </div>`).join('')}
+    </div>`:`<p style="font-size:12px;color:var(--ink-soft)">No suspicious noises flagged.</p>`}
+    <div class="form-hint mt-3">Desk check and noise-flag snapshots sync automatically as part of the submission; the full recording is uploaded separately to Google Drive (see link above) since videos are too large for the regular data store.</div>
   </div>`;
 }
 
@@ -2523,6 +2571,7 @@ function openGradingStudent(sid){
     <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
   <div class="modal-body">
+    ${s.ultraLockdown?renderUltraLockdownReview(s):''}
     ${fqs.map((item,idx)=>{
       const q=item.q;
       const qKey=item.passageIdx!==undefined?`p${item.passageIdx}_s${item.subIdx}`:String(item.idx);
@@ -2920,6 +2969,7 @@ function handleRemoteForceSubmit(remoteSub){
   if(examTimer){clearInterval(examTimer);examTimer=null;}
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
+  if(remoteSub.ultraLockdown)stopUltraLockdown(remoteSub);
   closeDesmosPanel();closeReferencePanel();
   clearLocalResume(remoteSub.assignmentId,remoteSub.studentName);
   const ol=document.getElementById('lock-overlay');
@@ -3010,19 +3060,423 @@ function startExam(aid){
     s.status==='in-progress'
   );
   if(existing){
-    // Resume from server state
-    const resume=getLocalResume(aid,name);
-    APP.currentStudentExam={sub:existing,a,t,orderedQuestions:existing._orderedQuestions||t.questions};
-    studentState={
-      currentQ:(resume&&resume.currentQ)||0,
-      flagged:(resume&&resume.flagged)||existing.flags||{}
-    };
-    startStudentTestPoll();
-    if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
-    if(a.timed) startExamTimer(existing.id,a.maxMinutes);
-    renderStudentExam();
+    if(a.ultraLockdown){
+      // Ultra-Lockdown requires the camera/mic stream to be live in THIS
+      // tab before we can resume monitoring — re-request it (skip the
+      // desk check again; that's a one-time onboarding step).
+      beginUltraLockdownResume(aid,name,existing);
+      return;
+    }
+    resumeExamSession(a,t,existing,name);
     return;
   }
+
+  if(a.ultraLockdown){
+    beginUltraLockdownIntro(aid,name);
+    return;
+  }
+
+  finishStartExam(aid,name,{});
+}
+
+/* ══════════════════════════════════════════════════════════
+   ULTRA-LOCKDOWN MODE
+   A stricter, separate security tier from Locked/Secure Mode above.
+   Requires camera + microphone for the whole exam: a mandatory live
+   360° desk check before starting, and continuous audio-level
+   monitoring throughout that flags unusually loud/sudden sounds with
+   a snapshot for the teacher to review.
+
+   Storage note: the video itself is recorded small from the start (low
+   resolution/bitrate — roughly 1-2MB/min) and uploaded directly from the
+   student's browser to the instructor's Google Drive via a resumable
+   upload, authorized through a Netlify Function that never exposes Drive
+   credentials to the browser (see netlify/functions/drive-token.js and
+   drive-setup/get-refresh-token.js). If Drive isn't configured or the
+   upload fails for any reason, the student is instead offered a local
+   download of the recording so nothing is silently lost. Desk-check and
+   flagged-noise snapshots are small enough to sync as part of the normal
+   submission record either way.
+══════════════════════════════════════════════════════════ */
+// Recording is kept small "from the start" rather than compressed after the
+// fact: low resolution, low frame rate, mono low-sample-rate audio. This
+// alone gets a typical exam recording down to roughly 1-2MB per minute,
+// which is small enough to upload reliably over a school Wi-Fi connection.
+const ULTRA_MEDIA_CONSTRAINTS={
+  video:{
+    facingMode:'user',
+    width:{ideal:320,max:320},
+    height:{ideal:240,max:240},
+    frameRate:{ideal:8,max:10},
+  },
+  audio:{
+    channelCount:1,
+    sampleRate:16000,
+    echoCancellation:true,
+    noiseSuppression:true,
+  },
+};
+
+let _ultraStream=null;
+let _ultraVideoEl=null;
+let _ultraRecorder=null;
+let _ultraChunks=[];
+let _ultraLastRecordingBlob=null;
+let _ultraAudioCtx=null;
+let _ultraAnalyser=null;
+let _ultraMonitorInterval=null;
+let _ultraLastFlagAt=0;
+let _ultraBaseline=0.02;
+let _ultraDeskSnapshots=[];
+let _ultraDeskTimer=null;
+let _ultraPendingStart=null;
+
+function beginUltraLockdownIntro(aid,name){
+  _ultraPendingStart={aid,name};
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  const sw=document.getElementById('student-wrapper');
+  sw.classList.remove('hidden');
+  sw.innerHTML=`
+  <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px">
+    <div style="max-width:480px">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 28px">
+        <svg fill="none" stroke="#e57373" stroke-width="1.8" viewBox="0 0 24 24" width="26" height="26"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </div>
+      <h2 style="font-family:'PT Serif',serif;font-size:32px;color:#fff;margin-bottom:12px;font-weight:300">Ultra-Lockdown Mode</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:14px;line-height:1.7;margin-bottom:10px">This exam requires camera and microphone access for the entire session.</p>
+      <p style="color:rgba(255,255,255,.4);font-size:13px;line-height:1.7;margin-bottom:28px">You'll do a quick live desk check first, then your camera and audio will be monitored for the duration of the exam. Unusual sounds are flagged with a snapshot for your instructor to review.</p>
+      <button class="btn btn-primary" style="padding:12px 32px" onclick="requestUltraLockdownMedia()">Enable Camera &amp; Microphone</button>
+      <div id="ultra-error" style="display:none;margin-top:18px;color:#e57373;font-size:13px;max-width:400px;margin-left:auto;margin-right:auto"></div>
+    </div>
+  </div>`;
+}
+
+async function requestUltraLockdownMedia(){
+  const errEl=document.getElementById('ultra-error');
+  if(errEl)errEl.style.display='none';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia(ULTRA_MEDIA_CONSTRAINTS);
+    _ultraStream=stream;
+    renderDeskCheckScreen();
+  }catch(e){
+    if(errEl){
+      errEl.style.display='block';
+      errEl.textContent='Camera and microphone access is required to continue with this exam. Please allow access when prompted, then try again. ('+(e.message||e.name||'access denied')+')';
+    }
+  }
+}
+
+function beginUltraLockdownResume(aid,name,existing){
+  _ultraPendingStart={aid,name,existing};
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  const sw=document.getElementById('student-wrapper');
+  sw.classList.remove('hidden');
+  sw.innerHTML=`
+  <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;text-align:center;padding:40px">
+    <div style="max-width:480px">
+      <h2 style="font-family:'PT Serif',serif;font-size:28px;color:#fff;margin-bottom:12px;font-weight:300">Resume Ultra-Lockdown Exam</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:14px;line-height:1.7;margin-bottom:26px">This exam requires camera and microphone monitoring. Please re-enable access to continue where you left off.</p>
+      <button class="btn btn-primary" style="padding:12px 32px" onclick="resumeUltraLockdownMedia()">Enable Camera &amp; Microphone</button>
+      <div id="ultra-error" style="display:none;margin-top:18px;color:#e57373;font-size:13px;max-width:400px;margin-left:auto;margin-right:auto"></div>
+    </div>
+  </div>`;
+}
+
+async function resumeUltraLockdownMedia(){
+  const errEl=document.getElementById('ultra-error');
+  if(errEl)errEl.style.display='none';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia(ULTRA_MEDIA_CONSTRAINTS);
+    _ultraStream=stream;
+    const {aid,name,existing}=_ultraPendingStart;
+    const a=APP.assignments.find(aa=>aa.id===aid);
+    const t=APP.tests.find(tt=>tt.id===a.testId);
+    resumeExamSession(a,t,existing,name);
+  }catch(e){
+    if(errEl){
+      errEl.style.display='block';
+      errEl.textContent='Camera and microphone access is required to continue this exam. ('+(e.message||e.name||'access denied')+')';
+    }
+  }
+}
+
+function renderDeskCheckScreen(){
+  _ultraDeskSnapshots=[];
+  const sw=document.getElementById('student-wrapper');
+  const DURATION=15; // seconds
+  sw.innerHTML=`
+  <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;padding:24px">
+    <div style="max-width:480px;width:100%;text-align:center">
+      <h2 style="font-family:'PT Serif',serif;font-size:26px;color:#fff;margin-bottom:10px;font-weight:300">Desk Check</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.6;margin-bottom:18px">Slowly turn your camera in a full circle (360°) to show your desk, the area around you, and underneath your desk. Keep going until the timer finishes.</p>
+      <div style="position:relative;border-radius:var(--r-lg);overflow:hidden;background:#000;margin-bottom:18px">
+        <video id="desk-check-video" autoplay playsinline muted style="width:100%;display:block;transform:scaleX(-1)"></video>
+        <div style="position:absolute;top:10px;right:10px;background:rgba(220,38,38,.9);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 8px;border-radius:2px;display:flex;align-items:center;gap:5px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite"></span> LIVE
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:999px;height:6px;overflow:hidden;margin-bottom:10px">
+        <div id="desk-check-bar" style="height:100%;width:0%;background:var(--slate-blue);transition:width 1s linear"></div>
+      </div>
+      <div id="desk-check-timer" style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:22px">${DURATION} seconds remaining</div>
+      <button id="desk-check-btn" class="btn btn-primary" style="padding:12px 32px;opacity:.4;pointer-events:none" onclick="finishDeskCheck()">Continue to Exam</button>
+    </div>
+  </div>`;
+  const video=document.getElementById('desk-check-video');
+  video.srcObject=_ultraStream;
+  let elapsed=0;
+  const snapEvery=Math.max(1,Math.floor(DURATION/5));
+  _ultraDeskTimer=setInterval(()=>{
+    elapsed++;
+    const bar=document.getElementById('desk-check-bar');
+    const timerEl=document.getElementById('desk-check-timer');
+    if(bar)bar.style.width=Math.min(100,(elapsed/DURATION*100))+'%';
+    if(timerEl)timerEl.textContent=elapsed>=DURATION?'Desk check complete':`${DURATION-elapsed} seconds remaining`;
+    if(elapsed%snapEvery===0||elapsed===DURATION) captureUltraSnapshot(video,'desk-check');
+    if(elapsed>=DURATION){
+      clearInterval(_ultraDeskTimer);_ultraDeskTimer=null;
+      const btn=document.getElementById('desk-check-btn');
+      if(btn){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+    }
+  },1000);
+}
+
+function captureUltraSnapshot(video,kind){
+  try{
+    const canvas=document.createElement('canvas');
+    const w=video.videoWidth||320,h=video.videoHeight||240;
+    canvas.width=Math.min(320,w);
+    canvas.height=Math.round(canvas.width*(h/(w||1)||0.75));
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const dataUrl=canvas.toDataURL('image/jpeg',0.55);
+    if(kind==='desk-check') _ultraDeskSnapshots.push({time:new Date().toISOString(),dataUrl});
+    return dataUrl;
+  }catch(e){return null;}
+}
+
+function finishDeskCheck(){
+  if(_ultraDeskTimer) return; // guard: timer hasn't actually finished yet
+  const {aid,name}=_ultraPendingStart||{};
+  finishStartExam(aid,name,{ultraLockdown:true,deskCheckSnapshots:_ultraDeskSnapshots,stream:_ultraStream});
+}
+
+function ensureUltraVideoEl(){
+  if(_ultraVideoEl) return _ultraVideoEl;
+  const v=document.createElement('video');
+  v.id='ultra-monitor-video';
+  v.autoplay=true;v.playsInline=true;v.muted=true;
+  v.style.cssText='position:fixed;width:2px;height:2px;opacity:0;pointer-events:none;top:0;left:0;z-index:-1';
+  document.body.appendChild(v);
+  _ultraVideoEl=v;
+  return v;
+}
+
+function startUltraMonitoring(sub){
+  if(!_ultraStream) return;
+  const video=ensureUltraVideoEl();
+  video.srcObject=_ultraStream;
+
+  // Local-only recording (see module note above on why it isn't uploaded)
+  _ultraChunks=[];
+  try{
+    const mimeType=(window.MediaRecorder&&MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus'))?'video/webm;codecs=vp8,opus':'video/webm';
+    _ultraRecorder=new MediaRecorder(_ultraStream,{mimeType,videoBitsPerSecond:200000,audioBitsPerSecond:32000});
+    _ultraRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)_ultraChunks.push(e.data);};
+    _ultraRecorder.start(1000);
+  }catch(e){console.warn('EdAssess: could not start local Ultra-Lockdown recording',e);}
+
+  // Live audio-level monitoring for suspicious noise. The baseline slowly
+  // adapts to ambient room noise (typing, breathing, HVAC) so only sounds
+  // meaningfully louder than "normal" for this room get flagged.
+  try{
+    _ultraAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=_ultraAudioCtx.createMediaStreamSource(_ultraStream);
+    _ultraAnalyser=_ultraAudioCtx.createAnalyser();
+    _ultraAnalyser.fftSize=2048;
+    src.connect(_ultraAnalyser);
+    const data=new Uint8Array(_ultraAnalyser.frequencyBinCount);
+    _ultraBaseline=0.02;
+    _ultraLastFlagAt=0;
+    let overCount=0;
+    if(_ultraMonitorInterval)clearInterval(_ultraMonitorInterval);
+    _ultraMonitorInterval=setInterval(()=>{
+      _ultraAnalyser.getByteTimeDomainData(data);
+      let sumSquares=0;
+      for(let i=0;i<data.length;i++){const v=(data[i]-128)/128;sumSquares+=v*v;}
+      const rms=Math.sqrt(sumSquares/data.length);
+      _ultraBaseline=_ultraBaseline*0.98+rms*0.02;
+      const threshold=Math.max(0.09,_ultraBaseline*3.2);
+      overCount=rms>threshold?overCount+1:0;
+      const now=Date.now();
+      if(overCount>=2&&now-_ultraLastFlagAt>8000){
+        _ultraLastFlagAt=now;
+        flagSuspiciousNoise(sub.id,rms);
+      }
+    },150);
+  }catch(e){console.warn('EdAssess: could not start Ultra-Lockdown audio monitoring',e);}
+}
+
+function flagSuspiciousNoise(sid,level){
+  const sub=APP.submissions.find(ss=>ss.id===sid);
+  if(!sub) return;
+  const dataUrl=_ultraVideoEl?captureUltraSnapshot(_ultraVideoEl,'noise'):null;
+  if(!sub.noiseFlags)sub.noiseFlags=[];
+  sub.noiseFlags.push({time:new Date().toISOString(),level:Math.round(level*1000)/1000,dataUrl});
+  save();
+}
+
+// Stops recording/monitoring and releases the camera/mic. Call this at the
+// top of every exam-ending path (submit, force-submit, timeout, remote
+// force-submit) — it's a safe no-op if Ultra-Lockdown was never active.
+// `sub` is passed in so the recording can be labeled/uploaded correctly.
+function stopUltraLockdown(sub){
+  if(_ultraMonitorInterval){clearInterval(_ultraMonitorInterval);_ultraMonitorInterval=null;}
+  if(_ultraAudioCtx){try{_ultraAudioCtx.close();}catch(e){}_ultraAudioCtx=null;_ultraAnalyser=null;}
+  const cleanupStream=()=>{
+    if(_ultraStream){_ultraStream.getTracks().forEach(tr=>tr.stop());_ultraStream=null;}
+    if(_ultraVideoEl){_ultraVideoEl.remove();_ultraVideoEl=null;}
+  };
+  if(_ultraRecorder&&_ultraRecorder.state!=='inactive'){
+    _ultraRecorder.onstop=()=>{
+      _ultraLastRecordingBlob=_ultraChunks.length?new Blob(_ultraChunks,{type:'video/webm'}):null;
+      _ultraRecorder=null;
+      cleanupStream();
+      handleUltraRecordingReady(sub);
+    };
+    try{_ultraRecorder.stop();}catch(e){cleanupStream();}
+  } else if(_ultraStream){
+    _ultraLastRecordingBlob=_ultraChunks.length?new Blob(_ultraChunks,{type:'video/webm'}):null;
+    cleanupStream();
+    handleUltraRecordingReady(sub);
+  }
+}
+
+/* ── Upload the finished recording to Google Drive; fall back to a local
+   download link if Drive isn't configured or the upload fails, so a
+   recording is never silently lost. ── */
+function handleUltraRecordingReady(sub){
+  if(!_ultraLastRecordingBlob){return;}
+  const filename=buildUltraFilename(sub);
+  showUltraStatusBanner('Uploading monitoring recording…',false);
+  uploadUltraRecordingToDrive(_ultraLastRecordingBlob,filename,sub)
+    .then(()=>{
+      showUltraStatusBanner('✓ Monitoring recording uploaded.',true);
+    })
+    .catch(err=>{
+      console.warn('EdAssess: Drive upload failed, offering local download instead.',err);
+      showUltraDownloadBanner(filename);
+    });
+}
+
+function buildUltraFilename(sub){
+  const t=APP.currentStudentExam&&APP.currentStudentExam.t;
+  const testTitle=t?t.title.replace(/[^\w\- ]+/g,'').trim():'Exam';
+  const name=(sub&&sub.studentName)?sub.studentName.replace(/[^\w\- ]+/g,'').trim():'Student';
+  const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  return `${testTitle} - ${name} - ${stamp}.webm`;
+}
+
+async function uploadUltraRecordingToDrive(blob,filename,sub){
+  const tokenRes=await fetch('/.netlify/functions/drive-token');
+  const tokenData=await tokenRes.json();
+  if(!tokenRes.ok||!tokenData.accessToken){
+    throw new Error(tokenData.error||'Could not get an upload token.');
+  }
+  const {accessToken,folderId}=tokenData;
+
+  // Resumable upload session, direct from the browser to Google — the
+  // recording bytes never pass through our own server, so there's no
+  // Netlify function payload-size limit to worry about.
+  const metadata={name:filename,mimeType:'video/webm',parents:folderId?[folderId]:undefined};
+  const initRes=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',{
+    method:'POST',
+    headers:{
+      'Authorization':`Bearer ${accessToken}`,
+      'Content-Type':'application/json; charset=UTF-8',
+      'X-Upload-Content-Type':'video/webm',
+      'X-Upload-Content-Length':String(blob.size),
+    },
+    body:JSON.stringify(metadata),
+  });
+  if(!initRes.ok){
+    throw new Error('Could not start upload session ('+initRes.status+')');
+  }
+  const uploadUrl=initRes.headers.get('Location');
+  if(!uploadUrl) throw new Error('No upload URL returned by Drive.');
+
+  const putRes=await fetch(uploadUrl,{
+    method:'PUT',
+    headers:{'Content-Type':'video/webm'},
+    body:blob,
+  });
+  if(!putRes.ok){
+    throw new Error('Upload failed ('+putRes.status+')');
+  }
+  const fileData=await putRes.json();
+
+  // Record a reference to the uploaded file on the submission so the
+  // teacher can find it from the grading view.
+  if(sub){
+    sub.ultraRecordingDriveFileId=fileData.id;
+    sub.ultraRecordingName=filename;
+    save();
+  }
+  return fileData;
+}
+
+function showUltraStatusBanner(text,autoHide){
+  let banner=document.getElementById('ultra-status-banner');
+  if(!banner){
+    banner=document.createElement('div');
+    banner.id='ultra-status-banner';
+    banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--slate-blue);color:#fff;padding:12px 22px;border-radius:999px;font-family:"Josefin Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;box-shadow:var(--shadow-lg);z-index:9000';
+    document.body.appendChild(banner);
+  }
+  banner.textContent=text;
+  banner.style.display='block';
+  if(autoHide){
+    setTimeout(()=>{if(banner)banner.style.display='none';},5000);
+  }
+}
+
+function showUltraDownloadBanner(filename){
+  if(!_ultraLastRecordingBlob) return;
+  const wrapper=document.getElementById('student-wrapper');
+  if(!wrapper||wrapper.classList.contains('hidden')) return;
+  const existing=document.getElementById('ultra-status-banner');
+  if(existing) existing.remove();
+  const url=URL.createObjectURL(_ultraLastRecordingBlob);
+  const banner=document.createElement('a');
+  banner.href=url;
+  banner.download=filename||`exam-recording-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
+  banner.textContent='⬇ Could not upload automatically — download your recording';
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--rust);color:#fff;padding:12px 22px;border-radius:999px;font-family:"Josefin Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;box-shadow:var(--shadow-lg);z-index:9000';
+  document.body.appendChild(banner);
+}
+
+function resumeExamSession(a,t,existing,name){
+
+  // Resume from server state
+  const resume=getLocalResume(a.id,name);
+  APP.currentStudentExam={sub:existing,a,t,orderedQuestions:existing._orderedQuestions||t.questions};
+  studentState={
+    currentQ:(resume&&resume.currentQ)||0,
+    flagged:(resume&&resume.flagged)||existing.flags||{}
+  };
+  startStudentTestPoll();
+  if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
+  if(a.timed) startExamTimer(existing.id,a.maxMinutes);
+  if(a.ultraLockdown&&_ultraStream) startUltraMonitoring(existing);
+  renderStudentExam();
+}
+
+function finishStartExam(aid,name,opts){
+  opts=opts||{};
+  const a=APP.assignments.find(aa=>aa.id===aid);
+  const t=APP.tests.find(tt=>tt.id===a.testId);
 
   // ── New submission ──
   const sub={
@@ -3030,6 +3484,11 @@ function startExam(aid){
     status:'in-progress',startedAt:new Date().toISOString(),
     answers:{},flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,
   };
+  if(opts.ultraLockdown){
+    sub.ultraLockdown=true;
+    sub.deskCheckSnapshots=opts.deskCheckSnapshots||[];
+    sub.noiseFlags=[];
+  }
   APP.submissions.push(sub);save();
 
   let orderedQuestions=t.questions;
@@ -3047,6 +3506,7 @@ function startExam(aid){
   startStudentTestPoll();
   if(a.locked){requestFullscreen();setupFullscreenMonitor(sub.id);}
   if(a.timed) startExamTimer(sub.id,a.maxMinutes);
+  if(opts.ultraLockdown&&opts.stream) startUltraMonitoring(sub);
   renderStudentExam();
 }
 
@@ -3405,6 +3865,10 @@ function renderStudentExam(){
       </div>
       ${timerSection}
       <div class="student-header-tools">
+        ${sub.ultraLockdown?`<div style="display:flex;align-items:center;gap:5px;margin-right:10px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:5px 9px;border-radius:2px" title="Camera and microphone are being monitored">
+          <span style="width:6px;height:6px;border-radius:50%;background:#e57373;animation:pulse 1.5s infinite"></span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#e57373">REC</span>
+        </div>`:''}
         ${t.referenceMaterial?`<button class="btn btn-sm" onclick="toggleReferencePanel()" style="margin-right:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;display:flex;align-items:center;gap:6px">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
           <span class="btn-label">Reference</span>
@@ -3782,6 +4246,7 @@ function submitExam(){
   if(examTimer)clearInterval(examTimer);
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
+  if(sub.ultraLockdown)stopUltraLockdown(sub);
   closeDesmosPanel();closeReferencePanel();
   clearLocalResume(sub.assignmentId,sub.studentName);
   const totalPts=calcTotalPoints(t);
@@ -3964,6 +4429,7 @@ function forceSubmitStudent(sid,reason){
   if(examTimer){clearInterval(examTimer);examTimer=null;}
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
+  if(s.ultraLockdown)stopUltraLockdown(s);
   closeDesmosPanel();closeReferencePanel();
   clearLocalResume(s.assignmentId,s.studentName);
   const ol=document.getElementById('lock-overlay');
