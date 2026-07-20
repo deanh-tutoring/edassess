@@ -1369,6 +1369,12 @@ function renderStandardQEditor(i,q){
     </div>
     <button class="btn btn-secondary btn-sm mt-2" onclick="addRubricRow(${i})">+ Add Rubric Criterion</button>
   </div>`:''}
+  <div class="form-group">
+    <label class="form-label">Answer Explanation (optional)</label>
+    <div class="form-hint mb-2">Shown to students on their results page after grades are released, whether they got the question right or wrong.</div>
+    <div id="editor-explanation-${i}" style="background:var(--cream);border-radius:var(--r)"></div>
+    <div id="explanation-math-preview-${i}" style="display:none;margin-top:8px;padding:10px 14px;background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r);font-family:'PT Serif',serif;font-size:16px;line-height:1.7;color:var(--ink)"></div>
+  </div>
   </div>`;
 }
 
@@ -1719,6 +1725,11 @@ function renderSubQEditor(pi,si,sq){
     <div id="subq-rubric-${pi}-${si}">${renderSubQRubric(pi,si)}</div>
     <button class="btn btn-secondary btn-sm mt-1" onclick="addSubQRubricRow(${pi},${si})">+ Criterion</button>
   </div>`:''}
+  <div class="form-group">
+    <label class="form-label">Answer Explanation (optional)</label>
+    <div class="form-hint mb-2">Shown to students on their results page after grades are released.</div>
+    <div id="editor-subq-explanation-${pi}-${si}" style="background:var(--cream);border-radius:var(--r)"></div>
+  </div>
   </div>`;
 }
 
@@ -1803,8 +1814,32 @@ function initBuilderEditors(i){
       q.subQuestions.forEach((_,si)=>initSubQEditor(i,si));
     } else {
       initStemEditor(i,q.stem);
+      initExplanationEditor(i,q.explanation);
     }
   },50);
+}
+
+function initExplanationEditor(i,content){
+  const q=mkQuill('editor-explanation-'+i,content);
+  if(!q) return;
+  function updatePreview(){
+    const raw=q.root.innerHTML;
+    const preview=document.getElementById('explanation-math-preview-'+i);
+    if(!preview) return;
+    if(/\\\(|\\\[|\$\$/.test(raw)){
+      preview.style.display='block';
+      preview.innerHTML=renderStem(raw);
+    } else {
+      preview.style.display='none';
+      preview.innerHTML='';
+    }
+  }
+  setTimeout(updatePreview,120);
+  q.on('text-change',()=>{
+    APP.currentTest.questions[i].explanation=q.root.innerHTML;
+    save();
+    requestAnimationFrame(updatePreview);
+  });
 }
 
 function mkQuill(id,content){
@@ -1858,6 +1893,8 @@ function initSubQEditor(pi,si){
   const sq=APP.currentTest.questions[pi].subQuestions[si];
   const ed=mkQuill('editor-subq-'+pi+'-'+si,sq.stem);
   if(ed)ed.on('text-change',()=>{APP.currentTest.questions[pi].subQuestions[si].stem=ed.root.innerHTML;save();});
+  const expEd=mkQuill('editor-subq-explanation-'+pi+'-'+si,sq.explanation);
+  if(expEd)expEd.on('text-change',()=>{APP.currentTest.questions[pi].subQuestions[si].explanation=expEd.root.innerHTML;save();});
 }
 
 function updateQSidebar(i){
@@ -2657,6 +2694,10 @@ function openGradingStudent(sid){
         <div style="font-size:15px;margin-bottom:8px;font-family:'PT Serif',serif;line-height:1.5">${renderStem(q.stem)||'(No stem)'}</div>
         ${q.image?`<img src="${q.image}" style="max-height:100px;border-radius:var(--r);margin-bottom:8px;">`:''}
         ${ansHtml}
+        ${q.explanation&&q.explanation.trim()?`<div style="background:var(--slate-pale);border:1px solid #B0BFD4;border-radius:var(--r);padding:10px 12px;margin-top:8px;font-size:13px">
+          <div style="font-weight:700;color:var(--slate-blue);font-family:'Josefin Sans',sans-serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Explanation (shown to student on results)</div>
+          <div style="font-family:'PT Serif',serif;font-size:14px;line-height:1.6">${renderStem(q.explanation)}</div>
+        </div>`:''}
         <div class="mt-2">
           <label style="font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px">Instructor Comment (visible to student)</label>
           <textarea class="form-control" rows="2" style="font-size:13px" placeholder="Leave feedback..." oninput="setComment('${sid}','${qKey}',this.value)">${(s.comments&&s.comments[qKey])||''}</textarea>
@@ -4727,6 +4768,13 @@ function loadStudentResults(sid){
       </div>
       ${q.image?`<img src="${q.image}" style="max-width:100%;max-height:160px;border-radius:var(--r);margin-bottom:12px;object-fit:contain">`:''}
       ${ansHtml}
+      ${q.explanation&&q.explanation.trim()?`<div style="background:var(--slate-pale);border:1px solid #B0BFD4;border-radius:var(--r);padding:14px 16px;margin-top:10px">
+        <div style="font-weight:700;color:var(--slate-blue);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Explanation
+        </div>
+        <div style="font-family:'PT Serif',serif;font-size:16px;line-height:1.7;color:var(--ink)">${renderStem(q.explanation)}</div>
+      </div>`:''}
       ${comment?`<div style="background:var(--slate-pale);border:1px solid #B0BFD4;border-radius:var(--r);padding:10px 14px;margin-top:10px;font-size:13px"><span style="font-weight:700;color:var(--slate-blue);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Instructor Feedback: </span><span style="font-family:'PT Serif',serif;font-size:16px">${comment}</span></div>`:''}
     </div>`;
   });
