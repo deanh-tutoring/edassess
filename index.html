@@ -2271,9 +2271,11 @@ function saveTestSettings(){
    BULK IMPORT QUESTIONS
    Lets a teacher paste a JSON array of their OWN questions and add
    them all at once instead of clicking "+ Add Question" per item.
-   This is intentionally a plain, documented JSON schema rather than
-   a scraper/importer for any particular question bank — it can't and
-   shouldn't pull in copyrighted content from third-party sources.
+   Supports stand-alone questions AND stimulus/passage questions with
+   nested sub-questions. This is intentionally a plain, documented
+   JSON schema rather than a scraper/importer for any particular
+   question bank — it can't and shouldn't pull in copyrighted content
+   from third-party sources.
 ══════════════════════════════════════════════════════════ */
 function importQuestionsTemplate(t){
   const sample=[
@@ -2292,19 +2294,44 @@ function importQuestionsTemplate(t){
       stem:'What is the value of x if 2x = 10?',
       correctAnswers:['5','five'],
       points:1
+    },
+    {
+      type:'passage',
+      passage:'<p>The following passage is adapted from...</p><p>(Full stimulus text goes here — this can include HTML like &lt;p&gt; tags.)</p>',
+      questions:[
+        {
+          type:'mc',
+          stem:'Which choice best states the main idea of the passage?',
+          options:['Option A text','Option B text','Option C text','Option D text'],
+          correct:'A',
+          domain:t.satSubject==='sat-rw'?'Information and Ideas':undefined,
+          focusSkills:t.satSubject==='sat-rw'?['Central Ideas and Details']:undefined,
+          explanation:'Choice A is best because...'
+        },
+        {
+          type:'short',
+          stem:'According to the passage, what year did the event occur?',
+          correctAnswers:['1908']
+        }
+      ]
     }
   ];
-  return JSON.stringify(sample.map(o=>{
+  const clean=o=>{
     const c={};
-    Object.keys(o).forEach(k=>{if(o[k]!==undefined)c[k]=o[k];});
+    Object.keys(o).forEach(k=>{
+      if(o[k]===undefined) return;
+      if(k==='questions'){c[k]=o[k].map(clean);return;}
+      c[k]=o[k];
+    });
     return c;
-  }),null,2);
+  };
+  return JSON.stringify(sample.map(clean),null,2);
 }
 
 function openImportModal(){
   const t=APP.currentTest;
   const domainHint=t.satSubject?`
-    <div class="form-hint" style="margin-bottom:10px">This test is tagged <strong>${SAT_DOMAINS[t.satSubject].label}</strong>. Valid <code>domain</code> values: ${satDomainNames(t.satSubject).map(d=>`<code>${d}</code>`).join(', ')}. <code>focusSkills</code> must come from that domain's list (see Test Settings for the full taxonomy).</div>`
+    <div class="form-hint" style="margin-bottom:10px">This test is tagged <strong>${SAT_DOMAINS[t.satSubject].label}</strong>. Valid <code>domain</code> values: ${satDomainNames(t.satSubject).map(d=>`<code>${d}</code>`).join(', ')}. <code>focusSkills</code> must come from that domain's list (see Test Settings for the full taxonomy). Domains/skills go on each individual question — including each sub-question inside a stimulus/passage — not on the passage itself.</div>`
     :`<div class="form-hint" style="margin-bottom:10px">Tag this test with an SAT Section in Settings first if you also want to bulk-import Domain / Focus Skill tags.</div>`;
   openModal(`
   <div class="modal-header">
@@ -2312,22 +2339,95 @@ function openImportModal(){
     <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
   <div class="modal-body">
-    <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px">Paste a JSON array of your own questions and they'll all be added at once. This only works with questions you have the rights to use — your own writing, or content from a source you're licensed to import — it can't pull from any copyrighted question bank for you.</p>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px">Paste a JSON array of your own questions and they'll all be added at once — including stimulus/passage questions with several sub-questions attached. This only works with questions you have the rights to use — your own writing, or content from a source you're licensed to import — it can't pull from any copyrighted question bank for you.</p>
     ${domainHint}
     <div class="flex items-center justify-between mb-2">
       <label class="form-label" style="margin:0">Questions (JSON array)</label>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-json-input').value=importQuestionsTemplate(APP.currentTest)">Insert example template</button>
     </div>
-    <textarea id="import-json-input" class="form-control" rows="14" style="font-family:'SF Mono',Consolas,monospace;font-size:12px" placeholder='[{"type":"mc","stem":"...","options":["...","...","...","..."],"correct":"B","points":1}]'></textarea>
+    <textarea id="import-json-input" class="form-control" rows="16" style="font-family:'SF Mono',Consolas,monospace;font-size:12px" placeholder='[{"type":"mc","stem":"...","options":["...","...","...","..."],"correct":"B","points":1}]'></textarea>
     <div class="form-hint mt-2">
-      Fields: <code>type</code> (mc/ms/short/essay, default mc) · <code>stem</code> · <code>options</code> (mc/ms) · <code>correct</code> (a letter like "B", a 0-based index, or the option's exact text — for ms, an array of these) · <code>correctAnswers</code> (array of accepted answers, for short) · <code>points</code> (default 1) · <code>domain</code> / <code>focusSkills</code> (optional) · <code>explanation</code> (optional, shown to students on their results page).
+      Standalone question fields: <code>type</code> (mc/ms/short/essay, default mc) · <code>stem</code> · <code>options</code> (mc/ms) · <code>correct</code> (a letter like "B", a 0-based index, or the option's exact text — for ms, an array of these) · <code>correctAnswers</code> (array of accepted answers, for short) · <code>points</code> (default 1) · <code>domain</code> / <code>focusSkills</code> (optional) · <code>explanation</code> (optional, shown to students on their results page).
+    </div>
+    <div class="form-hint mt-1">
+      Stimulus/passage question: <code>"type":"passage"</code> · <code>passage</code> (the stimulus text/HTML) · <code>questions</code> (array of sub-questions using the same fields as above — every field except <code>type:"passage"</code> itself is allowed inside them).
     </div>
     <div id="import-result" style="display:none;margin-top:14px"></div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
     <button class="btn btn-primary" onclick="runImportQuestions()">Import Questions</button>
-  </div>`,'640px');
+  </div>`,'680px');
+}
+
+// Builds one mc/ms/short/essay question (or sub-question) object from an
+// imported item, matching the internal shape used by addQuestion()/addSubQ()
+// so it flows through scoring, SAT tagging, and results identically to a
+// manually-created question. Shared by both top-level items and the nested
+// "questions" array inside a passage/stimulus item. Pushes into the shared
+// warnings/errors arrays and returns null on failure so the caller can skip
+// just that one item without aborting the whole import.
+function buildImportedQuestion(item,t,validDomains,label,warnings,errors){
+  if(!item||typeof item!=='object'){errors.push(`${label}: not an object`);return null;}
+  const type=(item.type||'mc').toLowerCase();
+  if(!['mc','ms','short','essay'].includes(type)){errors.push(`${label}: unknown type "${item.type}"`);return null;}
+  const stem=(item.stem||'').toString().trim();
+  if(!stem){errors.push(`${label}: missing "stem"`);return null;}
+  const q={type,stem,points:(typeof item.points==='number'&&item.points>0)?item.points:1};
+
+  if(type==='mc'||type==='ms'){
+    const options=Array.isArray(item.options)?item.options.map(o=>String(o)):null;
+    if(!options||options.length<2){errors.push(`${label}: needs an "options" array with at least 2 choices`);return null;}
+    q.options=options;
+    const resolveIndex=(val)=>{
+      if(typeof val==='number') return Number.isInteger(val)&&val>=0&&val<options.length?val:null;
+      const s=String(val).trim();
+      if(/^[A-Za-z]$/.test(s)){const li=s.toUpperCase().charCodeAt(0)-65;return li>=0&&li<options.length?li:null;}
+      if(/^\d+$/.test(s)){const n=parseInt(s,10);return n>=0&&n<options.length?n:null;}
+      const match=options.findIndex(o=>o.trim().toLowerCase()===s.toLowerCase());
+      return match>=0?match:null;
+    };
+    if(type==='mc'){
+      const ci=item.correct!==undefined?resolveIndex(item.correct):null;
+      if(ci===null){errors.push(`${label}: couldn't resolve "correct" (${JSON.stringify(item.correct)}) to one of the options`);return null;}
+      q.correctAnswers=[ci];
+    } else {
+      const rawList=Array.isArray(item.correct)?item.correct:(item.correct!==undefined?[item.correct]:[]);
+      const idxs=rawList.map(resolveIndex);
+      if(!idxs.length||idxs.some(v=>v===null)){errors.push(`${label}: couldn't resolve all "correct" entries (${JSON.stringify(item.correct)}) to options`);return null;}
+      q.correctAnswers=idxs;
+    }
+  } else if(type==='short'){
+    const keys=Array.isArray(item.correctAnswers)?item.correctAnswers.map(String):(item.correct!==undefined?[String(item.correct)]:null);
+    if(!keys||!keys.length){errors.push(`${label}: needs "correctAnswers" (array of accepted answers)`);return null;}
+    q.correctAnswers=keys;
+  } else if(type==='essay'){
+    q.rubric=[];
+  }
+
+  if(item.explanation) q.explanation=String(item.explanation);
+
+  if(item.domain){
+    if(!t.satSubject){
+      warnings.push(`${label}: has a "domain" but this test isn't tagged as an SAT section, so it was ignored — set one in Test Settings first`);
+    } else {
+      const matchDomain=validDomains.find(d=>d.toLowerCase()===String(item.domain).trim().toLowerCase());
+      if(!matchDomain){
+        warnings.push(`${label}: domain "${item.domain}" doesn't match any ${SAT_DOMAINS[t.satSubject].label} domain — imported without a domain tag`);
+      } else {
+        q.domain=matchDomain;
+        const validSkills=satSkillsForDomain(t.satSubject,matchDomain);
+        const rawSkills=Array.isArray(item.focusSkills)?item.focusSkills:(item.focusSkills?[item.focusSkills]:[]);
+        const matched=rawSkills.map(sk=>validSkills.find(v=>v.toLowerCase()===String(sk).trim().toLowerCase())).filter(Boolean);
+        if(rawSkills.length&&matched.length<rawSkills.length){
+          warnings.push(`${label}: one or more focus skills didn't match "${matchDomain}"'s list and were dropped`);
+        }
+        if(matched.length) q.focusSkills=matched;
+      }
+    }
+  }
+
+  return q;
 }
 
 function runImportQuestions(){
@@ -2351,69 +2451,32 @@ function runImportQuestions(){
   const added=[];
   const errors=[];
   const warnings=[];
+  let addedPassages=0,addedSubQ=0,addedStandalone=0;
 
   parsed.forEach((item,idx)=>{
     const label=`Item ${idx+1}`;
     if(!item||typeof item!=='object'){errors.push(`${label}: not an object`);return;}
-    const type=(item.type||'mc').toLowerCase();
-    if(!['mc','ms','short','essay'].includes(type)){errors.push(`${label}: unknown type "${item.type}"`);return;}
-    const stem=(item.stem||'').toString().trim();
-    if(!stem){errors.push(`${label}: missing "stem"`);return;}
-    const q={type,stem,points:(typeof item.points==='number'&&item.points>0)?item.points:1,image:null};
+    const topType=(item.type||'mc').toLowerCase();
 
-    if(type==='mc'||type==='ms'){
-      const options=Array.isArray(item.options)?item.options.map(o=>String(o)):null;
-      if(!options||options.length<2){errors.push(`${label}: needs an "options" array with at least 2 choices`);return;}
-      q.options=options;
-      const resolveIndex=(val)=>{
-        if(typeof val==='number') return Number.isInteger(val)&&val>=0&&val<options.length?val:null;
-        const s=String(val).trim();
-        if(/^[A-Za-z]$/.test(s)){const li=s.toUpperCase().charCodeAt(0)-65;return li>=0&&li<options.length?li:null;}
-        if(/^\d+$/.test(s)){const n=parseInt(s,10);return n>=0&&n<options.length?n:null;}
-        const match=options.findIndex(o=>o.trim().toLowerCase()===s.toLowerCase());
-        return match>=0?match:null;
-      };
-      if(type==='mc'){
-        const ci=item.correct!==undefined?resolveIndex(item.correct):null;
-        if(ci===null){errors.push(`${label}: couldn't resolve "correct" (${JSON.stringify(item.correct)}) to one of the options`);return;}
-        q.correctAnswers=[ci];
-      } else {
-        const rawList=Array.isArray(item.correct)?item.correct:(item.correct!==undefined?[item.correct]:[]);
-        const idxs=rawList.map(resolveIndex);
-        if(!idxs.length||idxs.some(v=>v===null)){errors.push(`${label}: couldn't resolve all "correct" entries (${JSON.stringify(item.correct)}) to options`);return;}
-        q.correctAnswers=idxs;
-      }
-    } else if(type==='short'){
-      const keys=Array.isArray(item.correctAnswers)?item.correctAnswers.map(String):(item.correct!==undefined?[String(item.correct)]:null);
-      if(!keys||!keys.length){errors.push(`${label}: needs "correctAnswers" (array of accepted answers)`);return;}
-      q.correctAnswers=keys;
-    } else if(type==='essay'){
-      q.rubric=[];
+    if(topType==='passage'){
+      const passageText=(item.passage||'').toString();
+      if(!passageText.trim()){errors.push(`${label}: a "passage" item needs "passage" text`);return;}
+      const subItems=Array.isArray(item.questions)?item.questions:null;
+      if(!subItems||!subItems.length){errors.push(`${label}: a "passage" item needs a non-empty "questions" array`);return;}
+      const subQuestions=[];
+      subItems.forEach((subItem,si)=>{
+        const subLabel=`${label} → Sub-question ${si+1}`;
+        const sq=buildImportedQuestion(subItem,t,validDomains,subLabel,warnings,errors);
+        if(sq){sq.rubric=sq.rubric||(sq.type==='essay'?[]:undefined);subQuestions.push(sq);addedSubQ++;}
+      });
+      if(!subQuestions.length){errors.push(`${label}: none of its sub-questions could be imported`);return;}
+      added.push({type:'passage',passage:passageText,image:null,subQuestions});
+      addedPassages++;
+      return;
     }
 
-    if(item.explanation) q.explanation=String(item.explanation);
-
-    if(item.domain){
-      if(!t.satSubject){
-        warnings.push(`${label}: has a "domain" but this test isn't tagged as an SAT section, so it was ignored — set one in Test Settings first`);
-      } else {
-        const matchDomain=validDomains.find(d=>d.toLowerCase()===String(item.domain).trim().toLowerCase());
-        if(!matchDomain){
-          warnings.push(`${label}: domain "${item.domain}" doesn't match any ${SAT_DOMAINS[t.satSubject].label} domain — imported without a domain tag`);
-        } else {
-          q.domain=matchDomain;
-          const validSkills=satSkillsForDomain(t.satSubject,matchDomain);
-          const rawSkills=Array.isArray(item.focusSkills)?item.focusSkills:(item.focusSkills?[item.focusSkills]:[]);
-          const matched=rawSkills.map(sk=>validSkills.find(v=>v.toLowerCase()===String(sk).trim().toLowerCase())).filter(Boolean);
-          if(rawSkills.length&&matched.length<rawSkills.length){
-            warnings.push(`${label}: one or more focus skills didn't match "${matchDomain}"'s list and were dropped`);
-          }
-          if(matched.length) q.focusSkills=matched;
-        }
-      }
-    }
-
-    added.push(q);
+    const q=buildImportedQuestion(item,t,validDomains,label,warnings,errors);
+    if(q){q.image=null;added.push(q);addedStandalone++;}
   });
 
   if(added.length){
@@ -2424,7 +2487,10 @@ function runImportQuestions(){
 
   let html='';
   if(added.length){
-    html+=`<div style="background:var(--sage-pale);border:1px solid var(--sage);border-radius:var(--r);padding:10px 14px;color:var(--sage);font-size:13px;font-weight:600;margin-bottom:8px">✓ Imported ${added.length} question${added.length!==1?'s':''}</div>`;
+    const parts=[];
+    if(addedStandalone) parts.push(`${addedStandalone} standalone`);
+    if(addedPassages) parts.push(`${addedPassages} passage${addedPassages!==1?'s':''} (${addedSubQ} sub-question${addedSubQ!==1?'s':''})`);
+    html+=`<div style="background:var(--sage-pale);border:1px solid var(--sage);border-radius:var(--r);padding:10px 14px;color:var(--sage);font-size:13px;font-weight:600;margin-bottom:8px">✓ Imported ${added.length} item${added.length!==1?'s':''} — ${parts.join(', ')}</div>`;
   }
   if(warnings.length){
     html+=`<div style="background:var(--ochre-pale);border:1px solid var(--ochre);border-radius:var(--r);padding:10px 14px;color:var(--ink);font-size:12px;margin-bottom:8px"><strong>Notes:</strong><ul style="margin:6px 0 0 18px;padding:0">${warnings.map(w=>`<li>${w}</li>`).join('')}</ul></div>`;
@@ -2437,7 +2503,7 @@ function runImportQuestions(){
   if(added.length){
     renderBuilder();
     requestAnimationFrame(()=>initBuilderEditors(activeQIndex));
-    toast(`Imported ${added.length} question${added.length!==1?'s':''}.`,'success');
+    toast(`Imported ${added.length} item${added.length!==1?'s':''}.`,'success');
     if(!errors.length&&!warnings.length) setTimeout(closeModal,900);
   }
 }
