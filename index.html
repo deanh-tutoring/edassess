@@ -483,7 +483,7 @@ textarea.form-control{resize:vertical;min-height:80px}
       <line x1="600" y1="0" x2="0" y2="800" stroke="white" stroke-width=".5"/>
     </svg>
     <div style="position:relative;z-index:1;text-align:center;padding:40px">
-      <div style="font-family:'PT Serif',serif;font-size:72px;color:rgba(255,255,255,.12);font-weight:300;line-height:1;letter-spacing:-.02em">Edu<br>Assess</div>
+      <div style="font-family:'PT Serif',serif;font-size:72px;color:rgba(255,255,255,.12);font-weight:300;line-height:1;letter-spacing:-.02em">Ed<br>Assess</div>
       <div style="width:60px;height:1px;background:rgba(255,255,255,.15);margin:24px auto"></div>
       <div style="font-family:'Josefin Sans',sans-serif;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3)">Advanced Assessment Platform</div>
     </div>
@@ -545,6 +545,10 @@ textarea.form-control{resize:vertical;min-height:80px}
       <a class="nav-item" onclick="showPage('analytics')" data-page="analytics">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
         Analytics
+      </a>
+      <a class="nav-item" onclick="openBackupPanel()" data-page="backup">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Backup &amp; History
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -650,8 +654,13 @@ function cacheLocally(){
 async function apiPost(body){
   try{
     const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    _serverReachable=res.ok;
-    return res.ok?res.json():null;
+    _serverReachable=true; // we got a response at all, so the network/server is reachable
+    if(res.ok) return res.json();
+    // Non-network failure (e.g. the 409 wipe guard) — surface it instead of
+    // masking it as a generic connection problem, so the caller can react
+    // appropriately instead of just retrying forever.
+    const errBody=await res.json().catch(()=>({}));
+    return {__httpError:true,status:res.status,...errBody};
   }catch(e){
     _serverReachable=false;
     console.warn('EdAssess: could not reach cloud storage, change saved locally only.',e);
@@ -712,7 +721,8 @@ function syncToServer(){
     _syncInFlight.tests=true;
     apiPost({action:'saveTests',tests:APP.tests}).then(res=>{
       _syncInFlight.tests=false;
-      if(res!==null){_lastSynced.tests=testsStr;_onSyncOk();}
+      if(res&&!res.__httpError){_lastSynced.tests=testsStr;_onSyncOk();}
+      else if(res&&res.__httpError&&res.status===409){_onWipeGuardBlocked('tests',testsStr,res);}
       else _onSyncFail();
     });
   }
@@ -721,7 +731,8 @@ function syncToServer(){
     _syncInFlight.assignments=true;
     apiPost({action:'saveAssignments',assignments:APP.assignments}).then(res=>{
       _syncInFlight.assignments=false;
-      if(res!==null){_lastSynced.assignments=asgStr;_onSyncOk();}
+      if(res&&!res.__httpError){_lastSynced.assignments=asgStr;_onSyncOk();}
+      else if(res&&res.__httpError&&res.status===409){_onWipeGuardBlocked('assignments',asgStr,res);}
       else _onSyncFail();
     });
   }
@@ -731,11 +742,25 @@ function syncToServer(){
       _submissionSyncInFlight.add(s.id);
       apiPost({action:'upsertSubmission',submission:s}).then(res=>{
         _submissionSyncInFlight.delete(s.id);
-        if(res!==null){_lastSynced.submissions[s.id]=str;_onSyncOk();}
+        if(res&&!res.__httpError){_lastSynced.submissions[s.id]=str;_onSyncOk();}
         else _onSyncFail();
       });
     }
   });
+}
+
+// The server refused to overwrite existing tests/assignments with what
+// looks like an accidental empty list (see data.js wipe guard). This is
+// NOT a connection problem — it's the safety net working as intended — so
+// it gets its own message instead of the generic "check your connection"
+// one, and we don't spam it repeatedly for the same blocked value.
+const _wipeGuardShownFor={tests:null,assignments:null};
+function _onWipeGuardBlocked(collection,blockedValueStr,res){
+  _serverReachable=true;
+  if(_wipeGuardShownFor[collection]===blockedValueStr) return; // already told them about this exact state
+  _wipeGuardShownFor[collection]=blockedValueStr;
+  const label=collection==='tests'?'tests':'assignments';
+  toast(`⚠ Your local ${label} list looks empty compared to the cloud (which has ${res.currentCount||'some'} ${label}), so nothing was overwritten. If you meant to clear everything, do it from the ${label==='tests'?'Tests':'Live Monitor'} page directly. Otherwise, reload the page to pull the correct data back down.`,'error');
 }
 
 function _onSyncFail(){
@@ -794,6 +819,154 @@ async function refreshFromServer(){
   }catch(e){
     return false;
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   BACKUP & VERSION HISTORY
+   Two independent layers of protection against data loss:
+   1. Manual export/import — a JSON file you keep on YOUR computer,
+      completely outside Netlify. The ultimate fallback if the cloud
+      store itself is ever unavailable or misbehaves.
+   2. Version history — the server automatically snapshots the
+      previous version of `tests`/`assignments` every time either one
+      changes, so any accidental overwrite (stale tab, bad sync, etc.)
+      can be undone from here without needing a backup file at all.
+══════════════════════════════════════════════════════════ */
+
+function exportBackup(){
+  const payload={
+    exportedAt:new Date().toISOString(),
+    app:'EdAssess',
+    version:1,
+    tests:APP.tests,
+    assignments:APP.assignments,
+    submissions:APP.submissions,
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`edassess-backup-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded. Keep this file somewhere safe.','success');
+}
+
+function triggerImportBackup(){
+  document.getElementById('backup-import-input').click();
+}
+
+function handleImportBackupFile(ev){
+  const file=ev.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let data;
+    try{ data=JSON.parse(e.target.result); }
+    catch(err){ toast('That file is not valid JSON.','error'); return; }
+    if(!data||(!Array.isArray(data.tests)&&!Array.isArray(data.assignments)&&!Array.isArray(data.submissions))){
+      toast('That file doesn\'t look like an EdAssess backup.','error');
+      return;
+    }
+    const testCount=Array.isArray(data.tests)?data.tests.length:0;
+    const asgCount=Array.isArray(data.assignments)?data.assignments.length:0;
+    const subCount=Array.isArray(data.submissions)?data.submissions.length:0;
+    if(!confirm(`Restore this backup?\n\n${testCount} test(s), ${asgCount} assignment(s), ${subCount} submission(s)\nBacked up: ${data.exportedAt||'unknown time'}\n\nThis REPLACES everything currently in EdAssess. This cannot be undone from here — if you're unsure, export a fresh backup of the current state first.`)) return;
+    if(Array.isArray(data.tests))APP.tests=data.tests;
+    if(Array.isArray(data.assignments))APP.assignments=data.assignments;
+    if(Array.isArray(data.submissions))APP.submissions=data.submissions;
+    cacheLocally();
+    apiPost({action:'fullSave',tests:APP.tests,assignments:APP.assignments,submissions:APP.submissions}).then(res=>{
+      if(res&&!res.__httpError){toast('Backup restored.','success');openBackupPanel();renderDashboard();}
+      else if(res&&res.__httpError){toast('Restore failed: '+(res.error||'server error')+' — your local copy is updated but not yet saved to the cloud.','error');}
+      else toast('Restored locally, but could not reach the cloud store — it will keep retrying.','error');
+    });
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+
+async function fetchVersionHistory(collection){
+  try{
+    const res=await fetch(`${API_URL}?history=${collection}`,{cache:'no-store'});
+    if(!res.ok) return [];
+    const data=await res.json();
+    return data.versions||[];
+  }catch(e){ return []; }
+}
+
+async function restoreHistoryVersion(collection,index){
+  if(!confirm(`Restore this ${collection==='tests'?'test list':'assignment list'} version? The current version will itself be saved to history first, so this is safe to try.`)) return;
+  const res=await apiPost({action:'restoreVersion',collection,index});
+  if(res&&res.state){
+    APP.tests=res.state.tests;
+    APP.assignments=res.state.assignments;
+    cacheLocally();
+    _lastSynced.tests=JSON.stringify(APP.tests);
+    _lastSynced.assignments=JSON.stringify(APP.assignments);
+    toast('Version restored.','success');
+    openBackupPanel();
+    if(document.getElementById('page-tests'))renderTests();
+    if(document.getElementById('page-dashboard'))renderDashboard();
+  } else {
+    toast('Could not restore that version — it may have aged out.','error');
+  }
+}
+
+async function openBackupPanel(){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  openModal(`
+  <div class="modal-header">
+    <h2 class="serif" style="font-size:24px">Backup &amp; Version History</h2>
+    <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <div style="background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:20px">
+      <div style="font-weight:700;font-family:'PT Serif',serif;font-size:16px;margin-bottom:6px">Manual Backup</div>
+      <p class="form-hint" style="margin-bottom:12px">A file saved to YOUR computer, completely independent of the cloud store. This is your ultimate safety net — keep one from before any big change.</p>
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm" onclick="exportBackup()">⬇ Download Backup Now</button>
+        <button class="btn btn-secondary btn-sm" onclick="triggerImportBackup()">⬆ Restore From File…</button>
+        <input type="file" id="backup-import-input" accept="application/json" style="display:none" onchange="handleImportBackupFile(event)">
+      </div>
+    </div>
+    <div style="font-weight:700;font-family:'PT Serif',serif;font-size:16px;margin-bottom:10px">Version History</div>
+    <p class="form-hint" style="margin-bottom:14px">Every save automatically snapshots the previous version here — up to the last 40 changes to your tests and assignments. If anything ever gets overwritten by mistake, restore it from here.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-secondary btn-sm" onclick="renderHistoryTab('tests')" id="hist-tab-tests">Tests</button>
+      <button class="btn btn-ghost btn-sm" onclick="renderHistoryTab('assignments')" id="hist-tab-assignments">Assignments</button>
+    </div>
+    <div id="history-list" style="max-height:340px;overflow-y:auto">
+      <div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+  </div>`,'560px');
+  renderHistoryTab('tests');
+}
+
+async function renderHistoryTab(collection){
+  const testsTab=document.getElementById('hist-tab-tests');
+  const asgTab=document.getElementById('hist-tab-assignments');
+  if(testsTab)testsTab.className=collection==='tests'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
+  if(asgTab)asgTab.className=collection==='assignments'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
+  const listEl=document.getElementById('history-list');
+  if(!listEl) return;
+  listEl.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div>`;
+  const versions=await fetchVersionHistory(collection);
+  if(!versions.length){
+    listEl.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px;font-style:italic">No history yet — this appears once a change is saved.</div>`;
+    return;
+  }
+  listEl.innerHTML=versions.map(v=>`
+    <div class="flex items-center justify-between" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--cream)">
+      <div>
+        <div style="font-size:13px;font-weight:600">${formatDate(v.ts)} · ${formatTime(v.ts)}</div>
+        <div style="font-size:11px;color:var(--ink-soft)">${v.count} ${collection==='tests'?'test(s)':'assignment(s)'}</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="restoreHistoryVersion('${collection}',${v.index})">Restore</button>
+    </div>`).join('');
 }
 
 function deleteSubmission(sid,opts){
