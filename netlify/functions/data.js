@@ -24,10 +24,10 @@ const MAX_HISTORY_PER_COLLECTION = 40;
 const EMPTY_STATE = { tests: [], submissions: [], assignments: [] };
 
 function mainStore() {
-  return getStore({ name: 'edassess-data', consistency: 'strong' });
+  return getStore({ name: 'edassess-data', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_BLOBS_TOKEN, consistency: 'strong' });
 }
 function historyStore() {
-  return getStore({ name: 'edassess-history', consistency: 'strong' });
+  return getStore({ name: 'edassess-history', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_BLOBS_TOKEN, consistency: 'strong' });
 }
 
 async function readState() {
