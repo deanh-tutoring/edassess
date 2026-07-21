@@ -256,6 +256,23 @@ textarea.form-control{resize:vertical;min-height:80px}
 /* Content */
 .student-content{flex:1;overflow:hidden;position:relative}
 .student-split{display:flex;height:100%;gap:0}
+.student-split-divider{width:9px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s}
+.student-split-divider:hover,.student-split-divider.dragging{background:var(--rust)}
+.student-split-divider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:3px;height:36px;border-radius:2px;background:rgba(255,255,255,.6)}
+.eh-highlight{background:#FFE58A;border-radius:2px;padding:0 1px;cursor:pointer;box-shadow:0 0 0 1px rgba(0,0,0,0) inset}
+.eh-highlight:hover{box-shadow:0 0 0 1px var(--rust) inset}
+.eh-highlight.has-note{background:#FFCF6B;box-shadow:0 0 0 1px #B8860B inset}
+.hl-toolbar{position:fixed;z-index:6200;background:var(--ink);border-radius:8px;padding:5px;display:flex;gap:4px;box-shadow:var(--shadow-lg);align-items:center}
+.hl-toolbar button{background:transparent;border:none;color:#fff;font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:7px 12px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.hl-toolbar button:hover{background:rgba(255,255,255,.15)}
+.hl-popover{position:fixed;z-index:6200;background:#fff;border:1px solid var(--border-dark);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:14px;width:250px;font-family:'Josefin Sans',sans-serif}
+.line-reader-overlay{position:fixed;z-index:5500;pointer-events:none}
+.lr-dim{position:absolute;left:0;right:0;background:rgba(20,15,10,.62)}
+.lr-band{position:absolute;left:0;right:0;border-top:2px solid var(--rust);border-bottom:2px solid var(--rust);display:flex;align-items:center;justify-content:center;pointer-events:none}
+.lr-band-grip{background:var(--rust);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:999px;display:flex;align-items:center;gap:8px;cursor:ns-resize;pointer-events:auto;box-shadow:var(--shadow-lg);text-transform:uppercase}
+.lr-band-grip button{background:rgba(255,255,255,.25);border:none;color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.header-tool-btn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+.header-tool-btn.active{background:var(--rust);border-color:var(--rust)}
 .student-passage{width:50%;border-right:1px solid var(--border);overflow-y:auto;padding:36px 40px;background:var(--cream);height:100%;font-size:16px;line-height:1.8;font-family:'PT Serif',serif}
 .student-passage-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);font-family:'Josefin Sans',sans-serif}
 .student-question-area{flex:1;overflow-y:auto;padding:32px 36px;height:100%;background:var(--paper)}
@@ -420,6 +437,7 @@ textarea.form-control{resize:vertical;min-height:80px}
   /* Passage + question side-by-side becomes a scrollable stack */
   .student-content{overflow-y:auto}
   .student-split{flex-direction:column;height:auto}
+  .student-split-divider{display:none}
   .student-passage{width:100%!important;height:auto;max-height:34vh;border-right:none;border-bottom:1px solid var(--border);padding:20px}
   .student-question-area{padding:20px;overflow-y:visible}
   .student-single{padding:20px}
@@ -3367,6 +3385,19 @@ function scoreColor(pct){return pct>=.9?'#1A6B5A':pct>=.8?'var(--sage)':pct>=.7?
    STUDENT EXAM
 ══════════════════════════════════════════════════════════ */
 let studentState={};
+
+/* ══════════════════════════════════════════════════════════
+   ACCESSIBILITY TOOLS — Highlights & Notes, Line Reader, and a
+   resizable passage/question split, in the style of Bluebook.
+   These are always-available student tools (not instructor-gated).
+══════════════════════════════════════════════════════════ */
+let highlightToolActive=false;
+let lineReaderActive=false;
+let _splitRatio=50; // passage pane width, percent
+let _splitDragging=false;
+let _lrDragging=false;
+let _lrPercent=42; // vertical position of the line-reader band, percent of container height
+const LR_BAND_HEIGHT=64; // px
 let examTimer=null;
 let timerHidden=false;
 
@@ -3429,7 +3460,7 @@ function handleRemoteForceSubmit(remoteSub){
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   if(remoteSub.ultraLockdown)stopUltraLockdown(remoteSub);
-  closeDesmosPanel();closeReferencePanel();
+  closeDesmosPanel();closeReferencePanel();if(lineReaderActive){removeLineReaderOverlay();lineReaderActive=false;}hideHighlightToolbar();
   clearLocalResume(remoteSub.assignmentId,remoteSub.studentName);
   const ol=document.getElementById('lock-overlay');
   if(ol)ol.classList.add('hidden');
@@ -3455,6 +3486,7 @@ function saveLocalResume(){
       subId:ex.sub.id,
       currentQ:studentState.currentQ,
       flagged:studentState.flagged||{},
+      highlights:studentState.highlights||{},
     }));
   }catch(e){}
 }
@@ -3923,7 +3955,8 @@ function resumeExamSession(a,t,existing,name){
   APP.currentStudentExam={sub:existing,a,t,orderedQuestions:existing._orderedQuestions||t.questions};
   studentState={
     currentQ:(resume&&resume.currentQ)||0,
-    flagged:(resume&&resume.flagged)||existing.flags||{}
+    flagged:(resume&&resume.flagged)||existing.flags||{},
+    highlights:(resume&&resume.highlights)||{},
   };
   startStudentTestPoll();
   if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
@@ -3960,7 +3993,7 @@ function finishStartExam(aid,name,opts){
   }
 
   APP.currentStudentExam={sub,a,t,orderedQuestions};
-  studentState={currentQ:0,flagged:{}};
+  studentState={currentQ:0,flagged:{},highlights:{}};
   saveLocalResume();
   startStudentTestPoll();
   if(a.locked){requestFullscreen();setupFullscreenMonitor(sub.id);}
@@ -4328,11 +4361,19 @@ function renderStudentExam(){
           <span style="width:6px;height:6px;border-radius:50%;background:#e57373;animation:pulse 1.5s infinite"></span>
           <span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#e57373">REC</span>
         </div>`:''}
-        ${t.referenceMaterial?`<button class="btn btn-sm" onclick="toggleReferencePanel()" style="margin-right:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;display:flex;align-items:center;gap:6px">
+        <button class="btn btn-sm header-tool-btn${highlightToolActive?' active':''}" onclick="toggleHighlightTool()" style="margin-right:10px" title="Select text to highlight it or leave yourself a note">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          <span class="btn-label">Highlights &amp; Notes</span>
+        </button>
+        <button class="btn btn-sm header-tool-btn${lineReaderActive?' active':''}" onclick="toggleLineReader()" style="margin-right:10px" title="A movable reading strip to help focus on one line at a time">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h18M3 18h18"/><path d="M3 12h18" stroke-width="3"/></svg>
+          <span class="btn-label">Line Reader</span>
+        </button>
+        ${t.referenceMaterial?`<button class="btn btn-sm header-tool-btn" onclick="toggleReferencePanel()" style="margin-right:10px">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
           <span class="btn-label">Reference</span>
         </button>`:''}
-        ${a.allowDesmos?`<button class="btn btn-sm" onclick="toggleDesmos()" style="margin-right:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.06em;display:flex;align-items:center;gap:6px">
+        ${a.allowDesmos?`<button class="btn btn-sm header-tool-btn" onclick="toggleDesmos()" style="margin-right:10px">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
           <span class="btn-label">Calculator</span>
         </button>`:''}
@@ -4384,6 +4425,9 @@ function renderStudentExam(){
     </div>
   </div>`;
   renderMath(sw);
+  reapplyAllHighlights();
+  initSplitDivider();
+  if(lineReaderActive) requestAnimationFrame(repositionLineReader);
   if(q&&q.q.type==='essay'){
     setTimeout(()=>{
       const edEl=document.getElementById('essay-editor-'+q.key);
@@ -4397,6 +4441,394 @@ function renderStudentExam(){
       }
     },80);
   }
+}
+
+/* ── Resizable passage/question split ─────────────────────────────── */
+function initSplitDivider(){
+  const divider=document.getElementById('split-divider');
+  const passage=document.getElementById('passage-pane');
+  if(!divider||!passage) return;
+  passage.style.width=_splitRatio+'%';
+  divider.onmousedown=(e)=>{
+    e.preventDefault();
+    _splitDragging=true;
+    divider.classList.add('dragging');
+    const container=divider.parentElement;
+    const onMove=(ev)=>{
+      if(!_splitDragging) return;
+      const rect=container.getBoundingClientRect();
+      let pct=((ev.clientX-rect.left)/rect.width)*100;
+      pct=Math.max(25,Math.min(75,pct));
+      _splitRatio=pct;
+      passage.style.width=pct+'%';
+      if(lineReaderActive) repositionLineReader();
+    };
+    const onUp=()=>{
+      _splitDragging=false;
+      divider.classList.remove('dragging');
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+    };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  };
+  // Touch support
+  divider.ontouchstart=(e)=>{
+    _splitDragging=true;
+    divider.classList.add('dragging');
+    const container=divider.parentElement;
+    const onMove=(ev)=>{
+      if(!_splitDragging) return;
+      const touch=ev.touches[0];
+      const rect=container.getBoundingClientRect();
+      let pct=((touch.clientX-rect.left)/rect.width)*100;
+      pct=Math.max(25,Math.min(75,pct));
+      _splitRatio=pct;
+      passage.style.width=pct+'%';
+      if(lineReaderActive) repositionLineReader();
+    };
+    const onEnd=()=>{
+      _splitDragging=false;
+      divider.classList.remove('dragging');
+      document.removeEventListener('touchmove',onMove);
+      document.removeEventListener('touchend',onEnd);
+    };
+    document.addEventListener('touchmove',onMove,{passive:true});
+    document.addEventListener('touchend',onEnd);
+  };
+}
+
+/* ── Highlights & Notes ────────────────────────────────────────────
+   Select text inside the passage or question area while the tool is
+   on to highlight it. Click an existing highlight to add, edit, or
+   remove a note attached to it, or to remove the highlight entirely.
+   Highlights persist per-question and survive navigation/refresh via
+   studentState.highlights, which rides along in the local resume
+   save. A keyboard shortcut (Alt+H) applies a highlight to whatever
+   text is currently selected, which works together with a browser's
+   caret-browsing mode (e.g. F7 in Firefox) for keyboard-only use.
+────────────────────────────────────────────────────────────────── */
+function toggleHighlightTool(){
+  highlightToolActive=!highlightToolActive;
+  hideHighlightToolbar();
+  if(document.getElementById('student-page')) renderStudentExam();
+}
+
+function zoneEls(){
+  return Array.from(document.querySelectorAll('.hl-zone'));
+}
+
+function getTextNodeOffset(container,node,nodeOffset){
+  const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
+  let total=0,n;
+  while((n=walker.nextNode())){
+    if(n===node) return total+nodeOffset;
+    total+=n.textContent.length;
+  }
+  return total;
+}
+
+function getSelectionOffsetsWithin(container){
+  const sel=window.getSelection();
+  if(!sel||sel.rangeCount===0||sel.isCollapsed) return null;
+  const range=sel.getRangeAt(0);
+  if(!container.contains(range.commonAncestorContainer)) return null;
+  const start=getTextNodeOffset(container,range.startContainer,range.startOffset);
+  const end=getTextNodeOffset(container,range.endContainer,range.endOffset);
+  if(start===end) return null;
+  return {start:Math.min(start,end),end:Math.max(start,end),rect:range.getBoundingClientRect()};
+}
+
+function handleZoneMouseUp(e){
+  if(!highlightToolActive) return;
+  const container=e.currentTarget;
+  hideHighlightToolbar();
+  const offsets=getSelectionOffsetsWithin(container);
+  if(!offsets) return;
+  showHighlightToolbar(container,offsets);
+}
+
+// Global fallback so keyboard-only selection (e.g. via a browser's
+// caret-browsing mode) can trigger a highlight without needing a mouseup
+// event inside a specific zone.
+document.addEventListener('keydown',(e)=>{
+  if(!highlightToolActive) return;
+  if(e.altKey&&(e.key==='h'||e.key==='H')){
+    const zones=zoneEls();
+    for(const z of zones){
+      const offsets=getSelectionOffsetsWithin(z);
+      if(offsets){ e.preventDefault(); commitHighlight(z,offsets); return; }
+    }
+  }
+});
+
+function showHighlightToolbar(container,offsets){
+  let bar=document.getElementById('hl-toolbar');
+  if(!bar){
+    bar=document.createElement('div');
+    bar.id='hl-toolbar';
+    bar.className='hl-toolbar';
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML=`
+    <button onclick="commitHighlightFromToolbar()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+      Highlight
+    </button>`;
+  const rect=offsets.rect;
+  const top=Math.max(8,rect.top-46);
+  let left=rect.left+rect.width/2-40;
+  left=Math.max(8,Math.min(window.innerWidth-160,left));
+  bar.style.top=top+'px';
+  bar.style.left=left+'px';
+  bar.style.display='flex';
+  bar._container=container;
+  bar._offsets=offsets;
+}
+
+function hideHighlightToolbar(){
+  const bar=document.getElementById('hl-toolbar');
+  if(bar) bar.style.display='none';
+}
+
+function commitHighlightFromToolbar(){
+  const bar=document.getElementById('hl-toolbar');
+  if(!bar||!bar._container) return;
+  commitHighlight(bar._container,bar._offsets);
+  hideHighlightToolbar();
+}
+
+function commitHighlight(container,offsets){
+  const zoneKey=container.dataset.hlzone;
+  if(!zoneKey) return;
+  if(!studentState.highlights) studentState.highlights={};
+  if(!studentState.highlights[zoneKey]) studentState.highlights[zoneKey]=[];
+  studentState.highlights[zoneKey].push({id:uid(),start:offsets.start,end:offsets.end,note:null});
+  window.getSelection().removeAllRanges();
+  saveLocalResume();
+  applyHighlightsToZone(container,zoneKey);
+}
+
+function reapplyAllHighlights(){
+  zoneEls().forEach(z=>{
+    const zoneKey=z.dataset.hlzone;
+    if(zoneKey) applyHighlightsToZone(z,zoneKey);
+  });
+}
+
+function applyHighlightsToZone(container,zoneKey){
+  const list=(studentState.highlights&&studentState.highlights[zoneKey])||[];
+  if(!list.length) return;
+  list.slice().sort((a,b)=>a.start-b.start).forEach(hl=>{
+    wrapRangeByOffsets(container,hl.start,hl.end,hl.id,!!hl.note);
+  });
+}
+
+function wrapRangeByOffsets(container,start,end,id,hasNote){
+  if(container.querySelector(`mark[data-hid="${id}"]`)) return; // already applied
+  const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT);
+  let total=0,startNode=null,startOffset=0,endNode=null,endOffset=0,n;
+  while((n=walker.nextNode())){
+    const len=n.textContent.length;
+    if(startNode===null&&total+len>=start){startNode=n;startOffset=start-total;}
+    if(total+len>=end){endNode=n;endOffset=end-total;break;}
+    total+=len;
+  }
+  if(!startNode||!endNode) return;
+  try{
+    const range=document.createRange();
+    range.setStart(startNode,startOffset);
+    range.setEnd(endNode,endOffset);
+    const mark=document.createElement('mark');
+    mark.className='eh-highlight'+(hasNote?' has-note':'');
+    mark.dataset.hid=id;
+    mark.title=hasNote?'Click to view or edit your note':'Click to leave a note, or remove this highlight';
+    range.surroundContents(mark);
+  }catch(e){ /* selection crossed a complex boundary — skip gracefully */ }
+}
+
+document.addEventListener('click',(e)=>{
+  const mark=e.target.closest && e.target.closest('.eh-highlight');
+  if(!mark) return;
+  const zone=mark.closest('.hl-zone');
+  if(!zone) return;
+  openHighlightPopover(mark,zone.dataset.hlzone);
+});
+
+function openHighlightPopover(mark,zoneKey){
+  const list=(studentState.highlights&&studentState.highlights[zoneKey])||[];
+  const hl=list.find(h=>h.id===mark.dataset.hid);
+  if(!hl) return;
+  let pop=document.getElementById('hl-popover');
+  if(pop) pop.remove();
+  pop=document.createElement('div');
+  pop.id='hl-popover';
+  pop.className='hl-popover';
+  pop.innerHTML=`
+    <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Note</div>
+    <textarea id="hl-note-input" class="form-control" rows="3" placeholder="Leave yourself a note about this highlight…" style="font-size:13px;margin-bottom:10px">${hl.note?hl.note.replace(/</g,'&lt;'):''}</textarea>
+    <div style="display:flex;gap:6px;justify-content:space-between">
+      <button class="btn btn-danger btn-sm" onclick="removeHighlight('${zoneKey}','${hl.id}')">Remove Highlight</button>
+      <button class="btn btn-primary btn-sm" onclick="saveHighlightNote('${zoneKey}','${hl.id}')">Save</button>
+    </div>`;
+  document.body.appendChild(pop);
+  const rect=mark.getBoundingClientRect();
+  let top=rect.bottom+8;
+  let left=Math.max(8,Math.min(window.innerWidth-266,rect.left));
+  if(top+180>window.innerHeight) top=Math.max(8,rect.top-190);
+  pop.style.top=top+'px';
+  pop.style.left=left+'px';
+  document.getElementById('hl-note-input').focus();
+  setTimeout(()=>{
+    const closer=(ev)=>{
+      if(!pop.contains(ev.target)&&!ev.target.closest('.eh-highlight')){
+        pop.remove();
+        document.removeEventListener('mousedown',closer,true);
+      }
+    };
+    document.addEventListener('mousedown',closer,true);
+  },0);
+}
+
+function saveHighlightNote(zoneKey,id){
+  const list=(studentState.highlights&&studentState.highlights[zoneKey])||[];
+  const hl=list.find(h=>h.id===id);
+  if(!hl) return;
+  const val=document.getElementById('hl-note-input').value.trim();
+  hl.note=val||null;
+  saveLocalResume();
+  const pop=document.getElementById('hl-popover');
+  if(pop) pop.remove();
+  const mark=document.querySelector(`mark[data-hid="${id}"]`);
+  if(mark) mark.classList.toggle('has-note',!!hl.note);
+  toast(hl.note?'Note saved.':'Note removed.','success');
+}
+
+function removeHighlight(zoneKey,id){
+  const list=(studentState.highlights&&studentState.highlights[zoneKey])||[];
+  const idx=list.findIndex(h=>h.id===id);
+  if(idx>-1) list.splice(idx,1);
+  saveLocalResume();
+  const pop=document.getElementById('hl-popover');
+  if(pop) pop.remove();
+  const mark=document.querySelector(`mark[data-hid="${id}"]`);
+  if(mark){
+    const parent=mark.parentNode;
+    while(mark.firstChild) parent.insertBefore(mark.firstChild,mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  }
+}
+
+/* ── Line Reader ────────────────────────────────────────────────────
+   A movable reading strip that dims everything above and below a
+   clear horizontal band, to help focus on one line of text at a time.
+   Positioned over the whole question/passage area (not per-pane) so
+   it works the same whether or not the current question has a split
+   passage layout.
+────────────────────────────────────────────────────────────────── */
+function toggleLineReader(){
+  lineReaderActive=!lineReaderActive;
+  if(lineReaderActive){
+    ensureLineReaderOverlay();
+    repositionLineReader();
+    window.addEventListener('resize',onLineReaderResize);
+  } else {
+    removeLineReaderOverlay();
+    window.removeEventListener('resize',onLineReaderResize);
+  }
+  if(document.getElementById('student-page')) renderStudentExam();
+}
+
+function onLineReaderResize(){
+  if(lineReaderActive) repositionLineReader();
+}
+
+function ensureLineReaderOverlay(){
+  if(document.getElementById('line-reader-overlay')) return;
+  const el=document.createElement('div');
+  el.id='line-reader-overlay';
+  el.className='line-reader-overlay';
+  el.innerHTML=`
+    <div class="lr-dim" id="lr-dim-top"></div>
+    <div class="lr-band" id="lr-band">
+      <div class="lr-band-grip" id="lr-band-grip">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M5 9l7-7 7 7M5 15l7 7 7-7"/></svg>
+        Line Reader — drag to move
+        <button onclick="toggleLineReader()" title="Turn off Line Reader">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="9" height="9"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="lr-dim" id="lr-dim-bottom"></div>`;
+  document.body.appendChild(el);
+  const grip=el.querySelector('#lr-band-grip');
+  grip.onmousedown=(e)=>{
+    e.preventDefault();
+    _lrDragging=true;
+    const onMove=(ev)=>{
+      if(!_lrDragging) return;
+      const content=document.querySelector('.student-content');
+      if(!content) return;
+      const rect=content.getBoundingClientRect();
+      let pct=((ev.clientY-rect.top)/rect.height)*100;
+      pct=Math.max(5,Math.min(95,pct));
+      _lrPercent=pct;
+      repositionLineReader();
+    };
+    const onUp=()=>{
+      _lrDragging=false;
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+    };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  };
+  grip.ontouchstart=(e)=>{
+    _lrDragging=true;
+    const onMove=(ev)=>{
+      if(!_lrDragging) return;
+      const touch=ev.touches[0];
+      const content=document.querySelector('.student-content');
+      if(!content) return;
+      const rect=content.getBoundingClientRect();
+      let pct=((touch.clientY-rect.top)/rect.height)*100;
+      pct=Math.max(5,Math.min(95,pct));
+      _lrPercent=pct;
+      repositionLineReader();
+    };
+    const onEnd=()=>{
+      _lrDragging=false;
+      document.removeEventListener('touchmove',onMove);
+      document.removeEventListener('touchend',onEnd);
+    };
+    document.addEventListener('touchmove',onMove,{passive:true});
+    document.addEventListener('touchend',onEnd);
+  };
+}
+
+function repositionLineReader(){
+  const overlay=document.getElementById('line-reader-overlay');
+  const content=document.querySelector('.student-content');
+  if(!overlay||!content) return;
+  const rect=content.getBoundingClientRect();
+  overlay.style.top=rect.top+'px';
+  overlay.style.left=rect.left+'px';
+  overlay.style.width=rect.width+'px';
+  overlay.style.height=rect.height+'px';
+  let bandTop=(rect.height*_lrPercent/100)-(LR_BAND_HEIGHT/2);
+  bandTop=Math.max(0,Math.min(rect.height-LR_BAND_HEIGHT,bandTop));
+  const top=document.getElementById('lr-dim-top');
+  const band=document.getElementById('lr-band');
+  const bottom=document.getElementById('lr-dim-bottom');
+  if(top){top.style.top='0';top.style.height=bandTop+'px';}
+  if(band){band.style.top=bandTop+'px';band.style.height=LR_BAND_HEIGHT+'px';}
+  if(bottom){bottom.style.top=(bandTop+LR_BAND_HEIGHT)+'px';bottom.style.height=(rect.height-bandTop-LR_BAND_HEIGHT)+'px';}
+}
+
+function removeLineReaderOverlay(){
+  const el=document.getElementById('line-reader-overlay');
+  if(el) el.remove();
 }
 
 function toggleTimer(){
@@ -4416,18 +4848,19 @@ function renderStudentQuestion(item,fqs,a){
   let questionHtml=renderSingleStudentQ(q,key,a,fqs);
   if(isPassageQ&&passageQ){
     return`
-    <div class="student-split">
-      <div class="student-passage">
+    <div class="student-split" id="student-split">
+      <div class="student-passage hl-zone" id="passage-pane" data-hlzone="${key}:passage" style="width:${_splitRatio}%" onmouseup="handleZoneMouseUp(event)">
         <div class="student-passage-label">Passage / Stimulus</div>
         ${passageQ.passage||'<p style="color:var(--ink-soft);font-style:italic">No passage content</p>'}
         ${passageQ.image?`<img src="${passageQ.image}" style="max-width:100%;border-radius:var(--r);margin-top:16px">`:''}
       </div>
-      <div class="student-question-area">
+      <div class="student-split-divider" id="split-divider" title="Drag to resize"></div>
+      <div class="student-question-area hl-zone" data-hlzone="${key}:question" onmouseup="handleZoneMouseUp(event)">
         ${questionHtml}
       </div>
     </div>`;
   }
-  return`<div class="student-single">${questionHtml}</div>`;
+  return`<div class="student-single hl-zone" data-hlzone="${key}:question" onmouseup="handleZoneMouseUp(event)">${questionHtml}</div>`;
 }
 
 function renderSingleStudentQ(q,key,a,fqs){
@@ -4706,7 +5139,7 @@ function submitExam(){
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   if(sub.ultraLockdown)stopUltraLockdown(sub);
-  closeDesmosPanel();closeReferencePanel();
+  closeDesmosPanel();closeReferencePanel();if(lineReaderActive){removeLineReaderOverlay();lineReaderActive=false;}hideHighlightToolbar();
   clearLocalResume(sub.assignmentId,sub.studentName);
   const totalPts=calcTotalPoints(t);
   document.getElementById('student-wrapper').innerHTML=`
@@ -4889,7 +5322,7 @@ function forceSubmitStudent(sid,reason){
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
   if(s.ultraLockdown)stopUltraLockdown(s);
-  closeDesmosPanel();closeReferencePanel();
+  closeDesmosPanel();closeReferencePanel();if(lineReaderActive){removeLineReaderOverlay();lineReaderActive=false;}hideHighlightToolbar();
   clearLocalResume(s.assignmentId,s.studentName);
   const ol=document.getElementById('lock-overlay');
   if(ol)ol.classList.add('hidden');
