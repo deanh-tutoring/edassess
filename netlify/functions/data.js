@@ -6,7 +6,7 @@
 const { getStore } = require('@netlify/blobs');
 
 const KEY = 'state';
-const EMPTY_STATE = { tests: [], submissions: [], assignments: [] };
+const EMPTY_STATE = { tests: [], submissions: [], assignments: [], peerSessions: [] };
 
 function store() {
   return getStore({
@@ -24,6 +24,7 @@ async function readState() {
     tests: Array.isArray(data.tests) ? data.tests : [],
     submissions: Array.isArray(data.submissions) ? data.submissions : [],
     assignments: Array.isArray(data.assignments) ? data.assignments : [],
+    peerSessions: Array.isArray(data.peerSessions) ? data.peerSessions : [],
   };
 }
 
@@ -95,6 +96,20 @@ exports.handler = async (event) => {
           state.submissions = state.submissions.filter((s) => !ids.includes(s.id));
           break;
         }
+        case 'upsertPeerSession': {
+          const ps = body.peerSession;
+          if (ps && ps.id) {
+            const idx = state.peerSessions.findIndex((p) => p.id === ps.id);
+            if (idx === -1) state.peerSessions.push(ps);
+            else state.peerSessions[idx] = ps;
+          }
+          break;
+        }
+        case 'deletePeerSession': {
+          const id = body.id;
+          state.peerSessions = state.peerSessions.filter((p) => p.id !== id);
+          break;
+        }
         case 'deleteTest': {
           const id = body.id;
           state.tests = state.tests.filter((t) => t.id !== id);
@@ -110,6 +125,7 @@ exports.handler = async (event) => {
           if (Array.isArray(body.tests)) state.tests = body.tests;
           if (Array.isArray(body.assignments)) state.assignments = body.assignments;
           if (Array.isArray(body.submissions)) state.submissions = body.submissions;
+          if (Array.isArray(body.peerSessions)) state.peerSessions = body.peerSessions;
           break;
         }
         case 'importBackup': {
@@ -132,6 +148,7 @@ exports.handler = async (event) => {
             tests: backup.tests,
             assignments: backup.assignments,
             submissions: backup.submissions,
+            peerSessions: Array.isArray(backup.peerSessions) ? backup.peerSessions : [],
           });
         
           return {
