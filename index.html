@@ -97,6 +97,9 @@ input,textarea,select{font-family:'Inter',sans-serif;font-size:13px;letter-spaci
 .form-hint{font-size:12px;color:var(--ink-soft);margin-top:4px;font-style:normal}
 .form-control{width:100%;padding:9px 12px;border-radius:var(--r);border:1px solid var(--border-dark);font-size:13px;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s;outline:none;font-family:'Inter',sans-serif;letter-spacing:0}
 .form-control:focus{border-color:var(--slate-blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.short-editor-field:focus{border-color:var(--slate-blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.short-editor-field:empty:before{content:attr(data-placeholder);color:var(--ink-soft);pointer-events:none}
+.short-editor-field .math-inline{display:inline-block;vertical-align:middle;padding:0 2px}
 .form-control::placeholder{color:var(--ink-soft);opacity:.6}
 textarea.form-control{resize:vertical;min-height:80px}
 .checkbox-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
@@ -5701,17 +5704,17 @@ function renderSingleStudentQ(q,key,a,fqs){
     }).join('');
   } else if(q.type==='short'){
     const val=typeof ans==='string'?ans:'';
-    html+=`<div style="margin-bottom:8px">
-      <input
-        type="text"
-        class="form-control"
-        id="short-input-${key}"
-        style="font-size:17px;padding:12px 14px;font-family:'Inter',sans-serif;line-height:1.6;width:100%"
-        placeholder="Type your answer…"
-        value="${val.replace(/"/g,'&quot;')}"
-        oninput="setShortAnswer('${key}',this.value)"
-      >
-    </div>`;
+    html+=`<div class="flex justify-between items-center mb-2">
+      <div style="font-size:11px;color:var(--ink-soft);letter-spacing:.02em">Type your answer. Need math? Use the keyboard or type LaTeX — it'll format automatically.</div>
+      <button class="btn btn-secondary btn-sm" onclick="openStudentMathInserter('${key}',false)">∑ Insert Math</button>
+    </div>
+    <div id="short-editor-${key}"
+      class="short-editor-field"
+      contenteditable="true"
+      data-placeholder="Type your answer…"
+      oninput="saveShortEditorValue('${key}',this)"
+      style="font-size:17px;padding:12px 14px;font-family:'Inter',sans-serif;line-height:1.6;width:100%;border:1px solid var(--border-dark);border-radius:var(--r);background:#fff;min-height:52px;outline:none"
+    >${val}</div>`;
   } else if(q.type==='essay'){
     html+=`<div class="flex justify-between items-center mb-2">
       <div></div>
