@@ -402,6 +402,20 @@ textarea.form-control{resize:vertical;min-height:80px}
 .img-drop-zone svg{width:28px;height:28px;color:var(--ink-soft);margin:0 auto 8px;display:block}
 .math-symbol-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:8px;background:var(--paper-aged);border-radius:var(--r);margin-bottom:6px}
 .math-sym{padding:4px;text-align:center;cursor:pointer;border-radius:var(--r);font-size:12px;background:var(--cream);border:1px solid var(--border);transition:all .15s}
+.mk-raw-input{width:100%;height:0;opacity:0;position:absolute;left:-9999px;padding:0;border:none;pointer-events:none}
+.mk-raw-input.visible{position:static;height:auto;opacity:1;left:auto;pointer-events:auto;padding:10px 12px;border:1px solid var(--border-dark);border-radius:var(--r);font-family:'Courier Prime',monospace;font-size:13px;margin-bottom:12px;background:#fff;color:var(--ink);outline:none}
+.mk-raw-input.visible:focus{border-color:var(--slate-blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.mk-tabbar{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.mk-tab{flex-shrink:0;background:transparent;border:none;border-bottom:2px solid transparent;padding:8px 10px;cursor:pointer;font-size:16px;color:var(--ink-soft);transition:all .15s}
+.mk-tab:hover{color:var(--ink)}
+.mk-tab.active{color:var(--slate-blue);border-bottom-color:var(--slate-blue)}
+.mk-keygrid{margin-bottom:4px}
+.mk-key{padding:14px 4px;text-align:center;cursor:pointer;border-radius:var(--r);font-size:15px;background:#fff;border:1px solid var(--border);transition:all .12s;min-height:48px;display:flex;align-items:center;justify-content:center}
+.mk-key:hover{background:var(--paper-warm);border-color:var(--border-dark)}
+.mk-key:active{background:var(--slate-pale);border-color:var(--slate-blue)}
+.mk-latex-toggle{background:transparent;border:none;color:var(--ink-soft);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 10px;border-radius:var(--r);transition:all .15s}
+.mk-latex-toggle:hover{background:var(--paper-warm)}
+.mk-latex-toggle.on{color:var(--slate-blue);background:var(--slate-pale)}
 .math-sym:hover{border-color:var(--rust);background:var(--rust-pale)}
 .assign-section{background:var(--paper-warm);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
 .assign-section-title{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;font-family:'Inter',sans-serif}
@@ -1786,13 +1800,44 @@ function renderStandardQEditor(i,q){
 function renderShortKey(i,q){
   const keys=q.correctAnswers&&q.correctAnswers.length?q.correctAnswers:[''];
   return keys.map((val,j)=>`
-  <div class="flex gap-2 mb-2" style="align-items:center">
-    <div style="width:26px;height:26px;border-radius:var(--r);background:var(--sage-pale);border:1px solid #BBF7D0;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
-    <input class="form-control" type="text" value="${val.replace(/"/g,'&quot;')}" placeholder="Accepted answer" oninput="setShortKeyAnswer(${i},${j},this.value)">
-    <button class="btn btn-ghost btn-icon btn-sm" onclick="removeShortKeyAnswer(${i},${j})" style="opacity:.4">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
+  <div class="mb-2">
+    <div class="flex gap-2" style="align-items:center">
+      <div style="width:26px;height:26px;border-radius:var(--r);background:var(--sage-pale);border:1px solid #BBF7D0;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
+      <input id="short-key-input-${i}-${j}" class="form-control" type="text" value="${val.replace(/"/g,'&quot;')}" placeholder="Accepted answer" oninput="setShortKeyAnswer(${i},${j},this.value);updateShortKeyPreview(${i},${j})">
+      <button class="btn btn-secondary btn-icon btn-sm" title="Insert math" onclick="openShortKeyMath(${i},${j})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
+      </button>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="removeShortKeyAnswer(${i},${j})" style="opacity:.4">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="short-key-preview-${i}-${j}" style="display:${/\\[a-zA-Z(\[]/.test(val)?'flex':'none'};padding:6px 8px 0 34px;font-size:15px">${/\\[a-zA-Z(\[]/.test(val)?(function(){try{return katex.renderToString(val,{throwOnError:false,displayMode:false});}catch(e){return val;}})():''}</div>
   </div>`).join('');
+}
+
+function openShortKeyMath(i,j){
+  openMathKeyboard(code=>{
+    const inp=document.getElementById(`short-key-input-${i}-${j}`);
+    if(!inp) return;
+    inp.value=(inp.value?inp.value+' ':'')+code;
+    setShortKeyAnswer(i,j,inp.value);
+    updateShortKeyPreview(i,j);
+  });
+}
+
+function updateShortKeyPreview(i,j){
+  const inp=document.getElementById(`short-key-input-${i}-${j}`);
+  const prev=document.getElementById(`short-key-preview-${i}-${j}`);
+  if(!inp||!prev) return;
+  const val=inp.value;
+  if(/\\[a-zA-Z(\[]/.test(val)){
+    prev.style.display='flex';
+    try{ prev.innerHTML=katex.renderToString(val,{throwOnError:false,displayMode:false}); }
+    catch(e){ prev.innerHTML=val; }
+  } else {
+    prev.style.display='none';
+    prev.innerHTML='';
+  }
 }
 
 function setShortKeyAnswer(i,j,val){
@@ -1823,13 +1868,42 @@ function removeShortKeyAnswer(i,j){
 function renderSubQShortKey(pi,si,sq){
   const keys=sq.correctAnswers&&sq.correctAnswers.length?sq.correctAnswers:[''];
   return keys.map((val,j)=>`
-  <div class="flex gap-2 mb-2" style="align-items:center">
-    <div style="width:26px;height:26px;border-radius:var(--r);background:var(--sage-pale);border:1px solid #BBF7D0;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
-    <input class="form-control" type="text" value="${val.replace(/"/g,'&quot;')}" placeholder="Accepted answer" oninput="setSubQShortKeyAnswer(${pi},${si},${j},this.value)">
-    <button class="btn btn-ghost btn-icon btn-sm" onclick="removeSubQShortKeyAnswer(${pi},${si},${j})" style="opacity:.4">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
+  <div class="mb-2">
+    <div class="flex gap-2" style="align-items:center">
+      <div style="width:26px;height:26px;border-radius:var(--r);background:var(--sage-pale);border:1px solid #BBF7D0;color:var(--sage);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div>
+      <input id="subq-short-key-input-${pi}-${si}-${j}" class="form-control" type="text" value="${val.replace(/"/g,'&quot;')}" placeholder="Accepted answer" oninput="setSubQShortKeyAnswer(${pi},${si},${j},this.value);updateSubQShortKeyPreview(${pi},${si},${j})">
+      <button class="btn btn-secondary btn-icon btn-sm" title="Insert math" onclick="openSubQShortKeyMath(${pi},${si},${j})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
+      </button>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="removeSubQShortKeyAnswer(${pi},${si},${j})" style="opacity:.4">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="subq-short-key-preview-${pi}-${si}-${j}" style="display:${/\\[a-zA-Z(\[]/.test(val)?'flex':'none'};padding:6px 8px 0 34px;font-size:15px">${/\\[a-zA-Z(\[]/.test(val)?(function(){try{return katex.renderToString(val,{throwOnError:false,displayMode:false});}catch(e){return val;}})():''}</div>
   </div>`).join('');
+}
+function openSubQShortKeyMath(pi,si,j){
+  openMathKeyboard(code=>{
+    const inp=document.getElementById(`subq-short-key-input-${pi}-${si}-${j}`);
+    if(!inp) return;
+    inp.value=(inp.value?inp.value+' ':'')+code;
+    setSubQShortKeyAnswer(pi,si,j,inp.value);
+    updateSubQShortKeyPreview(pi,si,j);
+  });
+}
+function updateSubQShortKeyPreview(pi,si,j){
+  const inp=document.getElementById(`subq-short-key-input-${pi}-${si}-${j}`);
+  const prev=document.getElementById(`subq-short-key-preview-${pi}-${si}-${j}`);
+  if(!inp||!prev) return;
+  const val=inp.value;
+  if(/\\[a-zA-Z(\[]/.test(val)){
+    prev.style.display='flex';
+    try{ prev.innerHTML=katex.renderToString(val,{throwOnError:false,displayMode:false}); }
+    catch(e){ prev.innerHTML=val; }
+  } else {
+    prev.style.display='none';
+    prev.innerHTML='';
+  }
 }
 function setSubQShortKeyAnswer(pi,si,j,val){
   const sq=APP.currentTest.questions[pi].subQuestions[si];
@@ -1936,61 +2010,214 @@ function updateOptionPreview(i,j){
   }
 }
 
-function openOptionLatex(qi,optIdx){
-  const SYMS=[
-    {l:'\\frac{}{}',d:'\\frac{a}{b}'},{l:'\\sqrt{}',d:'\\sqrt{x}'},{l:'x^{}',d:'x^{2}'},
-    {l:'x_{}',d:'x_{i}'},{l:'\\pi',d:'\\pi'},{l:'\\theta',d:'\\theta'},
-    {l:'\\alpha',d:'\\alpha'},{l:'\\beta',d:'\\beta'},{l:'\\infty',d:'\\infty'},
-    {l:'\\leq',d:'\\leq'},{l:'\\geq',d:'\\geq'},{l:'\\neq',d:'\\neq'},
-    {l:'\\times',d:'\\times'},{l:'\\div',d:'\\div'},{l:'\\pm',d:'\\pm'},
-  ];
-  const grid=SYMS.map(s=>`<button type="button" class="math-sym" title="${s.l}" onclick="appendToLatexBox('${s.l.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','opt-latex-code')">${_katexStr(s.d,false)}</button>`).join('');
-  const cur=APP.currentTest.questions[qi].options[optIdx]||'';
-  openModal(`
+/* ══════════════════════════════════════════════════════════
+   MATH KEYBOARD — one shared, comprehensive component used
+   everywhere math can be entered: question stems, answer options,
+   short-answer keys (builder), and student essay/short-answer
+   responses. Tabbed categories + a number pad, in the style of
+   on-screen math keyboards students already know from testing
+   platforms, plus a raw LaTeX mode for anyone who prefers typing
+   code directly. Call openMathKeyboard(onInsert) and it hands the
+   finished LaTeX string back to your callback.
+══════════════════════════════════════════════════════════ */
+const MATH_KB_TABS=[
+  {id:'general',label:'√x·xᵃ',keys:[
+    {t:'1'},{t:'2'},{t:'3'},{t:'+'},{t:'\\pm'},{t:'\\sqrt{}',back:1},{t:'\\sqrt[n]{}',back:1},{t:'[\\,]',back:2},
+    {t:'4'},{t:'5'},{t:'6'},{t:'-'},{t:'\\cdot'},{t:'\\frac{}{}',back:3},{t:'x_{}',back:1},{t:'(\\,)',back:2},
+    {t:'7'},{t:'8'},{t:'9'},{t:'*'},{t:'\\times'},{t:'x^{}',back:1},{t:'\\leq'},{t:'>'},
+    {t:'0'},{t:'\\square'},{t:'='},{t:'\\div'},{t:'/'},{t:'|x|'},{t:'\\geq'},{t:'<'},
+  ]},
+  {id:'units',label:'kg',keys:[
+    {t:'\\text{kg}'},{t:'\\text{g}'},{t:'\\text{mg}'},{t:'\\text{m}'},{t:'\\text{cm}'},{t:'\\text{mm}'},{t:'\\text{km}'},{t:'\\text{s}'},
+    {t:'\\text{min}'},{t:'\\text{hr}'},{t:'\\text{L}'},{t:'\\text{mL}'},{t:'^\\circ'},{t:'^\\circ\\text{C}'},{t:'^\\circ\\text{F}'},{t:'\\%'},
+    {t:'\\$'},{t:'\\text{ft}'},{t:'\\text{in}'},{t:'\\text{mi}'},{t:'\\text{lb}'},{t:'\\text{oz}'},{t:'\\text{mol}'},{t:'\\text{N}'},
+    {t:'\\text{J}'},{t:'\\text{W}'},{t:'\\text{Hz}'},{t:'\\Omega'},{t:'\\text{atm}'},{t:'\\text{Pa}'},{t:'\\text{V}'},{t:'\\text{A}'},
+  ]},
+  {id:'functions',label:'sin',keys:[
+    {t:'\\sin()',back:1},{t:'\\cos()',back:1},{t:'\\tan()',back:1},{t:'\\sin^{-1}()',back:1},{t:'\\cos^{-1}()',back:1},{t:'\\tan^{-1}()',back:1},{t:'\\sinh()',back:1},{t:'\\cosh()',back:1},
+    {t:'\\tanh()',back:1},{t:'\\log()',back:1},{t:'\\log_{}()',back:3},{t:'\\ln()',back:1},{t:'e^{}',back:1},{t:'|x|'},{t:'\\sqrt[n]{}',back:1},{t:'f(x)'},
+    {t:'\\min()',back:1},{t:'\\max()',back:1},{t:'\\gcd()',back:1},{t:'\\text{lcm}()',back:1},{t:'\\csc()',back:1},{t:'\\sec()',back:1},{t:'\\cot()',back:1},{t:'\\exp()',back:1},
+  ]},
+  {id:'sets',label:'∈∞',keys:[
+    {t:'\\in'},{t:'\\notin'},{t:'\\subset'},{t:'\\subseteq'},{t:'\\not\\subset'},{t:'\\supseteq'},{t:'\\emptyset'},{t:'\\infty'},
+    {t:'\\forall'},{t:'\\exists'},{t:'\\neg'},{t:'\\land'},{t:'\\lor'},{t:'\\mathbb{R}'},{t:'\\mathbb{Z}'},{t:'\\mathbb{N}'},
+    {t:'\\mathbb{Q}'},{t:'\\mathbb{C}'},{t:'\\oplus'},{t:'\\otimes'},{t:'\\therefore'},{t:'\\because'},{t:'\\implies'},{t:'\\iff'},
+  ]},
+  {id:'arrows',label:'→∴',keys:[
+    {t:'\\rightarrow'},{t:'\\leftarrow'},{t:'\\leftrightarrow'},{t:'\\Rightarrow'},{t:'\\Leftarrow'},{t:'\\Leftrightarrow'},{t:'\\therefore'},{t:'\\because'},
+    {t:'\\approx'},{t:'\\equiv'},{t:'\\neq'},{t:'\\propto'},{t:'^\\circ'},{t:'\\sim'},{t:'\\cong'},{t:'\\mapsto'},
+  ]},
+  {id:'greek',label:'αΩ',keys:[
+    {t:'\\alpha'},{t:'\\beta'},{t:'\\gamma'},{t:'\\delta'},{t:'\\epsilon'},{t:'\\zeta'},{t:'\\eta'},{t:'\\theta'},
+    {t:'\\iota'},{t:'\\kappa'},{t:'\\lambda'},{t:'\\mu'},{t:'\\nu'},{t:'\\xi'},{t:'\\omicron'},{t:'\\pi'},
+    {t:'\\rho'},{t:'\\sigma'},{t:'\\tau'},{t:'\\upsilon'},{t:'\\phi'},{t:'\\chi'},{t:'\\psi'},{t:'\\omega'},
+    {t:'\\Gamma'},{t:'\\Delta'},{t:'\\Theta'},{t:'\\Lambda'},{t:'\\Xi'},{t:'\\Pi'},{t:'\\Sigma'},{t:'\\Omega'},
+  ]},
+  {id:'brackets',label:'[]{}',keys:[
+    {t:'[\\,]',back:2},{t:'\\,]'},{t:'\\{\\,\\}',back:2},{t:'\\lfloor\\,\\rfloor',back:2},{t:'\\lceil\\,\\rceil',back:2},{t:'[\\,)',back:2},{t:'(\\,]',back:2},{t:'\\llbracket\\,\\rrbracket',back:2},
+  ]},
+  {id:'parens',label:'()|',keys:[
+    {t:'(\\,)',back:2},{t:'|\\,|',back:1},{t:'\\langle\\,\\rangle',back:2},{t:'\\lVert\\,\\rVert',back:2},{t:'\\left(\\,\\right)',back:8},
+  ]},
+  {id:'setops',label:'∪∩',keys:[
+    {t:'\\cup'},{t:'\\cap'},{t:'\\setminus'},{t:'\\subset'},{t:'\\subseteq'},{t:'\\supset'},{t:'\\supseteq'},{t:'\\oplus'},{t:'\\otimes'},{t:'\\emptyset'},
+  ]},
+  {id:'calculus',label:'∫',keys:[
+    {t:'\\int_{}^{}',back:4},{t:'\\iint'},{t:'\\iiint'},{t:'\\oint'},{t:'\\sum_{}^{}',back:4},{t:'\\prod_{}^{}',back:4},{t:'\\lim_{}',back:1},{t:'\\frac{d}{dx}'},
+    {t:'\\partial'},{t:'\\nabla'},{t:'\\Delta'},{t:'\\sqrt[n]{}',back:1},{t:'\\infty'},{t:'\\to'},{t:"f'(x)"},{t:"f''(x)"},
+  ]},
+];
+
+let _mk={latex:'',onInsert:null,activeTab:'general',latexModeOn:false};
+
+function openMathKeyboard(onInsert,initialLatex){
+  _mk={latex:initialLatex||'',onInsert,activeTab:'general',latexModeOn:false};
+  openModal(renderMathKeyboardModal(),'640px');
+  setTimeout(()=>{
+    const inp=document.getElementById('mk-raw-input');
+    if(inp){inp.value=_mk.latex;inp.focus();}
+    mkUpdatePreview();
+  },20);
+}
+
+function renderMathKeyboardModal(){
+  return `
   <div class="modal-header">
-    <h2 class="serif" style="font-size:22px">Insert Math into Option ${['A','B','C','D','E'][optIdx]}</h2>
-    <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
+    <h2 class="serif" style="font-size:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:700">Edit Math</h2>
+    <button class="btn btn-ghost btn-icon" onclick="mkCancel()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
-  <div class="modal-body">
-    <div class="form-group">
-      <label class="form-label" style="text-transform:none;letter-spacing:0;font-size:12px">Current text: <span style="font-family:'Inter',sans-serif;font-weight:400">${escapeHtml(cur)||'(empty)'}</span></label>
-    </div>
-    <div class="math-symbol-grid">${grid}</div>
-    <div class="form-group mt-3">
-      <label class="form-label">LaTeX Code</label>
-      <textarea id="opt-latex-code" class="form-control" rows="2" placeholder="e.g. \\frac{1}{2}" oninput="previewOptLatex()"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Preview</label>
-      <div id="opt-latex-preview" class="latex-preview" style="text-align:center;font-size:22px;min-height:48px;display:flex;align-items:center;justify-content:center"><span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span></div>
+  <div class="modal-body" style="padding-top:16px">
+    <div id="mk-preview" style="min-height:56px;border:1px solid var(--border-dark);border-radius:var(--r);display:flex;align-items:center;justify-content:center;padding:12px 16px;font-size:22px;margin-bottom:10px;background:#fff;overflow-x:auto"></div>
+    <input id="mk-raw-input" class="mk-raw-input${_mk.latexModeOn?' visible':''}" type="text" oninput="mkSyncFromInput()" placeholder="Type LaTeX directly, e.g. \\frac{1}{2}">
+    <div class="mk-tabbar" id="mk-tabbar">${MATH_KB_TABS.map(tab=>`
+      <button class="mk-tab${tab.id===_mk.activeTab?' active':''}" onclick="mkSelectTab('${tab.id}')">${_katexStr(tab.label,false)}</button>
+    `).join('')}</div>
+    <div class="mk-keygrid" id="mk-keygrid">${mkRenderKeyGrid()}</div>
+    <div class="flex items-center justify-between" style="margin-top:14px">
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="mkBackspace()" title="Backspace">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15" height="15"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><path d="M18 9l-6 6M12 9l6 6"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="mkClear()">Clear</button>
+      </div>
+      <button class="mk-latex-toggle${_mk.latexModeOn?' on':''}" onclick="mkToggleLatexMode()">LaTeX Mode</button>
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="applyOptionLatex(${qi},${optIdx})">Insert into Option</button>
-  </div>`,'480px');
+    <button class="btn btn-secondary" onclick="mkCancel()">Cancel</button>
+    <button class="btn btn-primary" onclick="mkConfirm()">OK</button>
+  </div>`;
 }
 
-function previewOptLatex(){
-  const code=document.getElementById('opt-latex-code').value;
-  const prev=document.getElementById('opt-latex-preview');
-  if(!code.trim()){prev.innerHTML='<span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span>';return;}
-  try{katex.render(code,prev,{throwOnError:false,displayMode:true});}catch(e){prev.textContent='Invalid LaTeX';}
+function mkRenderKeyGrid(){
+  const tab=MATH_KB_TABS.find(t=>t.id===_mk.activeTab)||MATH_KB_TABS[0];
+  const cols=tab.id==='general'?8:8;
+  return `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px">
+    ${tab.keys.map(k=>{
+      const escaped=k.t.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<button type="button" class="mk-key" onclick="mkInsertToken('${escaped}',${k.back||0})">${_katexStr(k.t,false)}</button>`;
+    }).join('')}
+  </div>`;
 }
 
-function applyOptionLatex(qi,optIdx){
-  const code=document.getElementById('opt-latex-code').value.trim();
-  if(!code){closeModal();return;}
-  const insert=`\\(${code}\\)`;
-  const inp=document.getElementById('mc-opt-'+qi+'-'+optIdx);
-  const existing=inp?inp.value:APP.currentTest.questions[qi].options[optIdx]||'';
-  const newVal=(existing?existing+' ':'')+insert;
-  APP.currentTest.questions[qi].options[optIdx]=newVal;
-  save();
-  // re-render the options block
-  const el=document.getElementById('mc-options-'+qi);
-  if(el) el.innerHTML=renderMCOptions(qi,APP.currentTest.questions[qi]);
-  closeModal();toast('Math inserted into option.','success');
+function mkSelectTab(tabId){
+  _mk.activeTab=tabId;
+  document.getElementById('mk-tabbar').innerHTML=MATH_KB_TABS.map(tab=>`
+    <button class="mk-tab${tab.id===_mk.activeTab?' active':''}" onclick="mkSelectTab('${tab.id}')">${_katexStr(tab.label,false)}</button>
+  `).join('');
+  document.getElementById('mk-keygrid').innerHTML=mkRenderKeyGrid();
+}
+
+function mkGetInput(){return document.getElementById('mk-raw-input');}
+
+function mkInsertToken(latex,back){
+  const inp=mkGetInput();
+  if(!inp) return;
+  inp.focus();
+  const start=inp.selectionStart??inp.value.length;
+  const end=inp.selectionEnd??inp.value.length;
+  const before=inp.value.slice(0,start);
+  const after=inp.value.slice(end);
+  // Add a light space around bare word-tokens so e.g. \sin and following digits don't fuse.
+  inp.value=before+latex+after;
+  const cursor=start+latex.length-(back||0);
+  inp.setSelectionRange(cursor,cursor);
+  _mk.latex=inp.value;
+  mkUpdatePreview();
+}
+
+function mkBackspace(){
+  const inp=mkGetInput();
+  if(!inp) return;
+  inp.focus();
+  const start=inp.selectionStart??inp.value.length;
+  const end=inp.selectionEnd??inp.value.length;
+  if(start===end&&start>0){
+    inp.value=inp.value.slice(0,start-1)+inp.value.slice(start);
+    inp.setSelectionRange(start-1,start-1);
+  } else if(start!==end){
+    inp.value=inp.value.slice(0,start)+inp.value.slice(end);
+    inp.setSelectionRange(start,start);
+  }
+  _mk.latex=inp.value;
+  mkUpdatePreview();
+}
+
+function mkClear(){
+  const inp=mkGetInput();
+  if(!inp) return;
+  inp.value='';
+  inp.focus();
+  _mk.latex='';
+  mkUpdatePreview();
+}
+
+function mkSyncFromInput(){
+  const inp=mkGetInput();
+  if(!inp) return;
+  _mk.latex=inp.value;
+  mkUpdatePreview();
+}
+
+function mkToggleLatexMode(){
+  _mk.latexModeOn=!_mk.latexModeOn;
+  const inp=mkGetInput();
+  if(inp) inp.classList.toggle('visible',_mk.latexModeOn);
+  const btn=document.querySelector('.mk-latex-toggle');
+  if(btn) btn.classList.toggle('on',_mk.latexModeOn);
+}
+
+function mkUpdatePreview(){
+  const prev=document.getElementById('mk-preview');
+  if(!prev) return;
+  if(!_mk.latex||!_mk.latex.trim()){
+    prev.innerHTML='<span style="color:var(--ink-soft);font-style:italic;font-size:13px">Your equation will appear here</span>';
+    return;
+  }
+  try{ katex.render(_mk.latex,prev,{throwOnError:false,displayMode:true}); }
+  catch(e){ prev.textContent=_mk.latex; }
+}
+
+function mkConfirm(){
+  const code=(_mk.latex||'').trim();
+  if(code&&_mk.onInsert) _mk.onInsert(code);
+  closeModal();
+}
+function mkCancel(){closeModal();}
+
+function openOptionLatex(qi,optIdx){
+  const cur=APP.currentTest.questions[qi].options[optIdx]||'';
+  openMathKeyboard(code=>{
+    const insert=`\\(${code}\\)`;
+    const inp=document.getElementById('mc-opt-'+qi+'-'+optIdx);
+    const existing=inp?inp.value:APP.currentTest.questions[qi].options[optIdx]||'';
+    const newVal=(existing?existing+' ':'')+insert;
+    APP.currentTest.questions[qi].options[optIdx]=newVal;
+    save();
+    const el=document.getElementById('mc-options-'+qi);
+    if(el) el.innerHTML=renderMCOptions(qi,APP.currentTest.questions[qi]);
+    toast('Math inserted into option.','success');
+  });
 }
 
 function renderRubric(i,q){
@@ -2420,75 +2647,21 @@ document.addEventListener('paste',e=>{
 
 /* ── LaTeX Inserter ── */
 function openLatexInserter(qi,target){
-  const SYMS=[
-    '\\alpha','\\beta','\\gamma','\\delta','\\theta','\\pi','\\sigma','\\omega',
-    '\\frac{a}{b}','\\sqrt{x}','x^{2}','x_{n}',
-    '\\int_{a}^{b}','\\sum_{i=1}^{n}','\\prod','\\infty',
-    '\\pm','\\times','\\div','\\leq','\\geq','\\neq','\\approx',
-    '\\rightarrow','\\Rightarrow','\\partial','\\nabla','\\vec{v}','\\overline{AB}','\\angle'
-  ];
-  const grid=SYMS.map(s=>{
-    let preview=s;
-    try{preview=katex.renderToString(s,{throwOnError:false,displayMode:false});}catch(e){}
-    const escaped=s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<button type="button" class="math-sym" title="${s}" onclick="appendToLatexBox('${escaped}','latex-code')">${preview}</button>`;
-  }).join('');
-  openModal(`
-  <div class="modal-header">
-    <h2 class="serif" style="font-size:22px">Insert Math</h2>
-    <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
-  </div>
-  <div class="modal-body">
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Common Symbols — click to add</div>
-    <div class="math-symbol-grid" style="grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px">${grid}</div>
-    <div class="form-group">
-      <label class="form-label">LaTeX Code</label>
-      <textarea id="latex-code" class="form-control" rows="3" placeholder="e.g. \\frac{x^2}{2} + C" oninput="previewLatex()" style="font-family:monospace;font-size:13px"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Live Preview</label>
-      <div id="latex-preview" class="latex-preview" style="text-align:center;font-size:22px;min-height:56px;display:flex;align-items:center;justify-content:center"><span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span></div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="insertLatex(${qi},'${target}')">Insert</button>
-  </div>`,'500px');
-}
-
-function appendToLatexBox(code,id){
-  const ta=document.getElementById(id);
-  if(!ta) return;
-  ta.value=(ta.value?ta.value+' ':'')+code;
-  if(id==='latex-code') previewLatex();
-  else previewStudentLatex();
-  ta.focus();
-}
-
-function previewLatex(){
-  const code=document.getElementById('latex-code').value.trim();
-  const prev=document.getElementById('latex-preview');
-  if(!prev) return;
-  if(!code){prev.innerHTML='<span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span>';return;}
-  try{katex.render(code,prev,{throwOnError:false,displayMode:true});}catch(e){prev.textContent='Invalid LaTeX: '+e.message;}
-}
-
-function insertLatex(qi,target){
-  const code=document.getElementById('latex-code').value.trim();
-  if(!code) return;
-  const edId=target.startsWith('subq-')?`editor-subq-${qi}-${target.split('-')[1]}`:`editor-stem-${qi}`;
-  const edEl=document.getElementById(edId);
-  if(edEl){
-    const ql=Quill.find(edEl);
-    if(ql){
-      const range=ql.getSelection()||{index:ql.getLength()-1,length:0};
-      // Insert as plain delimiter text — KaTeX auto-render will process \(...\) on render
-      const insert=' \\('+code+'\\) ';
-      ql.insertText(range.index,insert,'user');
-      ql.setSelection(range.index+insert.length);
+  openMathKeyboard(code=>{
+    const edId=target.startsWith('subq-')?`editor-subq-${qi}-${target.split('-')[1]}`:`editor-stem-${qi}`;
+    const edEl=document.getElementById(edId);
+    if(edEl){
+      const ql=Quill.find(edEl);
+      if(ql){
+        const range=ql.getSelection()||{index:ql.getLength()-1,length:0};
+        // Insert as plain delimiter text — KaTeX auto-render will process \(...\) on render
+        const insert=' \\('+code+'\\) ';
+        ql.insertText(range.index,insert,'user');
+        ql.setSelection(range.index+insert.length);
+      }
     }
-  }
-  closeModal();toast('Math inserted — will render as formatted math.','success');
+    toast('Math inserted — will render as formatted math.','success');
+  });
 }
 
 /* ── Test Settings ── */
@@ -5771,82 +5944,36 @@ function _katexStr(code,display){
 }
 
 function openStudentMathInserter(key,isEssay){
-  const SYMS=[
-    {l:'\\\\frac{a}{b}',d:'\\\\frac{a}{b}'},{l:'\\\\sqrt{x}',d:'\\\\sqrt{x}'},
-    {l:'x^{2}',d:'x^{2}'},{l:'x_{n}',d:'x_{n}'},{l:'\\\\pi',d:'\\\\pi'},
-    {l:'\\\\theta',d:'\\\\theta'},{l:'\\\\alpha',d:'\\\\alpha'},{l:'\\\\beta',d:'\\\\beta'},
-    {l:'\\\\infty',d:'\\\\infty'},{l:'\\\\pm',d:'\\\\pm'},{l:'\\\\times',d:'\\\\times'},
-    {l:'\\\\div',d:'\\\\div'},{l:'\\\\leq',d:'\\\\leq'},{l:'\\\\geq',d:'\\\\geq'},
-    {l:'\\\\neq',d:'\\\\neq'},{l:'\\\\sum_{i=1}^{n}',d:'\\\\sum_{i=1}^{n}'},
-    {l:'\\\\int_{a}^{b}',d:'\\\\int_{a}^{b}'},{l:'\\\\vec{v}',d:'\\\\vec{v}'},
-    {l:'\\\\overline{AB}',d:'\\\\overline{AB}'},{l:'\\\\angle',d:'\\\\angle'},
-  ];
-  const grid=SYMS.map(s=>`<button type="button" class="math-sym" title="${s.l}" onclick="appendToLatexBox('${s.l.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','student-latex-code')">${_katexStr(s.d,false)}</button>`).join('');
-  openModal(`
-  <div class="modal-header">
-    <h2 class="serif" style="font-size:22px">Insert Math</h2>
-    <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
-  </div>
-  <div class="modal-body">
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Common Symbols — click to add</div>
-    <div class="math-symbol-grid" style="grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px">${grid}</div>
-    <div class="form-group">
-      <label class="form-label">LaTeX Code</label>
-      <textarea id="student-latex-code" class="form-control" rows="3" placeholder="e.g. \\frac{1}{2} + \\sqrt{3}" oninput="previewStudentLatex()" style="font-family:monospace;font-size:13px"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Live Preview</label>
-      <div id="student-latex-preview" class="latex-preview" style="text-align:center;font-size:22px;min-height:56px;display:flex;align-items:center;justify-content:center"><span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span></div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="insertStudentLatex('${key}',${!!isEssay})">Insert</button>
-  </div>`,'500px');
-}
-
-
-function previewStudentLatex(){
-  const code=document.getElementById('student-latex-code').value.trim();
-  const prev=document.getElementById('student-latex-preview');
-  if(!prev) return;
-  if(!code){prev.innerHTML='<span style="color:var(--ink-soft);font-style:italic;font-size:13px">Preview appears here</span>';return;}
-  try{ katex.render(code,prev,{throwOnError:false,displayMode:true}); }
-  catch(e){ prev.textContent='Invalid LaTeX: '+e.message; }
-}
-
-function insertStudentLatex(key,isEssay){
-  const code=document.getElementById('student-latex-code').value.trim();
-  if(!code){closeModal();return;}
-  const mathHtml=_katexStr(code,false);
-  const spanHtml=`<span class="math-inline" data-latex="${code.replace(/"/g,'&quot;')}" contenteditable="false">${mathHtml}</span>&#8203;`;
-  if(isEssay){
-    const ed=studentEssayEditors[key];
-    if(ed){
-      const rng=ed.getSelection(true);
-      ed.clipboard.dangerouslyPasteHTML(rng?rng.index:ed.getLength()-1,spanHtml);
-      APP.currentStudentExam.sub.answers[key]=ed.root.innerHTML;
-      save();
-    }
-  } else {
-    const div=document.getElementById('short-editor-'+key);
-    if(div){
-      div.focus();
-      const sel=window.getSelection();
-      if(sel&&sel.rangeCount&&div.contains(sel.anchorNode)){
-        const rng=sel.getRangeAt(0);
-        rng.deleteContents();
-        const frag=rng.createContextualFragment(spanHtml);
-        const lastNode=frag.lastChild;
-        rng.insertNode(frag);
-        if(lastNode){const r2=document.createRange();r2.setStartAfter(lastNode);r2.collapse(true);sel.removeAllRanges();sel.addRange(r2);}
-      } else {
-        div.innerHTML+=spanHtml;
+  openMathKeyboard(code=>{
+    const mathHtml=_katexStr(code,false);
+    const spanHtml=`<span class="math-inline" data-latex="${code.replace(/"/g,'&quot;')}" contenteditable="false">${mathHtml}</span>&#8203;`;
+    if(isEssay){
+      const ed=studentEssayEditors[key];
+      if(ed){
+        const rng=ed.getSelection(true);
+        ed.clipboard.dangerouslyPasteHTML(rng?rng.index:ed.getLength()-1,spanHtml);
+        APP.currentStudentExam.sub.answers[key]=ed.root.innerHTML;
+        save();
       }
-      saveShortEditorValue(key,div);
+    } else {
+      const div=document.getElementById('short-editor-'+key);
+      if(div){
+        div.focus();
+        const sel=window.getSelection();
+        if(sel&&sel.rangeCount&&div.contains(sel.anchorNode)){
+          const rng=sel.getRangeAt(0);
+          rng.deleteContents();
+          const frag=rng.createContextualFragment(spanHtml);
+          const lastNode=frag.lastChild;
+          rng.insertNode(frag);
+          if(lastNode){const r2=document.createRange();r2.setStartAfter(lastNode);r2.collapse(true);sel.removeAllRanges();sel.addRange(r2);}
+        } else {
+          div.innerHTML+=spanHtml;
+        }
+        saveShortEditorValue(key,div);
+      }
     }
-  }
-  closeModal();
+  });
 }
 
 function goToQ(i){studentState.currentQ=i;renderStudentExam();}
