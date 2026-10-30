@@ -82,8 +82,57 @@ exports.handler = async (event) => {
           if (sub && sub.id) {
             const idx = state.submissions.findIndex((s) => s.id === sub.id);
             if (idx === -1) state.submissions.push(sub);
-            else state.submissions[idx] = sub;
+            else {
+              // `instructorOps` is owned by the server (see 'instructorOp'). A student's routine
+              // autosave must never erase an instructor's pending "+5 minutes" / "end section".
+              const prevOps = state.submissions[idx].instructorOps;
+              if (Array.isArray(prevOps) && prevOps.length) {
+                const have = new Set((sub.instructorOps || []).map((o) => o.id));
+                sub.instructorOps = (sub.instructorOps || []).concat(prevOps.filter((o) => !have.has(o.id)));
+              }
+              state.submissions[idx] = sub;
+            }
           }
+          break;
+        }
+        case 'instructorOp': {
+          // Instructor → live student channel (sectioned tests): add time to a section, or end it.
+          // Appended server-side so it can't be lost to a concurrent student autosave; the
+          // student's browser applies each op exactly once.
+          const op = body.op || {};
+          const sub = state.submissions.find((s) => s.id === body.submissionId);
+          if (!sub) {
+            return {
+              statusCode: 404,
+              headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+              body: JSON.stringify({ error: 'Submission not found' }),
+            };
+          }
+          if (op.type !== 'addTime' && op.type !== 'endSection') {
+            return {
+              statusCode: 400,
+              headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+              body: JSON.stringify({ error: 'Unknown op type' }),
+            };
+          }
+          const clean = {
+            id: 'op_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+            type: op.type,
+            sectionId: typeof op.sectionId === 'string' ? op.sectionId : null,
+            at: new Date().toISOString(),
+          };
+          if (op.type === 'addTime') {
+            const secs = Number(op.secs);
+            if (!(secs > 0 && secs <= 7200)) {
+              return {
+                statusCode: 400,
+                headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+                body: JSON.stringify({ error: 'secs must be between 1 and 7200' }),
+              };
+            }
+            clean.secs = Math.round(secs);
+          }
+          sub.instructorOps = (sub.instructorOps || []).concat(clean);
           break;
         }
         case 'deleteSubmission': {

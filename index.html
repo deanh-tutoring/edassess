@@ -528,6 +528,22 @@ textarea.form-control{resize:vertical;min-height:80px}
   .q-nav-dot{width:15vw;height:15vw;max-width:38px;max-height:38px;font-size:10px}
 }
 </style>
+<style id="ea-sections-css">
+.sx-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:34px 38px;max-width:680px;width:100%;align-self:flex-start;box-shadow:0 6px 28px rgba(0,0,0,.06);font-family:'Inter',sans-serif}
+.sx-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,#0891B2);margin-bottom:6px}
+.sx-h2{font-size:30px;font-weight:300;margin:0 0 14px;color:var(--ink)}
+.sx-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.sx-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--paper-warm);color:var(--ink-soft)}
+.sx-dir-block{border-left:3px solid var(--ochre,#D97706);padding:4px 0 4px 16px;margin:14px 0;font-size:15px;line-height:1.75;color:var(--ink)}
+.sx-dir-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+.sx-note{background:var(--ochre-pale,#FEF3C7);border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.6;margin:12px 0;color:var(--ink)}
+.sx-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.sx-pill{font-size:11px;font-weight:700;border:1px solid;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.sx-busy{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;display:flex;align-items:center;justify-content:center}
+.sx-busy-card{background:#fff;border-radius:12px;padding:30px 36px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:'Inter',sans-serif;max-width:420px}
+.sx-spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:#0891B2;border-radius:50%;margin:0 auto 14px;animation:sxspin .8s linear infinite}
+@keyframes sxspin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 
@@ -823,7 +839,8 @@ async function loadState(){
 function hasPendingChanges(){
   return _syncInFlight.tests||_syncInFlight.assignments||_submissionSyncInFlight.size>0||_peerSessionSyncInFlight.size>0||
     JSON.stringify(APP.tests)!==_lastSynced.tests||
-    JSON.stringify(APP.assignments)!==_lastSynced.assignments;
+    JSON.stringify(APP.assignments)!==_lastSynced.assignments||
+    (APP.submissions||[]).some(s=>s.status==='in-progress'&&_lastSynced.submissions[s.id]!==undefined&&_lastSynced.submissions[s.id]!==JSON.stringify(s));
 }
 
 function save(){
@@ -858,7 +875,7 @@ function syncToServer(){
       // A newer edit may have arrived while this request was in flight —
       // re-check immediately instead of waiting for the next timer tick,
       // so no change is ever silently dropped.
-      syncToServer();
+      if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
     });
   }
   const asgStr=JSON.stringify(APP.assignments);
@@ -870,7 +887,7 @@ function syncToServer(){
       if(res&&!res.__httpError){_lastSynced.assignments=asgStr;_onSyncOk();}
       else if(res&&res.__httpError&&res.status===409){_onWipeGuardBlocked('assignments',asgStr,res);}
       else _onSyncFail();
-      syncToServer();
+      if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
     });
   }
   APP.submissions.forEach(s=>{
@@ -881,7 +898,7 @@ function syncToServer(){
         _submissionSyncInFlight.delete(s.id);
         if(res&&!res.__httpError){_lastSynced.submissions[s.id]=str;_onSyncOk();}
         else _onSyncFail();
-        syncToServer();
+        if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
       });
     }
   });
@@ -893,7 +910,7 @@ function syncToServer(){
         _peerSessionSyncInFlight.delete(p.id);
         if(res&&!res.__httpError){_lastSynced.peerSessions[p.id]=str;_onSyncOk();}
         else _onSyncFail();
-        syncToServer();
+        if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
       });
     }
   });
@@ -979,6 +996,7 @@ function forceSyncNow(){
 
 /* ── Save-status badge (always visible in the sidebar) ─────────────── */
 function updateSaveStatusUI(){
+  if(typeof sxUpdateSavePill==='function') sxUpdateSavePill();
   const badge=document.getElementById('save-status-badge');
   const text=document.getElementById('save-status-text');
   if(!badge||!text) return;
@@ -1449,7 +1467,7 @@ function renderDashboard(){
               <div style="font-size:13px;letter-spacing:.03em">${s.studentName}</div>
               <div class="text-sm text-muted">${t.title}</div>
             </div>
-            <span class="status-chip ${s.status==='submitted'?'status-submitted':s.status==='in-progress'?'status-in-progress':'status-not-started'}">${s.status==='submitted'?'Done':s.status==='in-progress'?'Active':'Pending'}</span>
+            <span class="status-chip ${s.status==='submitted'?'status-submitted':s.status==='in-progress'?'status-in-progress':'status-not-started'}">${s.status==='submitted'?'Done':s.status==='in-progress'?(s.paused?'Saved · away':'Active'):'Pending'}</span>
             <button class="btn btn-ghost btn-icon btn-sm" title="Delete response" onclick="event.stopPropagation();deleteSubmission('${s.id}')">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
             </button>
@@ -1500,7 +1518,7 @@ function renderTestsList(tests){
     </div>
     <div class="flex-1 overflow-hidden">
       <div style="font-size:14px;letter-spacing:.03em">${t.title}</div>
-      <div class="text-sm text-muted">${t.questions.length} question${t.questions.length!==1?'s':''} · ${t.subject||'No subject'} · Created ${formatDate(t.createdAt)}</div>
+      <div class="text-sm text-muted">${t.questions.length} question${t.questions.length!==1?'s':''}${sxOn(t)?` · ${t.sections.length} sections${t.sections.some(s=>((s.routing&&s.routing.rules)||[]).length)?' · adaptive':''}`:''} · ${t.subject||'No subject'} · Created ${formatDate(t.createdAt)}</div>
     </div>
     <div class="flex items-center gap-3">
       ${t.published?`<span class="badge badge-sage">Published</span>`:`<span class="badge badge-gray">Draft</span>`}
@@ -1557,6 +1575,7 @@ function openCreateTest(){
       <label class="form-label">Description (optional)</label>
       <textarea id="ct-desc" class="form-control" rows="2" placeholder="Brief description..."></textarea>
     </div>
+    <label class="flex gap-2 items-center" style="font-size:13px;cursor:pointer"><input type="checkbox" id="ct-sections"> <span><strong>Multiple sections</strong> — separate directions, timers, adaptive routing, weighted grading</span></label>
   </div>
   <div class="modal-footer">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -1579,6 +1598,10 @@ function createTest(){
     questions:[],published:false,
     createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
   };
+  if(document.getElementById('ct-sections')&&document.getElementById('ct-sections').checked){
+    const s1=sxNewSection('Section 1');test.sectioned=true;test.sections=[s1];
+    test.continueLater={allowed:true,when:'between',clock:'pause'};
+  }
   APP.tests.push(test);save();closeModal();
   toast('Test created.','success');
   openBuilder(test.id);
@@ -1613,7 +1636,7 @@ function renderBuilder(){
       <div style="width:1px;height:20px;background:var(--border)"></div>
       <div>
         <div style="font-weight:600;font-size:14px;letter-spacing:.03em">${t.title}</div>
-        <div class="text-xs text-muted">${t.questions.length} question${t.questions.length!==1?'s':''} · ${t.published?'<span style="color:var(--sage)">Published</span>':'Draft'}</div>
+        <div class="text-xs text-muted">${t.questions.length} question${t.questions.length!==1?'s':''}${sxOn(t)?` · ${t.sections.length} section${t.sections.length!==1?'s':''}`:''} · ${t.published?'<span style="color:var(--sage)">Published</span>':'Draft'}</div>
       </div>
     </div>
     <div class="flex gap-2">
@@ -1621,6 +1644,7 @@ function renderBuilder(){
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         Import Questions
       </button>
+      <button class="btn btn-secondary btn-sm" onclick="sxOpenManager()" style="${sxOn(t)?'border-color:var(--accent,#0891B2);color:var(--accent,#0891B2)':''}">${sxOn(t)?'Sections &amp; Grading':'Sections &amp; Grading'}</button>
       <button class="btn btn-secondary btn-sm" onclick="openTestSettings()">Settings</button>
       ${t.published?`<button class="btn btn-success btn-sm" onclick="openAssignModal('${t.id}')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
@@ -1636,6 +1660,7 @@ function renderBuilder(){
     <div class="builder-sidebar">
       <div class="builder-sidebar-header">
         <div style="font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;font-family:'Inter',sans-serif">Questions</div>
+        ${sxOn(t)?sxAddTargetPicker():''}
         <div style="font-size:10px;color:var(--ink-soft);margin-bottom:8px;letter-spacing:.04em">Add question type:</div>
         <div class="q-type-grid">
           <div class="q-type-btn" onclick="addQuestion('mc')">
@@ -1676,6 +1701,7 @@ function renderBuilder(){
 
 function renderQSidebarList(){
   const t=APP.currentTest;
+  if(sxOn(t)) return sxRenderSidebar();
   if(!t.questions.length) return `<div style="text-align:center;padding:20px;font-size:12px;color:var(--ink-soft);font-style:italic;font-family:'Inter',sans-serif">No questions yet</div>`;
   let html='';let qNum=1;
   t.questions.forEach((q,i)=>{
@@ -1719,6 +1745,7 @@ function addQuestion(type){
   } else {
     q={type,stem:'',options:(type==='mc'||type==='ms')?['','','','']:undefined,correctAnswers:(type==='mc'||type==='ms')?[]:(type==='short'?['']:undefined),points:1,rubric:(type==='essay')?[]:undefined,image:null};
   }
+  if(sxOn(t)) q.sectionId=sxActiveSectionId();
   t.questions.push(q);
   activeQIndex=t.questions.length-1;
   save();renderBuilder();
@@ -1728,12 +1755,13 @@ function addQuestion(type){
 function selectQ(i){
   activeQIndex=i;
   document.getElementById('builder-editor').innerHTML=renderQEditor(i);
-  document.querySelectorAll('.question-card').forEach((c,ci)=>c.classList.toggle('active',ci===i));
+  document.querySelectorAll('.question-card').forEach((c,ci)=>c.classList.toggle('active',(c.dataset.qi!==undefined?+c.dataset.qi:ci)===i));
+  if(sxOn(APP.currentTest)){const q=APP.currentTest.questions[i];if(q)sxActiveSec=sxQSection(APP.currentTest,q);}
   requestAnimationFrame(()=>initBuilderEditors(i));
 }
 
 function removeQ(i){
-  if(!confirm('Remove this question?')) return;
+  if(!confirm(sxRemoveWarning())) return;
   APP.currentTest.questions.splice(i,1);
   if(activeQIndex>=APP.currentTest.questions.length)activeQIndex=APP.currentTest.questions.length-1;
   save();renderBuilder();
@@ -1753,8 +1781,8 @@ function renderStandardQEditor(i,q){
   return`<div class="animate-in" style="max-width:720px;margin:0 auto">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
     <div class="flex items-center gap-3">
-      <div class="question-number" style="width:28px;height:28px;font-size:12px">${i+1}</div>
-      <span class="type-chip">${types[q.type]||q.type}</span>
+      <div class="question-number" style="width:28px;height:28px;font-size:12px">${sxQNumLabel(i)}</div>
+      <span class="type-chip">${types[q.type]||q.type}</span>${sxQSectionPicker(i)}
     </div>
     <div class="flex gap-2 items-center">
       <label style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Points:</label>
@@ -2099,8 +2127,8 @@ function renderPassageEditor(i){
   if(_activeDocByQ[i]===undefined||_activeDocByQ[i]>=docs.length) _activeDocByQ[i]=0;
   return`<div class="animate-in" style="max-width:900px;margin:0 auto">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-    <div class="question-number" style="background:var(--burgundy);width:28px;height:28px;font-size:12px">${i+1}</div>
-    <span class="type-chip">Passage / Stimulus${docs.length>1?' — DBQ ('+docs.length+' documents)':''}</span>
+    <div class="question-number" style="background:var(--burgundy);width:28px;height:28px;font-size:12px">${sxQNumLabel(i)}</div>
+    <span class="type-chip">Passage / Stimulus${docs.length>1?' — DBQ ('+docs.length+' documents)':''}</span>${sxQSectionPicker(i)}
   </div>
   <div id="passage-card-${i}">${renderPassageCard(i)}</div>
   <div style="margin-bottom:16px">
@@ -2819,13 +2847,13 @@ async function runImportQuestions(){
         if(sq){sq.rubric=sq.rubric||(sq.type==='essay'?[]:undefined);subQuestions.push(sq);addedSubQ++;}
       });
       if(!subQuestions.length){errors.push(`${label}: none of its sub-questions could be imported`);return;}
-      added.push({type:'passage',docs:[{id:uid(),title:'Document 1',content:passageText}],subQuestions});
+      added.push({type:'passage',docs:[{id:uid(),title:'Document 1',content:passageText}],subQuestions,sectionId:sxImportSection(t,item)});
       addedPassages++;
       return;
     }
 
     const q=buildImportedQuestion(item,t,validDomains,label,warnings,errors);
-    if(q){q.image=null;added.push(q);addedStandalone++;}
+    if(q){q.image=null;const sid=sxImportSection(t,item);if(sid)q.sectionId=sid;added.push(q);addedStandalone++;}
   });
 
   let saveResult={ok:true};
@@ -2896,6 +2924,11 @@ function removeRefMaterial(){
 
 async function publishTest(){
   const t=APP.currentTest;
+  if(sxOn(t)){
+    const v=sxValidate(t);
+    if(v.errors.length){toast('Fix these before publishing: '+v.errors[0]+(v.errors.length>1?` (+${v.errors.length-1} more — open Sections & Grading)`:''),'error');sxOpenManager(sxMgr.tab==='grading'?'grading':'adaptive');return;}
+    if(v.warnings.length&&!t.published&&!confirm('Heads up:\n\n• '+v.warnings.slice(0,6).join('\n• ')+'\n\nPublish anyway?')) return;
+  }
   const wasPublished=t.published;
   const wasUpdatedAt=t.updatedAt;
   const isFirstPublish=!wasPublished;
@@ -2937,7 +2970,8 @@ function openAssignModal(testId){
         <span style="font-size:13px">Release scores immediately after submission</span>
       </label>
     </div>
-    <div class="assign-section">
+    ${sxAssignBlock(t)}
+    <div class="assign-section" ${sxOn(t)?'style="display:none"':''}>
       <div class="assign-section-title">Timing</div>
       <div class="flex items-center gap-3">
         <label class="checkbox-wrap" style="white-space:nowrap">
@@ -3016,6 +3050,7 @@ async function createAssignment(testId){
     ultraLockdown:document.getElementById('as-ultra-lockdown').checked,
     createdAt:new Date().toISOString(),
   };
+  Object.assign(a,sxReadAssign(APP.tests.find(x=>x.id===testId)));
   APP.assignments.push(a);
   const btn=document.getElementById('create-assignment-btn');
   setBtnSaving(btn,true,'Generating…');
@@ -3055,7 +3090,7 @@ async function createAssignment(testId){
       </div>
       <div style="background:var(--paper-warm);border-radius:var(--r);padding:12px;border:1px solid var(--border)">
         <div class="text-xs text-muted mb-1">Time Limit</div>
-        <div style="font-weight:600;font-size:13px">${a.timed?a.maxMinutes+' min':'Unlimited'}</div>
+        <div style="font-weight:600;font-size:13px">${sxTimeTileText(a,APP.tests.find(x=>x.id===a.testId))}</div>
       </div>
       <div style="background:var(--paper-warm);border-radius:var(--r);padding:12px;border:1px solid var(--border)">
         <div class="text-xs text-muted mb-1">Secure Mode</div>
@@ -3207,15 +3242,16 @@ function renderLiveList(subs){
   return subs.map(s=>{
     const t=APP.tests.find(tt=>tt.id===s.testId)||{title:'Unknown',questions:[]};
     const a=APP.assignments.find(aa=>aa.id===s.assignmentId)||{};
-    const totalPts=calcTotalPoints(t);
+    const totalPts=calcTotalPoints(t,s);
     const fqs=flatQuestions(t);
-    const progress=s.answers?Object.keys(s.answers).length:0;
-    const total=fqs.length;
+    const _pg=sxOn(t)?sxProgress(t,s):null;
+    const progress=_pg?_pg.answered:(s.answers?Object.keys(s.answers).length:0);
+    const total=_pg?_pg.total:fqs.length;
     const pct=total>0?Math.round(progress/total*100):0;
     const scoredPct=totalPts>0?Math.round((s.score||0)/totalPts*100):0;
     // Time remaining
-    let timeInfo='';
-    if(s.status==='in-progress'&&a.timed&&s.startedAt){
+    let timeInfo=(sxOn(t)&&s.status==='in-progress')?sxLiveTime(s,t,a):'';
+    if(!sxOn(t)&&s.status==='in-progress'&&a.timed&&s.startedAt){
       const elapsed=Math.floor((Date.now()-new Date(s.startedAt).getTime())/1000);
       const remaining=(a.maxMinutes*60)-elapsed;
       if(remaining>0){
@@ -3234,13 +3270,15 @@ function renderLiveList(subs){
         <div class="text-sm text-muted" style="font-style:italic;font-family:'Inter',sans-serif">${t.title}</div>
         ${s.status==='in-progress'?`<div class="progress-bar-wrap mt-1"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
         <div style="font-size:10px;color:var(--ink-soft);margin-top:2px;letter-spacing:.04em">${progress}/${total} answered · ${pct}% complete</div>`:''}
+        ${sxLiveSectionLine(s,t)}
         ${s.strikes?`<div style="font-size:10px;color:var(--rust);letter-spacing:.04em;margin-top:2px">⚠ ${s.strikes} fullscreen violation${s.strikes!==1?'s':''}</div>`:''}
       </div>
       <div style="flex-shrink:0;text-align:right;margin-left:12px;min-width:80px">
         <div class="mb-1">
-          <span class="status-chip ${s.status==='submitted'?'status-submitted':s.status==='in-progress'?'status-in-progress':'status-not-started'}">${s.status==='submitted'?'Submitted':s.status==='in-progress'?'Active':'Pending'}</span>
+          <span class="status-chip ${s.status==='submitted'?'status-submitted':s.status==='in-progress'?'status-in-progress':'status-not-started'}">${s.status==='submitted'?'Submitted':s.status==='in-progress'?(s.paused?'Saved · away':'Active'):'Pending'}</span>
         </div>
-        ${s.status==='submitted'?`<div style="font-size:13px;font-weight:700;color:var(--ink);font-family:'Inter',sans-serif">${s.score||0}/${totalPts} <span style="color:var(--ink-soft);font-weight:400;font-size:12px">${scoredPct}%</span></div>
+        ${s.status==='submitted'?`<div style="font-size:13px;font-weight:700;color:var(--ink);font-family:'Inter',sans-serif">${s.score||0}/${totalPts} <span style="color:var(--ink-soft);font-weight:400;font-size:12px">${sxPctOf(t,s,totalPts)}%</span></div>
+        ${sxLiveGradeChip(s,t)}
         ${ng?`<div style="font-size:10px;color:var(--ochre);letter-spacing:.04em">Needs grading</div>`:'<div style="font-size:10px;color:var(--sage);letter-spacing:.04em">✓ Graded</div>'}`
         :s.status==='in-progress'?timeInfo:''}
       </div>
@@ -3293,6 +3331,7 @@ function openStudentControl(sid){
         <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${link}')">Copy</button>
       </div>
     </div>
+    ${sxControlPanel(s)}
     <div class="flex flex-col gap-2">
       ${s.status==='in-progress'?`<button class="btn btn-danger" onclick="forceSubmit('${sid}');closeModal()">Force Submit Exam</button>`:''}
       <button class="btn btn-secondary" onclick="resetSubmission('${sid}');closeModal()">Reset / Allow Retry</button>
@@ -3307,6 +3346,7 @@ function forceSubmit(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
   s.status='submitted';s.submittedAt=new Date().toISOString();s.note='Force submitted by instructor';
+  {const tt=APP.tests.find(x=>x.id===s.testId);if(sxOn(tt))sxMarkEnded(tt,s,'instructor',Date.now());}
   autoScore(s);save();refreshLiveData();toast('Exam force submitted.','info');
 }
 
@@ -3342,7 +3382,7 @@ function renderGrading(){
     `<div class="card">
       ${allSubs.map(s=>{
         const t=APP.tests.find(tt=>tt.id===s.testId)||{title:'Unknown',questions:[]};
-        const totalPts=calcTotalPoints(t);
+        const totalPts=calcTotalPoints(t,s);
         const ng=needsGrading(s,t);
         return`
         <div class="student-row">
@@ -3838,8 +3878,8 @@ function openGradingStudent(sid){
   if(!s){toast('Submission not found','error');return;}
   const t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t){toast('Test not found','error');return;}
-  const fqs=flatQuestions(t);
-  const totalPts=calcTotalPoints(t);
+  const fqs=sxGradableItems(t,s);
+  const totalPts=calcTotalPoints(t,s);
   const letters='ABCDE';
   openModal(`
   <div class="modal-header" style="position:sticky;top:0;background:var(--cream);z-index:1">
@@ -3851,7 +3891,8 @@ function openGradingStudent(sid){
   </div>
   <div class="modal-body">
     ${s.ultraLockdown?renderUltraLockdownReview(s):''}
-    ${fqs.map((item,idx)=>{
+    ${sxGradeSummary(s,t,'grader')}
+    ${sxGradeRows(s,t,fqs,(item,idx)=>{
       const q=item.q;
       const qKey=item.passageIdx!==undefined?`p${item.passageIdx}_s${item.subIdx}`:String(item.idx);
       const ans=s.answers?s.answers[qKey]:undefined;
@@ -3945,7 +3986,7 @@ function openGradingStudent(sid){
           <textarea class="form-control" rows="2" style="font-size:13px" placeholder="Leave feedback..." oninput="setComment('${sid}','${qKey}',this.value)">${(s.comments&&s.comments[qKey])||''}</textarea>
         </div>
       </div>`;
-    }).join('')}
+    })}
   </div>
   <div class="modal-footer" style="justify-content:space-between">
     <div class="flex gap-2">
@@ -4011,7 +4052,7 @@ function recalcAndSave(sid){
 function needsGrading(s,t){
   if(!t) t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t) return false;
-  const fqs=flatQuestions(t);
+  const fqs=sxGradableItems(t,s);
   return fqs.some(item=>{
     const q=item.q;
     if(q.type!=='essay') return false;
@@ -4027,30 +4068,15 @@ function needsGrading(s,t){
 function autoScore(s,t){
   if(!t) t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t) return;
+  // Sectioned and/or custom-graded tests go through the grading engine (section
+  // weights, adaptive paths, letter grades…). Everything else keeps the original sum.
+  if(sxUsesEngine(t)){const g=sxComputeGrade(t,s);s.grade=g;s.score=g.points;return;}
+  if(s.grade) delete s.grade;
   const fqs=flatQuestions(t);
   let total=0;
   fqs.forEach(item=>{
-    const q=item.q;
     const qKey=item.passageIdx!==undefined?`p${item.passageIdx}_s${item.subIdx}`:String(item.idx);
-    const ans=s.answers?s.answers[qKey]:undefined;
-    if(q.type==='mc'||q.type==='ms'){
-      // Check for MCQ override
-      if(s.mcOverrides&&s.mcOverrides[qKey]!==undefined){
-        total+=s.mcOverrides[qKey];
-      } else if(isAnswerCorrect(q,ans)){
-        total+=q.points||1;
-      }
-    } else if(q.type==='short'){
-      if(s.mcOverrides&&s.mcOverrides[qKey]!==undefined){
-        total+=s.mcOverrides[qKey];
-      } else if(isAnswerCorrect(q,ans)){
-        total+=q.points||1;
-      }
-    } else if(q.type==='essay'){
-      const rubricTotal=(s.rubricScores&&s.rubricScores[qKey])?Object.values(s.rubricScores[qKey]).reduce((a,v)=>a+v,0):0;
-      const manual=(s.manualScores&&s.manualScores[qKey])||0;
-      total+=rubricTotal||manual;
-    }
+    total+=sxQuestionAward(item.q,qKey,s);
   });
   s.score=Math.round(total*10)/10;
 }
@@ -4080,7 +4106,7 @@ function renderAnalyticsContent(){
     const aSubs=done.filter(s=>s.assignmentId===a.id);
     if(!aSubs.length) return;
     const totalPts=calcTotalPoints(t);
-    const scores=aSubs.map(s=>totalPts>0?Math.round((s.score||0)/totalPts*100):0);
+    const scores=aSubs.map(s=>sxPctOf(t,s,totalPts));
     const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
     const max=scores.length?Math.max(...scores):0;
     const min=scores.length?Math.min(...scores):0;
@@ -4107,10 +4133,11 @@ function renderAnalyticsContent(){
           ${aSubs.map(s=>`
           <div class="flex items-center gap-3" style="margin-bottom:8px">
             <div style="font-size:13px;font-weight:500;width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Inter',sans-serif">${s.studentName}</div>
-            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${totalPts>0?Math.round((s.score||0)/totalPts*100):0}%;background:${scoreColor(totalPts>0?(s.score||0)/totalPts:0)}"></div></div>
-            <div style="font-size:13px;font-weight:600;min-width:60px;text-align:right;font-family:'Inter',sans-serif">${s.score||0}/${totalPts}</div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${sxPctOf(t,s,totalPts)}%;background:${scoreColor(sxPctOf(t,s,totalPts)/100)}"></div></div>
+            <div style="font-size:13px;font-weight:600;min-width:60px;text-align:right;font-family:'Inter',sans-serif">${s.score||0}/${sxMaxOf(t,s,totalPts)}</div>
           </div>`).join('')}
         </div>
+        ${sxSectionAnalytics(t,aSubs)}
         <div class="mt-6" style="border-top:1px solid var(--border);padding-top:16px">
           <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('${breakdownId}').classList.toggle('hidden');this.querySelector('.qb-chevron').classList.toggle('open')">
             <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Question Breakdown</div>
@@ -4130,9 +4157,11 @@ function renderQuestionBreakdown(t,subs){
   if(!fqs.length||!total) return '';
   const rows=fqs.map((item,i)=>{
     const q=item.q;const qKey=item.key;
-    let correct=0;let pointsEarned=0;
+    let correct=0;let pointsEarned=0;let n=0;
     const objective=(q.type==='mc'||q.type==='ms'||q.type==='short');
     subs.forEach(s=>{
+      if(sxOn(t)&&!sxSubTook(t,s,item)) return;   // adaptive: only students who were given this question
+      n++;
       const ans=s.answers?s.answers[qKey]:undefined;
       if(objective){
         const overridden=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;
@@ -4144,8 +4173,8 @@ function renderQuestionBreakdown(t,subs){
         pointsEarned+=(rubricTotal||manual);
       }
     });
-    const pct=objective?(total>0?Math.round(correct/total*100):0):(total>0?Math.round(pointsEarned/((q.points||1)*total)*100):0);
-    return{i,q,objective,correct,pointsEarned,pct,typeLabel:q.type==='mc'?'Multiple Choice':q.type==='ms'?'Select All':q.type==='short'?'Short Answer':'Essay'};
+    const pct=objective?(n>0?Math.round(correct/n*100):0):(n>0?Math.round(pointsEarned/((q.points||1)*n)*100):0);
+    return{i,q,objective,correct,pointsEarned,pct,n,typeLabel:q.type==='mc'?'Multiple Choice':q.type==='ms'?'Select All':q.type==='short'?'Short Answer':'Essay'};
   });
   // Surface the toughest / most-missed questions first, for quick review.
   rows.sort((r1,r2)=>r1.pct-r2.pct);
@@ -4153,7 +4182,7 @@ function renderQuestionBreakdown(t,subs){
     ${rows.map(r=>{
       const preview=stripHtml(r.q.stem)||'(No question text)';
       const barColor=scoreColor(r.pct/100);
-      const fraction=r.objective?`${r.correct}/${total} correct`:`avg ${r.pointsEarned?Math.round((r.pointsEarned/total)*10)/10:0}/${r.q.points||1} pts`;
+      const fraction=r.objective?`${r.correct}/${r.n} correct`:`avg ${r.pointsEarned&&r.n?Math.round((r.pointsEarned/r.n)*10)/10:0}/${r.q.points||1} pts`;
       return`<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;background:var(--cream)">
         <div class="flex items-center gap-3" style="margin-bottom:6px">
           <span style="font-size:10px;font-weight:700;color:var(--ink-soft);flex-shrink:0">Q${r.i+1}</span>
@@ -4243,10 +4272,12 @@ function startStudentTestPoll(){
         // Refresh the test reference in currentStudentExam so next render picks up changes
         const updated=data.tests.find(t=>t.id===a.testId);
         if(updated) APP.currentStudentExam.t=updated;
+        sxOnTestRefreshed();
       }
       // Detect an instructor-side Force Submit and end the exam locally to match.
       if(Array.isArray(data.submissions)){
         const remoteSub=data.submissions.find(s=>s.id===sub.id);
+        if(remoteSub) sxApplyInstructorOps(remoteSub);
         if(remoteSub&&remoteSub.status==='submitted'&&sub.status==='in-progress'){
           handleRemoteForceSubmit(remoteSub);
         }
@@ -4287,9 +4318,10 @@ function localResumeKey(aid,name){
 function saveLocalResume(){
   const ex=APP.currentStudentExam;
   if(!ex||!ex.sub) return;
+  if(ex.sub.status==='in-progress'){sxSnapshotUi();save();}
   try{
     localStorage.setItem(localResumeKey(ex.a.id,ex.sub.studentName),JSON.stringify({
-      subId:ex.sub.id,
+      subId:ex.sub.id,ts:Date.now(),forSection:ex.sub.sectionState?ex.sub.sectionState.current:null,
       currentQ:studentState.currentQ,
       flagged:studentState.flagged||{},
       highlights:studentState.highlights||{},
@@ -4327,6 +4359,7 @@ function renderNameEntry(a,t){
       <span style="background:var(--paper-aged);padding:4px 10px;border-radius:var(--r);font-size:10px;color:var(--ink-soft);font-weight:600;letter-spacing:.08em;border:1px solid var(--border)">${flatQuestions(t).length} QUESTIONS</span>
       ${a.timed?`<span style="background:var(--ochre-pale);padding:4px 10px;border-radius:var(--r);font-size:10px;color:var(--ochre);font-weight:600;letter-spacing:.08em;border:1px solid var(--ochre)">⏱ ${a.maxMinutes} MIN</span>`:''}
       ${a.locked?`<span style="background:var(--rust-pale);padding:4px 10px;border-radius:var(--r);font-size:10px;color:var(--rust);font-weight:600;letter-spacing:.08em;border:1px solid var(--rust)">🔒 SECURE</span>`:''}
+      ${sxNameChips(a,t)}
     </div>
     <div style="margin-bottom:20px">
       <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">First Name &amp; Last Initial</label>
@@ -4760,17 +4793,13 @@ function resumeExamSession(a,t,existing,name){
 
   // Resume from server state
   const resume=getLocalResume(a.id,name);
-  APP.currentStudentExam={sub:existing,a,t,orderedQuestions:existing._orderedQuestions||t.questions};
-  studentState={
-    currentQ:(resume&&resume.currentQ)||0,
-    flagged:(resume&&resume.flagged)||existing.flags||{},
-    highlights:(resume&&resume.highlights)||{},
-    activeDoc:(resume&&resume.activeDoc)||{},
-    eliminated:(resume&&resume.eliminated)||{},
-  };
+  APP.currentStudentExam={sub:existing,a,t,orderedQuestions:t.questions};
+  if(sxOn(t)) sxEnsureState(t,existing,Date.now());
+  studentState=sxRestoreUi(existing,resume);
+  if(sxOnResume(existing,a,t)) return;   // true → time ran out while away and the exam was finalised
   startStudentTestPoll();
   if(a.locked){requestFullscreen();setupFullscreenMonitor(existing.id);}
-  if(a.timed) startExamTimer(existing.id,a.maxMinutes);
+  if(a.timed&&!sxOn(t)) startExamTimer(existing.id,a.maxMinutes);
   if(a.ultraLockdown&&_ultraStream) startUltraMonitoring(existing);
   renderStudentExam();
 }
@@ -4793,16 +4822,11 @@ function finishStartExam(aid,name,opts){
   }
   APP.submissions.push(sub);save();
 
-  let orderedQuestions=t.questions;
-  if(a.shuffleItems){
-    const groups=groupQuestionsForShuffle(t.questions);
-    shuffleArray(groups);
-    orderedQuestions=groups.flat();
-    sub._orderedQuestions=orderedQuestions; // persist shuffle order
-    save();
-  }
-
+  // Question order is now computed by examItems() with CANONICAL keys and persisted in
+  // sub.order — shuffling no longer changes which question an answer key refers to.
+  const orderedQuestions=t.questions;
   APP.currentStudentExam={sub,a,t,orderedQuestions};
+  if(sxOn(t)) sxEnsureState(t,sub,Date.now());
   studentState={currentQ:0,flagged:{},highlights:{},eliminated:{},activeDoc:{}};
   saveLocalResume();
   startStudentTestPoll();
@@ -4957,9 +4981,11 @@ function openDirectionsPanel(){
   if(arrow) arrow.style.transform='rotate(180deg)';
 }
 
-function renderDirectionsBtn(t){
-  const hasDirections=t&&t.instructions&&t.instructions.trim();
-  const html=hasDirections?markdownToHtml(t.instructions):'';
+function renderDirectionsBtn(t,sec){
+  const gen=(t&&t.instructions&&t.instructions.trim())?markdownToHtml(t.instructions):'';
+  const sd=(sec&&(sec.directions||'').trim())?markdownToHtml(sec.directions):'';
+  const hasDirections=!!(gen||sd);
+  const html=sd?(`<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:6px">This section</div>${sd}`+(gen?`<hr style="margin:20px 0;border:none;border-top:1px solid #ddd"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:6px">General directions</div>${gen}`:'')):gen;
   return `<div style="position:relative;flex-shrink:0">
     <button id="directions-btn" onclick="toggleDirections()" class="bb-directions-link">
       Directions
@@ -5143,8 +5169,11 @@ function groupQuestionsForShuffle(questions){
 }
 
 function renderStudentExam(){
-  const {sub,a,t,orderedQuestions}=APP.currentStudentExam;
-  const fqs=flatQuestionsFromList(orderedQuestions);
+  if(sxStudentGate()) return;                 // section intro / break / finished screens
+  const {sub,a,t}=APP.currentStudentExam;
+  const SX=sxStudentCtx();                    // null for tests without sections
+  const fqs=examItems();
+  if(studentState.currentQ>=fqs.length) studentState.currentQ=Math.max(0,fqs.length-1);
   const q=fqs[studentState.currentQ];
   const sw=document.getElementById('student-wrapper');
   const isLast=studentState.currentQ===fqs.length-1;
@@ -5152,7 +5181,7 @@ function renderStudentExam(){
   const flagged=studentState.flagged&&studentState.flagged[qKey];
   const answered=q&&sub.answers&&sub.answers[qKey]!==undefined;
   const answeredCount=fqs.filter(f=>sub.answers&&sub.answers[f.key]!==undefined).length;
-  const timerSection=a.timed?`
+  const timerSection=SX?sxTimerBlock(SX):a.timed?`
   <div class="student-timer-center">
     <span class="student-timer-display${(timerHidden&&!_timerLocked)?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(computeRemainingSecs())}</span>
     ${_timerLocked?'':`<button class="timer-toggle-btn" onclick="toggleTimer()">${timerHidden?'Show':'Hide'}</button>`}
@@ -5162,10 +5191,12 @@ function renderStudentExam(){
     <div class="student-header">
       <div class="flex items-center gap-3" style="min-width:0;flex-direction:column;align-items:flex-start;gap:2px">
         <div class="student-header-title">${t.title}</div>
-        ${renderDirectionsBtn(t)}
+        ${SX?sxSectionLabel(SX):''}
+        ${renderDirectionsBtn(t,SX&&SX.sec)}
       </div>
       ${timerSection}
       <div class="student-header-tools">
+        ${SX?sxSavePillHtml():(sxContinueLater(t,a).allowed?sxSavePillHtml():'')}
         ${sub.ultraLockdown?`<div style="display:flex;align-items:center;gap:5px;background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.35);padding:5px 9px;border-radius:6px" title="Camera and microphone are being monitored">
           <span style="width:6px;height:6px;border-radius:50%;background:#C0392B;animation:pulse 1.5s infinite"></span>
           <span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#C0392B">REC</span>
@@ -5178,11 +5209,11 @@ function renderStudentExam(){
           <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="18" height="18"><path d="M3 6h18M3 18h18"/><path d="M3 12h18" stroke-width="2.6"/></svg>
           Line Reader
         </button>
-        ${t.referenceMaterial?`<button class="bb-tool-btn" onclick="toggleReferencePanel()">
+        ${(t.referenceMaterial&&(!SX||SX.showReference))?`<button class="bb-tool-btn" onclick="toggleReferencePanel()">
           <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
           Reference
         </button>`:''}
-        ${a.allowDesmos?`<button class="bb-tool-btn" onclick="toggleDesmos()">
+        ${(SX?SX.calculator:a.allowDesmos)?`<button class="bb-tool-btn" onclick="toggleDesmos()">
           <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="18" height="18"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
           Calculator
         </button>`:''}
@@ -5197,7 +5228,7 @@ function renderStudentExam(){
     </div>
     <div class="student-qbar">
       <div class="student-header-name">${sub.studentName}</div>
-      <button class="student-nav-btn prev" onclick="prevQ()" ${studentState.currentQ===0?'disabled':''}>
+      <button class="student-nav-btn prev" onclick="prevQ()" ${(studentState.currentQ===0||(SX&&SX.forwardOnly))?'disabled':''} ${SX&&SX.forwardOnly?'style="visibility:hidden"':''}>
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M15 18l-6-6 6-6"/></svg>
         Back
       </button>
@@ -5208,7 +5239,7 @@ function renderStudentExam(){
       ${isLast?
         `<button class="student-nav-btn next" onclick="showCheckWork()" style="background:var(--sage);border-color:var(--sage)">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M5 13l4 4L19 7"/></svg>
-          Submit
+          ${SX?sxFinishLabel(SX):'Submit'}
         </button>`:
         `<button class="student-nav-btn next" onclick="nextQ()">
           Next
@@ -5217,7 +5248,7 @@ function renderStudentExam(){
     </div>
     <div id="q-nav-popup" class="q-nav-popup hidden">
       <div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--ink);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-        <span>${t.title}</span>
+        <span>${SX?sxSectionTitle(SX):t.title}</span>
         <span style="font-size:10px;color:var(--ink-soft);display:flex;gap:12px;align-items:center">
           <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:var(--r);background:var(--sage-pale);border:1px solid var(--sage)"></span>Answered</span>
           <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:var(--r);background:var(--ochre-pale);border:1px solid var(--ochre)"></span>Flagged</span>
@@ -5228,12 +5259,12 @@ function renderStudentExam(){
           const isAns=sub.answers&&sub.answers[qq.key]!==undefined;
           const isFlag=studentState.flagged&&studentState.flagged[qq.key];
           const cls=i===studentState.currentQ?'current':isFlag?'flagged':isAns?'answered':'unanswered';
-          return`<div class="q-nav-dot ${cls}" onclick="goToQ(${i});toggleQNav()">${i+1}</div>`;
+          return`<div class="q-nav-dot ${cls}" onclick="sxGoTo(${i})">${i+1}</div>`;
         }).join('')}
       </div>
       <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:11px;color:var(--ink-soft);letter-spacing:.04em">${answeredCount}/${fqs.length} answered</span>
-        <button onclick="showCheckWork()" style="background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:'Inter',sans-serif">Submit Exam</button>
+        <span style="font-size:11px;color:var(--ink-soft);letter-spacing:.04em">${answeredCount}/${fqs.length} answered${sxContinueLater(t,a).allowed&&(!SX||sxContinueLater(t,a).when==='anytime')?` · <a href="#" onclick="event.preventDefault();sxSaveAndExit()" style="color:var(--accent,#0891B2);font-weight:700">Save &amp; exit</a>`:''}</span>
+        <button onclick="showCheckWork()" style="background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:'Inter',sans-serif">${SX?sxFinishLabel(SX):'Submit Exam'}</button>
       </div>
     </div>
   </div>`;
@@ -5713,7 +5744,7 @@ function renderSingleStudentQ(q,key,a,fqs){
   const ans=sub.answers[key];
   const letters='ABCDE';
   let opts=q.options||[];
-  if(a.shuffleChoices&&(q.type==='mc'||q.type==='ms')){
+  if(sxShufC(a)&&(q.type==='mc'||q.type==='ms')){
     if(!sub.shuffledChoices) sub.shuffledChoices={};
     if(!sub.shuffledChoices[key]){
       const indices=[...Array(opts.length).keys()];
@@ -5738,7 +5769,7 @@ function renderSingleStudentQ(q,key,a,fqs){
   if(q.image) html+=`<img src="${q.image}" style="max-width:100%;max-height:280px;border-radius:var(--r);margin-bottom:24px;object-fit:contain;border:1px solid var(--border)">`;
   if(q.type==='mc'){
     html+=opts.map((opt,j)=>{
-      const origIdx=(a.shuffleChoices&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][j]:j;
+      const origIdx=(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][j]:j;
       const selected=ans===origIdx;
       const crossed=eliminated.includes(j);
       return`<div class="answer-btn ${selected?'selected':''}${crossed?' crossed':''}" ${crossed?'':`onclick="selectAnswer('${key}',${j},'mc')"`} style="cursor:${crossed?'default':'pointer'}">
@@ -5750,7 +5781,7 @@ function renderSingleStudentQ(q,key,a,fqs){
   } else if(q.type==='ms'){
     html+=`<div style="font-size:11px;color:var(--ink-soft);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600">Select all that apply</div>`;
     html+=opts.map((opt,j)=>{
-      const origIdx=(a.shuffleChoices&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][j]:j;
+      const origIdx=(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][j]:j;
       const selected=Array.isArray(ans)&&ans.includes(origIdx);
       const crossed=eliminated.includes(j);
       return`<div class="answer-btn ${selected?'selected':''}${crossed?' crossed':''}" ${crossed?'':`onclick="selectAnswer('${key}',${j},'ms')"`} style="cursor:${crossed?'default':'pointer'}">
@@ -5791,7 +5822,7 @@ function selectAnswer(key,displayJ,type){
   const sub=APP.currentStudentExam.sub;
   const a=APP.currentStudentExam.a;
   let j=displayJ;
-  if(a.shuffleChoices&&sub.shuffledChoices&&sub.shuffledChoices[key]){
+  if(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key]){
     j=sub.shuffledChoices[key][displayJ];
   }
   if(type==='mc'){sub.answers[key]=j;}
@@ -6047,8 +6078,10 @@ function toggleQNav(){
 }
 
 function showCheckWork(){
-  const {sub,a,t,orderedQuestions}=APP.currentStudentExam;
-  const fqs=flatQuestionsFromList(orderedQuestions);
+  const {sub,a,t}=APP.currentStudentExam;
+  const SX=sxStudentCtx();
+  if(SX&&SX.forwardOnly){sxSubmitSection();return;}   // forward-only sections have no review screen
+  const fqs=examItems();
   const unanswered=fqs.filter(f=>sub.answers[f.key]===undefined&&f.q.type!=='essay').length;
   const flaggedCount=Object.values(studentState.flagged||{}).filter(Boolean).length;
   const sw=document.getElementById('student-wrapper');
@@ -6057,7 +6090,8 @@ function showCheckWork(){
     <div class="student-header">
       <div class="flex items-center gap-3" style="min-width:0;flex-direction:column;align-items:flex-start;gap:2px">
         <div class="student-header-title">${t.title}</div>
-        ${renderDirectionsBtn(t)}
+        ${SX?sxSectionLabel(SX):''}
+        ${renderDirectionsBtn(t,SX&&SX.sec)}
       </div>
       <div></div>
       <div style="font-size:13px;color:var(--bb-text);font-weight:600">${sub.studentName}</div>
@@ -6072,7 +6106,7 @@ function showCheckWork(){
               const isAns=sub.answers&&sub.answers[qq.key]!==undefined;
               const isFlag=studentState.flagged&&studentState.flagged[qq.key];
               const cls=isFlag?'flagged':isAns?'answered':'unanswered';
-              return`<div class="q-nav-dot ${cls}" onclick="goToQ(${i});renderStudentExam()" style="font-size:12px;width:38px;height:38px">${i+1}</div>`;
+              return`<div class="q-nav-dot ${cls}" onclick="sxGoTo(${i},true)" style="font-size:12px;width:38px;height:38px">${i+1}</div>`;
             }).join('')}
           </div>
         </div>
@@ -6080,7 +6114,7 @@ function showCheckWork(){
         ${flaggedCount>0?`<div style="background:var(--ochre-pale);border:1px solid var(--ochre);border-radius:var(--r);padding:12px 16px;margin-bottom:12px;font-size:12px;color:var(--ochre);letter-spacing:.04em">🏳 You have <strong>${flaggedCount}</strong> question${flaggedCount!==1?'s':''} marked for review</div>`:''}
         <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
           <button onclick="renderStudentExam()" class="student-nav-btn prev">Back to Exam</button>
-          <button onclick="submitExam()" class="student-nav-btn next" style="background:var(--sage);border-color:var(--sage)">Submit Exam</button>
+          <button onclick="submitExam()" class="student-nav-btn next" style="background:var(--sage);border-color:var(--sage)">${SX?sxFinishLabel(SX):'Submit Exam'}</button>
         </div>
       </div>
     </div>
@@ -6092,7 +6126,7 @@ function showCheckWork(){
       <div></div>
       <button class="student-nav-btn next" onclick="submitExam()" style="background:var(--sage);border-color:var(--sage)">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M5 13l4 4L19 7"/></svg>
-        Submit Exam
+        ${SX?sxFinishLabel(SX):'Submit Exam'}
       </button>
     </div>
   </div>`;
@@ -6105,12 +6139,14 @@ function prevQ(){studentState.currentQ--;saveLocalResume();renderStudentExam();}
 function toggleFlag(key){
   if(!studentState.flagged)studentState.flagged={};
   studentState.flagged[key]=!studentState.flagged[key];
+  saveLocalResume();
   renderStudentExam();
 }
 
 function submitExam(){
   const {sub,a,t}=APP.currentStudentExam;
-  const fqs=flatQuestionsFromList(APP.currentStudentExam.orderedQuestions);
+  if(sxOn(t)){sxSubmitSection();return;}
+  const fqs=examItems();
   const unanswered=fqs.filter(f=>sub.answers[f.key]===undefined&&f.q.type!=='essay').length;
   if(unanswered>0&&!confirm(`You have ${unanswered} unanswered question${unanswered!==1?'s':''}. Submit anyway?`)) return;
   sub.status='submitted';sub.submittedAt=new Date().toISOString();
@@ -6121,7 +6157,11 @@ function submitExam(){
   if(sub.ultraLockdown)stopUltraLockdown(sub);
   closeDesmosPanel();closeReferencePanel();if(lineReaderActive){removeLineReaderOverlay();lineReaderActive=false;}hideHighlightToolbar();
   clearLocalResume(sub.assignmentId,sub.studentName);
-  const totalPts=calcTotalPoints(t);
+  renderSubmittedScreen(sub,a,t);
+}
+
+function renderSubmittedScreen(sub,a,t){
+  const totalPts=calcTotalPoints(t,sub);
   document.getElementById('student-wrapper').innerHTML=`
   <div style="min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;text-align:center;padding:40px;position:relative;overflow:hidden">
     <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.04" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
@@ -6139,6 +6179,7 @@ function submitExam(){
         <div style="font-size:64px;font-family:'Inter',sans-serif;color:var(--paper);line-height:1;font-weight:300">${sub.score}</div>
         <div style="color:rgba(255,255,255,.4);font-size:15px;margin-top:4px">out of ${totalPts} points</div>
         <div style="font-size:24px;font-family:'Inter',sans-serif;color:${scoreColor(totalPts>0?sub.score/totalPts:0)};margin-top:8px">${totalPts>0?Math.round(sub.score/totalPts*100):0}%</div>
+        ${sxSubmittedExtras(sub,t)}
         <a href="${location.href.split('?')[0]}?results=${sub.id}" style="display:inline-block;margin-top:20px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:10px 24px;border-radius:var(--r);text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .2s">View Detailed Results →</a>
       </div>`:
       `<div style="border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:20px;color:rgba(255,255,255,.4);font-size:14px;margin-bottom:28px;font-family:'Inter',sans-serif;font-size:17px;line-height:1.6">Your instructor will release your results when available.</div>`}
@@ -6185,7 +6226,7 @@ function evaluateTimerThreshold(){
     lockTimerVisibility();
     if(!_timerWarningShown){
       _timerWarningShown=true;
-      showExamNotice('5 minutes left on this exam.');
+      showExamNotice('5 minutes left on this '+_sxTimerNoun+'.');
     }
   }
 }
@@ -6255,7 +6296,7 @@ function setupFullscreenMonitor(sid){
 
 function handleFullscreenExit(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
-  if(!s||s.status!=='in-progress') return;
+  if(!s||s.status!=='in-progress'||s.paused) return;
   s.strikes=(s.strikes||0)+1;
   save();
   // Determine limit: 0 means unlimited (never auto-submit)
@@ -6297,7 +6338,9 @@ function forceSubmitStudent(sid,reason){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
   s.status='submitted';s.submittedAt=new Date().toISOString();
+  {const tt=APP.tests.find(x=>x.id===s.testId);if(sxOn(tt))sxMarkEnded(tt,s,reason||'ended',Date.now());}
   autoScore(s);save();
+  if(typeof sxStopTimer==='function')sxStopTimer();
   if(examTimer){clearInterval(examTimer);examTimer=null;}
   if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
   if(document.fullscreenElement)document.exitFullscreen();
@@ -6444,7 +6487,8 @@ function peerSessionLink(sessionId){
   return `${location.href.split('?')[0]}?peerreview=${sessionId}`;
 }
 
-function calcTotalPoints(t){
+function calcTotalPoints(t,s){
+  if(typeof sxUsesEngine==='function'&&sxUsesEngine(t)){const m=sxMaxFor(t,s||null);if(m!==null)return m;}
   let pts=0;
   t.questions.forEach(q=>{
     if(q.type==='passage'){(q.subQuestions||[]).forEach(sq=>{pts+=sq.points||1;});}
@@ -6505,7 +6549,7 @@ function computeSkillStats(subs,subject){
   subs.forEach(s=>{
     const t=APP.tests.find(tt=>tt.id===s.testId);
     if(!t||t.satSubject!==subject) return;
-    const fqs=flatQuestions(t);
+    const fqs=sxGradableItems(t,s);   // skip sections the student was never routed to
     fqs.forEach(item=>{
       const q=item.q;
       if(!q.domain||q.type==='essay') return;
@@ -6660,12 +6704,13 @@ function loadStudentResults(sid){
   const t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t){sw.innerHTML=`<div style="text-align:center;padding:80px;font-family:'Inter',sans-serif"><h2 style="font-family:'Inter',sans-serif;font-size:32px">Test not found</h2></div>`;return;}
   if(s.status!=='submitted'){sw.innerHTML=`<div style="text-align:center;padding:80px;font-family:'Inter',sans-serif"><h2 style="font-family:'Inter',sans-serif;font-size:32px">Results not yet available</h2><p style="margin-top:12px;color:var(--ink-soft);font-family:'Inter',sans-serif;font-size:18px">Your instructor has not released results yet.</p></div>`;return;}
-  const totalPts=calcTotalPoints(t);
+  const totalPts=calcTotalPoints(t,s);
   const pct=totalPts>0?Math.round((s.score||0)/totalPts*100):0;
-  const fqs=flatQuestions(t);
+  const fqs=sxGradableItems(t,s);
   const letters='ABCDE';
   let questionsHtml='';
   fqs.forEach((item,idx)=>{
+    if(sxOn(t)&&(idx===0||item.sectionId!==fqs[idx-1].sectionId)) questionsHtml+=sxResultSectionHeader(s,t,item.sectionId);
     const q=item.q;
     const qKey=item.passageIdx!==undefined?`p${item.passageIdx}_s${item.subIdx}`:String(item.idx);
     const ans=s.answers?s.answers[qKey]:undefined;
@@ -6745,6 +6790,7 @@ function loadStudentResults(sid){
           <div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase">${s.studentName} · ${t.title}</div>
           <div style="font-size:36px;font-family:'Inter',sans-serif;color:var(--ink);font-weight:300">${s.score||0} / ${totalPts} points</div>
           <div style="font-size:13px;color:var(--ink-soft);margin-top:4px;font-style:italic">Submitted ${formatDate(s.submittedAt)}</div>
+          ${sxUsesEngine(t)?`<div style="margin-top:8px;font-size:15px;font-weight:600">${(()=>{const G=sxGrading(t),g=sxComputeGrade(t,s),o=[];if(g.letter&&G.showLetter)o.push('Grade '+sxE(g.letter));if(g.scaled!==null&&G.showScaled)o.push('Scaled '+g.scaled);if(g.passed!==null&&G.showPassFail)o.push(g.passed?'<span style="color:var(--sage)">✓ Passing</span>':'<span style="color:var(--rust)">✗ Not passing</span>');return o.join(' · ');})()}</div>`:''}
           ${s.note?`<div style="font-size:12px;color:var(--rust);margin-top:6px;letter-spacing:.04em">Note: ${s.note}</div>`:''}
         </div>
       </div>
@@ -6755,6 +6801,7 @@ function loadStudentResults(sid){
       </div>
       ${renderSkillPanel('results-'+s.id,t.satSubject,computeSkillStats([s],t.satSubject),1)}
       `:''}
+      ${sxResultBreakdown(s,t)}
       ${renderPeerFeedbackReceived(s,fqs)}
       <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:16px">Question Review</div>
       ${questionsHtml}
@@ -6819,6 +6866,1653 @@ window.addEventListener('DOMContentLoaded',async ()=>{
   // Run on whole body once after load in case any static content has LaTeX
   setTimeout(()=>renderMath(document.body),300);
 });
+</script>
+<script id="ea-engine">
+/* ══════════════════════════════════════════════════════════════════
+   SECTIONS ENGINE  (pure logic — no DOM access in this block)
+
+   DATA MODEL (all fields optional → tests without sections are untouched)
+
+   test.sectioned        boolean   master switch
+   test.sections[]       { id, title, directions, timeLimitMin, navigation,
+                           shuffleItems, shuffleChoices, calculator, showReference,
+                           breakAfterMin, scored, weight, creditFloor, creditCap,
+                           minPercent, branchOnly, routing:{rules[],fallback} }
+   question.sectionId    which section a question lives in. Questions stay in ONE flat
+                         test.questions[] list, so every existing answer key
+                         ("3", "p2_s0"), the grader, analytics and results keep working.
+   test.grading          { method:'total'|'weighted', totalPoints, passPercent,
+                           requireSectionMins, letterEnabled, scale[], scaled{},
+                           countUnreached, showSectionScores, showLetter, showScaled,
+                           showPassFail }
+   test.continueLater    { allowed, when:'anytime'|'between', clock:'pause'|'run' }
+
+   submission.sectionState { path[], current, phase:'intro'|'active'|'break'|'done',
+                             completed, status{ [sectionId]:{enteredAt,startedAt,activeMs,
+                             resumedAt,endedAt,endReason,extraSecs} }, decisions[],
+                             breakStartedAt, breakSecs }
+   submission.order        { [sectionId|'_all']: [topLevelQuestionIdx...] }  persisted shuffle
+   submission.grade        computed by sxComputeGrade() — never trusted from the client
+══════════════════════════════════════════════════════════════════ */
+const SX_OPS={
+  '>=':(a,b)=>a>=b-1e-9,
+  '>':(a,b)=>a>b+1e-9,
+  '<=':(a,b)=>a<=b+1e-9,
+  '<':(a,b)=>a<b-1e-9,
+  '==':(a,b)=>Math.abs(a-b)<1e-9,
+};
+const SX_OP_LABEL={'>=':'is at least','>':'is more than','<=':'is at most','<':'is less than','==':'is exactly'};
+const SX_METRIC_LABEL={percent:'% correct',points:'points',correct:'questions correct'};
+const SX_DEFAULT_SCALE=[{min:90,label:'A'},{min:80,label:'B'},{min:70,label:'C'},{min:60,label:'D'},{min:0,label:'F'}];
+const SX_ALL='_all'; // pseudo-section id for tests that have no sections
+
+/* ── basics ─────────────────────────────────────────────────────── */
+function sxOn(t){return !!(t&&t.sectioned&&Array.isArray(t.sections)&&t.sections.length);}
+function sxSections(t){return sxOn(t)?t.sections:[];}
+function sxById(t,id){return sxSections(t).find(s=>s.id===id)||null;}
+function sxIndex(t,id){return sxSections(t).findIndex(s=>s.id===id);}
+function sxNum(v,d){const n=parseFloat(v);return Number.isFinite(n)?n:d;}
+
+function sxNewSection(title,extra){
+  return Object.assign({
+    id:uid(),title:title||'New section',directions:'',
+    timeLimitMin:null,navigation:'free',
+    shuffleItems:null,shuffleChoices:null,calculator:'inherit',showReference:true,breakAfterMin:null,
+    scored:true,weight:1,creditFloor:0,creditCap:100,minPercent:null,
+    branchOnly:false,routing:{rules:[],fallback:'next'},
+  },extra||{});
+}
+function sxNewRule(sections){
+  return {source:'this',metric:'percent',op:'>=',value:70,to:(sections&&sections[0]&&sections[0].id)||'end'};
+}
+
+function sxDefaultGrading(){
+  return {
+    method:'total',totalPoints:100,passPercent:null,requireSectionMins:true,
+    letterEnabled:false,scale:SX_DEFAULT_SCALE.map(r=>({...r})),
+    scaled:{enabled:false,min:200,max:800,step:10},
+    countUnreached:true,
+    showSectionScores:true,showLetter:true,showScaled:true,showPassFail:true,
+  };
+}
+// Always returns a complete grading object (merged over defaults).
+function sxGrading(t){
+  const d=sxDefaultGrading();const g=(t&&t.grading)||{};
+  const out=Object.assign(d,g);
+  out.scaled=Object.assign(sxDefaultGrading().scaled,g.scaled||{});
+  out.scale=(Array.isArray(g.scale)&&g.scale.length?g.scale:d.scale).map(r=>({min:sxNum(r.min,0),label:String(r.label==null?'':r.label)}));
+  return out;
+}
+// Policy for save-&-continue-later. The assignment can switch it off but never on.
+// Defaults: sectioned tests allow it between sections; existing (non-sectioned) tests
+// don't show the button unless the instructor turns it on.
+function sxContinueLater(t,a){
+  const c=Object.assign({allowed:sxOn(t),when:sxOn(t)?'between':'anytime',clock:'pause'},(t&&t.continueLater)||{});
+  if(!sxOn(t)) c.when='anytime';                 // "between sections" is meaningless without sections
+  if(a&&a.continueLater===false) c.allowed=false;
+  return c;
+}
+// Does this test need the grading engine (vs. the untouched legacy sum)?
+function sxUsesEngine(t){return sxOn(t)||!!(t&&t.grading);}
+
+/* ── questions ↔ sections ───────────────────────────────────────── */
+// A question with a missing/unknown sectionId falls into the FIRST section (self-healing).
+function sxQSection(t,q){
+  if(!sxOn(t)) return SX_ALL;
+  return (q&&q.sectionId&&sxById(t,q.sectionId))?q.sectionId:t.sections[0].id;
+}
+function sxTopLevel(t,sectionId){
+  const out=[];
+  (t.questions||[]).forEach((q,idx)=>{if(sectionId===SX_ALL||sxQSection(t,q)===sectionId)out.push({q,idx});});
+  return out;
+}
+function sxExpand(q,idx){
+  if(q.type==='passage') return (q.subQuestions||[]).map((sq,si)=>({q:sq,passageIdx:idx,subIdx:si,passageQ:q,key:`p${idx}_s${si}`,idx}));
+  return [{q,idx,key:String(idx)}];
+}
+// Items of a section in canonical (authoring) order, with CANONICAL keys.
+function sxItems(t,sectionId){
+  const out=[];
+  sxTopLevel(t,sectionId).forEach(u=>sxExpand(u.q,u.idx).forEach(it=>out.push(it)));
+  return out;
+}
+function sxQuestionCount(t,sectionId){return sxItems(t,sectionId).length;}
+
+// Student-facing order. Shuffle works on whole top-level questions (a passage stays
+// with its sub-questions) and is PERSISTED on the submission so it survives
+// reloads/devices. Keys are always canonical, so scoring is order-independent.
+function sxExamItems(t,a,sub,sectionId,shuffle){
+  const units=sxTopLevel(t,sectionId);
+  const valid=units.map(u=>u.idx);
+  if(!sub.order) sub.order={};
+  let ord=sub.order[sectionId];
+  if(!Array.isArray(ord)){
+    ord=valid.slice();
+    if(shuffle) shuffleArray(ord);
+    sub.order[sectionId]=ord;
+  } else {
+    // test edited mid-exam: drop vanished questions, append new ones
+    ord=ord.filter(i=>valid.includes(i));
+    valid.forEach(i=>{if(!ord.includes(i))ord.push(i);});
+    sub.order[sectionId]=ord;
+  }
+  const out=[];
+  ord.forEach(idx=>sxExpand(t.questions[idx],idx).forEach(it=>out.push(it)));
+  return out;
+}
+
+/* ── effective per-section settings (section overrides → assignment) ── */
+function sxEffective(t,a,sec){
+  const A=a||{};
+  const pick=(secVal,aVal)=>(secVal===null||secVal===undefined)?!!aVal:!!secVal;
+  let calc=!!A.allowDesmos;
+  if(sec&&sec.calculator==='on') calc=true; else if(sec&&sec.calculator==='off') calc=false;
+  return {
+    shuffleItems:pick(sec&&sec.shuffleItems,A.shuffleItems),
+    shuffleChoices:pick(sec&&sec.shuffleChoices,A.shuffleChoices),
+    calculator:calc,
+    showReference:!(sec&&sec.showReference===false),
+    navigation:(sec&&sec.navigation)||'free',
+  };
+}
+
+/* ── timing ─────────────────────────────────────────────────────── */
+// Base limit in minutes: assignment override → section setting. null/0 = untimed.
+function sxBaseLimitMin(a,sec){
+  const ov=a&&a.sectionOverrides&&a.sectionOverrides[sec.id];
+  if(ov&&Object.prototype.hasOwnProperty.call(ov,'limitMin')){
+    const v=ov.limitMin;return (v===null||v===''||v===undefined||!(+v>0))?null:+v;
+  }
+  return (sec.timeLimitMin&&+sec.timeLimitMin>0)?+sec.timeLimitMin:null;
+}
+function sxLimitSecs(t,a,sec,st){
+  const base=sxBaseLimitMin(a,sec);
+  if(base===null) return null;
+  const mult=sxNum(a&&a.timeMultiplier,1)>0?sxNum(a&&a.timeMultiplier,1):1;
+  return Math.round(base*60*mult)+Math.round((st&&st.extraSecs)||0);
+}
+function sxElapsedMs(st,now){
+  if(!st) return 0;
+  return (st.activeMs||0)+(st.resumedAt?Math.max(0,now-new Date(st.resumedAt).getTime()):0);
+}
+// Infinity when the section is untimed or not yet begun.
+function sxRemainingSecs(t,a,sub,sectionId,now){
+  const sec=sxById(t,sectionId);const st=sub.sectionState&&sub.sectionState.status[sectionId];
+  if(!sec||!st||!st.startedAt) return Infinity;
+  const lim=sxLimitSecs(t,a,sec,st);
+  if(lim===null) return Infinity;
+  return Math.max(0,lim-Math.floor(sxElapsedMs(st,now)/1000));
+}
+
+/* ── routing ────────────────────────────────────────────────────── */
+function sxIsBranch(sec){return !!(sec&&sec.branchOnly);}
+// Default "next": first later section that is not branch-only, not empty, not yet visited.
+function sxNextCore(t,fromId,path){
+  const secs=sxSections(t);const i=sxIndex(t,fromId);
+  for(let j=i+1;j<secs.length;j++){
+    const s=secs[j];
+    if(sxIsBranch(s)||(path&&path.includes(s.id))||sxQuestionCount(t,s.id)===0) continue;
+    return s.id;
+  }
+  return null;
+}
+function sxFirstSection(t){
+  const secs=sxSections(t);
+  const core=secs.find(s=>!sxIsBranch(s)&&sxQuestionCount(t,s.id)>0);
+  return (core||secs.find(s=>sxQuestionCount(t,s.id)>0)||secs[0]||{}).id||null;
+}
+// ctx(source) → {percent,points,correct} | null.  Pure so the builder's simulator reuses it.
+function sxPickTarget(sec,ctx){
+  const rt=sec.routing||{};const rules=rt.rules||[];
+  for(let i=0;i<rules.length;i++){
+    const r=rules[i];const m=ctx(r.source||'this');
+    if(!m) continue;
+    const v=m[r.metric||'percent'];
+    const fn=SX_OPS[r.op||'>='];
+    if(v==null||!fn) continue;
+    if(fn(v,sxNum(r.value,0))) return {to:r.to||'next',via:'rule',ruleIndex:i,value:v,metric:r.metric||'percent',rule:r};
+  }
+  return {to:rt.fallback||'next',via:'default'};
+}
+function sxResolveTarget(t,fromId,to,path){
+  let guard=0,cur=fromId,tgt=to,note=null;
+  while(guard++<sxSections(t).length+2){
+    if(tgt==='end') return {id:null,note};
+    if(tgt==='next'||tgt==null||tgt===''){tgt=sxNextCore(t,cur,path);if(tgt==null) return {id:null,note};}
+    if(!sxById(t,tgt)) return {id:sxNextCore(t,cur,path),note:'missing-target'};
+    if(path.includes(tgt)) return {id:null,note:'blocked-revisit'}; // a section is never taken twice
+    if(sxQuestionCount(t,tgt)===0){cur=tgt;tgt='next';note='skipped-empty';continue;}
+    return {id:tgt,note};
+  }
+  return {id:null,note:'guard'};
+}
+// auto-gradable stats of a section for a real submission
+function sxMetrics(t,sub,sectionId){
+  const sc=sxSectionScore(t,sub,sectionId);
+  return {percent:sc.autoMax>0?sc.autoPoints/sc.autoMax*100:0,points:sc.autoPoints,correct:sc.autoCorrect};
+}
+function sxCtxFor(t,sub,fromId){
+  const st=sub.sectionState;
+  return source=>{
+    if(source==='this') return sxMetrics(t,sub,fromId);
+    if(source==='cumulative'){
+      let p=0,m=0,c=0;
+      st.path.forEach(id=>{if(st.status[id]&&st.status[id].endedAt||id===fromId){const sc=sxSectionScore(t,sub,id);p+=sc.autoPoints;m+=sc.autoMax;c+=sc.autoCorrect;}});
+      return {percent:m>0?p/m*100:0,points:p,correct:c};
+    }
+    if(!st.path.includes(source)) return null; // that section wasn't taken → rule can't match
+    return sxMetrics(t,sub,source);
+  };
+}
+function sxRoute(t,sub,fromId){
+  const sec=sxById(t,fromId);const st=sub.sectionState;
+  const pick=sec?sxPickTarget(sec,sxCtxFor(t,sub,fromId)):{to:'next',via:'default'};
+  const res=sxResolveTarget(t,fromId,pick.to,st.path);
+  return {to:res.id,via:pick.via,ruleIndex:pick.ruleIndex,value:pick.value,metric:pick.metric,note:res.note,requested:pick.to};
+}
+
+/* ── submission state machine (pure; the UI layer renders it) ───── */
+function sxEnsureState(t,sub,now){
+  if(!sxOn(t)) return null;
+  now=now||Date.now();
+  let st=sub.sectionState;
+  if(!st||!Array.isArray(st.path)||!st.status){
+    const first=sxFirstSection(t);
+    st=sub.sectionState={path:[first],current:first,phase:'intro',completed:false,status:{[first]:{enteredAt:new Date(now).toISOString()}},decisions:[]};
+  }
+  // repair if the test was edited under a live student (section deleted etc.)
+  st.path=st.path.filter(id=>sxById(t,id));
+  if(!st.current||!sxById(t,st.current)){
+    if(st.phase!=='done'){
+      const last=st.path[st.path.length-1]||sxFirstSection(t);
+      st.current=last;if(!st.path.includes(last))st.path.push(last);
+      if(!st.status[last])st.status[last]={enteredAt:new Date(now).toISOString()};
+      st.phase=st.status[last].startedAt&&!st.status[last].endedAt?'active':'intro';
+    }
+  }
+  return st;
+}
+function sxBegin(sub,sectionId,now){
+  const st=sub.sectionState;const s=st.status[sectionId]||(st.status[sectionId]={});
+  const iso=new Date(now).toISOString();
+  if(!s.enteredAt) s.enteredAt=iso;
+  s.startedAt=iso;s.activeMs=0;s.resumedAt=iso;
+  st.current=sectionId;st.phase='active';
+}
+function sxEnter(t,sub,sectionId,now){
+  const sec=sxById(t,sectionId);const st=sub.sectionState;
+  if(!st.path.includes(sectionId)) st.path.push(sectionId);
+  st.status[sectionId]=st.status[sectionId]||{enteredAt:new Date(now).toISOString()};
+  st.current=sectionId;
+  const needsIntro=sxSections(t).length>1||(sec&&(sec.timeLimitMin||(sec.directions||'').trim()));
+  if(needsIntro) st.phase='intro'; else sxBegin(sub,sectionId,now);
+}
+// Pause the clock (explicit "Save & continue later" with clock policy = pause).
+function sxPause(t,sub,now){
+  const st=sub.sectionState;if(!st) return;
+  const s=st.status[st.current];
+  if(st.phase==='active'&&s&&s.resumedAt){s.activeMs=sxElapsedMs(s,now);s.resumedAt=null;}
+  sub.paused=true;sub.pausedAt=new Date(now).toISOString();
+}
+function sxResume(t,sub,now){
+  const st=sub.sectionState;
+  if(st){const s=st.status[st.current];if(st.phase==='active'&&s&&s.startedAt&&!s.endedAt&&!s.resumedAt)s.resumedAt=new Date(now).toISOString();}
+  sub.paused=false;sub.resumedAt=new Date(now).toISOString();
+}
+// Finalise the current section and move on. Returns {ended, to, decision}.
+function sxAdvance(t,a,sub,reason,now){
+  const st=sub.sectionState;const cur=st.current;const sec=sxById(t,cur);
+  const s=st.status[cur]||(st.status[cur]={});
+  const iso=new Date(now).toISOString();
+  if(s.startedAt&&!s.endedAt){s.activeMs=sxElapsedMs(s,now);s.resumedAt=null;}
+  if(!s.startedAt){s.startedAt=iso;s.activeMs=0;s.resumedAt=null;} // never begun (e.g. instructor skip)
+  s.endedAt=iso;s.endReason=reason||'submitted';
+  const r=sxRoute(t,sub,cur);
+  const d={from:cur,to:r.to||'end',via:r.via,ruleIndex:r.ruleIndex,metric:r.metric,value:r.value==null?null:Math.round(r.value*10)/10,note:r.note||null,at:iso};
+  (st.decisions=st.decisions||[]).push(d);
+  if(!r.to){st.completed=true;st.phase='done';return {ended:true,to:null,decision:d};}
+  sxEnter(t,sub,r.to,now);
+  const brk=sec&&sxNum(sec.breakAfterMin,0)>0?sxNum(sec.breakAfterMin,0):0;
+  if(brk>0){st.phase='break';st.breakStartedAt=iso;st.breakSecs=Math.round(brk*60);st.breakAfter=cur;}
+  return {ended:false,to:r.to,decision:d};
+}
+// Time may have run out while the student was away: close every expired section.
+function sxEnforceTime(t,a,sub,now){
+  const st=sub.sectionState;if(!st) return {changed:false,ended:false};
+  let changed=false,guard=0;
+  while(guard++<50){
+    if(st.phase==='break'&&st.breakStartedAt&&now-new Date(st.breakStartedAt).getTime()>=(st.breakSecs||0)*1000){st.phase='intro';changed=true;continue;}
+    if(st.phase==='active'&&!sub.paused&&sxRemainingSecs(t,a,sub,st.current,now)<=0){
+      const r=sxAdvance(t,a,sub,'timeout',now);changed=true;
+      if(r.ended) return {changed:true,ended:true};
+      continue;
+    }
+    break;
+  }
+  return {changed,ended:false};
+}
+// Exam ended outside the normal flow (force-submit, lockdown strikes, overall timeout).
+function sxMarkEnded(t,sub,reason,now){
+  if(!sxOn(t)||!sub.sectionState) return;
+  const st=sub.sectionState;const s=st.status[st.current];const iso=new Date(now||Date.now()).toISOString();
+  if(s&&!s.endedAt){if(s.startedAt){s.activeMs=sxElapsedMs(s,now||Date.now());s.resumedAt=null;}s.endedAt=iso;s.endReason=reason||'ended';}
+  st.phase='done';
+}
+
+/* ── scoring ────────────────────────────────────────────────────── */
+// Points awarded for ONE question — the single source of truth (legacy autoScore uses it too).
+function sxQuestionAward(q,key,s){
+  const ans=s.answers?s.answers[key]:undefined;
+  if(q.type==='mc'||q.type==='ms'||q.type==='short'){
+    if(s.mcOverrides&&s.mcOverrides[key]!==undefined) return s.mcOverrides[key];
+    return isAnswerCorrect(q,ans)?(q.points||1):0;
+  }
+  if(q.type==='essay'){
+    const rt=(s.rubricScores&&s.rubricScores[key])?Object.values(s.rubricScores[key]).reduce((x,v)=>x+v,0):0;
+    const manual=(s.manualScores&&s.manualScores[key])||0;
+    return rt||manual;
+  }
+  return 0;
+}
+function sxItemNeedsGrading(q,key,s){
+  if(q.type!=='essay') return false;
+  if(q.rubric&&q.rubric.length) return !q.rubric.every((_,ri)=>s.rubricScores&&s.rubricScores[key]&&s.rubricScores[key][ri]!==undefined);
+  return !(s.manualScores&&s.manualScores[key]!==undefined&&s.manualScores[key]!=='');
+}
+function sxItemsFor(t,sectionId){return sectionId===SX_ALL?flatQuestions(t):sxItems(t,sectionId);}
+function sxSectionScore(t,sub,sectionId){
+  const items=sxItemsFor(t,sectionId);
+  const r={points:0,max:0,autoPoints:0,autoMax:0,autoCorrect:0,autoCount:0,count:items.length,answered:0,pending:0};
+  items.forEach(it=>{
+    const q=it.q,pts=q.points||1;
+    const award=sxQuestionAward(q,it.key,sub);
+    r.points+=award;r.max+=pts;
+    if(sub.answers&&sub.answers[it.key]!==undefined) r.answered++;
+    if(q.type==='mc'||q.type==='ms'||q.type==='short'){
+      r.autoMax+=pts;r.autoPoints+=award;r.autoCount++;
+      if(isAnswerCorrect(q,sub.answers?sub.answers[it.key]:undefined)) r.autoCorrect++;
+    }
+    if(sxItemNeedsGrading(q,it.key,sub)) r.pending++;
+  });
+  return r;
+}
+// Which sections count for this submission (adaptive path + unreached core sections).
+function sxPlaySet(t,sub){
+  if(!sxOn(t)) return [SX_ALL];
+  const secs=sxSections(t);const st=sub&&sub.sectionState;
+  if(!st||!Array.isArray(st.path)||!st.path.length){
+    const core=secs.filter(s=>!sxIsBranch(s)).map(s=>s.id);
+    return core.length?core:secs.map(s=>s.id);
+  }
+  const play=st.path.filter(id=>sxById(t,id));
+  if(!st.completed&&sxGrading(t).countUnreached){
+    const last=Math.max(...play.map(id=>sxIndex(t,id)),-1);
+    secs.forEach((s,i)=>{if(i>last&&!play.includes(s.id)&&!sxIsBranch(s)&&sxQuestionCount(t,s.id)>0)play.push(s.id);});
+  }
+  return play;
+}
+// Items for the grader/results: only sections that count for this student, grouped by section.
+function sxGradableItems(t,sub){
+  if(!sxOn(t)) return flatQuestions(t);
+  const out=[];sxPlaySet(t,sub).forEach(id=>sxItems(t,id).forEach(it=>out.push(Object.assign({sectionId:id},it))));return out;
+}
+function sxLetter(scale,pct){
+  const rows=(scale||[]).slice().sort((a,b)=>b.min-a.min);
+  for(const r of rows) if(pct>=r.min-1e-9) return r.label;
+  return rows.length?rows[rows.length-1].label:'';
+}
+function sxScaled(G,pct){
+  const sc=G.scaled;if(!sc||!sc.enabled) return null;
+  const min=sxNum(sc.min,0),max=sxNum(sc.max,100),step=sxNum(sc.step,1)>0?sxNum(sc.step,1):1;
+  return Math.round((min+pct/100*(max-min))/step)*step;
+}
+function sxComputeGrade(t,sub){
+  const G=sxGrading(t);
+  const ids=sxPlaySet(t,sub);
+  const st=sub.sectionState;
+  const rows=ids.map(id=>{
+    const sec=id===SX_ALL?{id:SX_ALL,title:t.title,scored:true,weight:1,creditFloor:0,creditCap:100,minPercent:null}:sxById(t,id);
+    const sc=sxSectionScore(t,sub,id);
+    const status=st&&st.status&&st.status[id];
+    const reached=!st||!Array.isArray(st.path)||st.path.includes(id)||id===SX_ALL;
+    const pct=sc.max>0?sc.points/sc.max*100:0;
+    return {id,title:sec.title,scored:sec.scored!==false,weight:Math.max(0,sxNum(sec.weight,1)),
+      floor:sxNum(sec.creditFloor,0),cap:sxNum(sec.creditCap,100),minPercent:(sec.minPercent===null||sec.minPercent===undefined||sec.minPercent==='')?null:sxNum(sec.minPercent,0),
+      points:Math.round(sc.points*10)/10,max:sc.max,percent:Math.round(pct*10)/10,count:sc.count,answered:sc.answered,pending:sc.pending,
+      reached,endReason:status&&status.endReason||null,
+      timeUsedSecs:status&&status.startedAt?Math.round(sxElapsedMs(status,status.endedAt?new Date(status.endedAt).getTime():Date.now())/1000):null};
+  });
+  const out=sxGradeFromRows(t,rows);
+  out.pending=rows.reduce((x,r)=>x+r.pending,0);
+  out.sections=rows;
+  out.path=st&&st.path?st.path.slice():null;
+  out.decisions=st&&st.decisions?st.decisions.slice():null;
+  return out;
+}
+// rows: [{id,title,scored,weight,floor,cap,minPercent,points,max,percent}] → overall grade.
+// Shared by real grading AND the builder's what-if calculator so the two can never disagree.
+function sxGradeFromRows(t,rows){
+  const G=sxGrading(t);
+  const counted=rows.filter(r=>r.scored);
+  let points=0,max=0;
+  if(G.method==='weighted'&&sxOn(t)){
+    let wsum=0,acc=0;
+    counted.forEach(r=>{
+      if(r.max<=0||r.weight<=0){r.contribution=null;return;}
+      const adj=r.floor+(r.points/r.max)*(r.cap-r.floor);   // credit range maps 0–100% into [floor,cap]
+      r.adjPercent=Math.round(adj*10)/10;r.contribution=r.weight;wsum+=r.weight;acc+=r.weight*adj;
+    });
+    const overall=wsum>0?acc/wsum:0;
+    max=sxNum(G.totalPoints,100);points=overall/100*max;
+    if(wsum>0) counted.forEach(r=>{if(r.contribution!=null)r.share=Math.round(r.weight/wsum*1000)/10;});
+  } else {
+    counted.forEach(r=>{points+=r.points;max+=r.max;});
+  }
+  points=Math.round(points*10)/10;
+  const percent=max>0?Math.round(points/max*1000)/10:0;
+  const failures=counted.filter(r=>r.minPercent!==null&&r.max>0&&r.percent<r.minPercent).map(r=>r.id);
+  const hasMins=counted.some(r=>r.minPercent!==null);
+  let passed=null;
+  if(G.passPercent!==null&&G.passPercent!==undefined&&G.passPercent!==''){
+    passed=percent>=sxNum(G.passPercent,0)-1e-9&&(!G.requireSectionMins||!failures.length);
+  } else if(hasMins&&G.requireSectionMins){passed=!failures.length;}
+  return {method:(G.method==='weighted'&&sxOn(t))?'weighted':'total',points,max,percent,
+    letter:G.letterEnabled?sxLetter(G.scale,percent):null,scaled:sxScaled(G,percent),passed,sectionFailures:failures};
+}
+// Max points shown next to a student's score.
+function sxMaxFor(t,sub){
+  if(!sxUsesEngine(t)) return null;
+  if(sub) return sxComputeGrade(t,sub).max;
+  // no submission: maximum for the full default path
+  const G=sxGrading(t);
+  if(G.method==='weighted'&&sxOn(t)) return sxNum(G.totalPoints,100);
+  if(!sxOn(t)) return flatQuestions(t).reduce((x,i)=>x+(i.q.points||1),0);
+  return sxSections(t).filter(s=>!sxIsBranch(s)&&s.scored!==false).reduce((x,s)=>x+sxItems(t,s.id).reduce((y,i)=>y+(i.q.points||1),0),0);
+}
+function sxProgress(t,sub){
+  if(!sxOn(t)){const f=flatQuestions(t);return {answered:sub.answers?Object.keys(sub.answers).length:0,total:f.length};}
+  let answered=0,total=0;
+  (sub.sectionState&&sub.sectionState.path||[sxFirstSection(t)]).forEach(id=>{const sc=sxSectionScore(t,sub,id);answered+=sc.answered;total+=sc.count;});
+  return {answered,total};
+}
+
+/* ── authoring: validation + path simulation ────────────────────── */
+function sxAutoStats(t,sectionId){
+  let autoMax=0,autoCount=0;
+  sxItems(t,sectionId).forEach(it=>{const q=it.q;if(q.type==='mc'||q.type==='ms'||q.type==='short'){autoMax+=q.points||1;autoCount++;}});
+  return {autoMax,autoCount};
+}
+// pct: {[sectionId]: 0-100}. Returns the path a student with those results would take.
+function sxSimulate(t,pct,startId){
+  const path=[];const decisions=[];
+  const results={};
+  let cur=startId||sxFirstSection(t);let guard=0;
+  while(cur&&guard++<sxSections(t).length+2){
+    path.push(cur);
+    const p=sxNum(pct&&pct[cur],70);const as=sxAutoStats(t,cur);
+    results[cur]={percent:p,points:Math.round(p/100*as.autoMax*10)/10,correct:Math.round(p/100*as.autoCount)};
+    const sec=sxById(t,cur);
+    const ctx=source=>{
+      if(source==='this') return results[cur];
+      if(source==='cumulative'){let pp=0,mm=0,cc=0;path.forEach(id=>{const as2=sxAutoStats(t,id);pp+=results[id].points;mm+=as2.autoMax;cc+=results[id].correct;});return {percent:mm>0?pp/mm*100:0,points:pp,correct:cc};}
+      return path.includes(source)?results[source]:null;
+    };
+    const pick=sxPickTarget(sec,ctx);
+    const res=sxResolveTarget(t,cur,pick.to,path);
+    decisions.push({from:cur,to:res.id||'end',via:pick.via,ruleIndex:pick.ruleIndex,value:pick.value==null?null:Math.round(pick.value*10)/10,metric:pick.metric,note:res.note});
+    cur=res.id;
+  }
+  return {path,decisions};
+}
+// Static reachability over every rule target + fallback.
+function sxReachable(t){
+  const secs=sxSections(t);const seen=new Set();const first=sxFirstSection(t);
+  const stack=first?[first]:[];
+  while(stack.length){
+    const id=stack.pop();if(seen.has(id))continue;seen.add(id);
+    const sec=sxById(t,id);if(!sec)continue;
+    const targets=[];
+    ((sec.routing&&sec.routing.rules)||[]).forEach(r=>targets.push(r.to));
+    targets.push((sec.routing&&sec.routing.fallback)||'next');
+    targets.forEach(to=>{
+      if(to==='end')return;
+      if(to==='next'||!to){const nx=sxNextCore(t,id,[]);if(nx)stack.push(nx);return;}
+      if(sxById(t,to))stack.push(to);
+    });
+  }
+  return seen;
+}
+function sxValidate(t){
+  const errors=[],warnings=[];
+  if(!sxOn(t)) return {errors,warnings};
+  const secs=sxSections(t);
+  const ids=new Set(secs.map(s=>s.id));
+  if(secs.length&&sxIsBranch(secs[0])) errors.push(`The first section ("${secs[0].title}") is marked branch-only, so students could never start the test. Move a regular section to the top.`);
+  if(!secs.some(s=>sxQuestionCount(t,s.id)>0)) errors.push('None of the sections contain any questions yet.');
+  const titles={};
+  secs.forEach((s,i)=>{
+    const name=`"${s.title||('Section '+(i+1))}"`;
+    const n=sxQuestionCount(t,s.id);
+    if(!(s.title||'').trim()) warnings.push(`Section ${i+1} has no title.`);
+    titles[s.title]=(titles[s.title]||0)+1;
+    if(n===0) warnings.push(`${name} has no questions — students will skip it.`);
+    if(s.timeLimitMin&&+s.timeLimitMin<1) warnings.push(`${name} has a time limit under 1 minute.`);
+    const rules=(s.routing&&s.routing.rules)||[];
+    rules.forEach((r,ri)=>{
+      if(r.to!=='end'&&r.to!=='next'&&!ids.has(r.to)) errors.push(`${name}, rule ${ri+1} sends students to a section that no longer exists.`);
+      if(r.source&&r.source!=='this'&&r.source!=='cumulative'&&!ids.has(r.source)) errors.push(`${name}, rule ${ri+1} reads the score of a section that no longer exists.`);
+      if(r.source&&ids.has(r.source)&&sxIndex(t,r.source)>sxIndex(t,s.id)) warnings.push(`${name}, rule ${ri+1} reads a section that comes later in the list — it only matches if the student already took it.`);
+      if(!(+r.value>=0)) errors.push(`${name}, rule ${ri+1} needs a number to compare against.`);
+      if(r.metric==='percent'&&+r.value>100) warnings.push(`${name}, rule ${ri+1}: a percentage above 100 can never be met.`);
+      const as=sxAutoStats(t,r.source&&ids.has(r.source)?r.source:s.id);
+      if(r.source!=='cumulative'&&as.autoMax===0&&n>0) warnings.push(`${name}, rule ${ri+1} scores a section with no auto-graded questions (multiple choice / multi-select / short answer). Essays can't be graded in time to route, so this rule would always read 0.`);
+    });
+    const fb=(s.routing&&s.routing.fallback)||'next';
+    if(fb!=='end'&&fb!=='next'&&!ids.has(fb)) errors.push(`${name}: the "otherwise" destination no longer exists.`);
+    if(sxNum(s.breakAfterMin,0)<0) warnings.push(`${name} has a negative break length.`);
+    const cf=sxNum(s.creditFloor,0),cc=sxNum(s.creditCap,100);
+    if(cc<cf) errors.push(`${name}: the credit range ceiling (${cc}%) is below its floor (${cf}%).`);
+  });
+  Object.keys(titles).forEach(k=>{if(k&&titles[k]>1)warnings.push(`Several sections share the title "${k}".`);});
+  const reach=sxReachable(t);
+  secs.forEach(s=>{
+    if(!reach.has(s.id)&&sxQuestionCount(t,s.id)>0)
+      warnings.push(`"${s.title}" can never be reached${sxIsBranch(s)?' — it is branch-only and no routing rule sends students there':' — earlier routing skips past it'}.`);
+  });
+  const G=sxGrading(t);
+  if(G.method==='weighted'){
+    if(!secs.some(s=>s.scored!==false&&sxNum(s.weight,1)>0)) errors.push('Weighted grading is on but no scored section has a weight above 0.');
+    if(sxNum(G.totalPoints,100)<=0) errors.push('Weighted grading needs a total point value above 0.');
+  }
+  if(!secs.some(s=>s.scored!==false)) warnings.push('Every section is marked "does not count toward the grade".');
+  // static cycle check (rules pointing backwards)
+  secs.forEach((s,i)=>{
+    const tg=[((s.routing&&s.routing.fallback)||'next'),...(((s.routing&&s.routing.rules)||[]).map(r=>r.to))];
+    tg.forEach(to=>{if(ids.has(to)&&sxIndex(t,to)<=i&&to!==s.id)warnings.push(`"${s.title}" can route back to an earlier section ("${sxById(t,to).title}"). Students never take a section twice, so that route simply ends the test if it was already taken.`);if(to===s.id)warnings.push(`"${s.title}" routes to itself, which ends the test.`);});
+  });
+  return {errors,warnings:[...new Set(warnings)]};
+}
+function sxFmtSecs(secs){
+  if(secs==null||!isFinite(secs)) return '—';
+  const m=Math.floor(secs/60),s=Math.floor(secs%60);
+  return m>=60?`${Math.floor(m/60)}h ${m%60}m`:`${m}:${String(s).padStart(2,'0')}`;
+}
+function sxDescribeRule(t,sec,r){
+  const src=r.source==='this'?'this section':r.source==='cumulative'?'overall so far':`"${(sxById(t,r.source)||{title:'?'}).title}"`;
+  const dst=r.to==='end'?'end the test':r.to==='next'?'the next section':`"${(sxById(t,r.to)||{title:'?'}).title}"`;
+  return `If ${src} ${SX_OP_LABEL[r.op||'>=']} ${r.value}${r.metric==='percent'?'%':r.metric==='points'?' points':' correct'} → ${dst}`;
+}
+
+</script>
+<script id="ea-student">
+/* ══════════════════════════════════════════════════════════════════
+   SECTIONS — STUDENT EXPERIENCE
+   Section intro / active / break screens, per-section timers, adaptive hand-off,
+   Save & Continue Later, verified saving, resume on any device, instructor ops.
+══════════════════════════════════════════════════════════════════ */
+let sectionTimer=null;     // 1s tick for the active section clock
+let breakTicker=null;      // 1s tick for the break countdown
+let _sxTimerNoun='exam';   // "5 minutes left on this exam/section"
+let _sxBusy=false;         // re-entrancy guard for finish/save flows
+
+/* ── context helpers ───────────────────────────────────────────── */
+// Items (canonical keys) the student can see right now.
+function examItems(){
+  const ex=APP.currentStudentExam;const {t,a,sub}=ex;
+  if(sxOn(t)){
+    const st=sxEnsureState(t,sub,Date.now());
+    const eff=sxEffective(t,a,sxById(t,st.current));
+    return sxExamItems(t,a,sub,st.current,eff.shuffleItems);
+  }
+  return sxExamItems(t,a,sub,SX_ALL,!!a.shuffleItems);
+}
+// null for non-sectioned tests
+function sxStudentCtx(){
+  const ex=APP.currentStudentExam;if(!ex||!sxOn(ex.t)) return null;
+  const {t,a,sub}=ex;const st=sxEnsureState(t,sub,Date.now());
+  const sec=sxById(t,st.current);const eff=sxEffective(t,a,sec);
+  const adaptive=sxSections(t).some(s=>((s.routing&&s.routing.rules)||[]).length||(s.routing&&s.routing.fallback&&s.routing.fallback!=='next')||s.branchOnly);
+  return {t,a,sub,st,sec,eff,calculator:eff.calculator,showReference:eff.showReference,forwardOnly:eff.navigation==='forward',
+    pos:st.path.indexOf(st.current)+1,adaptive,total:sxSections(t).filter(s=>sxQuestionCount(t,s.id)>0).length};
+}
+function sxSectionLabel(SX){
+  const of=SX.adaptive?'':` of ${SX.total}`;
+  return `<div style="font-size:11px;color:var(--bb-text-soft);letter-spacing:.04em;font-weight:600">Section ${SX.pos}${of} · ${escapeHtml(SX.sec.title||'')}</div>`;
+}
+function sxSectionTitle(SX){return escapeHtml(SX.sec.title||('Section '+SX.pos));}
+function sxFinishLabel(SX){
+  const r=SX.sec.routing||{};
+  const terminal=!(r.rules&&r.rules.length)&&((r.fallback||'next')==='end'||(r.fallback==='next'&&!sxNextCore(SX.t,SX.st.current,SX.st.path)));
+  return terminal?'Submit':'Finish Section';
+}
+function sxCurrentSection(){const SX=sxStudentCtx();return SX?SX.sec:null;}
+function sxGoTo(i,fromReview){
+  const SX=sxStudentCtx();
+  if(SX&&SX.forwardOnly&&i!==studentState.currentQ){toast('This section only moves forward — you can’t go back.','info');return;}
+  goToQ(i);
+  if(!fromReview) toggleQNav();
+  else renderStudentExam();
+}
+
+/* ── save indicator (students need to SEE that their work is safe) ── */
+function sxSaveState(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub) return 'saved';
+  const sub=ex.sub;
+  if(!_serverReachable||_syncFailNotified) return 'error';
+  if(_submissionSyncInFlight.has(sub.id)||_lastSynced.submissions[sub.id]!==JSON.stringify(sub)) return 'saving';
+  return 'saved';
+}
+function sxSavePillHtml(){
+  const s=sxSaveState();
+  const map={saved:['#16A34A','✓ Progress saved'],saving:['#D97706','Saving…'],error:['#DC2626','⚠ Not saved — retrying']};
+  return `<div id="student-save-pill" class="sx-pill" style="color:${map[s][0]};border-color:${map[s][0]}33" title="Your answers are saved to the cloud as you work">${map[s][1]}</div>`;
+}
+function sxUpdateSavePill(){
+  const el=document.getElementById('student-save-pill');if(!el) return;
+  el.outerHTML=sxSavePillHtml();
+}
+
+/* ── verified save: POST, then independently read it back ───────── */
+function sxSubForCompare(s){const c=JSON.parse(JSON.stringify(s));delete c.instructorOps;return JSON.stringify(c);}
+async function sxReliableSaveSubmission(sub,maxAttempts=5){
+  cacheLocally();
+  for(let attempt=1;attempt<=maxAttempts;attempt++){
+    const res=await apiPost({action:'upsertSubmission',submission:sub});
+    if(res&&!res.__httpError){
+      try{
+        const r=await fetch(API_URL,{cache:'no-store'});
+        if(r.ok){
+          const d=await r.json();
+          const remote=(d.submissions||[]).find(x=>x.id===sub.id);
+          if(remote&&sxSubForCompare(remote)===sxSubForCompare(sub)){
+            _lastSynced.submissions[sub.id]=JSON.stringify(sub);_onSyncOk();return {ok:true};
+          }
+        }
+      }catch(e){}
+    }
+    if(attempt<maxAttempts) await new Promise(r=>setTimeout(r,300*Math.pow(2,attempt-1)));
+  }
+  _onSyncFail();
+  return {ok:false,error:'We couldn’t confirm your progress reached the server.'};
+}
+// Full-screen overlay used while a save is confirmed. Returns a handle.
+function sxShowBusy(msg){
+  let el=document.getElementById('sx-busy');
+  if(!el){el=document.createElement('div');el.id='sx-busy';document.body.appendChild(el);}
+  el.className='sx-busy';
+  el.innerHTML=`<div class="sx-busy-card"><div class="sx-spinner"></div><div style="font-size:15px;font-weight:600">${escapeHtml(msg)}</div><div style="font-size:12px;color:var(--ink-soft);margin-top:6px">Please keep this tab open.</div></div>`;
+}
+function sxHideBusy(){const el=document.getElementById('sx-busy');if(el)el.remove();}
+// Confirm a save, with a retry loop the student can see. Resolves true when saved
+// (or when the student explicitly chooses to continue while it keeps retrying).
+function sxConfirmSaved(sub,msg,allowContinue){
+  return new Promise(async resolve=>{
+    sxShowBusy(msg);
+    let res=await sxReliableSaveSubmission(sub);
+    while(!res.ok){
+      const el=document.getElementById('sx-busy');
+      el.innerHTML=`<div class="sx-busy-card"><div style="font-size:30px">⚠</div><div style="font-size:15px;font-weight:700;margin:6px 0">Your progress hasn’t been saved yet</div>
+        <div style="font-size:13px;color:var(--ink-soft);line-height:1.6;max-width:340px;margin:0 auto 14px">${escapeHtml(res.error)} Check your internet connection. Your answers are still on this screen — don’t close the tab.</div>
+        <div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" id="sx-retry">Try again</button>${allowContinue?'<button class="btn btn-secondary" id="sx-skip">Continue anyway</button>':'<button class="btn btn-secondary" id="sx-cancel">Go back</button>'}</div></div>`;
+      const choice=await new Promise(r=>{
+        document.getElementById('sx-retry').onclick=()=>r('retry');
+        const sk=document.getElementById('sx-skip');if(sk)sk.onclick=()=>r('skip');
+        const cn=document.getElementById('sx-cancel');if(cn)cn.onclick=()=>r('cancel');
+      });
+      if(choice==='skip'){sxHideBusy();return resolve(true);}
+      if(choice==='cancel'){sxHideBusy();return resolve(false);}
+      sxShowBusy(msg);res=await sxReliableSaveSubmission(sub);
+    }
+    sxHideBusy();resolve(true);
+  });
+}
+
+/* ── persist everything a student would be annoyed to lose ──────── */
+function sxSnapshotUi(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub) return;
+  const st=ex.sub.sectionState;
+  ex.sub.ui={ts:Date.now(),currentQ:studentState.currentQ||0,forSection:st?st.current:null,
+    flagged:studentState.flagged||{},highlights:studentState.highlights||{},activeDoc:studentState.activeDoc||{},eliminated:studentState.eliminated||{}};
+}
+// Newest of (server copy, this device's copy) wins.
+function sxRestoreUi(sub,resume){
+  const srv=sub.ui||null;
+  const loc=resume?{ts:resume.ts||0,currentQ:resume.currentQ,forSection:resume.forSection,flagged:resume.flagged,highlights:resume.highlights,activeDoc:resume.activeDoc,eliminated:resume.eliminated}:null;
+  const src=(srv&&(!loc||(srv.ts||0)>=(loc.ts||0)))?srv:(loc||srv);
+  const st=sub.sectionState;
+  let cq=(src&&src.currentQ)||0;
+  if(st&&src&&src.forSection&&src.forSection!==st.current) cq=0;   // saved position belonged to a previous section
+  return {currentQ:cq,flagged:(src&&src.flagged)||sub.flags||{},highlights:(src&&src.highlights)||{},activeDoc:(src&&src.activeDoc)||{},eliminated:(src&&src.eliminated)||{}};
+}
+
+/* ── timers ─────────────────────────────────────────────────────── */
+function sxStopTimer(){if(sectionTimer){clearInterval(sectionTimer);sectionTimer=null;}if(breakTicker){clearInterval(breakTicker);breakTicker=null;}}
+function sxStartTimer(){
+  if(sectionTimer){clearInterval(sectionTimer);sectionTimer=null;}
+  const ex=APP.currentStudentExam;if(!ex||!sxOn(ex.t)) return;
+  const {t,a,sub}=ex;const st=sub.sectionState;
+  if(!st||st.phase!=='active'||sub.paused) return;
+  const cur=st.current,sec=sxById(t,cur),s=st.status[cur];
+  if(!sec||!s||!s.startedAt||s.endedAt) return;
+  _sxTimerNoun='section';
+  if(sxLimitSecs(t,a,sec,s)===null){_timerStartedAtMs=null;return;}
+  _timerLocked=false;_timerWarningShown=false;timerHidden=false;
+  const tick=()=>{
+    const now=Date.now();const ss=sub.sectionState.status[cur];if(!ss) return;
+    _timerTotalSecs=sxLimitSecs(t,a,sec,ss);_timerStartedAtMs=now-sxElapsedMs(ss,now);   // keeps re-renders accurate
+    _timerRemaining=sxRemainingSecs(t,a,sub,cur,now);
+    const d=document.getElementById('timer-display');
+    if(d){d.textContent=formatTimerDisplay(_timerRemaining);d.classList.toggle('warning',_timerRemaining<=300);}
+    evaluateTimerThreshold();
+    if(_timerRemaining<=0){sxStopTimer();sxTimeUp();}
+  };
+  tick();
+  sectionTimer=setInterval(tick,1000);
+}
+function sxTimerBlock(SX){
+  const s=SX.st.status[SX.st.current];
+  const lim=sxLimitSecs(SX.t,SX.a,SX.sec,s);
+  if(lim===null) return `<div class="student-timer-center"><span style="font-size:13px;color:var(--bb-text-soft);font-weight:600">∞ No time limit</span></div>`;
+  const rem=sxRemainingSecs(SX.t,SX.a,SX.sub,SX.st.current,Date.now());
+  return `<div class="student-timer-center">
+    <span class="student-timer-display${(timerHidden&&!_timerLocked)?' hidden-timer':''}" id="timer-display">${formatTimerDisplay(isFinite(rem)?rem:lim)}</span>
+    ${_timerLocked?'':`<button class="timer-toggle-btn" onclick="toggleTimer()">${timerHidden?'Show':'Hide'}</button>`}
+  </div>`;
+}
+function sxTimeUp(){
+  if(_sxBusy) return;
+  showExamNotice('Time is up for this section.');
+  sxFinishSection('timeout');
+}
+
+/* ── finishing a section / the exam ─────────────────────────────── */
+function sxCloseOverlays(){closeDesmosPanel();closeReferencePanel();if(lineReaderActive){removeLineReaderOverlay();lineReaderActive=false;}hideHighlightToolbar();}
+function sxTeardown(sub){
+  if(examTimer){clearInterval(examTimer);examTimer=null;}
+  sxStopTimer();
+  if(_studentTestPollInterval){clearInterval(_studentTestPollInterval);_studentTestPollInterval=null;}
+  if(document.fullscreenElement)document.exitFullscreen();
+  if(sub.ultraLockdown)stopUltraLockdown(sub);
+  sxCloseOverlays();
+  const ol=document.getElementById('lock-overlay');if(ol)ol.classList.add('hidden');
+}
+// Student pressed Finish Section / Submit.
+function sxSubmitSection(){
+  const ex=APP.currentStudentExam;const {sub,t}=ex;
+  const SX=sxStudentCtx();
+  const items=examItems();
+  const unanswered=items.filter(f=>sub.answers[f.key]===undefined&&f.q.type!=='essay').length;
+  const last=sxFinishLabel(SX)==='Submit';
+  let msg=last?'Submit your exam? You won’t be able to change your answers.'
+    :`Finish this section? You won’t be able to come back to it.`;
+  if(unanswered>0) msg=`You have ${unanswered} unanswered question${unanswered!==1?'s':''} in this section.\n\n`+msg;
+  if(!confirm(msg)) return;
+  sxFinishSection('submitted');
+}
+// Core transition: finalise → adaptive route → (verified) save → next screen.
+async function sxFinishSection(reason){
+  if(_sxBusy) return;_sxBusy=true;
+  try{
+    const ex=APP.currentStudentExam;if(!ex) return;
+    const {a,t,sub}=ex;
+    sxStopTimer();sxCloseOverlays();
+    const r=sxAdvance(t,a,sub,reason,Date.now());
+    studentState.currentQ=0;
+    if(r.ended){await sxCompleteExam(reason);return;}
+    sxSnapshotUi();save();saveLocalResume();
+    renderStudentExam();
+    // confirm the section result + routing decision is safely on the server
+    const timeout=reason==='timeout';
+    await sxConfirmSaved(sub,'Saving your section…',true);
+    if(sub.sectionState.phase==='break') sxStartBreakTicker();
+  }finally{_sxBusy=false;}
+}
+async function sxCompleteExam(reason){
+  const {a,t,sub}=APP.currentStudentExam;
+  sub.status='submitted';sub.submittedAt=new Date().toISOString();
+  if(reason==='timeout') sub.note='Auto-submitted: final section time expired';
+  else if(reason==='instructor') sub.note='Submitted by instructor';
+  sxMarkEnded(t,sub,reason,Date.now());
+  autoScore(sub,t);
+  sxTeardown(sub);
+  save();
+  clearLocalResume(sub.assignmentId,sub.studentName);
+  renderSubmittedScreen(sub,a,t);
+  // final submission is the one write we must never lose
+  await sxConfirmSaved(sub,'Submitting your exam…',true);
+}
+
+/* ── intro / break / saved screens ──────────────────────────────── */
+function sxScreenShell(inner){
+  const {sub,t}=APP.currentStudentExam;
+  return `<div id="student-page" style="background:var(--paper)">
+    <div class="student-header"><div style="min-width:0"><div class="student-header-title">${escapeHtml(t.title)}</div></div><div></div>
+      <div class="student-header-tools">${sxSavePillHtml()}<div style="font-size:13px;color:var(--bb-text);font-weight:600;margin-left:10px">${escapeHtml(sub.studentName)}</div></div></div>
+    <div class="student-content" style="overflow-y:auto;background:var(--paper);display:flex;justify-content:center;padding:36px 20px">${inner}</div></div>`;
+}
+function sxStudentGate(){
+  const ex=APP.currentStudentExam;if(!ex||!sxOn(ex.t)) return false;
+  const {t,a,sub}=ex;const st=sxEnsureState(t,sub,Date.now());
+  if(st.phase==='intro'){sxRenderIntro();return true;}
+  if(st.phase==='break'){sxRenderBreak();return true;}
+  if(st.phase==='done'){renderSubmittedScreen(sub,a,t);return true;}
+  if(!sectionTimer) sxStartTimer();   // safety net after a resume/re-render
+  return false;
+}
+function sxChip(txt,color){return `<span class="sx-chip" style="${color?`color:${color};border-color:${color}55;background:${color}12`:''}">${txt}</span>`;}
+function sxRenderIntro(){
+  const {t,a,sub}=APP.currentStudentExam;const st=sub.sectionState;
+  sxStopTimer();
+  const sec=sxById(t,st.current);const SX=sxStudentCtx();const eff=SX.eff;
+  const n=sxQuestionCount(t,sec.id);
+  const lim=sxLimitSecs(t,a,sec,st.status[sec.id]);
+  const pol=sxContinueLater(t,a);
+  const gen=(st.path.length===1&&(t.instructions||'').trim())?`<div class="sx-dir-block"><div class="sx-dir-label">General directions</div>${markdownToHtml(t.instructions)}</div>`:'';
+  const dirs=(sec.directions||'').trim()?`<div class="sx-dir-block"><div class="sx-dir-label">Directions for this section</div>${markdownToHtml(sec.directions)}</div>`:'';
+  const brk=sxNum(sec.breakAfterMin,0)>0?sxChip(`☕ ${sec.breakAfterMin} min break afterwards`):'';
+  const prev=st.path.slice(0,-1).map(id=>sxById(t,id)).filter(Boolean);
+  document.getElementById('student-wrapper').innerHTML=sxScreenShell(`
+  <div class="sx-card">
+    <div class="sx-eyebrow">Section ${SX.pos}${SX.adaptive?'':' of '+SX.total}</div>
+    <h2 class="sx-h2">${escapeHtml(sec.title||'Section')}</h2>
+    <div class="sx-chips">${sxChip(n+' question'+(n!==1?'s':''))}${lim!==null?sxChip('⏱ '+Math.round(lim/60*10)/10+' min','#0891B2'):sxChip('No time limit')}
+      ${eff.navigation==='forward'?sxChip('Moves forward only','#D97706'):''}${eff.calculator?sxChip('Calculator allowed'):''}${brk}</div>
+    ${gen}${dirs}
+    ${lim!==null?`<div class="sx-note">The timer starts when you press <strong>Begin Section</strong>.${pol.allowed&&pol.clock==='run'?' It keeps running if you save and leave.':pol.allowed?' It pauses if you save and leave between sections.':' It cannot be paused.'}</div>`:''}
+    ${prev.length?`<div class="sx-note" style="background:var(--paper-warm)">Finished: ${prev.map(p=>escapeHtml(p.title)).join(' → ')}. Completed sections are locked.</div>`:''}
+    <div class="sx-actions">
+      <button class="btn btn-primary btn-lg" onclick="sxBeginSectionUI()">Begin Section →</button>
+      ${pol.allowed?`<button class="btn btn-secondary" onclick="sxSaveAndExit()">Save &amp; continue later</button>`:''}
+    </div>
+  </div>`);
+}
+function sxBeginSectionUI(){
+  const {t,sub}=APP.currentStudentExam;const st=sub.sectionState;
+  sxBegin(sub,st.current,Date.now());
+  studentState.currentQ=0;
+  sxSnapshotUi();save();saveLocalResume();
+  renderStudentExam();sxStartTimer();
+}
+function sxRenderBreak(){
+  const {t,a,sub}=APP.currentStudentExam;const st=sub.sectionState;
+  const pol=sxContinueLater(t,a);
+  const rem=()=>Math.max(0,(st.breakSecs||0)-Math.floor((Date.now()-new Date(st.breakStartedAt).getTime())/1000));
+  document.getElementById('student-wrapper').innerHTML=sxScreenShell(`
+  <div class="sx-card" style="text-align:center">
+    <div style="font-size:42px">☕</div>
+    <h2 class="sx-h2">Break time</h2>
+    <div id="sx-break-clock" style="font-size:56px;font-weight:300;font-variant-numeric:tabular-nums;margin:8px 0 4px">${formatTimerDisplay(rem())}</div>
+    <p style="color:var(--ink-soft);font-size:14px;margin-bottom:22px">Next up: <strong>${escapeHtml((sxById(t,st.current)||{}).title||'')}</strong>. The break ends automatically, or you can continue now.</p>
+    <div class="sx-actions" style="justify-content:center"><button class="btn btn-primary btn-lg" onclick="sxEndBreak()">Continue now →</button>
+    ${pol.allowed?`<button class="btn btn-secondary" onclick="sxSaveAndExit()">Save &amp; continue later</button>`:''}</div>
+  </div>`);
+  sxStartBreakTicker();
+}
+function sxStartBreakTicker(){
+  if(breakTicker){clearInterval(breakTicker);breakTicker=null;}
+  const ex=APP.currentStudentExam;if(!ex) return;const st=ex.sub.sectionState;
+  if(!st||st.phase!=='break') return;
+  breakTicker=setInterval(()=>{
+    const left=Math.max(0,(st.breakSecs||0)-Math.floor((Date.now()-new Date(st.breakStartedAt).getTime())/1000));
+    const el=document.getElementById('sx-break-clock');if(el)el.textContent=formatTimerDisplay(left);
+    if(left<=0) sxEndBreak();
+  },1000);
+}
+function sxEndBreak(){
+  const ex=APP.currentStudentExam;if(!ex) return;const st=ex.sub.sectionState;
+  if(breakTicker){clearInterval(breakTicker);breakTicker=null;}
+  if(st.phase!=='break') return;
+  st.phase='intro';save();renderStudentExam();
+}
+
+/* ── Save & continue later ──────────────────────────────────────── */
+async function sxSaveAndExit(){
+  if(_sxBusy) return;
+  const ex=APP.currentStudentExam;if(!ex) return;
+  const {t,a,sub}=ex;const pol=sxContinueLater(t,a);
+  if(!pol.allowed){toast('Saving for later isn’t enabled for this test.','info');return;}
+  const st=sub.sectionState;const phase=st?st.phase:'active';
+  if(sxOn(t)&&pol.when==='between'&&phase==='active'){
+    toast('You can save and continue later between sections, not in the middle of one.','info');return;
+  }
+  const pauses=pol.clock==='pause';
+  const timedNow=(sxOn(t)&&phase==='active'&&sxLimitSecs(t,a,sxById(t,st.current),st.status[st.current])!==null)||(!sxOn(t)&&a.timed);
+  const warn=timedNow?(pauses?'\n\nYour timer will pause while you’re away.':'\n\nYour timer will KEEP RUNNING while you’re away — if time runs out, this section is submitted automatically.'):'';
+  if(!confirm('Save your progress and leave? You can come back later using the same link and the same name.'+warn)) return;
+  _sxBusy=true;
+  try{
+    const now=Date.now();
+    sxCloseOverlays();
+    // pause first (so the saved copy carries the paused clock); roll back if saving fails
+    const backup=JSON.stringify({sectionState:sub.sectionState||null,startedAt:sub.startedAt,paused:sub.paused,pausedAt:sub.pausedAt});
+    if(sxOn(t)){ if(pauses) sxPause(t,sub,now); else {sub.paused=true;sub.pausedAt=new Date(now).toISOString();} }
+    else {sub.paused=true;sub.pausedAt=new Date(now).toISOString();}
+    sub.pauseClock=pauses;
+    sxSnapshotUi();sub.lastSavedAt=new Date(now).toISOString();
+    saveLocalResume();
+    const ok=await sxConfirmSaved(sub,'Saving your progress…',false);
+    if(!ok){ // couldn't save — stay in the exam, restore the clock
+      const b=JSON.parse(backup);sub.sectionState=b.sectionState||undefined;sub.startedAt=b.startedAt;sub.paused=!!b.paused;if(b.pausedAt)sub.pausedAt=b.pausedAt;else delete sub.pausedAt;delete sub.pauseClock;
+      if(!sub.sectionState) delete sub.sectionState;
+      renderStudentExam();return;
+    }
+    sxTeardown(sub);
+    sxRenderSavedScreen();
+  }finally{_sxBusy=false;}
+}
+function sxRenderSavedScreen(){
+  const {t,a,sub}=APP.currentStudentExam;const st=sub.sectionState;
+  const link=`${location.href.split('?')[0]}?exam=${a.id}`;
+  const where=st&&sxOn(t)?`You’re in <strong>${escapeHtml((sxById(t,st.current)||{}).title||'')}</strong>${st.phase==='active'&&sub.ui?`, question ${(sub.ui.currentQ||0)+1}`:''}.`:'';
+  const clock=sub.pauseClock?'Your timer is paused.':'Your timer is still running while you’re away.';
+  const anyTimer=(sxOn(t)&&st&&st.phase==='active'&&sxLimitSecs(t,a,sxById(t,st.current),st.status[st.current])!==null)||(!sxOn(t)&&a.timed);
+  document.getElementById('student-wrapper').innerHTML=sxScreenShell(`
+  <div class="sx-card" style="text-align:center">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--sage-pale);color:var(--sage);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px">✓</div>
+    <h2 class="sx-h2">Progress saved</h2>
+    <p style="color:var(--ink-soft);font-size:15px;line-height:1.7;margin:6px 0 14px">${where} All your answers are saved to the cloud.${anyTimer?' '+clock:''}</p>
+    <div class="sx-note" style="text-align:left"><strong>To continue:</strong> open this link again and enter exactly the same name (<strong>${escapeHtml(sub.studentName)}</strong>). It works on any device.</div>
+    <div class="flex gap-2" style="margin:14px 0"><input class="form-control" readonly value="${link}" style="font-size:11px;font-family:'Courier Prime',monospace"><button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${link}');toast('Link copied!','success')">Copy</button></div>
+    <div class="sx-actions" style="justify-content:center"><button class="btn btn-primary" onclick="sxResumeNow()">Continue now</button></div>
+    <p style="color:var(--ink-soft);font-size:11px;margin-top:14px">You can close this window.</p>
+  </div>`);
+}
+function sxResumeNow(){
+  const {a,t,sub}=APP.currentStudentExam;
+  resumeExamSession(a,t,sub,sub.studentName);
+}
+// Runs at the end of resumeExamSession (any device, any time later).
+function sxOnResume(sub,a,t){
+  const now=Date.now();
+  // legacy test: a paused clock shifts startedAt forward by the time spent away
+  if(!sxOn(t)){
+    if(sub.paused&&sub.pausedAt&&sub.pauseClock&&sub.startedAt){
+      sub.startedAt=new Date(new Date(sub.startedAt).getTime()+(now-new Date(sub.pausedAt).getTime())).toISOString();
+    }
+    sub.paused=false;
+    return false;
+  }
+  const wasPaused=!!sub.paused;
+  if(wasPaused) sxResume(t,sub,now);
+  const r=sxEnforceTime(t,a,sub,now);          // time may have run out while away
+  save();
+  if(r.ended){sxCompleteExam('timeout');return true;}
+  return false;
+}
+
+/* ── instructor ops (+time, end section) — delivered via the server ── */
+function sxApplyInstructorOps(remote){
+  const ex=APP.currentStudentExam;if(!ex||!remote) return;
+  const {sub,t}=ex;if(!sxOn(t)||!sub.sectionState) return;
+  const ops=Array.isArray(remote.instructorOps)?remote.instructorOps:[];
+  if(!ops.length) return;
+  sub.instructorOps=ops;
+  const applied=sub.appliedOps=sub.appliedOps||[];
+  let endNow=false,changed=false;
+  ops.forEach(op=>{
+    if(applied.includes(op.id)) return;
+    applied.push(op.id);changed=true;
+    const st=sub.sectionState;
+    if(op.type==='addTime'){
+      const id=op.sectionId||st.current;const s=st.status[id]||(st.status[id]={});
+      s.extraSecs=(s.extraSecs||0)+(+op.secs||0);
+      showExamNotice(`Your instructor added ${Math.round((+op.secs||0)/60)} minute(s) to this section.`);
+    } else if(op.type==='endSection'){endNow=true;}
+  });
+  if(!changed) return;
+  save();
+  if(endNow&&!_sxBusy){showExamNotice('Your instructor ended this section.');sxFinishSection('instructor');}
+}
+// A teacher edit may have deleted/renamed sections under a live student.
+function sxOnTestRefreshed(){
+  const ex=APP.currentStudentExam;if(!ex||!sxOn(ex.t)) return;
+  const before=ex.sub.sectionState&&ex.sub.sectionState.current;
+  sxEnsureState(ex.t,ex.sub,Date.now());
+  if(ex.sub.sectionState&&ex.sub.sectionState.current!==before&&!_sxBusy) renderStudentExam();
+}
+
+// small chips on the name-entry screen
+function sxNameChips(a,t){
+  const chip=(txt,c)=>`<span style="background:var(--paper-aged);padding:4px 10px;border-radius:var(--r);font-size:10px;color:${c||'var(--ink-soft)'};font-weight:600;letter-spacing:.08em;border:1px solid var(--border)">${txt}</span>`;
+  let out='';
+  if(sxOn(t)){
+    const secs=sxSections(t).filter(s=>!s.branchOnly&&sxQuestionCount(t,s.id)>0);
+    out+=chip(`${secs.length} SECTION${secs.length!==1?'S':''}`);
+    const mins=secs.reduce((x,s)=>{const l=sxLimitSecs(t,a,s,null);return x+(l?l/60:0);},0);
+    if(mins>0) out+=chip(`⏱ ${Math.round(mins)} MIN TOTAL`,'var(--ochre)');
+  }
+  if(sxContinueLater(t,a).allowed) out+=chip('💾 SAVE &amp; RESUME','var(--sage)');
+  return out;
+}
+function sxShufC(a){
+  const SX=(APP.currentStudentExam&&sxOn(APP.currentStudentExam.t))?sxStudentCtx():null;
+  return SX?SX.eff.shuffleChoices:!!a.shuffleChoices;
+}
+
+</script>
+<script id="ea-builder">
+/* ══════════════════════════════════════════════════════════════════
+   SECTIONS — INSTRUCTOR BUILDER
+   Sidebar grouping, section assignment, and the "Sections & Grading" manager:
+   Sections · Adaptive routing (flow map + simulator) · Grading (what-if) · Save & Resume
+══════════════════════════════════════════════════════════════════ */
+(function(){
+  const st=document.createElement('style');
+  st.textContent=`
+  .sx-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);padding:0 24px;background:var(--paper-warm)}
+  .sx-tab{padding:12px 16px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;font-family:'Inter',sans-serif}
+  .sx-tab.on{color:var(--ink);border-bottom-color:var(--accent,#0891B2)}
+  .sx-tab.off{opacity:.4;cursor:not-allowed}
+  .sx-sec{border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:12px;overflow:hidden}
+  .sx-sec-h{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--paper-warm);border-bottom:1px solid var(--border)}
+  .sx-sec-n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .sx-sec-b{padding:14px 16px}
+  .sx-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.sx-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .sx-lbl{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+  .sx-rule{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:#fff;font-size:12px}
+  .sx-rule select,.sx-rule input{padding:5px 8px;font-size:12px;border:1px solid var(--border-dark);border-radius:6px;background:#fff}
+  .sx-rule input[type=number]{width:70px}
+  .sx-msg{border-radius:8px;padding:9px 12px;font-size:12px;line-height:1.55;margin-bottom:6px}
+  .sx-err{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5}.sx-warn{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}.sx-ok{background:#DCFCE7;color:#166534;border:1px solid #86EFAC}
+  .sx-flow{display:flex;gap:26px;align-items:flex-start;overflow-x:auto;padding:12px 4px}
+  .sx-col{display:flex;flex-direction:column;gap:12px;min-width:170px}
+  .sx-node{border:2px solid var(--border-dark);border-radius:10px;padding:9px 12px;background:#fff;font-size:12px}
+  .sx-node.branch{border-style:dashed}.sx-node.hit{border-color:#0891B2;background:#ECFEFF;box-shadow:0 0 0 3px #0891B233}.sx-node.dim{opacity:.4}
+  .sx-edge{font-size:10px;color:var(--ink-soft);margin-top:3px;line-height:1.4}
+  .sx-tbl{width:100%;border-collapse:collapse;font-size:12px}.sx-tbl th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;border-bottom:1px solid var(--border)}.sx-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .sx-tbl input[type=number]{width:72px;padding:5px 7px;border:1px solid var(--border-dark);border-radius:6px;font-size:12px}
+  .sx-side-sec{margin:10px 8px 4px;padding:8px 10px;border-radius:8px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;letter-spacing:.05em;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .sx-side-sec.active{background:var(--accent,#0891B2)}
+  `;
+  document.head.appendChild(st);
+})();
+
+let sxActiveSec=null;                       // section new questions are added to
+let sxMgr={tab:'sections',sim:{},scroll:0};
+const sxA=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const sxE=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function sxActiveSectionId(){
+  const t=APP.currentTest;
+  return (sxActiveSec&&sxById(t,sxActiveSec))?sxActiveSec:(t.sections&&t.sections[0]&&t.sections[0].id);
+}
+// 1-based number of a question inside its own section (what the student sees)
+function sxQNumLabel(i){
+  const t=APP.currentTest;if(!sxOn(t)) return String(i+1);
+  const sid=sxQSection(t,t.questions[i]);let n=0;
+  for(let k=0;k<=i;k++) if(sxQSection(t,t.questions[k])===sid) n++;
+  return String(n);
+}
+function sxImportSection(t,item){
+  if(!sxOn(t)) return undefined;
+  const v=item&&item.section;
+  if(v!==undefined&&v!==null&&v!==''){
+    const byTitle=t.sections.find(s=>(s.title||'').trim().toLowerCase()===String(v).trim().toLowerCase());
+    if(byTitle) return byTitle.id;
+    const n=parseInt(v,10);if(n>=1&&n<=t.sections.length) return t.sections[n-1].id;
+  }
+  return sxActiveSectionId();
+}
+function sxRemoveWarning(){
+  const t=APP.currentTest;
+  const has=(APP.submissions||[]).some(s=>s.testId===t.id);
+  return has?'Remove this question?\n\nThis test already has student submissions. Deleting a question shifts the position of every question after it, so existing answers may no longer line up. Consider editing the question instead.':'Remove this question?';
+}
+
+/* ── sidebar ───────────────────────────────────────────────────── */
+function sxQCard(q,i,num){
+  const act=i===activeQIndex?'active':'';
+  const rm=`<button onclick="event.stopPropagation();removeQ(${i})" class="btn btn-ghost btn-icon btn-sm" style="opacity:.5"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg></button>`;
+  if(q.type==='passage') return `<div class="question-card ${act}" data-qi="${i}" onclick="selectQ(${i})"><div class="question-card-header"><div class="question-number" style="background:var(--burgundy)">${num}</div><div class="flex-1"><div style="font-size:12px;font-weight:600;letter-spacing:.04em">Passage</div><div class="type-chip" style="margin-top:2px">Stimulus</div></div>${rm}</div>${q.subQuestions&&q.subQuestions.length?`<div style="padding:0 12px 10px"><span class="text-xs text-muted">${q.subQuestions.length} sub-question${q.subQuestions.length!==1?'s':''}</span></div>`:''}</div>`;
+  return `<div class="question-card ${act}" data-qi="${i}" onclick="selectQ(${i})"><div class="question-card-header"><div class="question-number">${num}</div><div class="flex-1 overflow-hidden"><div style="font-size:12px;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${stripHtml(q.stem)||'(No question text)'}</div><div class="type-chip" style="margin-top:2px">${q.type==='mc'?'MC':q.type==='ms'?'MS':q.type==='short'?'Short':'Essay'}</div></div>${rm}</div></div>`;
+}
+function sxRenderSidebar(){
+  const t=APP.currentTest;const act=sxActiveSectionId();
+  let html='';
+  t.sections.forEach((sec,si)=>{
+    const units=sxTopLevel(t,sec.id);
+    const meta=[sec.timeLimitMin?`⏱${sec.timeLimitMin}m`:'',sec.branchOnly?'branch':'',((sec.routing&&sec.routing.rules)||[]).length?'adaptive':''].filter(Boolean).join(' · ');
+    html+=`<div class="sx-side-sec ${sec.id===act?'active':''}" onclick="sxPickSection('${sec.id}')" title="Click to add new questions to this section">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${si+1}. ${sxE(sec.title||'Untitled')}</span>
+      <span style="font-weight:500;opacity:.85;font-size:10px;white-space:nowrap">${units.length}q${meta?' · '+meta:''}</span></div>`;
+    if(!units.length) html+=`<div style="padding:6px 14px;font-size:11px;color:var(--ink-soft);font-style:italic">Empty — add a question</div>`;
+    let n=1;units.forEach(u=>{html+=sxQCard(u.q,u.idx,n++);});
+  });
+  return html;
+}
+function sxPickSection(id){sxActiveSec=id;const el=document.getElementById('q-sidebar-list');if(el)el.innerHTML=sxRenderSidebar();const p=document.getElementById('sx-add-target');if(p)p.value=id;}
+function sxAddTargetPicker(){
+  const t=APP.currentTest;
+  return `<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink-soft);margin-bottom:3px;letter-spacing:.04em">New questions go in:</div>
+    <select id="sx-add-target" class="form-control" style="font-size:12px;padding:5px 8px" onchange="sxPickSection(this.value)">${t.sections.map((s,i)=>`<option value="${s.id}" ${s.id===sxActiveSectionId()?'selected':''}>${i+1}. ${sxE(s.title||'Untitled')}</option>`).join('')}</select></div>`;
+}
+function sxQSectionPicker(i){
+  const t=APP.currentTest;if(!sxOn(t)) return '';
+  const cur=sxQSection(t,t.questions[i]);
+  return `<select class="form-control" style="width:auto;font-size:11px;padding:3px 8px;margin-left:6px" title="Move this question to another section" onchange="sxMoveQuestion(${i},this.value)">${t.sections.map((s,k)=>`<option value="${s.id}" ${s.id===cur?'selected':''}>§${k+1} ${sxE(s.title||'Untitled')}</option>`).join('')}</select>`;
+}
+function sxMoveQuestion(i,sid){
+  const t=APP.currentTest;t.questions[i].sectionId=sid;sxActiveSec=sid;save();
+  const el=document.getElementById('q-sidebar-list');if(el)el.innerHTML=sxRenderSidebar();
+  const num=document.querySelector('#builder-editor .question-number');if(num)num.textContent=sxQNumLabel(i);
+  toast('Moved to “'+(sxById(t,sid).title||'section')+'”. Existing answers are unaffected.','success');
+}
+
+/* ── structure edits ───────────────────────────────────────────── */
+function sxRefresh(keepTab){
+  const body=document.getElementById('sx-mgr-body');const sc=body?body.scrollTop:0;
+  save();
+  const el=document.getElementById('q-sidebar-list');if(el&&sxOn(APP.currentTest))el.innerHTML=sxRenderSidebar();
+  sxRenderMgr();
+  const b2=document.getElementById('sx-mgr-body');if(b2)b2.scrollTop=sc;
+}
+function sxEnable(){
+  const t=APP.currentTest;
+  const first=sxNewSection('Section 1');
+  t.sections=[first];t.sectioned=true;
+  t.questions.forEach(q=>{q.sectionId=first.id;});     // positions untouched → existing answer keys stay valid
+  if(!t.continueLater) t.continueLater={allowed:true,when:'between',clock:'pause'};
+  sxActiveSec=first.id;
+  save();renderBuilder();sxRenderMgr();
+  toast('Sections enabled. All existing questions are in Section 1.','success');
+}
+function sxDisable(){
+  const t=APP.currentTest;
+  if(!confirm('Turn sections off? Questions keep their order and the test goes back to one continuous exam. Your section settings are kept in case you turn sections back on.')) return;
+  t.sectioned=false;save();renderBuilder();sxRenderMgr();
+}
+function sxAddSection(){
+  const t=APP.currentTest;
+  const s=sxNewSection('Section '+(t.sections.length+1));
+  t.sections.push(s);sxActiveSec=s.id;sxMgr.open={...(sxMgr.open||{}),[s.id]:true};sxRefresh();
+}
+function sxDelSection(id){
+  const t=APP.currentTest;if(t.sections.length<2){toast('A sectioned test needs at least one section. Use “Turn sections off” instead.','info');return;}
+  const sec=sxById(t,id);const n=sxTopLevel(t,id).length;
+  const idx=sxIndex(t,id);const dest=t.sections[idx>0?idx-1:1];
+  if(!confirm(`Delete section “${sec.title}”?`+(n?`\n\nIts ${n} question${n!==1?'s':''} will be moved to “${dest.title}” (not deleted).`:''))) return;
+  t.questions.forEach(q=>{if(q.sectionId===id)q.sectionId=dest.id;});
+  t.sections=t.sections.filter(s=>s.id!==id);
+  // clean routing that pointed at it
+  t.sections.forEach(s=>{
+    if(s.routing){
+      s.routing.rules=(s.routing.rules||[]).filter(r=>r.to!==id&&r.source!==id);
+      if(s.routing.fallback===id)s.routing.fallback='next';
+    }
+  });
+  if(sxActiveSec===id)sxActiveSec=dest.id;
+  sxRefresh();
+}
+function sxMoveSection(id,dir){
+  const t=APP.currentTest;const i=sxIndex(t,id);const j=i+dir;
+  if(j<0||j>=t.sections.length) return;
+  [t.sections[i],t.sections[j]]=[t.sections[j],t.sections[i]];   // question indices are untouched
+  sxRefresh();
+}
+function sxField(id,field,raw,kind){
+  const sec=sxById(APP.currentTest,id);if(!sec) return;
+  let v=raw;
+  if(kind==='num') v=sxNum(raw,0);
+  else if(kind==='nnum') v=(raw===''||raw===null||!(parseFloat(raw)>=0))?null:parseFloat(raw);
+  else if(kind==='bool') v=!!raw;
+  else if(kind==='tri') v=raw==='on'?true:raw==='off'?false:null;
+  sec[field]=v;save();
+}
+function sxToggleOpen(id){sxMgr.open=sxMgr.open||{};sxMgr.open[id]=sxMgr.open[id]===false?true:false;sxRenderMgr();}
+function sxTimeToggle(id,on){const sec=sxById(APP.currentTest,id);sec.timeLimitMin=on?(sec.timeLimitMin||15):null;sxRefresh();}
+
+/* ── routing edits ─────────────────────────────────────────────── */
+function sxAddRule(id){const t=APP.currentTest;const sec=sxById(t,id);sec.routing=sec.routing||{rules:[],fallback:'next'};
+  const others=t.sections.filter(s=>s.id!==id);sec.routing.rules.push(sxNewRule(others));sxRefresh();}
+function sxDelRule(id,ri){sxById(APP.currentTest,id).routing.rules.splice(ri,1);sxRefresh();}
+function sxMoveRule(id,ri,d){const r=sxById(APP.currentTest,id).routing.rules;const j=ri+d;if(j<0||j>=r.length)return;[r[ri],r[j]]=[r[j],r[ri]];sxRefresh();}
+function sxRuleField(id,ri,field,raw){
+  const r=sxById(APP.currentTest,id).routing.rules[ri];
+  r[field]=(field==='value')?sxNum(raw,0):raw;
+  if(field==='metric'||field==='source'||field==='to'){sxRefresh();}else{save();sxRefreshFlowOnly();}
+}
+function sxFallback(id,val){const sec=sxById(APP.currentTest,id);sec.routing=sec.routing||{rules:[],fallback:'next'};sec.routing.fallback=val;sxRefresh();}
+function sxRefreshFlowOnly(){const el=document.getElementById('sx-flow-wrap');if(el)el.innerHTML=sxFlowHtml();const v=document.getElementById('sx-valid-wrap');if(v)v.innerHTML=sxValidationHtml();}
+
+/* ── grading / resume edits ────────────────────────────────────── */
+function sxG(field,raw,kind){
+  const t=APP.currentTest;t.grading=t.grading||{};
+  let v=raw;
+  if(kind==='num')v=sxNum(raw,0);else if(kind==='nnum')v=(raw===''||isNaN(parseFloat(raw)))?null:parseFloat(raw);else if(kind==='bool')v=!!raw;
+  t.grading[field]=v;save();
+}
+function sxGScaled(field,raw,kind){
+  const t=APP.currentTest;t.grading=t.grading||{};t.grading.scaled=Object.assign(sxDefaultGrading().scaled,t.grading.scaled||{});
+  t.grading.scaled[field]=kind==='bool'?!!raw:sxNum(raw,0);save();
+}
+function sxScaleEnsure(){const t=APP.currentTest;t.grading=t.grading||{};if(!Array.isArray(t.grading.scale)||!t.grading.scale.length)t.grading.scale=SX_DEFAULT_SCALE.map(r=>({...r}));return t.grading.scale;}
+function sxScaleSet(i,f,raw){const s=sxScaleEnsure();s[i][f]=f==='min'?sxNum(raw,0):raw;save();sxRefreshWhatIf();}
+function sxScaleAdd(){const s=sxScaleEnsure();s.push({min:0,label:'?'});sxRefresh();}
+function sxScaleDel(i){const s=sxScaleEnsure();if(s.length<2)return;s.splice(i,1);sxRefresh();}
+function sxScaleReset(){APP.currentTest.grading.scale=SX_DEFAULT_SCALE.map(r=>({...r}));sxRefresh();}
+function sxGMethod(m){const t=APP.currentTest;t.grading=t.grading||{};t.grading.method=m;sxRefresh();}
+function sxCL(field,val){const t=APP.currentTest;t.continueLater=Object.assign({allowed:sxOn(t),when:sxOn(t)?'between':'anytime',clock:'pause'},t.continueLater||{});t.continueLater[field]=val;sxRefresh();}
+
+/* ── manager modal ─────────────────────────────────────────────── */
+function sxOpenManager(tab){
+  sxMgr.tab=tab||sxMgr.tab||'sections';
+  const t=APP.currentTest;
+  openModal(`<div class="modal-header"><div><h2 class="serif" style="font-size:22px">Sections &amp; Grading</h2><div class="text-xs text-muted">${sxE(t.title)}</div></div>
+    <button class="btn btn-ghost btn-icon" onclick="sxCloseManager()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+    <div id="sx-mgr-tabs"></div><div id="sx-mgr-body" class="modal-body" style="max-height:68vh;overflow-y:auto"></div>
+    <div class="modal-footer"><div id="sx-mgr-status" class="text-xs text-muted" style="flex:1;align-self:center"></div><button class="btn btn-primary" onclick="sxSaveManager()">Save &amp; close</button></div>`,'1060px');
+  sxRenderMgr();
+}
+async function sxCloseManager(){closeModal();renderBuilder();}
+async function sxSaveManager(){
+  const t=APP.currentTest;
+  const v=sxValidate(t);
+  if(v.errors.length&&!confirm('This test has setup errors:\n\n• '+v.errors.join('\n• ')+'\n\nSave anyway? (It can’t be published until they’re fixed.)')) return;
+  const status=document.getElementById('sx-mgr-status');if(status)status.textContent='Saving…';
+  t.updatedAt=new Date().toISOString();
+  const r=await reliableSave('tests');
+  if(!r.ok){if(status)status.textContent='⚠ Could not confirm save: '+(r.error||'');toast('Not saved yet — check your connection.','error');return;}
+  // grading rules changed? offer to re-score existing submissions
+  const subs=(APP.submissions||[]).filter(s=>s.testId===t.id&&s.status==='submitted');
+  closeModal();renderBuilder();
+  if(subs.length&&sxGradingSig(t)!==(t._sxSig||'')){
+    t._sxSig=sxGradingSig(t);
+    if(confirm(`Re-score ${subs.length} existing submission${subs.length!==1?'s':''} with the current grading settings?\n\nManual grades (essays, overrides) are kept.`)){
+      sxRescoreAll(t);
+    }
+  } else toast('Saved.','success');
+}
+// fingerprint of everything that affects a score
+function sxGradingSig(t){return JSON.stringify([t.grading||null,(t.sections||[]).map(s=>[s.id,s.scored,s.weight,s.creditFloor,s.creditCap,s.minPercent,s.branchOnly])]);}
+function sxRescoreAll(t){
+  let n=0;(APP.submissions||[]).forEach(s=>{if(s.testId===t.id&&s.status==='submitted'){autoScore(s,t);n++;}});
+  save();toast(`Re-scored ${n} submission${n!==1?'s':''}.`,'success');
+}
+function sxRenderMgr(){
+  const t=APP.currentTest;const tabs=document.getElementById('sx-mgr-tabs');const body=document.getElementById('sx-mgr-body');
+  if(!tabs||!body) return;
+  const on=sxOn(t);
+  const defs=[['sections','Sections',true],['adaptive','Adaptive routing',on],['grading','Grading',true],['resume','Save & resume',true]];
+  if(!on&&sxMgr.tab==='adaptive')sxMgr.tab='sections';
+  tabs.innerHTML=`<div class="sx-tabs">${defs.map(([k,l,en])=>`<div class="sx-tab ${sxMgr.tab===k?'on':''} ${en?'':'off'}" onclick="${en?`sxMgr.tab='${k}';sxRenderMgr()`:`toast('Turn on sections first.','info')`}">${l}</div>`).join('')}</div>`;
+  const fn={sections:sxTabSections,adaptive:sxTabAdaptive,grading:sxTabGrading,resume:sxTabResume}[sxMgr.tab];
+  const sc=body.scrollTop;body.innerHTML=fn();body.scrollTop=sc;
+}
+
+/* ── tab: sections ─────────────────────────────────────────────── */
+function sxSel(opts,cur,onch){return `<select class="form-control" onchange="${onch}">${opts.map(([v,l])=>`<option value="${v}" ${String(cur)===String(v)?'selected':''}>${l}</option>`).join('')}</select>`;}
+function sxTabSections(){
+  const t=APP.currentTest;
+  if(!sxOn(t)) return `<div style="text-align:center;padding:36px 20px;max-width:560px;margin:0 auto">
+    <div style="font-size:42px">🗂</div><h3 class="serif" style="font-size:24px;margin:8px 0">Split this test into sections</h3>
+    <p style="color:var(--ink-soft);font-size:14px;line-height:1.7;margin-bottom:18px">Each section can have its own directions, time limit, calculator and navigation rules. Sections can be <strong>adaptive</strong> (a student’s score on one section decides which section they get next), weighted differently in the final grade, and students can save and continue later.</p>
+    <button class="btn btn-primary btn-lg" onclick="sxEnable()">Enable sections</button>
+    <p class="text-xs text-muted" style="margin-top:12px">Your ${t.questions.length} existing question${t.questions.length!==1?'s':''} will go into “Section 1”. Nothing is lost and existing submissions are unaffected.</p></div>`;
+  const open=sxMgr.open||{};
+  return `<div class="flex items-center" style="justify-content:space-between;margin-bottom:12px"><div style="font-size:13px;color:var(--ink-soft)">Students take sections in this order unless routing says otherwise. Finished sections lock.</div>
+    <div class="flex gap-2"><button class="btn btn-secondary btn-sm" onclick="sxDisable()">Turn sections off</button><button class="btn btn-primary btn-sm" onclick="sxAddSection()">+ Add section</button></div></div>`
+  +t.sections.map((s,i)=>{
+    const n=sxQuestionCount(t,s.id);const isOpen=open[s.id]!==false;
+    const timed=!!s.timeLimitMin;
+    return `<div class="sx-sec"><div class="sx-sec-h"><div class="sx-sec-n">${i+1}</div>
+      <input class="form-control" style="flex:1;font-weight:600" value="${sxA(s.title)}" placeholder="Section title" oninput="sxField('${s.id}','title',this.value,'str')" onchange="sxRefresh()">
+      <span class="text-xs text-muted" style="white-space:nowrap">${n} question${n!==1?'s':''}${s.branchOnly?' · branch-only':''}</span>
+      <button class="btn btn-ghost btn-sm btn-icon" title="Move up" onclick="sxMoveSection('${s.id}',-1)" ${i===0?'disabled':''}>▲</button>
+      <button class="btn btn-ghost btn-sm btn-icon" title="Move down" onclick="sxMoveSection('${s.id}',1)" ${i===t.sections.length-1?'disabled':''}>▼</button>
+      <button class="btn btn-ghost btn-sm btn-icon" title="${isOpen?'Collapse':'Expand'}" onclick="sxToggleOpen('${s.id}')">${isOpen?'–':'+'}</button>
+      <button class="btn btn-ghost btn-sm btn-icon" title="Delete section" style="color:var(--rust)" onclick="sxDelSection('${s.id}')">🗑</button></div>
+      ${isOpen?`<div class="sx-sec-b">
+        <div class="form-group"><label class="sx-lbl">Directions for this section <span style="text-transform:none;letter-spacing:0;font-weight:500">(Markdown: **bold**, *italic*, lists)</span></label>
+          <textarea class="form-control" rows="3" placeholder="Shown on the section’s intro screen and under the Directions button while students are in this section." oninput="sxField('${s.id}','directions',this.value,'str')">${sxE(s.directions||'')}</textarea></div>
+        <div class="sx-g4">
+          <div><label class="sx-lbl">Time limit</label><div class="flex gap-2 items-center"><input type="checkbox" ${timed?'checked':''} onchange="sxTimeToggle('${s.id}',this.checked)"> ${timed?`<input type="number" min="1" class="form-control" style="width:80px" value="${s.timeLimitMin}" oninput="sxField('${s.id}','timeLimitMin',this.value,'nnum')"> <span class="text-xs">min</span>`:'<span class="text-xs text-muted">None</span>'}</div></div>
+          <div><label class="sx-lbl">Navigation</label>${sxSel([['free','Free — can go back'],['forward','Forward only']],s.navigation||'free',`sxField('${s.id}','navigation',this.value,'str')`)}</div>
+          <div><label class="sx-lbl">Calculator</label>${sxSel([['inherit','Use assignment setting'],['on','Always allowed'],['off','Never allowed']],s.calculator||'inherit',`sxField('${s.id}','calculator',this.value,'str')`)}</div>
+          <div><label class="sx-lbl">Reference sheet</label>${sxSel([['true','Available'],['false','Hidden here']],String(s.showReference!==false),`sxField('${s.id}','showReference',this.value==='true','bool')`)}</div>
+        </div>
+        <div class="sx-g4" style="margin-top:12px">
+          <div><label class="sx-lbl">Shuffle questions</label>${sxSel([['inherit','Use assignment setting'],['on','Shuffle'],['off','Keep order']],s.shuffleItems===true?'on':s.shuffleItems===false?'off':'inherit',`sxField('${s.id}','shuffleItems',this.value,'tri')`)}</div>
+          <div><label class="sx-lbl">Shuffle choices</label>${sxSel([['inherit','Use assignment setting'],['on','Shuffle'],['off','Keep order']],s.shuffleChoices===true?'on':s.shuffleChoices===false?'off':'inherit',`sxField('${s.id}','shuffleChoices',this.value,'tri')`)}</div>
+          <div><label class="sx-lbl">Break after (minutes)</label><input type="number" min="0" class="form-control" placeholder="none" value="${s.breakAfterMin||''}" oninput="sxField('${s.id}','breakAfterMin',this.value,'nnum')"></div>
+          <div><label class="sx-lbl">Branch-only module</label><label class="flex gap-2 items-center" style="font-size:12px"><input type="checkbox" ${s.branchOnly?'checked':''} onchange="sxField('${s.id}','branchOnly',this.checked,'bool');sxRefresh()"> Only reachable via routing</label></div>
+        </div>
+      </div>`:''}</div>`;}).join('');
+}
+
+/* ── tab: adaptive routing ─────────────────────────────────────── */
+function sxTgtOpts(t,exceptId,cur,allowNext=true){
+  const o=[];if(allowNext)o.push(['next','Next section (default)']);o.push(['end','End the test']);
+  t.sections.forEach((s,i)=>{if(s.id!==exceptId)o.push([s.id,`${i+1}. ${s.title||'Untitled'}`]);});
+  return o.map(([v,l])=>`<option value="${v}" ${cur===v?'selected':''}>${sxE(l)}</option>`).join('');
+}
+function sxEdges(t,id){
+  const sec=sxById(t,id);const out=[];
+  ((sec.routing&&sec.routing.rules)||[]).forEach(r=>{
+    const metric=r.metric==='percent'?'%':r.metric==='points'?' pts':' correct';
+    const src=r.source&&r.source!=='this'?(r.source==='cumulative'?'overall ':`${(sxById(t,r.source)||{title:'?'}).title} `):'';
+    const to=r.to==='next'?sxNextCore(t,id,[]):r.to;
+    out.push({to:to==='end'?null:to,label:`${src}${r.op||'>='}${r.value}${metric}`});
+  });
+  const fb=(sec.routing&&sec.routing.fallback)||'next';
+  const nx=fb==='next'?sxNextCore(t,id,[]):fb;
+  out.push({to:nx==='end'?null:nx,label:((sec.routing&&sec.routing.rules)||[]).length?'otherwise':'then'});
+  return out;
+}
+function sxFlowHtml(pathSet){
+  const t=APP.currentTest;const first=sxFirstSection(t);if(!first) return '';
+  // layer by shortest distance from the first section
+  const depth={[first]:0};const q=[first];
+  while(q.length){const id=q.shift();sxEdges(t,id).forEach(e=>{if(e.to&&sxById(t,e.to)&&depth[e.to]===undefined){depth[e.to]=depth[id]+1;q.push(e.to);}});}
+  const cols=[];
+  t.sections.forEach((s,i)=>{const d=depth[s.id]===undefined?-1:depth[s.id];(cols[d+1]=cols[d+1]||[]).push({s,i});});
+  const nameOf=id=>{const i=sxIndex(t,id);return i<0?'?':`${i+1}. ${sxById(t,id).title||'Untitled'}`;};
+  return `<div class="sx-flow">`+cols.map((col,ci)=>col?`<div class="sx-col">${ci===0?'<div class="sx-lbl" style="color:#B45309">Unreachable</div>':''}${col.map(({s,i})=>{
+    const edges=sxEdges(t,s.id);
+    const hit=pathSet&&pathSet.includes(s.id);
+    return `<div class="sx-node ${s.branchOnly?'branch':''} ${pathSet?(hit?'hit':'dim'):''}"><div style="font-weight:700">${i+1}. ${sxE(s.title||'Untitled')}</div>
+      <div class="sx-edge">${sxQuestionCount(t,s.id)}q${s.timeLimitMin?' · '+s.timeLimitMin+'m':''}${s.branchOnly?' · branch':''}</div>
+      ${edges.map(e=>`<div class="sx-edge">${sxE(e.label)} → <strong>${e.to?sxE(nameOf(e.to)):'End'}</strong></div>`).join('')}</div>`;}).join('')}</div>`:'').join('')+`</div>`;
+}
+function sxValidationHtml(){
+  const v=sxValidate(APP.currentTest);
+  if(!v.errors.length&&!v.warnings.length) return `<div class="sx-msg sx-ok">✓ Sections and routing look good.</div>`;
+  return v.errors.map(e=>`<div class="sx-msg sx-err">✗ ${sxE(e)}</div>`).join('')+v.warnings.map(w=>`<div class="sx-msg sx-warn">⚠ ${sxE(w)}</div>`).join('');
+}
+function sxSimPct(id,v){sxMgr.sim[id]=sxNum(v,70);const o=document.getElementById('sx-sim-out');if(o)o.innerHTML=sxSimHtml();const lbl=document.getElementById('sx-simv-'+id);if(lbl)lbl.textContent=sxMgr.sim[id]+'%';}
+function sxSimHtml(){
+  const t=APP.currentTest;const r=sxSimulate(t,sxMgr.sim);
+  const nm=id=>`<strong>${sxE((sxById(t,id)||{title:'?'}).title)}</strong>`;
+  return `<div style="font-size:13px;margin-bottom:8px">Path: ${r.path.map(nm).join(' → ')} → <em>end</em></div>`+r.decisions.map(d=>`<div class="text-xs text-muted">After ${nm(d.from)}: ${d.via==='rule'?`rule ${d.ruleIndex+1} matched (${d.value}${d.metric==='percent'?'%':''})`:'no rule matched / no rules'} → ${d.to==='end'?'end of test':nm(d.to)}${d.note?` <em>(${d.note})</em>`:''}</div>`).join('')+sxFlowHtml(r.path).replace('class="sx-flow"','class="sx-flow" style="margin-top:6px"');
+}
+function sxTabAdaptive(){
+  const t=APP.currentTest;
+  return `<div style="font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:12px">After a student finishes a section, EdAssess checks that section’s rules <strong>top to bottom</strong>; the first rule that matches decides the next section. If none match, “otherwise” is used. Scores used for routing count only auto-graded questions (multiple choice, multi-select, short answer) because essays can’t be graded in time. Mark the modules students are routed <em>to</em> as <strong>branch-only</strong> on the Sections tab so they’re skipped by default.</div>
+  <div id="sx-valid-wrap">${sxValidationHtml()}</div>
+  <div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">Flow map</strong><span class="text-xs text-muted">dashed = branch-only</span></div><div class="sx-sec-b" id="sx-flow-wrap">${sxFlowHtml()}</div></div>
+  ${t.sections.map((s,i)=>{
+    const rules=(s.routing&&s.routing.rules)||[];const fb=(s.routing&&s.routing.fallback)||'next';
+    return `<div class="sx-sec"><div class="sx-sec-h"><div class="sx-sec-n">${i+1}</div><strong style="font-size:13px;flex:1">After “${sxE(s.title||'Untitled')}”</strong><button class="btn btn-secondary btn-sm" onclick="sxAddRule('${s.id}')">+ Add rule</button></div><div class="sx-sec-b">
+      ${rules.length?rules.map((r,ri)=>`<div class="sx-rule"><strong>${ri+1}. If</strong>
+        <select onchange="sxRuleField('${s.id}',${ri},'source',this.value)"><option value="this" ${r.source==='this'?'selected':''}>this section</option><option value="cumulative" ${r.source==='cumulative'?'selected':''}>overall so far</option>${t.sections.filter(o=>o.id!==s.id).map(o=>`<option value="${o.id}" ${r.source===o.id?'selected':''}>“${sxE(o.title||'Untitled')}”</option>`).join('')}</select>
+        <select onchange="sxRuleField('${s.id}',${ri},'metric',this.value)">${Object.entries(SX_METRIC_LABEL).map(([k,l])=>`<option value="${k}" ${(r.metric||'percent')===k?'selected':''}>${l}</option>`).join('')}</select>
+        <select onchange="sxRuleField('${s.id}',${ri},'op',this.value)">${Object.entries(SX_OP_LABEL).map(([k,l])=>`<option value="${k}" ${(r.op||'>=')===k?'selected':''}>${l}</option>`).join('')}</select>
+        <input type="number" min="0" value="${r.value}" oninput="sxRuleField('${s.id}',${ri},'value',this.value)"> <span>${(r.metric||'percent')==='percent'?'%':''}</span>
+        <strong>→ go to</strong><select onchange="sxRuleField('${s.id}',${ri},'to',this.value)">${sxTgtOpts(t,s.id,r.to)}</select>
+        <span style="margin-left:auto"></span><button class="btn btn-ghost btn-sm btn-icon" onclick="sxMoveRule('${s.id}',${ri},-1)" ${ri===0?'disabled':''}>▲</button><button class="btn btn-ghost btn-sm btn-icon" onclick="sxMoveRule('${s.id}',${ri},1)" ${ri===rules.length-1?'disabled':''}>▼</button><button class="btn btn-ghost btn-sm btn-icon" style="color:var(--rust)" onclick="sxDelRule('${s.id}',${ri})">✕</button></div>`).join(''):`<div class="text-xs text-muted" style="margin-bottom:8px">No rules — students just continue to the next section.</div>`}
+      <div class="flex items-center gap-2" style="margin-top:8px"><strong style="font-size:12px">${rules.length?'Otherwise':'Then'} →</strong><select class="form-control" style="width:auto" onchange="sxFallback('${s.id}',this.value)">${sxTgtOpts(t,s.id,fb)}</select></div></div></div>`;}).join('')}
+  <div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">Try it: path simulator</strong><span class="text-xs text-muted">drag a score to see where a student would be sent</span></div><div class="sx-sec-b">
+    <div class="sx-g3" style="margin-bottom:10px">${t.sections.map(s=>{const v=sxMgr.sim[s.id]===undefined?70:sxMgr.sim[s.id];return `<div><label class="sx-lbl">${sxE(s.title||'Untitled')} — <span id="sx-simv-${s.id}">${v}%</span></label><input type="range" min="0" max="100" value="${v}" style="width:100%" oninput="sxSimPct('${s.id}',this.value)"></div>`;}).join('')}</div>
+    <div id="sx-sim-out">${sxSimHtml()}</div></div></div>`;
+}
+
+/* ── tab: grading ──────────────────────────────────────────────── */
+function sxSectionMax(t,id){return sxItems(t,id).reduce((x,i)=>x+(i.q.points||1),0);}
+function sxWhatIfRows(t){
+  const pcts=sxMgr.wi||{};
+  const secs=sxOn(t)?t.sections:[{id:SX_ALL,title:t.title,scored:true,weight:1,creditFloor:0,creditCap:100,minPercent:null}];
+  return secs.map(s=>{const id=s.id;const max=id===SX_ALL?flatQuestions(t).reduce((x,i)=>x+(i.q.points||1),0):sxSectionMax(t,id);const p=pcts[id]===undefined?80:pcts[id];
+    return {id,title:s.title,scored:s.scored!==false,weight:Math.max(0,sxNum(s.weight,1)),floor:sxNum(s.creditFloor,0),cap:sxNum(s.creditCap,100),minPercent:(s.minPercent===null||s.minPercent===undefined||s.minPercent==='')?null:sxNum(s.minPercent,0),points:Math.round(p/100*max*10)/10,max,percent:p,_p:p};});
+}
+function sxWhatIfHtml(){
+  const t=APP.currentTest;const rows=sxWhatIfRows(t);const g=sxGradeFromRows(t,rows);
+  const G=sxGrading(t);
+  return `<div class="sx-g3" style="margin-bottom:10px">${rows.map(r=>`<div><label class="sx-lbl">${sxE(r.title||'Untitled')} — <span id="sx-wi-${r.id}">${r._p}%</span>${r.scored?'':' (unscored)'}</label><input type="range" min="0" max="100" value="${r._p}" style="width:100%" oninput="sxMgr.wi=sxMgr.wi||{};sxMgr.wi['${r.id}']=+this.value;sxRefreshWhatIf()"></div>`).join('')}</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <div class="sx-msg sx-ok" style="margin:0"><strong>${g.points}</strong> / ${g.max} pts · <strong>${g.percent}%</strong></div>
+    ${g.letter?`<div class="sx-msg sx-ok" style="margin:0">Letter: <strong>${sxE(g.letter)}</strong></div>`:''}
+    ${g.scaled!==null?`<div class="sx-msg sx-ok" style="margin:0">Scaled: <strong>${g.scaled}</strong></div>`:''}
+    ${g.passed!==null?`<div class="sx-msg ${g.passed?'sx-ok':'sx-err'}" style="margin:0">${g.passed?'✓ Pass':'✗ Not passing'}${g.sectionFailures.length?` — below minimum in ${g.sectionFailures.map(id=>sxE((rows.find(r=>r.id===id)||{}).title)).join(', ')}`:''}</div>`:''}
+  </div>`;
+}
+function sxRefreshWhatIf(){const el=document.getElementById('sx-wi-out');if(el){el.innerHTML=sxWhatIfHtml();}}
+function sxTabGrading(){
+  const t=APP.currentTest;const G=sxGrading(t);const on=sxOn(t);
+  const chk=(f,label,hint)=>`<label class="flex gap-2 items-center" style="font-size:13px;margin-bottom:6px"><input type="checkbox" ${G[f]?'checked':''} onchange="sxG('${f}',this.checked,'bool')"><span>${label}${hint?` <span class="text-xs text-muted">${hint}</span>`:''}</span></label>`;
+  return `${on?`<div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">How the final score is calculated</strong></div><div class="sx-sec-b">
+    <div class="sx-g3" style="margin-bottom:12px">
+      <label class="sx-sec" style="padding:12px;cursor:pointer;margin:0;${G.method==='total'?'border-color:var(--accent,#0891B2);background:#ECFEFF':''}"><input type="radio" name="sxm" ${G.method==='total'?'checked':''} onchange="sxGMethod('total')"> <strong>Total points</strong><div class="text-xs text-muted" style="margin-top:4px">Add up points from every section the student took. Question point values do all the weighting.</div></label>
+      <label class="sx-sec" style="padding:12px;cursor:pointer;margin:0;${G.method==='weighted'?'border-color:var(--accent,#0891B2);background:#ECFEFF':''}"><input type="radio" name="sxm" ${G.method==='weighted'?'checked':''} onchange="sxGMethod('weighted')"> <strong>Weighted by section</strong><div class="text-xs text-muted" style="margin-top:4px">Each section’s % is multiplied by its weight, so a 10-question section can count more than a 40-question one. Required for fair adaptive scoring.</div></label>
+    </div>
+    ${G.method==='weighted'?`<div style="margin-bottom:12px;max-width:260px"><label class="sx-lbl">Total points the test is worth</label><input type="number" min="1" class="form-control" value="${G.totalPoints}" oninput="sxG('totalPoints',this.value,'num')"></div>`:''}
+    <table class="sx-tbl"><thead><tr><th>Section</th><th>Counts toward grade</th>${G.method==='weighted'?'<th>Weight</th><th>Credit floor %</th><th>Credit ceiling %</th>':'<th></th>'}<th>Minimum % to pass</th><th>Points available</th></tr></thead><tbody>
+    ${t.sections.map((s,i)=>`<tr><td><strong>${i+1}. ${sxE(s.title||'Untitled')}</strong>${s.branchOnly?' <span class="text-xs text-muted">(branch)</span>':''}</td>
+      <td><input type="checkbox" ${s.scored!==false?'checked':''} onchange="sxField('${s.id}','scored',this.checked,'bool');sxRefresh()"></td>
+      ${G.method==='weighted'?`<td><input type="number" min="0" step="0.5" value="${s.weight==null?1:s.weight}" oninput="sxField('${s.id}','weight',this.value,'num');sxRefreshWhatIf()"></td>
+        <td><input type="number" min="0" max="100" value="${s.creditFloor==null?0:s.creditFloor}" oninput="sxField('${s.id}','creditFloor',this.value,'num');sxRefreshWhatIf()"></td>
+        <td><input type="number" min="0" max="100" value="${s.creditCap==null?100:s.creditCap}" oninput="sxField('${s.id}','creditCap',this.value,'num');sxRefreshWhatIf()"></td>`:'<td></td>'}
+      <td><input type="number" min="0" max="100" placeholder="none" value="${s.minPercent==null?'':s.minPercent}" oninput="sxField('${s.id}','minPercent',this.value,'nnum');sxRefreshWhatIf()"></td>
+      <td>${sxSectionMax(t,s.id)}</td></tr>`).join('')}</tbody></table>
+    ${G.method==='weighted'?`<div class="text-xs text-muted" style="margin-top:8px;line-height:1.6"><strong>Weights</strong> are relative and normalized across the sections a student actually took. <strong>Credit range</strong> rescales a section: with floor 40% and ceiling 100%, a student who gets 0% in that section earns 40% credit and a perfect score earns 100%. Use it to make “hard” modules worth more than “easy” ones (e.g. easy module: 0–70%, hard module: 40–100%).</div>`:`<div class="text-xs text-muted" style="margin-top:8px">Sections unchecked under “counts toward grade” (practice, survey, ungraded warm-up) are shown to students but excluded from their score.</div>`}
+  </div></div>`:''}
+  <div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">Passing &amp; grades</strong></div><div class="sx-sec-b"><div class="sx-g3">
+    <div><label class="sx-lbl">Passing score (%)</label><input type="number" min="0" max="100" class="form-control" placeholder="no pass mark" value="${G.passPercent==null?'':G.passPercent}" oninput="sxG('passPercent',this.value,'nnum');sxRefreshWhatIf()"></div>
+    ${on?`<div style="padding-top:18px">${chk('requireSectionMins','Section minimums must also be met')}${chk('countUnreached','Unreached sections count as zero','(if a test ends early)')}</div>`:''}
+  </div>
+  <div style="margin-top:12px">${chk('letterEnabled','Show a letter grade')}</div>
+  ${G.letterEnabled?`<table class="sx-tbl" style="max-width:380px"><thead><tr><th>Minimum %</th><th>Grade</th><th></th></tr></thead><tbody>${G.scale.map((r,i)=>`<tr><td><input type="number" min="0" max="100" value="${r.min}" oninput="sxScaleSet(${i},'min',this.value)"></td><td><input class="form-control" style="width:90px" value="${sxA(r.label)}" oninput="sxScaleSet(${i},'label',this.value)"></td><td><button class="btn btn-ghost btn-sm btn-icon" onclick="sxScaleDel(${i})">✕</button></td></tr>`).join('')}</tbody></table><div class="flex gap-2" style="margin-top:6px"><button class="btn btn-secondary btn-sm" onclick="sxScaleAdd()">+ Add grade</button><button class="btn btn-ghost btn-sm" onclick="sxScaleReset()">Reset to A–F</button></div>`:''}
+  <div style="margin-top:12px">${`<label class="flex gap-2 items-center" style="font-size:13px"><input type="checkbox" ${G.scaled.enabled?'checked':''} onchange="sxGScaled('enabled',this.checked,'bool');sxRefresh()"> Report a scaled score <span class="text-xs text-muted">(e.g. 200–800)</span></label>`}</div>
+  ${G.scaled.enabled?`<div class="sx-g4" style="max-width:520px;margin-top:6px"><div><label class="sx-lbl">Lowest</label><input type="number" class="form-control" value="${G.scaled.min}" oninput="sxGScaled('min',this.value);sxRefreshWhatIf()"></div><div><label class="sx-lbl">Highest</label><input type="number" class="form-control" value="${G.scaled.max}" oninput="sxGScaled('max',this.value);sxRefreshWhatIf()"></div><div><label class="sx-lbl">Round to</label><input type="number" min="1" class="form-control" value="${G.scaled.step}" oninput="sxGScaled('step',this.value);sxRefreshWhatIf()"></div></div>`:''}
+  </div></div>
+  <div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">What students see</strong></div><div class="sx-sec-b">
+    ${on?chk('showSectionScores','Section-by-section score breakdown'):''}${chk('showLetter','Letter grade (if enabled)')}${chk('showScaled','Scaled score (if enabled)')}${chk('showPassFail','Pass / not-passing result')}</div></div>
+  <div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">What-if calculator</strong><span class="text-xs text-muted">uses exactly the same math as real grading</span></div><div class="sx-sec-b" id="sx-wi-out">${sxWhatIfHtml()}</div></div>
+  <div class="text-xs text-muted">When you save, you’ll be offered to re-score existing submissions with the new rules. Essay and manual grades are never overwritten.</div>`;
+}
+
+/* ── tab: save & resume ────────────────────────────────────────── */
+function sxTabResume(){
+  const t=APP.currentTest;const c=sxContinueLater(t,null);const on=sxOn(t);
+  return `<div class="sx-sec"><div class="sx-sec-h"><strong style="font-size:13px">Save &amp; continue later</strong></div><div class="sx-sec-b">
+    <label class="flex gap-2 items-center" style="font-size:14px;margin-bottom:12px"><input type="checkbox" ${c.allowed?'checked':''} onchange="sxCL('allowed',this.checked)"><strong>Let students save and continue later</strong></label>
+    ${c.allowed?`<div class="sx-g3">
+      ${on?`<div><label class="sx-lbl">When can they leave?</label>${sxSel([['between','Between sections only'],['anytime','At any time, even mid-section']],c.when,`sxCL('when',this.value)`)}</div>`:''}
+      <div><label class="sx-lbl">Timer while they’re away</label>${sxSel([['pause','Pause (resumes where it stopped)'],['run','Keep running (anti-cheating)']],c.clock,`sxCL('clock',this.value)`)}</div></div>`:'<div class="text-xs text-muted">Students can still reload the page and pick up where they left off if they’re disconnected, but there’s no “Save &amp; exit” button.</div>'}
+    </div></div>
+  <div class="sx-msg" style="background:var(--paper-warm);border:1px solid var(--border);line-height:1.8">
+    <strong>How progress is protected</strong><br>
+    • Every answer is saved to the cloud as it’s given, and students see a live “Progress saved” indicator.<br>
+    • <strong>Save &amp; exit</strong> only shows “saved” after the server confirms it by reading the data back; if the connection fails the student is told and stays in the exam.<br>
+    • The exact section, question, flags, highlights and notes are saved too, so students can resume on <em>any</em> device using the same link and name.<br>
+    • With <em>Pause</em>, the section clock stops while they’re away. With <em>Keep running</em>, a section that expires while they’re gone is auto-submitted (and adaptive routing still applies) the moment they return.${on?'<br>• Finished sections are locked, so routing decisions can’t be changed afterwards.':''}<br>
+    • You can switch this off per assignment when you assign the test.</div>`;
+}
+
+</script>
+<script id="ea-instructor">
+/* ══════════════════════════════════════════════════════════════════
+   SECTIONS — ASSIGNING · LIVE MONITOR · GRADING · RESULTS · ANALYTICS
+══════════════════════════════════════════════════════════════════ */
+
+/* ── helpers ───────────────────────────────────────────────────── */
+function sxPctOf(t,s,fallbackTotal){
+  const m=calcTotalPoints(t,s);
+  return m>0?Math.round((s.score||0)/m*100):(fallbackTotal>0?Math.round((s.score||0)/fallbackTotal*100):0);
+}
+function sxMaxOf(t,s,fallbackTotal){const m=calcTotalPoints(t,s);return m||fallbackTotal;}
+// Did this student take the section that this item lives in?
+function sxSubTook(t,s,item){
+  if(!sxOn(t)) return true;
+  const q=t.questions[item.idx];
+  return sxPlaySet(t,s).includes(sxQSection(t,q));
+}
+function sxMins(secs){return secs==null?'—':(Math.round(secs/6)/10)+' min';}
+const sxEndReasonLabel={submitted:'Finished',timeout:'Time ran out',instructor:'Ended by instructor',strikes:'Auto-submitted (violations)',ended:'Ended early'};
+
+/* ── assigning ─────────────────────────────────────────────────── */
+function sxAssignBlock(t){
+  const pol=sxContinueLater(t,null);
+  let html='';
+  if(sxOn(t)){
+    const rows=t.sections.map((s,i)=>{
+      const n=sxQuestionCount(t,s.id);
+      return `<tr><td style="padding:5px 6px"><strong>${i+1}. ${sxE(s.title||'Untitled')}</strong>${s.branchOnly?' <span class="text-xs text-muted">(branch)</span>':''}<div class="text-xs text-muted">${n} question${n!==1?'s':''}</div></td>
+        <td style="padding:5px 6px;white-space:nowrap">${s.timeLimitMin?s.timeLimitMin+' min':'No limit'}</td>
+        <td style="padding:5px 6px"><input type="number" min="0" class="form-control as-sx-lim" data-sec="${s.id}" data-def="${s.timeLimitMin||''}" placeholder="${s.timeLimitMin?'default':'none'}" style="width:90px"></td></tr>`;
+    }).join('');
+    html+=`<div class="assign-section"><div class="assign-section-title">Section timing</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr style="text-align:left;color:var(--ink-soft);font-size:10px;letter-spacing:.08em;text-transform:uppercase"><th style="padding:4px 6px">Section</th><th style="padding:4px 6px">Set in test</th><th style="padding:4px 6px">Override (min)</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="form-hint mt-2">Leave blank to use the test’s time limit; enter <strong>0</strong> to make a section untimed for this assignment.</div>
+      <div class="flex items-center gap-3 mt-3"><label class="form-label" style="margin:0;white-space:nowrap">Time multiplier</label><input type="number" id="as-sx-mult" class="form-control" value="1" min="0.25" max="5" step="0.25" style="width:80px"><span class="text-xs text-muted">e.g. 1.5 for extended-time accommodations. Create a separate assignment link for those students.</span></div></div>`;
+  }
+  if(pol.allowed){
+    html+=`<div class="assign-section"><div class="assign-section-title">Save &amp; continue later</div>
+      <label class="checkbox-wrap"><input type="checkbox" id="as-sx-cl" checked><span style="font-size:13px">Allow students to save and continue later${sxOn(t)?` (${pol.when==='between'?'between sections':'any time'}; timer ${pol.clock==='pause'?'pauses':'keeps running'})`:''}</span></label></div>`;
+  }
+  return html;
+}
+function sxReadAssign(t){
+  const out={};if(!t) return out;
+  if(sxOn(t)){
+    const ov={};
+    document.querySelectorAll('.as-sx-lim').forEach(inp=>{
+      const raw=inp.value.trim();if(raw==='') return;
+      const v=parseFloat(raw);if(!(v>=0)) return;
+      const def=parseFloat(inp.dataset.def)||null;
+      const lim=v>0?v:null;
+      if(lim!==def) ov[inp.dataset.sec]={limitMin:lim};
+    });
+    if(Object.keys(ov).length) out.sectionOverrides=ov;
+    const m=parseFloat((document.getElementById('as-sx-mult')||{}).value);
+    if(m>0&&m!==1) out.timeMultiplier=m;
+    out.timed=false;
+  }
+  const cl=document.getElementById('as-sx-cl');
+  if(cl&&!cl.checked) out.continueLater=false;
+  return out;
+}
+function sxTimeTileText(a,t){
+  if(t&&sxOn(t)){
+    const lims=t.sections.map(s=>sxBaseLimitMin(a,s)).filter(Boolean);
+    if(!lims.length) return 'Unlimited';
+    const mult=a.timeMultiplier&&a.timeMultiplier!==1?` ×${a.timeMultiplier}`:'';
+    return `Per section${mult}`;
+  }
+  return a.timed?a.maxMinutes+' min':'Unlimited';
+}
+
+/* ── live monitor ──────────────────────────────────────────────── */
+function sxLiveTime(s,t,a){
+  const st=s.sectionState;if(!st) return '';
+  if(s.paused) return `<span style="font-size:11px;color:var(--ochre);font-weight:600">💾 Saved · away</span>`;
+  if(st.phase==='intro') return `<span style="font-size:11px;color:var(--ink-soft)">At section intro</span>`;
+  if(st.phase==='break') return `<span style="font-size:11px;color:var(--ink-soft)">☕ On break</span>`;
+  const rem=sxRemainingSecs(t,a,s,st.current,Date.now());
+  if(!isFinite(rem)) return `<span style="font-size:11px;color:var(--ink-soft)">No limit</span>`;
+  if(rem<=0) return `<span style="font-size:11px;color:var(--rust)">Section time's up</span>`;
+  return `<span style="font-size:11px;color:${rem<300?'var(--rust)':'var(--ochre)'};font-family:'Courier Prime',monospace;font-weight:600">${sxFmtSecs(rem)} left</span>`;
+}
+function sxLiveSectionLine(s,t){
+  if(!sxOn(t)||!s.sectionState) return '';
+  const st=s.sectionState;const cur=sxById(t,st.current);
+  const last=(st.decisions||[]).slice(-1)[0];
+  const why=last&&last.via==='rule'?` · routed here by a rule (${last.value}${last.metric==='percent'?'%':''})`:'';
+  return `<div style="font-size:10px;color:var(--ink-soft);margin-top:2px;letter-spacing:.03em">§${st.path.length}${cur?': '+sxE(cur.title):''}${s.status==='in-progress'?` · ${st.phase}`:''}${why}</div>`;
+}
+function sxLiveGradeChip(s,t){
+  if(!s.grade||!sxUsesEngine(t)) return '';
+  const g=s.grade;const bits=[];
+  if(g.letter) bits.push(sxE(g.letter));
+  if(g.scaled!==null&&g.scaled!==undefined) bits.push(g.scaled);
+  if(g.passed!==null&&g.passed!==undefined) bits.push(g.passed?'✓ pass':'✗ not passing');
+  return bits.length?`<div style="font-size:10px;color:${g.passed===false?'var(--rust)':'var(--sage)'};font-weight:700">${bits.join(' · ')}</div>`:'';
+}
+async function sxInstructorOp(sid,type,extra,msg){
+  const res=await apiPost({action:'instructorOp',submissionId:sid,op:Object.assign({type},extra||{})});
+  if(!res||res.__httpError){toast('Couldn’t send that to the student — the server may need the updated data.js (see README).','error');return false;}
+  toast(msg||'Sent. The student’s screen updates within a few seconds.','success');return true;
+}
+function sxControlPanel(s){
+  const t=APP.tests.find(tt=>tt.id===s.testId);
+  if(!t||!sxOn(t)||!s.sectionState) return '';
+  const a=APP.assignments.find(aa=>aa.id===s.assignmentId)||{};
+  const st=s.sectionState;const cur=sxById(t,st.current);
+  const path=st.path.map(id=>(sxById(t,id)||{}).title||'?').join(' → ');
+  const live=s.status==='in-progress';
+  return `<div style="background:#ECFEFF;border:1px solid #67E8F9;border-radius:var(--r);padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="font-weight:700;margin-bottom:4px">Sections</div>
+    <div>Path so far: <strong>${sxE(path)}</strong></div>
+    ${live?`<div>Now: <strong>${sxE(cur?cur.title:'?')}</strong> (${st.phase}${s.paused?', saved & away':''}) · ${sxLiveTime(s,t,a)}</div>
+    <div class="flex gap-2" style="margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="sxInstructorOp('${s.id}','addTime',{sectionId:'${st.current}',secs:300},'Added 5 minutes.')">+5 min</button>
+      <button class="btn btn-secondary btn-sm" onclick="sxInstructorOp('${s.id}','addTime',{sectionId:'${st.current}',secs:600},'Added 10 minutes.')">+10 min</button>
+      <button class="btn btn-secondary btn-sm" onclick="sxInstructorOp('${s.id}','addTime',{sectionId:'${st.current}',secs:900},'Added 15 minutes.')">+15 min</button>
+      <button class="btn btn-secondary btn-sm" onclick="if(confirm('End this section for ${sxA(s.studentName)} now? Adaptive routing will use what they have answered so far.'))sxInstructorOp('${s.id}','endSection',{sectionId:'${st.current}'},'Section ended.')">End section now</button>
+    </div>
+    <div class="text-xs text-muted" style="margin-top:6px">Changes reach the student within ~4 seconds, even if they’re mid-answer.</div>`:''}
+    </div>`;
+}
+
+/* ── grading summaries (instructor + student views) ─────────────── */
+function sxGradeSummary(s,t,mode){
+  if(!sxUsesEngine(t)) return '';
+  const G=sxGrading(t);const g=sxComputeGrade(t,s);const grader=mode==='grader';
+  const bits=[];
+  bits.push(`<div class="sx-msg sx-ok" style="margin:0"><strong>${g.points}</strong> / ${g.max} pts · <strong>${g.percent}%</strong></div>`);
+  if(g.letter&&(grader||G.showLetter)) bits.push(`<div class="sx-msg sx-ok" style="margin:0">Grade <strong>${sxE(g.letter)}</strong></div>`);
+  if(g.scaled!==null&&(grader||G.showScaled)) bits.push(`<div class="sx-msg sx-ok" style="margin:0">Scaled <strong>${g.scaled}</strong></div>`);
+  if(g.passed!==null&&(grader||G.showPassFail)) bits.push(`<div class="sx-msg ${g.passed?'sx-ok':'sx-err'}" style="margin:0">${g.passed?'✓ Passing':'✗ Not passing'}${g.sectionFailures.length&&(grader||G.showSectionScores)?` — below the minimum in ${g.sectionFailures.map(id=>sxE((g.sections.find(r=>r.id===id)||{}).title)).join(', ')}`:''}</div>`);
+  if(grader&&g.pending) bits.push(`<div class="sx-msg sx-warn" style="margin:0">${g.pending} question${g.pending!==1?'s':''} awaiting grading</div>`);
+  let table='';
+  if(sxOn(t)&&(grader||G.showSectionScores)){
+    table=`<table class="sx-tbl" style="margin-top:10px"><thead><tr><th>Section</th><th>Points</th><th>%</th>${grader&&g.method==='weighted'?'<th>Weight</th><th>Credit</th>':''}${grader?'<th>Time</th><th>How it ended</th>':''}</tr></thead><tbody>
+      ${g.sections.map(r=>`<tr style="${r.scored?'':'opacity:.55'}"><td><strong>${sxE(r.title)}</strong>${r.scored?'':' <span class="text-xs text-muted">(not graded)</span>'}${!r.reached?' <span class="text-xs" style="color:var(--rust)">(not reached — counts as 0)</span>':''}</td><td>${r.points}/${r.max}</td><td>${r.percent}%</td>
+      ${grader&&g.method==='weighted'?`<td>${r.share!==undefined?r.share+'%':'—'}</td><td>${r.adjPercent!==undefined?r.adjPercent+'%':'—'}</td>`:''}
+      ${grader?`<td>${r.timeUsedSecs!=null?sxMins(r.timeUsedSecs):'—'}</td><td>${r.endReason?sxEndReasonLabel[r.endReason]||r.endReason:(r.reached?'In progress':'—')}</td>`:''}</tr>`).join('')}</tbody></table>`;
+  }
+  let path='';
+  if(grader&&sxOn(t)&&g.decisions&&g.decisions.length){
+    const nm=id=>id==='end'?'end of test':sxE((sxById(t,id)||{title:'(deleted section)'}).title);
+    path=`<div style="margin-top:10px;font-size:12px;line-height:1.7"><div class="sx-lbl">Adaptive path</div>${g.decisions.map(d=>`<div>After <strong>${nm(d.from)}</strong>: ${d.via==='rule'?`rule ${d.ruleIndex+1} matched (${d.value}${d.metric==='percent'?'%':''})`:'default route'} → <strong>${nm(d.to)}</strong>${d.note?` <em class="text-muted">(${d.note})</em>`:''}</div>`).join('')}</div>`;
+  }
+  return `<div style="margin-bottom:18px;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--paper-warm)"><div style="display:flex;gap:8px;flex-wrap:wrap">${bits.join('')}</div>${table}${path}</div>`;
+}
+// grading modal rows grouped under section headers
+function sxGradeRows(s,t,fqs,rowFn){
+  if(!sxOn(t)) return fqs.map(rowFn).join('');
+  const g=sxComputeGrade(t,s);let html='',last=null;
+  fqs.forEach((item,idx)=>{
+    if(item.sectionId!==last){
+      last=item.sectionId;const r=g.sections.find(x=>x.id===last)||{};
+      html+=`<div style="margin:18px 0 8px;padding:8px 12px;border-radius:8px;background:var(--ink);color:#fff;display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.05em"><span>${sxE(r.title||'Section')}</span><span style="font-weight:500">${r.points!==undefined?r.points+'/'+r.max+' pts · '+r.percent+'%':''}</span></div>`;
+    }
+    html+=rowFn(item,idx);
+  });
+  return html;
+}
+function sxResultSectionHeader(s,t,sid){
+  const G=sxGrading(t);const r=(sxComputeGrade(t,s).sections.find(x=>x.id===sid))||{};
+  return `<div style="margin:26px 0 12px;padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--paper);display:flex;justify-content:space-between;font-size:13px;font-weight:700;letter-spacing:.04em"><span>${sxE(r.title||'Section')}</span>${G.showSectionScores?`<span style="font-weight:500">${r.points}/${r.max} pts · ${r.percent}%</span>`:''}</div>`;
+}
+// small block for the dark "Submitted." screen
+function sxSubmittedExtras(sub,t){
+  if(!sxUsesEngine(t)) return '';
+  const G=sxGrading(t);const g=sxComputeGrade(t,sub);const out=[];
+  if(g.letter&&G.showLetter) out.push(`<span style="font-size:22px;color:var(--paper);margin-right:14px">Grade ${sxE(g.letter)}</span>`);
+  if(g.scaled!==null&&G.showScaled) out.push(`<span style="font-size:22px;color:var(--paper);margin-right:14px">Scaled ${g.scaled}</span>`);
+  if(g.passed!==null&&G.showPassFail) out.push(`<span style="font-size:15px;color:${g.passed?'#86EFAC':'#FCA5A5'}">${g.passed?'✓ Passing':'✗ Not passing'}</span>`);
+  let secs='';
+  if(sxOn(t)&&G.showSectionScores) secs=`<div style="margin-top:14px;text-align:left;font-size:13px;color:rgba(255,255,255,.65)">${g.sections.map(r=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid rgba(255,255,255,.08)"><span>${sxE(r.title)}</span><span>${r.points}/${r.max}</span></div>`).join('')}</div>`;
+  return `<div style="margin-top:10px">${out.join('')}</div>${secs}`;
+}
+function sxResultBreakdown(s,t){
+  if(!sxOn(t)||!sxGrading(t).showSectionScores) return '';
+  return sxGradeSummary(s,t,'student');
+}
+
+/* ── analytics ─────────────────────────────────────────────────── */
+function sxSectionAnalytics(t,subs){
+  if(!sxOn(t)) return '';
+  const rows=t.sections.map((sec,i)=>{
+    let took=0,sum=0;
+    subs.forEach(s=>{const g=sxComputeGrade(t,s);const r=g.sections.find(x=>x.id===sec.id);if(r&&r.reached&&(!s.sectionState||(s.sectionState.path||[]).includes(sec.id))){took++;sum+=r.percent;}});
+    const routed={};subs.forEach(s=>((s.sectionState&&s.sectionState.decisions)||[]).forEach(d=>{if(d.from===sec.id){routed[d.to]=(routed[d.to]||0)+1;}}));
+    const dest=Object.keys(routed).map(k=>`${k==='end'?'End':sxE((sxById(t,k)||{title:'?'}).title)}: ${routed[k]}`).join(' · ');
+    return `<tr><td><strong>${i+1}. ${sxE(sec.title||'Untitled')}</strong>${sec.branchOnly?' <span class="text-xs text-muted">(branch)</span>':''}</td><td>${took}/${subs.length}</td><td>${took?Math.round(sum/took)+'%':'—'}</td><td class="text-xs">${dest||'—'}</td></tr>`;
+  }).join('');
+  return `<div class="mt-4" style="border-top:1px solid var(--border);padding-top:16px"><div style="margin-bottom:8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Section Performance &amp; Routing</div>
+    <table class="sx-tbl"><thead><tr><th>Section</th><th>Students who took it</th><th>Average</th><th>Where students went next</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
 </script>
 </body>
 </html>

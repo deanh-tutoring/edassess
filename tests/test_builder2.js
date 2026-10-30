@@ -1,0 +1,21 @@
+const {makeServer,boot}=require('./boot');const F=require('./fixtures');const T=require('./t');
+const dir=require('path').resolve(__dirname,'..');
+(async()=>{
+  const server=makeServer(dir);server.seed({tests:[F.legacyTest()],assignments:[],submissions:[],peerSessions:[]});
+  const {win,errors}=await boot({projectDir:dir,server});const E=c=>win.eval(c);const $=id=>win.document.getElementById(id);
+  E(`openBuilder('T1');sxOpenManager('grading')`);
+  T.ok($('sx-mgr-body').innerHTML.includes('Passing &amp; grades'),'grading tab renders on a non-sectioned test');
+  T.ok(!$('sx-mgr-body').innerHTML.includes('Weighted by section'),'section-only options hidden when sections are off');
+  T.ok([...win.document.querySelectorAll('.sx-tab')].find(e=>e.textContent==='Adaptive routing').classList.contains('off'),'Adaptive tab disabled without sections');
+  E(`sxG('passPercent','70','nnum');sxG('letterEnabled',true,'bool');sxRefresh()`);
+  T.ok($('sx-wi-out').innerHTML.includes('Letter'),'what-if works for a single-section test');
+  E(`sxMgr.tab='resume';sxRenderMgr()`);
+  T.ok(!$('sx-mgr-body').innerHTML.includes('Between sections only'),'"between sections" not offered without sections');
+  E(`sxCL('allowed',true)`);
+  T.eq(E(`sxContinueLater(APP.currentTest,null).when`),'anytime','non-sectioned tests always "anytime"');
+  await E(`sxSaveManager()`);await new Promise(r=>setTimeout(r,150));
+  T.eq(server.state().tests[0].grading.passPercent,70,'grading config saved to server');
+  T.eq(server.state().tests[0].continueLater.allowed,true,'continue-later saved to server');
+  T.ok(errors.length===0,'no page errors: '+errors.join(' | ').slice(0,200));
+  process.exit(T.done()||0);
+})();

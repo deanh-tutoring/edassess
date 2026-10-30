@@ -99,3 +99,43 @@ Go to **Site settings → Environment variables** on your Netlify site and add:
 Redeploy the site (or trigger a redeploy) after adding these. Recordings will then upload into a folder named **"EdAssess Exam Recordings"** in your Drive automatically (created on first use), and a link to each recording appears in the Grade Center next to that student's desk-check/noise-flag review.
 
 If these variables aren't set, Ultra-Lockdown still works — recordings just fall back to a local download for the student instead of uploading.
+
+---
+
+## Multi-section tests, adaptive routing, custom grading, save & continue later
+
+Open any test in the builder → **Sections & Grading**. (Or tick *Multiple sections* when creating a test.)
+Turning sections on puts your existing questions in "Section 1" — nothing is renumbered, and existing submissions keep working.
+
+### Sections tab
+Each section has its own **directions** (Markdown), **time limit**, **navigation** (free, or forward-only), **calculator** (inherit / always / never), **reference sheet** on/off, **shuffle** overrides, an optional timed **break** afterwards, and a **branch-only** flag (a module that is skipped unless routing sends a student there). Questions live in a section; use the picker in the question editor to move one (this never changes answer keys).
+
+### Adaptive routing tab
+After a student finishes a section, its rules are checked top-to-bottom; the first match decides the next section, otherwise "otherwise" is used. A rule reads *this section*, *overall so far*, or any earlier section's **% correct / points / questions correct**, and sends the student to a section, the next section, or the end. The tab includes a flow map, validation, and a **path simulator** (drag a score, see where a student lands).
+- Routing scores count **auto-graded** questions only (MC, multi-select, short answer) — essays can't be graded in time.
+- A student never takes a section twice; a route back to a taken section ends the test. Finished sections are locked so routing can't be gamed.
+
+### Grading tab
+- **Total points** (sum of sections taken) or **Weighted by section** (each section's % × its weight, normalized over the sections the student actually took, reported out of a total you choose).
+- Per-section: counts toward grade (off = practice/ungraded), weight, **credit range** (e.g. easy module 0–70%, hard module 40–100%), **minimum % to pass**.
+- Passing score, letter-grade scale, scaled score (e.g. 200–800), what students see, and a **what-if calculator** that uses the same math as real grading.
+- Saving offers to **re-score existing submissions**; manual essay grades are never overwritten.
+- Sections a student was never routed to are excluded everywhere (grader, results, analytics, skill stats). If a test ends early (force-submit, violations) unreached *core* sections count as zero (switchable).
+
+### Save & resume tab
+Students get a **Save & continue later** button (between sections only, or any time). The timer can **pause** or **keep running** while they're away. Saved state includes every answer, the exact section/question, flags, highlights and notes, and works on **any device** with the same link + name. "Saved" is only shown after the server confirms it by reading the data back; if the connection fails the student is told and stays in the exam. Students also see a live *Progress saved / Saving… / Not saved — retrying* indicator. If a timed section expires while a student is away, it is auto-submitted (with routing) when they return.
+
+### Assigning
+The assign dialog adds per-section **time overrides**, a **time multiplier** (extended-time accommodations — make a separate link), and a switch to disable save-&-continue for that assignment. In the Live Monitor, open a student's **···** menu to add 5/10/15 minutes or end their current section.
+
+### ⚠️ Deploying
+1. Replace **both** `index.html` **and** `netlify/functions/data.js`. The only server change is additive (a new `instructorOp` action, and `upsertSubmission` keeps server-owned `instructorOps`). If you've customised `data.js`, merge just those two blocks. Everything else — including Save & continue — works without it; only the Live Monitor's +time / end-section buttons need it.
+2. No new dependencies, nothing changes in `package.json`.
+
+### Also fixed along the way
+- **Shuffle questions scored wrong.** Answers were keyed by shuffled position but graded by original position, so a perfect paper could score ~1/12. Order is now stored separately and keys are always canonical.
+- **Hot retry loop when offline.** A failed background save re-called itself with no delay; it now waits for the existing 8-second timer.
+- Unsaved-work warning on tab close now also covers student submissions; the exam-flag button now persists.
+
+### Tests
+`cd tests && npm install && npm test` — ~260 browser-free checks (jsdom) that run the real `index.html` against the real `data.js` on an in-memory store, including resume-on-another-device, offline saves, timeouts, adaptive paths, grading math, and a snapshot proving non-sectioned tests score exactly as before. (They don't check visual layout.)

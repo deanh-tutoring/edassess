@@ -1,0 +1,7 @@
+{
+  "name": "edassess-tests",
+  "private": true,
+  "description": "Browser-free tests (jsdom) that run the real index.html against the real data.js on an in-memory blob store. Not part of the Netlify build.",
+  "scripts": { "test": "node run-all.js" },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}
