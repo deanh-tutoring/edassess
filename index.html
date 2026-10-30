@@ -6143,12 +6143,15 @@ function toggleFlag(key){
   renderStudentExam();
 }
 
-function submitExam(){
+function submitExam(confirmed){
   const {sub,a,t}=APP.currentStudentExam;
   if(sxOn(t)){sxSubmitSection();return;}
   const fqs=examItems();
   const unanswered=fqs.filter(f=>sub.answers[f.key]===undefined&&f.q.type!=='essay').length;
-  if(unanswered>0&&!confirm(`You have ${unanswered} unanswered question${unanswered!==1?'s':''}. Submit anyway?`)) return;
+  if(unanswered>0&&confirmed!==true){
+    sxConfirm(`You have ${unanswered} unanswered question${unanswered!==1?'s':''}. Submit anyway?`,'Submit anyway').then(ok=>{if(ok)submitExam(true);});
+    return;
+  }
   sub.status='submitted';sub.submittedAt=new Date().toISOString();
   autoScore(sub,t);save();
   if(examTimer)clearInterval(examTimer);
@@ -7636,8 +7639,27 @@ function sxTeardown(sub){
   sxCloseOverlays();
   const ol=document.getElementById('lock-overlay');if(ol)ol.classList.add('hidden');
 }
+/* ── in-page confirm: native dialogs knock the browser OUT of fullscreen, which
+   locked mode counts as a violation. Everything students see mid-exam uses this instead. ── */
+let _sxDialogOpen=false;
+function sxConfirm(msg,okLabel){
+  if(_sxDialogOpen) return Promise.resolve(false);
+  _sxDialogOpen=true;
+  return new Promise(resolve=>{
+    const el=document.createElement('div');el.className='sx-busy';el.style.zIndex=100000;
+    el.innerHTML=`<div class="sx-busy-card" style="text-align:left;max-width:440px;width:calc(100% - 40px)"><div style="white-space:pre-line;font-size:14px;line-height:1.65;margin-bottom:18px">${escapeHtml(msg)}</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" data-r="0">Cancel</button><button class="btn btn-primary" data-r="1">${escapeHtml(okLabel||'OK')}</button></div></div>`;
+    const done=v=>{document.removeEventListener('keydown',onKey,true);el.remove();_sxDialogOpen=false;resolve(v);};
+    const onKey=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(false);}};
+    el.addEventListener('click',e=>{const b=e.target.closest('button[data-r]');if(b)done(b.dataset.r==='1');});
+    document.addEventListener('keydown',onKey,true);
+    document.body.appendChild(el);
+    const ok=el.querySelector('button[data-r="1"]');if(ok)ok.focus();
+  });
+}
 // Student pressed Finish Section / Submit.
-function sxSubmitSection(){
+async function sxSubmitSection(){
+  if(_sxBusy||_sxDialogOpen) return;
   const ex=APP.currentStudentExam;const {sub,t}=ex;
   const SX=sxStudentCtx();
   const items=examItems();
@@ -7646,7 +7668,7 @@ function sxSubmitSection(){
   let msg=last?'Submit your exam? You won’t be able to change your answers.'
     :`Finish this section? You won’t be able to come back to it.`;
   if(unanswered>0) msg=`You have ${unanswered} unanswered question${unanswered!==1?'s':''} in this section.\n\n`+msg;
-  if(!confirm(msg)) return;
+  if(!(await sxConfirm(msg,last?'Submit':'Finish section'))) return;
   sxFinishSection('submitted');
 }
 // Core transition: finalise → adaptive route → (verified) save → next screen.
@@ -7778,7 +7800,7 @@ async function sxSaveAndExit(){
   const pauses=pol.clock==='pause';
   const timedNow=(sxOn(t)&&phase==='active'&&sxLimitSecs(t,a,sxById(t,st.current),st.status[st.current])!==null)||(!sxOn(t)&&a.timed);
   const warn=timedNow?(pauses?'\n\nYour timer will pause while you’re away.':'\n\nYour timer will KEEP RUNNING while you’re away — if time runs out, this section is submitted automatically.'):'';
-  if(!confirm('Save your progress and leave? You can come back later using the same link and the same name.'+warn)) return;
+  if(!(await sxConfirm('Save your progress and leave? You can come back later using the same link and the same name.'+warn,'Save & leave'))) return;
   _sxBusy=true;
   try{
     const now=Date.now();
