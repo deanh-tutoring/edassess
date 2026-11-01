@@ -476,7 +476,7 @@ async function handlePost(body) {
       } else if (op.type === 'announce') {
         const text = String(op.text || '').trim().slice(0, 600);
         if (!text) return bad('Announcement is empty');
-        clean.text = text;
+        clean.text = text; clean.reply = !!op.reply;
       } else if (op.type === 'sched') {
         if (op.closesAt === null || op.closesAt === undefined || op.closesAt === '') clean.closesAt = null;
         else if (Number.isFinite(Date.parse(op.closesAt))) clean.closesAt = new Date(op.closesAt).toISOString();
