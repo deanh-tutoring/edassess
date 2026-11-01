@@ -463,7 +463,8 @@ async function handlePost(body) {
       const op = body.op || {};
       const sub = await findSub(body.submissionId);
       if (!sub) return bad('Submission not found', 404);
-      if (op.type !== 'addTime' && op.type !== 'endSection') return bad('Unknown op type');
+      const OPS = ['addTime', 'endSection', 'pause', 'resume', 'announce', 'upload', 'sched', 'closeExam'];
+      if (!OPS.includes(op.type)) return bad('Unknown op type');
       const clean = {
         id: 'op_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
         type: op.type, sectionId: typeof op.sectionId === 'string' ? op.sectionId : null, at: new Date().toISOString(),
@@ -472,6 +473,19 @@ async function handlePost(body) {
         const secs = Number(op.secs);
         if (!(secs > 0 && secs <= 7200)) return bad('secs must be between 1 and 7200');
         clean.secs = Math.round(secs);
+      } else if (op.type === 'announce') {
+        const text = String(op.text || '').trim().slice(0, 600);
+        if (!text) return bad('Announcement is empty');
+        clean.text = text;
+      } else if (op.type === 'sched') {
+        if (op.closesAt === null || op.closesAt === undefined || op.closesAt === '') clean.closesAt = null;
+        else if (Number.isFinite(Date.parse(op.closesAt))) clean.closesAt = new Date(op.closesAt).toISOString();
+        else return bad('Bad closesAt');
+      } else if (op.type === 'upload') {
+        // sent from a student's phone: only accept a photo that was stored through putImage
+        if (!/^[A-Za-z0-9_-]{1,40}$/.test(String(op.key || ''))) return bad('Bad upload key');
+        if (!/^\/\.netlify\/functions\/data\?img=[a-f0-9]{40}$/.test(String(op.url || ''))) return bad('Bad upload url');
+        clean.key = String(op.key); clean.url = String(op.url);
       }
       const aid = okId(sub.assignmentId) ? sub.assignmentId : '_';
       const fresh = (await getJ(P.sub + aid + '/' + sub.id)) || sub;
