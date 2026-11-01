@@ -9,6 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -543,6 +544,86 @@ textarea.form-control{resize:vertical;min-height:80px}
 .sx-busy-card{background:#fff;border-radius:12px;padding:30px 36px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:'Inter',sans-serif;max-width:420px}
 .sx-spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:#0891B2;border-radius:50%;margin:0 auto 14px;animation:sxspin .8s linear infinite}
 @keyframes sxspin{to{transform:rotate(360deg)}}
+/* ═══ FEATURE PACK CSS ═══ */
+/* accessibility (student) */
+.fx-zoom .student-single>*,.fx-zoom .student-question-area>*,.fx-zoom .student-passage>*{zoom:var(--fx-zoom,1)}
+.fx-font .student-content *:not(.katex):not(.katex *){font-family:var(--fx-font)!important}
+.fx-lh .student-content *:not(.katex *){line-height:var(--fx-lh)!important}
+.fx-ls .student-content *:not(.katex *){letter-spacing:var(--fx-ls)!important;word-spacing:var(--fx-ws)!important}
+.fx-motion *{animation:none!important;transition:none!important}
+.fx-big .answer-btn{padding:22px 20px!important}
+.fx-big .q-nav-dot{width:46px;height:46px;font-size:14px}
+.fx-theme-warm .student-content,.fx-theme-warm .student-single,.fx-theme-warm .student-passage,.fx-theme-warm .student-question-area,.fx-theme-warm .check-work-panel{background:#F6EEDC!important;color:#3B2F1E!important}
+.fx-theme-warm .answer-btn{background:#FBF6EA!important;color:#3B2F1E!important}
+.fx-theme-dark .student-content{filter:invert(1) hue-rotate(180deg)}
+.fx-theme-dark .student-content img,.fx-theme-dark .student-content video,.fx-theme-dark .student-content iframe{filter:invert(1) hue-rotate(180deg)}
+.fx-theme-contrast .student-content{background:#000!important}
+.fx-theme-contrast .student-content *:not(mark):not(.katex *){background-color:#000!important;color:#FFEB3B!important;border-color:#FFEB3B!important}
+.fx-theme-contrast .student-content .answer-btn.selected,.fx-theme-contrast .student-content .answer-btn.selected *{background-color:#2a2a00!important}
+.fx-theme-contrast .student-content mark{background:#22D3EE!important;color:#000!important}
+.fx-theme-contrast .student-content .katex{color:#FFEB3B}
+.fx-chipbtn{padding:8px 14px;border-radius:999px;border:1px solid var(--border-dark);background:#fff;font:600 13px Inter,sans-serif;cursor:pointer;margin:0 6px 6px 0;color:var(--ink)}
+.fx-chipbtn:hover{border-color:var(--slate-blue)}
+.fx-chipbtn.on{background:var(--slate-blue);border-color:var(--slate-blue);color:#fff}
+.fx-sample{border:1px solid var(--border);border-radius:8px;background:#fff;color:#16181D}
+body.fx-ui-dark #app,body.fx-ui-dark #modal-container .modal{filter:invert(.92) hue-rotate(180deg)}
+body.fx-ui-dark #app img,body.fx-ui-dark #app canvas,body.fx-ui-dark #modal-container img{filter:invert(1) hue-rotate(180deg)}
+
+/* preview */
+.fx-ribbon{position:fixed;top:0;left:0;right:0;height:34px;background:#6D28D9;color:#fff;z-index:100003;display:flex;align-items:center;justify-content:center;gap:14px;font:600 12px Inter,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.25);padding:0 12px;text-align:center}
+.fx-ribbon button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:999px;padding:4px 12px;font:700 11px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.fx-ribbon button:hover{background:rgba(255,255,255,.35)}
+#student-wrapper.fx-previewing{padding-top:34px}
+#student-wrapper.fx-previewing #student-page{min-height:calc(100vh - 34px)}
+.fx-previewing #directions-dropdown{top:98px!important}
+
+/* upload work */
+.fx-up{border:1.5px dashed var(--bb-border,#C7D2DE);border-radius:12px;padding:18px;background:#F8FAFC}
+.fx-up-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.fx-up-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.fx-thumb{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff}
+.fx-thumb img{width:100%;height:110px;object-fit:cover;display:block}
+.fx-thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.8);color:#fff;cursor:pointer;font-size:12px}
+.fx-qr-back{position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px}
+.fx-qr-card{background:#fff;border-radius:16px;padding:28px;max-width:460px;width:100%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4);font-family:Inter,sans-serif;max-height:94vh;overflow:auto}
+.fx-qr-card img.fx-qr{width:230px;height:230px;image-rendering:pixelated;border:8px solid #fff;outline:1px solid #E5E7EB;border-radius:8px}
+.fx-phone{min-height:100vh;background:#0F172A;color:#fff;font-family:Inter,sans-serif;padding:24px 18px;display:flex;flex-direction:column;align-items:center}
+.fx-phone-card{background:#fff;color:#16181D;border-radius:16px;padding:24px;width:100%;max-width:440px}
+.fx-phone-btn{display:block;width:100%;padding:16px;border-radius:12px;border:0;font:700 16px Inter,sans-serif;margin-top:12px;cursor:pointer}
+
+/* hold overlay / announcements */
+#fx-hold{position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.96);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:Inter,sans-serif}
+.fx-ann{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:100002;width:min(560px,94vw);background:#fff;border-left:6px solid #2563EB;border-radius:12px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:18px 20px;font-family:Inter,sans-serif;animation:toastIn .3s ease}
+.fx-gate{min-height:100vh;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;text-align:center;padding:30px;color:#fff}
+
+/* live monitor */
+.fx-lv-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.fx-ctl{padding:0;margin-bottom:20px;overflow:visible}
+.fx-ctl-top{padding:18px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#F8FAFC,#EEF2FF)}
+.fx-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;font:800 12px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.fx-pill i{width:8px;height:8px;border-radius:50%;background:#fff;display:inline-block}
+.fx-pill.live i{animation:pulse 1.4s infinite}
+.fx-ctl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.fx-ctl-box{padding:16px 20px;border-right:1px solid var(--border)}
+.fx-ctl-box:last-child{border-right:0}
+.fx-ctl-box h4{font:700 12px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
+.fx-qchip{display:inline-block;padding:4px 10px;border:1px solid var(--border-dark);border-radius:999px;font:600 11px Inter,sans-serif;cursor:pointer;margin:0 5px 5px 0;background:#fff}
+.fx-qchip:hover{border-color:var(--slate-blue);color:var(--slate-blue)}
+.fx-tabs{display:flex;gap:4px}
+.fx-tab{padding:7px 14px;border-radius:999px;font:700 12px Inter,sans-serif;cursor:pointer;color:var(--ink-soft);border:1px solid transparent}
+.fx-tab.on{background:var(--ink);color:#fff}
+.fx-tab:not(.on):hover{background:var(--paper-aged)}
+.fx-srow{display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--border)}
+.fx-srow:last-child{border-bottom:0}
+.fx-srow:hover{background:var(--paper-warm)}
+.fx-badge{display:inline-block;padding:2px 8px;border-radius:999px;font:700 10px Inter,sans-serif;margin:3px 4px 0 0;letter-spacing:.02em}
+.fx-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:6px;max-width:420px}
+.fx-dots i{width:7px;height:7px;border-radius:2px;background:#E5E7EB;display:inline-block}
+.fx-dots i.on{background:#16A34A}
+.fx-bar{height:6px;background:var(--paper-aged);border-radius:999px;overflow:hidden}
+.fx-bar>div{height:100%;border-radius:999px}
+.fx-curved{display:inline-block;padding:2px 9px;border-radius:6px;background:#EDE9FE;color:#6D28D9;font:700 11px Inter,sans-serif;border:1px solid #DDD6FE}
+@media(max-width:900px){.fx-ctl-grid{grid-template-columns:1fr}.fx-ctl-box{border-right:0;border-bottom:1px solid var(--border)}.fx-srow{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -7299,7 +7380,9 @@ window.addEventListener('DOMContentLoaded',async ()=>{
   const overlay=document.getElementById('ea-loading-overlay');
   if(overlay) overlay.remove();
   const params=new URLSearchParams(location.search);
-  if(params.get('exam')){
+  if(params.get('upload')){
+    loadUploadPage();
+  } else if(params.get('exam')){
     loadStudentExam();
   } else if(params.get('results')){
     loadStudentResults(params.get('results'));
@@ -8977,6 +9060,933 @@ function sxSectionAnalytics(t,subs){
   return `<div class="mt-4" style="border-top:1px solid var(--border);padding-top:16px"><div style="margin-bottom:8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Section Performance &amp; Routing</div>
     <table class="sx-tbl"><thead><tr><th>Section</th><th>Students who took it</th><th>Average</th><th>Where students went next</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
+
+</script>
+<script id="ea-fx">
+/* ═══════════════════════════════════════════════════════════════
+   EdAssess FEATURE PACK
+   accessibility · teacher preview · curves · upload work (QR) ·
+   live session management · pacing analytics
+   (loaded after the base app; wraps/overrides functions by name)
+═══════════════════════════════════════════════════════════════ */
+const FX_LOCAL=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v&&typeof v==='object'?Object.assign({},d,v):d;}catch(e){return d;}};
+const fxIsPrev=id=>String(id||'').startsWith('preview-');
+const fxIso=()=>new Date().toISOString();
+function fxDt(iso){return iso?new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';}
+function fxToLocalInput(iso){if(!iso)return '';const d=new Date(iso),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
+function fxFmtDur(secs){if(secs==null||!isFinite(secs))return '—';secs=Math.max(0,Math.round(secs));const m=Math.floor(secs/60),s=secs%60;if(m>=60)return Math.floor(m/60)+'h '+(m%60)+'m';if(m>0)return m+'m '+String(s).padStart(2,'0')+'s';return s+'s';}
+function fxDownload(text,name,mime){const b=new Blob([text],{type:mime||'text/plain'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+
+/* ───────────── 1. ACCESSIBILITY (students) + APPEARANCE (admin) ───────────── */
+let fxA11y=FX_LOCAL('ea_a11y_v1',{size:100,font:'default',spacing:'normal',letter:'normal',theme:'light',motion:false,big:false});
+const FX_FONTS={
+  default:{label:'Default (Inter)',css:null},
+  lexend:{label:'Lexend — easy to read',css:"'Lexend',sans-serif"},
+  atkinson:{label:'Atkinson Hyperlegible',css:"'Atkinson Hyperlegible',sans-serif"},
+  serif:{label:'Serif (Georgia)',css:"Georgia,'Times New Roman',serif"},
+  arial:{label:'Arial',css:"Arial,Helvetica,sans-serif"},
+  mono:{label:'Monospace',css:"'Courier Prime',monospace"},
+};
+const FX_THEMES={light:'Light',warm:'Warm paper',dark:'Dark',contrast:'High contrast'};
+function fxA11yApply(){
+  const b=document.body,A=fxA11y,f=FX_FONTS[A.font]||FX_FONTS.default;
+  const lh={normal:null,relaxed:'2',loose:'2.5'}[A.spacing];
+  const ls={normal:null,wide:['.04em','.12em'],wider:['.09em','.25em']}[A.letter];
+  b.classList.toggle('fx-zoom',A.size!==100);b.style.setProperty('--fx-zoom',A.size/100);
+  b.classList.toggle('fx-font',!!f.css);if(f.css)b.style.setProperty('--fx-font',f.css);
+  b.classList.toggle('fx-lh',!!lh);if(lh)b.style.setProperty('--fx-lh',lh);
+  b.classList.toggle('fx-ls',!!ls);if(ls){b.style.setProperty('--fx-ls',ls[0]);b.style.setProperty('--fx-ws',ls[1]);}
+  Object.keys(FX_THEMES).forEach(k=>b.classList.toggle('fx-theme-'+k,A.theme===k&&k!=='light'));
+  b.classList.toggle('fx-motion',!!A.motion);b.classList.toggle('fx-big',!!A.big);
+  document.querySelectorAll('.fx-size-lbl').forEach(e=>e.textContent=A.size+'%');
+}
+function fxA11yPersist(){try{localStorage.setItem('ea_a11y_v1',JSON.stringify(fxA11y));}catch(e){}fxA11yApply();}
+function fxSetSize(v){fxA11y.size=Math.max(60,Math.min(220,+v||100));fxA11yPersist();}
+function fxBumpSize(d){fxSetSize(fxA11y.size+d);const r=document.querySelector('.modal input[type=range]');if(r)r.value=fxA11y.size;}
+function fxSetA11y(k,v){fxA11y[k]=v;fxA11yPersist();fxRefreshA11yPanel();}
+function fxResetA11y(){fxA11y={size:100,font:'default',spacing:'normal',letter:'normal',theme:'light',motion:false,big:false};fxA11yPersist();fxRefreshA11yPanel();}
+function fxSpeak(){
+  if(!window.speechSynthesis){toast('Read-aloud is not supported in this browser.','info');return;}
+  const c=document.querySelector('.student-content');if(!c){toast('Open a question first.','info');return;}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(c.innerText.replace(/\s+/g,' '));u.rate=.95;speechSynthesis.speak(u);
+}
+function fxStopSpeak(){if(window.speechSynthesis)speechSynthesis.cancel();}
+function fxA11yPanelHtml(){
+  const A=fxA11y;
+  const chip=(on,label,fn)=>`<button type="button" class="fx-chipbtn${on?' on':''}" onclick="${fn}">${label}</button>`;
+  return `<div class="modal-header"><h2 class="serif" style="font-size:22px">♿ Accessibility &amp; display</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <p class="form-hint" style="margin-bottom:14px">These settings change only how <em>you</em> see the test. They're saved on this device.</p>
+    <div class="form-group"><label class="form-label">Text size — <span class="fx-size-lbl">${A.size}%</span></label>
+      <div class="flex items-center gap-3"><button class="btn btn-secondary btn-sm" onclick="fxBumpSize(-5)">A−</button>
+      <input type="range" min="60" max="220" step="5" value="${A.size}" style="flex:1" oninput="fxSetSize(this.value)">
+      <button class="btn btn-secondary btn-sm" onclick="fxBumpSize(5)">A+</button></div></div>
+    <div class="form-group"><label class="form-label">Font</label>${Object.keys(FX_FONTS).map(k=>chip(A.font===k,FX_FONTS[k].label,`fxSetA11y('font','${k}')`)).join('')}</div>
+    <div class="form-group"><label class="form-label">Line spacing</label>${[['normal','Normal'],['relaxed','Relaxed'],['loose','Extra']].map(([k,l])=>chip(A.spacing===k,l,`fxSetA11y('spacing','${k}')`)).join('')}</div>
+    <div class="form-group"><label class="form-label">Letter &amp; word spacing</label>${[['normal','Normal'],['wide','Wide'],['wider','Wider']].map(([k,l])=>chip(A.letter===k,l,`fxSetA11y('letter','${k}')`)).join('')}</div>
+    <div class="form-group"><label class="form-label">Colors</label>${Object.keys(FX_THEMES).map(k=>chip(A.theme===k,FX_THEMES[k],`fxSetA11y('theme','${k}')`)).join('')}</div>
+    <div class="form-group"><label class="form-label">Other</label>${chip(A.motion,'Reduce motion',`fxSetA11y('motion',${!A.motion})`)}${chip(A.big,'Larger answer buttons',`fxSetA11y('big',${!A.big})`)}</div>
+    <div class="form-group"><label class="form-label">Read aloud</label><button class="fx-chipbtn" onclick="fxSpeak()">🔊 Read this question</button><button class="fx-chipbtn" onclick="fxStopSpeak()">⏹ Stop</button></div>
+    <div class="form-group"><label class="form-label">Preview</label>
+      <div class="student-content fx-sample" style="overflow:visible;flex:none"><div class="student-single" style="height:auto;overflow:visible;padding:14px;max-width:none;margin:0"><div style="font-size:18px;line-height:1.7">If \(3x+7=22\), what is the value of <em>x</em>? The quick brown fox jumps over the lazy dog.</div></div></div></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="fxResetA11y()">Reset</button><button class="btn btn-primary" onclick="closeModal()">Done</button></div>`;
+}
+function fxOpenA11y(){openModal(fxA11yPanelHtml(),'560px');}
+function fxRefreshA11yPanel(){const m=document.querySelector('#modal-container .modal');if(m&&m.querySelector('.fx-sample'))m.innerHTML=fxA11yPanelHtml();}
+function fxDecorateStudent(){
+  const pop=document.getElementById('q-nav-popup');
+  if(pop&&!pop.querySelector('.fx-pop-a11y')){
+    pop.insertAdjacentHTML('beforeend',`<div class="fx-pop-a11y" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bb-border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)">Text size</span>
+      <button class="btn btn-secondary btn-sm" onclick="fxBumpSize(-10)">A−</button><span class="fx-size-lbl" style="font-size:12px;font-weight:700;min-width:38px;text-align:center">${fxA11y.size}%</span><button class="btn btn-secondary btn-sm" onclick="fxBumpSize(10)">A+</button>
+      <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="fxOpenA11y()">♿ Accessibility settings</button></div>`);
+  }
+}
+const fxOrigRSE=window.renderStudentExam;
+window.renderStudentExam=function(){fxOrigRSE();try{fxDecorateStudent();}catch(e){}};
+const fxOrigNE=window.renderNameEntry;
+window.renderNameEntry=function(a,t){
+  const h=fxOrigNE(a,t);const needle='<button style="width:100%;padding:13px;background:var(--ink)';
+  const link=`<button type="button" onclick="fxOpenA11y()" style="width:100%;margin-bottom:10px;padding:10px;background:transparent;border:1px solid var(--border-dark);border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--ink)">♿ Accessibility &amp; text size</button>`;
+  const i=h.indexOf(needle);return i>=0?h.slice(0,i)+link+h.slice(i):h+link;
+};
+/* admin appearance */
+let fxUi=FX_LOCAL('ea_ui_v1',{size:100,dark:false});
+function fxUiApply(){
+  document.querySelectorAll('#main .topbar,#main .page-content').forEach(e=>{e.style.zoom=fxUi.size===100?'':fxUi.size/100;});
+  document.body.classList.toggle('fx-ui-dark',!!fxUi.dark);
+}
+function fxUiSave(){try{localStorage.setItem('ea_ui_v1',JSON.stringify(fxUi));}catch(e){}fxUiApply();}
+function fxOpenUi(){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Appearance</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div class="form-group"><label class="form-label">Interface text size — <span id="fx-ui-lbl">${fxUi.size}%</span></label>
+    <input type="range" min="70" max="130" step="5" value="${fxUi.size}" style="width:100%" oninput="fxUi.size=+this.value;document.getElementById('fx-ui-lbl').textContent=fxUi.size+'%';fxUiSave()"></div>
+  <label class="checkbox-wrap"><input type="checkbox" ${fxUi.dark?'checked':''} onchange="fxUi.dark=this.checked;fxUiSave()"><span style="font-size:13px">Dark mode</span></label></div>
+  <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal()">Done</button></div>`,'420px');
+}
+const fxOrigShowPage=window.showPage;
+window.showPage=function(p){fxOrigShowPage(p);setTimeout(fxUiApply,30);};
+document.addEventListener('DOMContentLoaded',()=>{
+  fxA11yApply();fxUiApply();
+  const f=document.querySelector('.sidebar-footer');
+  if(f)f.insertAdjacentHTML('afterbegin',`<a class="nav-item" onclick="fxOpenUi()" style="margin-bottom:6px"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Appearance</a>`);
+});
+
+/* ───────────── 2. TEACHER PREVIEW ───────────── */
+let fxPrev=null;
+(function(){
+  const oDirty=window.eaDirty;window.eaDirty=function(k){return oDirty(k).filter(d=>!fxIsPrev(d.id));};
+  const oSaveNow=window.eaSaveNow;window.eaSaveNow=function(k,id,t){if(fxIsPrev(id))return Promise.resolve({ok:true});return oSaveNow(k,id,t);};
+  const oRel=window.sxReliableSaveSubmission;window.sxReliableSaveSubmission=function(s,n){if(fxIsPrev(s.id))return Promise.resolve({ok:true});return oRel(s,n);};
+  const oSt=window.sxSaveState;window.sxSaveState=function(){const ex=APP.currentStudentExam;if(ex&&ex.sub&&fxIsPrev(ex.sub.id))return 'saved';return oSt();};
+  const oCache=window.cacheLocally;window.cacheLocally=function(){
+    const keep=APP.submissions;
+    if(keep.some(s=>fxIsPrev(s.id))){APP.submissions=keep.filter(s=>!fxIsPrev(s.id));try{oCache();}finally{APP.submissions=keep;}}else oCache();
+  };
+})();
+function fxPreviewTest(id){APP.currentTest=APP.tests.find(t=>t.id===id);fxPrevReturn='tests';fxOpenPreviewDialog();}
+let fxPrevReturn='builder';
+function fxOpenPreviewDialog(){
+  const t=APP.currentTest;if(!t)return;
+  if(!t.questions.length){toast('Add at least one question to preview.','info');return;}
+  const sec=sxOn(t);
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">👁 Preview as student</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><p class="form-hint" style="margin-bottom:12px">Opens the exact student experience using your current (even unsaved) edits. Nothing you do in preview is saved, scored or shown in the monitor.</p>
+    <label class="checkbox-wrap mb-2"><input type="checkbox" id="fxpv-notimer" checked><span style="font-size:13px">Turn timers off</span></label>
+    ${sec?'':`<div class="flex items-center gap-2 mb-2" style="font-size:13px;padding-left:22px">…or test a time limit of <input type="number" id="fxpv-min" class="form-control" style="width:80px" value="30" min="1"> min</div>`}
+    <label class="checkbox-wrap mb-2"><input type="checkbox" id="fxpv-calc" checked><span style="font-size:13px">Calculator available</span></label>
+    <label class="checkbox-wrap mb-2"><input type="checkbox" id="fxpv-shufq"><span style="font-size:13px">Shuffle question order</span></label>
+    <label class="checkbox-wrap"><input type="checkbox" id="fxpv-shufc"><span style="font-size:13px">Shuffle answer choices</span></label></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxStartPreview()">Start preview →</button></div>`,'460px');
+}
+function fxStartPreview(){
+  const t=APP.currentTest;const g=id=>document.getElementById(id);
+  const noTimer=g('fxpv-notimer').checked,calc=g('fxpv-calc').checked,sq=g('fxpv-shufq').checked,sc=g('fxpv-shufc').checked;
+  const mins=g('fxpv-min')?parseInt(g('fxpv-min').value)||30:30;
+  closeModal();
+  const a={id:'preview-a',testId:t.id,releaseScores:true,timed:(!noTimer&&!sxOn(t)),maxMinutes:mins,shuffleItems:sq,shuffleChoices:sc,allowDesmos:calc,locked:false,maxStrikes:2,ultraLockdown:false,createdAt:fxIso(),preview:true};
+  if(sxOn(t)&&noTimer){a.sectionOverrides={};t.sections.forEach(s=>{a.sectionOverrides[s.id]={limitMin:null};});}
+  fxPreviewBoot(t,a);
+}
+function fxPreviewBoot(t,a){
+  APP.submissions=APP.submissions.filter(s=>!fxIsPrev(s.id));
+  const sub={id:'preview-'+uid(),testId:t.id,assignmentId:a.id,studentName:'Preview Student',status:'in-progress',startedAt:fxIso(),answers:{},flags:{},score:0,rubricScores:{},manualScores:{},strikes:0};
+  APP.submissions.push(sub);fxPrev={tid:t.id,a};
+  document.getElementById('app').classList.add('hidden');
+  const sw=document.getElementById('student-wrapper');sw.classList.remove('hidden');sw.classList.add('fx-previewing');
+  APP.currentStudentExam={sub,a,t,orderedQuestions:t.questions};
+  if(sxOn(t))sxEnsureState(t,sub,Date.now());
+  studentState={currentQ:0,flagged:{},highlights:{},eliminated:{},activeDoc:{}};
+  timerHidden=false;_timerLocked=false;_timerWarningShown=false;
+  if(!document.getElementById('fx-ribbon')){
+    document.body.insertAdjacentHTML('beforeend',`<div class="fx-ribbon" id="fx-ribbon"><span>👁 PREVIEW — nothing here is saved or scored</span><button onclick="fxRestartPreview()">↺ Restart</button><button onclick="fxExitPreview()">✕ Exit preview</button></div>`);
+  }
+  if(a.timed)startExamTimer(sub.id,a.maxMinutes);
+  renderStudentExam();
+}
+function fxRestartPreview(){if(!fxPrev)return;sxStopTimer();if(examTimer){clearInterval(examTimer);examTimer=null;}sxCloseOverlays();fxPreviewBoot(APP.tests.find(t=>t.id===fxPrev.tid),fxPrev.a);}
+function fxExitPreview(){
+  if(examTimer){clearInterval(examTimer);examTimer=null;}sxStopTimer();sxCloseOverlays();fxStopSpeak();
+  APP.submissions=APP.submissions.filter(s=>!fxIsPrev(s.id));APP.currentStudentExam=null;
+  const r=document.getElementById('fx-ribbon');if(r)r.remove();
+  const sw=document.getElementById('student-wrapper');sw.classList.add('hidden');sw.classList.remove('fx-previewing');sw.innerHTML='';
+  document.getElementById('app').classList.remove('hidden');
+  const tid=fxPrev&&fxPrev.tid;fxPrev=null;
+  if(fxPrevReturn==='tests'){showPage('tests');}else if(tid){openBuilder(tid);}
+  fxPrevReturn='builder';
+}
+const fxOrigRTL=window.renderTestsList;
+window.renderTestsList=function(tests){
+  return fxOrigRTL(tests).replace(/(<button class="btn btn-secondary btn-sm" onclick="event\.stopPropagation\(\);openBuilder\('([^']+)'\)">Edit<\/button>)/g,`$1<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();fxPreviewTest('$2')">👁 Preview</button>`);
+};
+/* builder decoration: preview button, Upload type, upload settings */
+const fxOrigRB=window.renderBuilder;
+window.renderBuilder=function(){fxOrigRB();fxDecorateBuilder();};
+const fxOrigSelQ=window.selectQ;
+window.selectQ=function(i){fxOrigSelQ(i);fxDecorateEditor();};
+const fxOrigAddQ=window.addQuestion;
+window.addQuestion=function(type){
+  if(type==='upload'){fxOrigAddQ('essay');const t=APP.currentTest;const q=t.questions[t.questions.length-1];q.upload=true;q.maxFiles=5;save();selectQ(activeQIndex);return;}
+  fxOrigAddQ(type);
+};
+function fxDecorateBuilder(){
+  const bar=document.querySelector('#page-builder .topbar > .flex.gap-2');
+  if(bar&&!bar.querySelector('.fx-pv-btn'))bar.insertAdjacentHTML('afterbegin','<button class="btn btn-secondary btn-sm fx-pv-btn" onclick="fxPrevReturn=\'builder\';fxOpenPreviewDialog()">👁 Preview</button>');
+  const g=document.querySelector('#page-builder .q-type-grid');
+  if(g&&!g.querySelector('.fx-up-type'))g.insertAdjacentHTML('beforeend','<div class="q-type-btn fx-up-type" onclick="addQuestion(\'upload\')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span>Upload<br>Work</span></div>');
+  fxDecorateEditor();
+}
+function fxDecorateEditor(){
+  const t=APP.currentTest;if(!t)return;
+  const idx=activeQIndex>=0?activeQIndex:0;const q=t.questions[idx];
+  const stem=document.getElementById('editor-stem-'+idx);
+  if(!q||q.type!=='essay'||!stem)return;
+  const grp=stem.closest('.form-group');if(!grp||grp.parentNode.querySelector('.fx-up-set'))return;
+  const chip=grp.parentNode.querySelector('.type-chip');if(chip&&q.upload)chip.textContent='Upload Work';
+  grp.insertAdjacentHTML('beforebegin',`<div class="form-group fx-up-set" style="background:var(--slate-pale);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px">
+    <label class="checkbox-wrap"><input type="checkbox" ${q.upload?'checked':''} onchange="fxToggleUploadQ(${idx},this.checked)"><span style="font-size:13px"><strong>Students upload work</strong> (photos / scans) instead of typing</span></label>
+    ${q.upload?`<div class="flex items-center gap-2 mt-2" style="font-size:12px">Max files <input type="number" min="1" max="12" class="form-control" style="width:70px" value="${q.maxFiles||5}" oninput="APP.currentTest.questions[${idx}].maxFiles=Math.max(1,Math.min(12,parseInt(this.value)||5));save()"> <span class="text-muted">Students can scan a QR code to upload from their phone. Grade with the rubric as usual.</span></div>`:''}</div>`);
+}
+function fxToggleUploadQ(i,on){const q=APP.currentTest.questions[i];q.upload=!!on;if(on&&!q.maxFiles)q.maxFiles=5;save();selectQ(i);}
+
+/* ───────────── 3. UPLOAD WORK ───────────── */
+let fxUpOpen=false,fxBypassUntil=0,fxNeedFs=false;
+const fxIsUploadQ=q=>!!(q&&q.type==='essay'&&q.upload);
+function fxUploadAnswerHtml(urls){return urls.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Uploaded work" style="max-width:100%;max-height:420px;border-radius:6px;border:1px solid #ddd;margin:4px 0;display:block"></a>`).join('');}
+function fxUpList(sub,key){return(sub.uploads&&sub.uploads[key])||[];}
+function fxUploadPanelHtml(key,q){
+  const sub=APP.currentStudentExam.sub;const list=fxUpList(sub,key);const max=q.maxFiles||5;
+  return `<div class="fx-up" id="fx-up-${key}">
+    <div style="font-weight:700;margin-bottom:4px">Upload your work</div>
+    <div style="font-size:12px;color:var(--bb-text-soft,#54606E);margin-bottom:12px">Take photos or scans of your written work. Up to ${max} images (${list.length} added).</div>
+    <div class="fx-up-btns"><button class="btn btn-primary" onclick="fxUpOpenQr('${key}')" ${list.length>=max?'disabled':''}>📱 Scan QR to upload from phone</button>
+    <button class="btn btn-secondary" onclick="fxUpPickFile('${key}')" ${list.length>=max?'disabled':''}>🖥 Upload from this device</button></div>
+    ${list.length?`<div class="fx-up-grid">${list.map((u,i)=>`<div class="fx-thumb"><a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="Upload ${i+1}"></a><button title="Remove" onclick="fxUpRemove('${key}',${i})">✕</button></div>`).join('')}</div>`:'<div style="font-size:13px;color:var(--bb-text-soft,#54606E);font-style:italic">Nothing uploaded yet.</div>'}</div>`;
+}
+const fxOrigRSSQ=window.renderSingleStudentQ;
+window.renderSingleStudentQ=function(q,key,a,fqs){
+  const html=fxOrigRSSQ(q,key,a,fqs);
+  if(!fxIsUploadQ(q))return html;
+  const re=/<div class="flex justify-between items-center mb-2">\s*<div><\/div>[\s\S]*?<div class="essay-area"[^>]*>\s*<div id="essay-editor-[^"]*"[^>]*><\/div>\s*<\/div>/;
+  const panel=fxUploadPanelHtml(key,q);
+  return re.test(html)?html.replace(re,()=>panel):html+panel;
+};
+function fxUpQ(key){const it=examItems().find(f=>f.key===key);return it?it.q:null;}
+function fxUpAdd(key,url){
+  const ex=APP.currentStudentExam;if(!ex)return;const sub=ex.sub;
+  sub.uploads=sub.uploads||{};const l=sub.uploads[key]=sub.uploads[key]||[];
+  if(l.includes(url))return;l.push(url);sub.answers[key]=fxUploadAnswerHtml(l);
+  save();saveLocalResume();fxUpRefresh(key);
+}
+function fxUpRemove(key,i){
+  const sub=APP.currentStudentExam.sub;const l=fxUpList(sub,key);l.splice(i,1);
+  if(l.length)sub.answers[key]=fxUploadAnswerHtml(l);else{delete sub.answers[key];if(sub.uploads)delete sub.uploads[key];}
+  save();saveLocalResume();fxUpRefresh(key);
+}
+function fxUpRefresh(key){
+  const box=document.getElementById('fx-up-'+key),q=fxUpQ(key);
+  if(box&&q)box.outerHTML=fxUploadPanelHtml(key,q);
+  const qr=document.getElementById('fx-qr-list');if(qr)qr.innerHTML=fxQrListHtml(key);
+}
+function fxFsBypassed(){const ex=APP.currentStudentExam;return fxUpOpen||Date.now()<fxBypassUntil||!!(ex&&ex.sub&&ex.sub.held)||fxGateOn;}
+function fxUpPickFile(key){
+  const ex=APP.currentStudentExam;const q=fxUpQ(key);if(!q)return;
+  const room=(q.maxFiles||5)-fxUpList(ex.sub,key).length;if(room<=0)return;
+  fxBypassUntil=Date.now()+120000;
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
+  inp.onchange=()=>{
+    const files=Array.from(inp.files).slice(0,room);fxBypassUntil=Date.now()+4000;
+    files.forEach(f=>eaReadImageFile(f,async dataUrl=>{
+      if(fxIsPrev(ex.sub.id)){fxUpAdd(key,dataUrl);return;}
+      toast('Uploading…','info');const url=await eaUploadDataUrl(dataUrl);
+      if(url){fxUpAdd(key,url);toast('Uploaded.','success');}else toast('Upload failed — check your connection and try again.','error');
+    }));
+  };
+  inp.click();
+}
+function fxQrListHtml(key){const l=fxUpList(APP.currentStudentExam.sub,key);return l.length?`<div class="fx-up-grid" style="margin-top:14px">${l.map(u=>`<div class="fx-thumb"><img src="${u}"></div>`).join('')}</div><div style="font-size:12px;color:#16A34A;font-weight:700;margin-top:8px">✓ ${l.length} received</div>`:'<div style="font-size:12px;color:#6B7280;margin-top:14px">Waiting for your phone…</div>';}
+function fxUpOpenQr(key){
+  const ex=APP.currentStudentExam;const sub=ex.sub;fxUpOpen=true;
+  const n=examItems().findIndex(f=>f.key===key)+1;
+  const link=location.href.split('?')[0]+'?upload='+encodeURIComponent(sub.id)+'&k='+encodeURIComponent(key)+'&n='+n;
+  let img='<div style="padding:20px;font-size:12px;word-break:break-all">'+sxE(link)+'</div>';
+  try{if(window.qrcode){const qr=qrcode(0,'M');qr.addData(link);qr.make();img=`<img class="fx-qr" src="${qr.createDataURL(6,2)}" alt="QR code">`;}}catch(e){}
+  const el=document.createElement('div');el.className='fx-qr-back';el.id='fx-qr';
+  el.innerHTML=`<div class="fx-qr-card"><h3 style="font-size:22px;font-weight:600;margin-bottom:6px">Upload from your phone</h3>
+    <p style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:14px">Point your phone camera at this code, then take photos of your work. They appear here automatically. Your exam stays secure while you do this.</p>
+    ${fxIsPrev(sub.id)?'<div class="sx-note" style="text-align:left">Preview mode: phone uploads aren’t connected. Use “Upload from this device” to test.</div>':''}
+    ${img}<div id="fx-qr-list">${fxQrListHtml(key)}</div>
+    <div class="flex gap-2" style="justify-content:center;margin-top:18px"><button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(link).replace(/"/g,'&quot;')});toast('Link copied','success')">Copy link</button><button class="btn btn-primary" onclick="fxUpCloseQr()">Done</button></div></div>`;
+  document.body.appendChild(el);
+}
+function fxUpCloseQr(){const e=document.getElementById('fx-qr');if(e)e.remove();fxUpOpen=false;fxBypassUntil=Date.now()+4000;fxNeedFs=true;}
+const fxOrigHFE=window.handleFullscreenExit;
+window.handleFullscreenExit=function(sid){if(fxFsBypassed()){fxNeedFs=true;return;}fxOrigHFE(sid);};
+document.addEventListener('click',()=>{
+  if(!fxNeedFs||fxFsBypassed())return;fxNeedFs=false;
+  const ex=APP.currentStudentExam;
+  if(ex&&ex.a&&ex.a.locked&&ex.sub.status==='in-progress'&&!document.fullscreenElement)requestFullscreen();
+},true);
+/* phone page */
+function loadUploadPage(){
+  document.getElementById('login-page').classList.add('hidden');document.getElementById('app').classList.add('hidden');
+  const sw=document.getElementById('student-wrapper');sw.classList.remove('hidden');
+  const p=new URLSearchParams(location.search);const sid=p.get('upload'),key=p.get('k'),n=p.get('n')||'';
+  sw.innerHTML=`<div class="fx-phone"><div style="font-size:22px;font-weight:300;margin:10px 0 18px">EdAssess · Upload work</div>
+    <div class="fx-phone-card"><div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7280">Question ${sxE(n)}</div>
+    <div style="font-size:20px;font-weight:600;margin:6px 0 4px">Add photos of your work</div>
+    <div style="font-size:13px;color:#6B7280;line-height:1.6">Photos go straight to your computer’s exam. Make sure your writing is clear and well lit.</div>
+    <input type="file" id="fx-ph-cam" accept="image/*" capture="environment" style="display:none" onchange="fxPhoneSend(this.files,'${sxA(sid)}','${sxA(key)}');this.value=''">
+    <input type="file" id="fx-ph-lib" accept="image/*" multiple style="display:none" onchange="fxPhoneSend(this.files,'${sxA(sid)}','${sxA(key)}');this.value=''">
+    <button class="fx-phone-btn" style="background:#2563EB;color:#fff" onclick="document.getElementById('fx-ph-cam').click()">📷 Take a photo</button>
+    <button class="fx-phone-btn" style="background:#F3F4F6;color:#16181D" onclick="document.getElementById('fx-ph-lib').click()">🖼 Choose from library</button>
+    <div id="fx-ph-log" style="margin-top:16px;font-size:14px;line-height:1.8"></div></div></div>`;
+}
+async function fxPhoneSend(files,sid,key){
+  const log=document.getElementById('fx-ph-log');
+  for(const f of Array.from(files)){
+    const row=document.createElement('div');row.textContent='⏳ Uploading '+(f.name||'photo')+'…';log.appendChild(row);
+    try{
+      const dataUrl=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+      const small=await eaShrinkDataUrl(dataUrl);const url=await eaUploadDataUrl(small);
+      if(!url)throw new Error('upload');
+      const res=await apiPost({action:'instructorOp',submissionId:sid,op:{type:'upload',key,url}});
+      if(!res||res.__httpError)throw new Error('send');
+      row.innerHTML='✅ Sent to your computer';
+    }catch(e){row.innerHTML='❌ Couldn’t send that one — check your connection and try again.';}
+  }
+}
+
+/* ───────────── 4. STUDENT SIDE: ops, hold, announcements, lobby, schedule, pacing ───────────── */
+let fxGateOn=false,fxGateToken=0,fxBeat=false,fxTickN=0,fxWarnedClose=false;
+const fxTimeBuf={};
+function fxFlushTimes(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub)return;const sub=ex.sub;
+  for(const k in fxTimeBuf){sub.qTimes=sub.qTimes||{};sub.qTimes[k]=(sub.qTimes[k]||0)+fxTimeBuf[k];delete fxTimeBuf[k];}
+  if(fxBeat){sub.lastActiveAt=fxIso();sub.tabActive=!document.hidden;fxBeat=false;}
+}
+const fxOrigSave=window.save;
+window.save=function(){try{fxFlushTimes();}catch(e){}return fxOrigSave();};
+function fxTick(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub||!document.getElementById('student-page'))return;
+  const {sub,a,t}=ex;if(sub.status!=='in-progress')return;
+  const prev=fxIsPrev(sub.id);
+  if(!prev&&a.closesAt&&!sub.reopened&&!sub.held){
+    const ms=new Date(a.closesAt)-Date.now();
+    if(ms<=0){forceSubmitStudent(sub.id,'closed');return;}
+    if(ms<=300000&&!fxWarnedClose){fxWarnedClose=true;showExamNotice('This exam closes in '+Math.ceil(ms/60000)+' minute(s). Finish up and submit.');}
+  }
+  if(!document.hidden)fxBeat=true;
+  if(sub.held||document.hidden)return;
+  const st=sub.sectionState;if(sxOn(t)&&st&&st.phase!=='active')return;
+  if(document.querySelector('.check-work-panel'))return;
+  let item=null;try{item=examItems()[studentState.currentQ];}catch(e){}
+  if(item)fxTimeBuf[item.key]=(fxTimeBuf[item.key]||0)+1;
+  if(++fxTickN%15===0&&!prev)save();
+}
+setInterval(fxTick,1000);
+document.addEventListener('visibilitychange',()=>{
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub||ex.sub.status!=='in-progress'||fxIsPrev(ex.sub.id)||fxUpOpen||ex.sub.held||!document.getElementById('student-page'))return;
+  if(document.hidden){ex.sub.tabSwitches=(ex.sub.tabSwitches||0)+1;ex.sub.lastTabSwitchAt=fxIso();}
+  else fxBeat=true;
+  save();
+});
+function fxHoldOverlay(on){
+  let el=document.getElementById('fx-hold');
+  if(!on){if(el)el.remove();return;}
+  if(!el){el=document.createElement('div');el.id='fx-hold';document.body.appendChild(el);}
+  el.innerHTML=`<div style="font-size:54px;margin-bottom:10px">⏸</div><h2 style="font-size:34px;font-weight:300;margin-bottom:10px">Your exam is paused</h2><p style="color:rgba(255,255,255,.65);font-size:15px;max-width:420px;line-height:1.7">Your instructor paused the exam. Your timer is stopped and your answers are safe. Please wait — it will continue automatically.</p>`;
+}
+function fxHold(on){
+  const ex=APP.currentStudentExam;if(!ex)return;const {sub,t,a}=ex;
+  if(on){
+    if(!sub.held){sub.held=true;sub.heldAt=fxIso();}
+    if(examTimer){clearInterval(examTimer);examTimer=null;}sxStopTimer();
+    if(sxOn(t)&&sub.sectionState){const st=sub.sectionState,s=st.status[st.current];if(st.phase==='active'&&s&&s.resumedAt){s.activeMs=sxElapsedMs(s,Date.now());s.resumedAt=null;}}
+    fxHoldOverlay(true);save();return;
+  }
+  if(!sub.held)return;
+  const away=Date.now()-new Date(sub.heldAt||Date.now()).getTime();
+  sub.held=false;delete sub.heldAt;sub.heldTotalMs=(sub.heldTotalMs||0)+away;
+  if(sxOn(t)&&sub.sectionState){
+    const st=sub.sectionState,s=st.status[st.current];
+    if(st.phase==='active'&&s&&s.startedAt&&!s.endedAt&&!s.resumedAt)s.resumedAt=fxIso();
+    if(st.phase==='break'&&st.breakStartedAt){st.breakStartedAt=new Date(new Date(st.breakStartedAt).getTime()+away).toISOString();sxStartBreakTicker();}
+    sxStartTimer();
+  }else if(a.timed&&sub.startedAt){
+    sub.startedAt=new Date(new Date(sub.startedAt).getTime()+away).toISOString();
+    startExamTimer(sub.id,a.maxMinutes);
+  }
+  fxHoldOverlay(false);save();
+  if(a.locked&&!document.fullscreenElement){fxNeedFs=true;}
+}
+const fxOrigSET=window.startExamTimer;
+window.startExamTimer=function(sid,min){const s=APP.submissions.find(x=>x.id===sid);fxOrigSET(sid,min+((s&&s.extraSecs)||0)/60);};
+function fxShowAnnouncement(op){
+  const el=document.createElement('div');el.className='fx-ann';
+  el.innerHTML=`<div style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:26px">📢</div><div style="flex:1"><div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2563EB;margin-bottom:4px">Message from your instructor</div><div style="font-size:16px;line-height:1.6">${sxE(op.text||'')}</div></div><button onclick="this.closest('.fx-ann').remove()" class="btn btn-primary btn-sm">Got it</button></div>`;
+  document.body.appendChild(el);
+}
+function fxApplyOp(op,sub,t,a){
+  switch(op.type){
+    case 'addTime':{
+      const secs=+op.secs||0;
+      if(sxOn(t)&&sub.sectionState){const st=sub.sectionState,id=op.sectionId||st.current,s=st.status[id]||(st.status[id]={});s.extraSecs=(s.extraSecs||0)+secs;}
+      else{sub.extraSecs=(sub.extraSecs||0)+secs;if(examTimer){_timerTotalSecs+=secs;_timerRemaining=computeRemainingSecs();if(_timerRemaining>300){_timerLocked=false;_timerWarningShown=false;}}}
+      showExamNotice(`Your instructor added ${Math.round(secs/60)} minute(s).`);return;}
+    case 'endSection':return 'endSection';
+    case 'pause':fxHold(true);return;
+    case 'resume':fxHold(false);return;
+    case 'announce':fxShowAnnouncement(op);return;
+    case 'upload':if(op.key&&op.url)fxUpAdd(op.key,op.url);return;
+    case 'sched':if(op.closesAt!==undefined){a.closesAt=op.closesAt;fxWarnedClose=false;}return;
+    case 'closeExam':fxHoldOverlay(false);forceSubmitStudent(sub.id,'closed');return;
+  }
+}
+function sxApplyInstructorOps(remote){
+  const ex=APP.currentStudentExam;if(!ex||!remote)return;
+  const {sub,t,a}=ex;const ops=Array.isArray(remote.instructorOps)?remote.instructorOps:[];
+  if(!ops.length)return;
+  sub.instructorOps=ops;const applied=sub.appliedOps=sub.appliedOps||[];
+  let changed=false,endSec=false;
+  ops.forEach(op=>{
+    if(!op||!op.id||applied.includes(op.id))return;
+    applied.push(op.id);changed=true;
+    try{if(fxApplyOp(op,sub,t,a)==='endSection')endSec=true;}catch(e){console.warn('op failed',e);}
+  });
+  if(!changed)return;
+  save();
+  if(endSec&&sxOn(t)&&!_sxBusy){showExamNotice('Your instructor ended this section.');sxFinishSection('instructor');}
+}
+const fxOrigFSS=window.forceSubmitStudent;
+window.forceSubmitStudent=function(sid,reason){
+  fxOrigFSS(sid,reason);fxHoldOverlay(false);
+  if(reason==='closed'){
+    document.getElementById('student-wrapper').innerHTML=`<div class="fx-gate"><div style="max-width:480px"><h2 style="font-size:42px;font-weight:300;margin-bottom:12px">Exam closed</h2><p style="color:rgba(255,255,255,.55);font-size:14px">The exam window has closed and your work was submitted automatically.</p></div></div>`;
+  }
+};
+const fxOrigFSE=window.finishStartExam;
+window.finishStartExam=function(aid,name,opts){
+  fxWarnedClose=false;fxOrigFSE(aid,name,opts);
+  const ex=APP.currentStudentExam;if(ex&&ex.a.classPaused&&ex.sub.status==='in-progress')fxHold(true);
+};
+const fxOrigRES=window.resumeExamSession;
+window.resumeExamSession=function(a,t,existing,name){
+  fxWarnedClose=false;fxOrigRES(a,t,existing,name);
+  if(existing.status==='in-progress'&&existing.held)fxHold(true);
+};
+/* lobby / schedule gate */
+async function fxRefreshAssignment(aid){
+  const r=await eaGet({exam:aid},10000);if(!r||!Array.isArray(r.assignments))return;
+  r.assignments.forEach(remote=>{
+    const l=APP.assignments.find(x=>x.id===remote.id);
+    if(l)eaReplaceInPlace(l,remote);else APP.assignments.push(remote);
+    _lastSynced.assignments[remote.id]=eaSyncStr('assignments',remote);
+  });
+}
+function fxGate(a){
+  const now=Date.now();
+  if(a.closedAt||(a.closesAt&&new Date(a.closesAt)<=now))return 'closed';
+  if(a.opensAt&&new Date(a.opensAt)>now)return 'scheduled';
+  if(a.lobby&&!a.startedAt)return 'lobby';
+  return 'ok';
+}
+const fxOrigStartExam=window.startExam;
+window.startExam=async function(aid){
+  const inp=document.getElementById('student-name-input');const raw=inp&&inp.value.trim();
+  if(!raw)return fxOrigStartExam(aid);
+  const name=formatStudentName(raw);
+  await fxRefreshAssignment(aid);
+  const a=APP.assignments.find(x=>x.id===aid);if(!a)return fxOrigStartExam(aid);
+  const existing=APP.submissions.find(s=>s.assignmentId===aid&&s.studentName.toLowerCase()===name.toLowerCase()&&s.status==='in-progress');
+  if(existing||fxGate(a)==='ok')return fxOrigStartExam(aid);
+  fxRunGate(aid,name,raw);
+};
+function fxRunGate(aid,name,raw){
+  const token=++fxGateToken;fxGateOn=true;let waiting=APP.submissions.find(s=>s.assignmentId===aid&&s.studentName.toLowerCase()===name.toLowerCase()&&s.status==='waiting')||null;
+  const sw=document.getElementById('student-wrapper');let n=0;
+  const cleanup=()=>{clearInterval(timer);fxGateOn=false;};
+  const dropWaiting=()=>{if(waiting){deleteSubmission(waiting.id,{skipConfirm:true,silent:true});waiting=null;}};
+  const tick=()=>{
+    if(token!==fxGateToken){clearInterval(timer);return;}
+    const a=APP.assignments.find(x=>x.id===aid),t=APP.tests.find(x=>x.id===a.testId);
+    if(++n%4===0)fxRefreshAssignment(aid);
+    const g=fxGate(a);
+    if(g==='ok'){cleanup();dropWaiting();sw.innerHTML=renderNameEntry(a,t);document.getElementById('student-name-input').value=raw;fxOrigStartExam(aid);return;}
+    if(g==='closed'){cleanup();dropWaiting();sw.innerHTML=`<div class="fx-gate"><div style="max-width:460px"><h2 style="font-size:42px;font-weight:300;margin-bottom:12px">This exam is closed</h2><p style="color:rgba(255,255,255,.55)">The window for this assessment has ended. Contact your instructor if you think this is a mistake.</p></div></div>`;return;}
+    if(g==='lobby'&&!waiting){
+      waiting={id:uid(),testId:t.id,assignmentId:aid,studentName:name,status:'waiting',joinedAt:fxIso(),answers:{},score:0};
+      APP.submissions.push(waiting);save();
+    }
+    const ann=(a.announcements||[]).slice(-1)[0];
+    let body;
+    if(g==='scheduled'){const s=Math.max(0,Math.floor((new Date(a.opensAt)-Date.now())/1000));body=`<div style="font-size:48px">🗓</div><h2 style="font-size:34px;font-weight:300;margin:10px 0">${sxE(t.title)}</h2><p style="color:rgba(255,255,255,.55);margin-bottom:16px">Opens ${sxE(fxDt(a.opensAt))}</p><div style="font-size:56px;font-weight:300;font-variant-numeric:tabular-nums">${formatTimerDisplay(s)}</div>`;}
+    else body=`<div style="font-size:48px">⏳</div><h2 style="font-size:34px;font-weight:300;margin:10px 0">You're in the waiting room</h2><p style="color:rgba(255,255,255,.55);line-height:1.7;max-width:420px;margin:0 auto">Hi ${sxE(name)} — ${sxE(t.title)} will begin as soon as your instructor starts it. You don't need to do anything.</p>`;
+    sw.innerHTML=`<div class="fx-gate"><div style="max-width:520px">${body}${ann?`<div style="margin-top:26px;background:rgba(255,255,255,.08);border-radius:10px;padding:12px 16px;font-size:14px">📢 ${sxE(ann.text)}</div>`:''}</div></div>`;
+  };
+  const timer=setInterval(tick,1000);tick();
+}
+
+/* ───────────── 5. CURVES ───────────── */
+function fxCurveCfg(a){return Object.assign({enabled:false,mode:'linear',unit:'percent',min:60,max:100,flat:5,showStudents:true},(a&&a.curve)||{});}
+function fxCurvedFor(s,t,a,cfg){
+  const c=cfg===undefined?(a&&a.curve&&a.curve.enabled?fxCurveCfg(a):null):cfg;
+  const hasOv=s.curveOverride!==undefined&&s.curveOverride!==null&&s.curveOverride!=='';
+  if(!c&&!hasOv)return null;
+  const max=calcTotalPoints(t,s)||0,raw=s.score||0,f=max>0?Math.min(1,Math.max(0,raw/max)):0;
+  const lin=!!c&&c.mode==='linear';
+  const unit=lin?c.unit:'percent',outOf=(lin&&c.unit==='points')?(+c.max||0):100;
+  let v;
+  if(hasOv)v=+s.curveOverride;
+  else if(c.mode==='flat')v=Math.min(100,f*100+(+c.flat||0));
+  else if(c.mode==='root')v=Math.sqrt(f)*100;
+  else{const lo=+c.min||0,hi=(c.max===''||c.max==null)?100:+c.max;v=lo+f*(hi-lo);}
+  v=Math.round(v*10)/10;
+  return {raw,max,rawPct:Math.round(f*1000)/10,value:v,unit,outOf,pct:outOf>0?Math.round(v/outOf*1000)/10:0,overridden:hasOv};
+}
+const fxCurvedLabel=c=>c.unit==='points'?`${c.value} / ${c.outOf}`:`${c.value}%`;
+function fxCurvedLetter(t,c){const G=sxGrading(t);return G.letterEnabled?sxLetter(G.scale,c.pct):null;}
+function fxStampCurve(s){
+  const t=APP.tests.find(x=>x.id===s.testId);if(!t)return;
+  const a=APP.assignments.find(x=>x.id===s.assignmentId);
+  const c=s.status==='submitted'?fxCurvedFor(s,t,a):null;
+  if(!c){if(s.curved)delete s.curved;return;}
+  s.curved={value:c.value,unit:c.unit,outOf:c.outOf,pct:c.pct,letter:fxCurvedLetter(t,c),show:!!(a&&a.curve&&a.curve.showStudents!==false)};
+}
+const fxOrigAutoScore=window.autoScore;
+window.autoScore=function(s,t){fxOrigAutoScore(s,t);try{fxStampCurve(s);}catch(e){}};
+let fxCv=null;
+function fxOpenCurve(aid){
+  const a=APP.assignments.find(x=>x.id===aid);if(!a)return;
+  const subs=APP.submissions.filter(s=>s.assignmentId===aid&&s.status==='submitted');
+  fxCv={aid,cfg:Object.assign(fxCurveCfg(a),a.curve?{}:{enabled:true}),ov:{}};
+  subs.forEach(s=>{fxCv.ov[s.id]=s.curveOverride==null?'':s.curveOverride;});
+  openModal(fxCurveModalHtml(),'860px');fxCvCells();
+}
+function fxCvCtlHtml(){
+  const c=fxCv.cfg;
+  const radio=(k,l)=>`<label class="fx-chipbtn${c.mode===k?' on':''}" onclick="fxCvSet('mode','${k}',true)">${l}</label>`;
+  return `<label class="checkbox-wrap mb-3"><input type="checkbox" ${c.enabled?'checked':''} onchange="fxCvSet('enabled',this.checked,true)"><strong style="font-size:14px">Apply a curve to this assignment</strong></label>
+  <div class="mb-3">${radio('linear','Linear: min → max')}${radio('flat','Add flat bonus')}${radio('root','Square-root curve')}</div>
+  ${c.mode==='linear'?`<div class="grid-3" style="max-width:620px"><div class="form-group"><label class="form-label">Scale</label><select class="form-control" onchange="fxCvSet('unit',this.value,true)"><option value="percent" ${c.unit==='percent'?'selected':''}>Percent (%)</option><option value="points" ${c.unit==='points'?'selected':''}>Points</option></select></div>
+   <div class="form-group"><label class="form-label">Min — score of 0 becomes</label><input type="number" class="form-control" step="0.5" value="${c.min}" oninput="fxCvSet('min',this.value)"></div>
+   <div class="form-group"><label class="form-label">Max — full points becomes</label><input type="number" class="form-control" step="0.5" value="${c.max}" oninput="fxCvSet('max',this.value)"></div></div>
+   <div class="form-hint" style="margin-bottom:10px">Everything in between is scaled evenly. Example: min 60, max 100 → a raw 0 is 60, a perfect paper is 100, half the points is 80.</div>`
+  :c.mode==='flat'?`<div class="form-group" style="max-width:240px"><label class="form-label">Bonus (percentage points, capped at 100%)</label><input type="number" class="form-control" step="0.5" value="${c.flat}" oninput="fxCvSet('flat',this.value)"></div>`
+  :`<div class="form-hint" style="margin-bottom:10px">Curved % = 100 × √(raw fraction). Lifts low scores more than high ones (50% → 71%, 80% → 89%).</div>`}
+  <label class="checkbox-wrap mb-3"><input type="checkbox" ${c.showStudents?'checked':''} onchange="fxCv.cfg.showStudents=this.checked"><span style="font-size:13px">Show curved score to students (on their results)</span></label>`;
+}
+function fxCurveModalHtml(){
+  const a=APP.assignments.find(x=>x.id===fxCv.aid),t=APP.tests.find(x=>x.id===a.testId)||{title:''};
+  const subs=APP.submissions.filter(s=>s.assignmentId===a.id&&s.status==='submitted');
+  return `<div class="modal-header"><div><h2 class="serif" style="font-size:22px">Curve — ${sxE(t.title)}</h2><div class="text-xs text-muted">Raw scores are never changed. You can also type a custom value per student.</div></div><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div id="fx-cv-ctl">${fxCvCtlHtml()}</div>
+  <table class="sx-tbl"><thead><tr><th>Student</th><th>Raw</th><th>Curved</th><th>Custom override</th></tr></thead><tbody>
+  ${subs.map(s=>`<tr><td><strong>${sxE(s.studentName)}</strong></td><td>${s.score||0}/${calcTotalPoints(t,s)} <span class="text-muted">(${sxPctOf(t,s,0)}%)</span></td><td id="fx-cv-${s.id}"></td>
+  <td><input type="number" step="0.1" placeholder="auto" value="${fxCv.ov[s.id]}" style="width:90px" oninput="fxCv.ov['${s.id}']=this.value;fxCvCells()"> <button class="btn btn-ghost btn-sm" onclick="fxCv.ov['${s.id}']='';fxOpenCurveRefresh()">clear</button></td></tr>`).join('')||'<tr><td colspan="4" class="text-muted">No submissions yet.</td></tr>'}</tbody></table></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="fx-cv-save" onclick="fxCvSave()">Save curve</button></div>`;
+}
+function fxOpenCurveRefresh(){const m=document.querySelector('#modal-container .modal');if(m){m.innerHTML=fxCurveModalHtml();fxCvCells();}}
+function fxCvSet(k,v,rerender){
+  fxCv.cfg[k]=(k==='min'||k==='max'||k==='flat')?(v===''?'':+v):v;
+  if(rerender){const el=document.getElementById('fx-cv-ctl');if(el)el.innerHTML=fxCvCtlHtml();}
+  fxCvCells();
+}
+function fxCvCells(){
+  const a=APP.assignments.find(x=>x.id===fxCv.aid);const t=APP.tests.find(x=>x.id===a.testId);if(!t)return;
+  APP.submissions.filter(s=>s.assignmentId===a.id&&s.status==='submitted').forEach(s=>{
+    const el=document.getElementById('fx-cv-'+s.id);if(!el)return;
+    const c=fxCurvedFor(Object.assign({},s,{curveOverride:fxCv.ov[s.id]}),t,a,fxCv.cfg.enabled?fxCv.cfg:null);
+    el.innerHTML=c?`<span class="fx-curved">${fxCurvedLabel(c)}</span>${c.overridden?' <span class="text-xs text-muted">custom</span>':''}`:'<span class="text-muted">—</span>';
+  });
+}
+async function fxCvSave(){
+  const a=APP.assignments.find(x=>x.id===fxCv.aid);const btn=document.getElementById('fx-cv-save');
+  const old=a.curve?JSON.parse(JSON.stringify(a.curve)):undefined;
+  a.curve=JSON.parse(JSON.stringify(fxCv.cfg));
+  APP.submissions.filter(s=>s.assignmentId===a.id&&s.status==='submitted').forEach(s=>{
+    const v=fxCv.ov[s.id];if(v===''||v==null)delete s.curveOverride;else s.curveOverride=+v;fxStampCurve(s);
+  });
+  setBtnSaving(btn,true,'Saving…');const r=await reliableSave('assignments');setBtnSaving(btn,false);
+  if(!r.ok){if(old)a.curve=old;else delete a.curve;toast('⚠ '+(r.error||'Could not save')+' — try again.','error');return;}
+  save();closeModal();toast('Curve saved.','success');
+  if(document.getElementById('page-grading')&&!document.getElementById('page-grading').classList.contains('hidden'))renderGrading();
+  if(document.getElementById('live-root'))fxLivePaint();
+}
+/* student displays */
+const fxOrigRSS=window.renderSubmittedScreen;
+window.renderSubmittedScreen=function(sub,a,t){
+  fxOrigRSS(sub,a,t);
+  if(a.releaseScores&&sub.curved&&sub.curved.show){
+    const l=document.querySelector('#student-wrapper a[href*="?results="]');
+    if(l)l.insertAdjacentHTML('beforebegin',`<div style="margin-top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)">Curved score</div><div style="font-size:34px;color:#C4B5FD;font-weight:300">${sub.curved.unit==='points'?sub.curved.value+' / '+sub.curved.outOf:sub.curved.value+'%'}${sub.curved.letter?' · '+sxE(sub.curved.letter):''}</div>`);
+  }
+};
+const fxOrigLSR=window.loadStudentResults;
+window.loadStudentResults=function(sid){
+  fxOrigLSR(sid);
+  const s=APP.submissions.find(x=>x.id===sid);
+  if(s&&s.curved&&s.curved.show&&s.status==='submitted'){
+    const box=document.querySelector('#student-wrapper div[style*="max-width:820px"]');
+    if(box)box.insertAdjacentHTML('afterbegin',`<div style="background:#EDE9FE;border:1px solid #DDD6FE;border-radius:12px;padding:16px 22px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6D28D9">Curved score</div><div style="font-size:30px;font-weight:300;color:#4C1D95">${s.curved.unit==='points'?s.curved.value+' / '+s.curved.outOf:s.curved.value+'%'}${s.curved.letter?' · '+sxE(s.curved.letter):''}</div></div>`);
+  }
+};
+/* grading modal: curve line */
+const fxOrigOGS=window.openGradingStudent;
+window.openGradingStudent=function(sid){
+  fxOrigOGS(sid);
+  const s=APP.submissions.find(x=>x.id===sid);if(!s)return;
+  const t=APP.tests.find(x=>x.id===s.testId),a=APP.assignments.find(x=>x.id===s.assignmentId);
+  const c=fxCurvedFor(s,t,a);const body=document.querySelector('#modal-container .modal-body');
+  if(body)body.insertAdjacentHTML('afterbegin',`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;font-size:13px"><strong>Curve</strong>${c?`<span class="fx-curved">${fxCurvedLabel(c)}</span>`:'<span class="text-muted">none</span>'}<span style="margin-left:auto">Custom value <input type="number" step="0.1" id="fx-ov-${sid}" value="${s.curveOverride==null?'':s.curveOverride}" style="width:80px;padding:4px 6px" placeholder="auto"> <button class="btn btn-secondary btn-sm" onclick="fxSetOverride('${sid}')">Set</button></span></div>`);
+};
+function fxSetOverride(sid){
+  const s=APP.submissions.find(x=>x.id===sid),v=document.getElementById('fx-ov-'+sid).value;
+  if(v==='')delete s.curveOverride;else s.curveOverride=+v;
+  fxStampCurve(s);save();toast('Saved.','success');
+}
+
+/* ───────────── 6. GRADE CENTER (curve column + CSV) ───────────── */
+function renderGrading(){
+  const el=document.getElementById('page-grading');
+  const subs=APP.submissions.filter(s=>s.status==='submitted');
+  const groups={};subs.forEach(s=>{(groups[s.assignmentId||'none']=groups[s.assignmentId||'none']||[]).push(s);});
+  const keys=Object.keys(groups).sort((x,y)=>{const ax=APP.assignments.find(a=>a.id===x),ay=APP.assignments.find(a=>a.id===y);return new Date((ay&&ay.createdAt)||0)-new Date((ax&&ax.createdAt)||0);});
+  el.innerHTML=`<div class="topbar"><h1 class="page-title">Grade Center</h1><span class="badge badge-ochre">${subs.length} submission${subs.length!==1?'s':''}</span></div>
+  <div class="page-content">${!subs.length?`<div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">All caught up.</h2><p style="color:var(--ink-soft);font-size:18px">No submissions waiting for review</p></div>`:keys.map(aid=>{
+    const a=APP.assignments.find(x=>x.id===aid)||{id:aid},list=groups[aid];
+    const t=APP.tests.find(x=>x.id===(a.testId||list[0].testId))||{title:'Unknown',questions:[]};
+    const pcts=list.map(s=>sxPctOf(t,s,0));const avg=pcts.length?Math.round(pcts.reduce((x,y)=>x+y,0)/pcts.length):0;
+    const cur=list.map(s=>fxCurvedFor(s,t,a)).filter(Boolean);const cavg=cur.length?Math.round(cur.reduce((x,c)=>x+c.pct,0)/cur.length*10)/10:null;
+    const pend=list.filter(s=>needsGrading(s,t)).length;
+    return `<div class="card mb-4"><div class="card-header" style="flex-wrap:wrap;gap:10px"><div><h3 class="serif" style="font-size:20px">${sxE(t.title)}</h3><div class="text-xs text-muted">${list.length} submission${list.length!==1?'s':''} · class avg ${avg}%${cavg!==null?` · curved avg <strong style="color:#6D28D9">${cavg}%</strong>`:''}${pend?` · <span style="color:var(--ochre)">${pend} need grading</span>`:''}</div></div>
+      <div class="flex gap-2"><button class="btn btn-secondary btn-sm" onclick="fxOpenCurve('${aid}')" ${a.testId?'':'disabled'}>📈 Curve${a.curve&&a.curve.enabled?' ✓':''}</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${aid}')">⬇ Export CSV</button></div></div>
+      ${list.map(s=>{const totalPts=calcTotalPoints(t,s),ng=needsGrading(s,t),c=fxCurvedFor(s,t,a);return `<div class="student-row">
+        <div class="student-avatar" style="background:${avatarColor(s.studentName)};color:#fff;width:38px;height:38px;flex-shrink:0;font-size:11px;font-weight:700">${initials(s.studentName)}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${sxE(s.studentName)}</div><div class="text-sm text-muted">Submitted ${formatTime(s.submittedAt)}${s.reopened?' · reopened':''}</div>
+        ${s.note?`<div style="font-size:10px;color:var(--rust);margin-top:2px">Note: ${sxE(s.note)}</div>`:''}
+        ${s.ultraLockdown?`<div style="margin-top:4px"><span class="badge ${s.noiseFlags&&s.noiseFlags.length?'badge-rust':'badge-slate'}" style="font-size:9px">🎥 Ultra-Lockdown${s.noiseFlags&&s.noiseFlags.length?` · ${s.noiseFlags.length} noise flag${s.noiseFlags.length!==1?'s':''}`:''}</span></div>`:''}</div>
+        <div style="text-align:right;margin-right:12px"><div style="font-weight:700;font-size:18px">${s.score||0}/${totalPts}</div>${c?`<span class="fx-curved">curved ${fxCurvedLabel(c)}</span>`:''}
+        ${ng?`<div style="font-size:10px;color:var(--ochre)">⚠ Needs grading</div>`:`<div style="font-size:10px;color:var(--sage)">✓ Fully graded</div>`}</div>
+        <button class="btn btn-primary btn-sm" onclick="openGradingStudent('${s.id}')">Open</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="event.stopPropagation();deleteSubmission('${s.id}')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button></div>`;}).join('')}</div>`;}).join('')}</div>`;
+}
+function fxExportCsv(aid){
+  const a=APP.assignments.find(x=>x.id===aid)||{};const list=APP.submissions.filter(s=>s.assignmentId===aid);
+  const t=APP.tests.find(x=>x.id===(a.testId||(list[0]&&list[0].testId)));if(!t||!list.length){toast('Nothing to export.','info');return;}
+  const fqs=flatQuestions(t);
+  const esc=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const head=['Student','Status','Raw points','Max points','Raw %','Curved','Letter','Submitted','Total active min','Avg sec/question','Fullscreen violations','Tab switches','Noise flags'].concat(fqs.map((f,i)=>'Q'+(i+1)+' pts'));
+  const rows=list.map(s=>{
+    const c=fxCurvedFor(s,t,a),tt=fxSubTime(s),ans=fxAnsweredCount(s,t);
+    let letter='';if(s.grade&&s.grade.letter)letter=s.grade.letter;else if(c)letter=fxCurvedLetter(t,c)||'';
+    return [s.studentName,s.status,s.score||0,calcTotalPoints(t,s),sxPctOf(t,s,0),c?fxCurvedLabel(c):'',letter,s.submittedAt||'',Math.round(tt/6)/10,ans?Math.round(tt/ans):'',s.strikes||0,s.tabSwitches||0,(s.noiseFlags||[]).length].concat(fqs.map(f=>s.status==='submitted'?sxQuestionAward(f.q,f.key,s):''));
+  });
+  fxDownload([head].concat(rows).map(r=>r.map(esc).join(',')).join('\n'),`${t.title.replace(/[^\w\- ]+/g,'')} - grades.csv`,'text/csv');
+}
+
+/* ───────────── 7. LIVE MONITOR / SESSION MANAGEMENT ───────────── */
+let fxLive={tab:'students',q:'',filter:'all'};
+let fxPend={};
+function fxSelA(){return APP.assignments.find(a=>a.id===activeAssignmentFilter)||null;}
+function fxSessionStatus(a){
+  const now=Date.now();
+  if(a.closedAt||(a.closesAt&&new Date(a.closesAt)<=now))return{k:'closed',label:'Closed',color:'#DC2626'};
+  if(a.opensAt&&new Date(a.opensAt)>now)return{k:'scheduled',label:'Scheduled',color:'#7C3AED'};
+  if(a.lobby&&!a.startedAt)return{k:'lobby',label:'Waiting room',color:'#D97706'};
+  if(a.classPaused)return{k:'paused',label:'Class paused',color:'#D97706'};
+  return{k:'live',label:'Live',color:'#16A34A'};
+}
+function getLiveSubs(){return activeAssignmentFilter?APP.submissions.filter(s=>s.assignmentId===activeAssignmentFilter):APP.submissions;}
+function fxActive(){return getLiveSubs().filter(s=>s.status==='in-progress');}
+async function fxSendOps(sids,op){
+  let ok=0;
+  await Promise.all(sids.map(async id=>{const r=await apiPost({action:'instructorOp',submissionId:id,op:Object.assign({},op)});if(r&&!r.__httpError)ok++;}));
+  return{ok,total:sids.length};
+}
+async function fxAssignUpdate(a,changes,msg){
+  const old={};Object.keys(changes).forEach(k=>{old[k]=a[k];});
+  Object.keys(changes).forEach(k=>{if(changes[k]===null||changes[k]===undefined)delete a[k];else a[k]=changes[k];});
+  const r=await reliableSave('assignments');
+  if(!r.ok){Object.keys(old).forEach(k=>{if(old[k]===undefined)delete a[k];else a[k]=old[k];});toast('⚠ '+(r.error||'Could not save')+' Nothing changed.','error');fxLivePaint();return false;}
+  if(msg)toast(msg,'success');fxLivePaint();return true;
+}
+function renderLive(){
+  if(livePollingInterval){clearInterval(livePollingInterval);livePollingInterval=null;}
+  if(!activeAssignmentFilter&&APP.assignments.length)activeAssignmentFilter=APP.assignments.slice().sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt))[0].id;
+  if(activeAssignmentFilter&&!APP.assignments.find(a=>a.id===activeAssignmentFilter))activeAssignmentFilter=null;
+  const el=document.getElementById('page-live');
+  const top=`<div class="topbar"><div class="flex items-center gap-3"><h1 class="page-title">Live Monitor</h1><div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r)"><span style="width:7px;height:7px;border-radius:50%;background:var(--rust);display:inline-block" class="pulse"></span><span style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--rust)">LIVE</span></div></div><span style="font-size:11px;color:var(--ink-soft)" id="live-update-time"></span></div>`;
+  if(!APP.assignments.length&&!APP.submissions.length){el.innerHTML=top+`<div class="page-content"><div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">No active sessions</h2><p style="color:var(--ink-soft);font-size:18px">Assign a test to start monitoring students</p></div></div>`;return;}
+  el.innerHTML=top+`<div class="page-content" id="live-root">
+    <div class="fx-lv-bar"><select class="form-control" style="width:auto;min-width:260px" onchange="fxLiveSwitch(this.value)"><option value="">All assignments</option>${APP.assignments.slice().sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt)).map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);return `<option value="${a.id}" ${a.id===activeAssignmentFilter?'selected':''}>${sxE(t?t.title:'Unknown')} · ${formatDate(a.createdAt)}</option>`;}).join('')}</select>
+      ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard(location.href.split('?')[0]+'?exam=${activeAssignmentFilter}')">🔗 Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">⬇ CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
+    <div id="live-control"></div>
+    <div class="grid-4 mb-6" id="live-stats"></div>
+    <div class="card"><div class="card-header" style="flex-wrap:wrap;gap:10px"><div class="fx-tabs" id="live-tabs"></div><div id="live-tools" class="flex gap-2 items-center"></div></div><div id="live-list"></div></div></div>`;
+  fxBuildControl();fxBuildTabs();fxLivePaint();
+  livePollingInterval=setInterval(refreshLiveData,3000);
+}
+function fxLiveSwitch(id){activeAssignmentFilter=id||null;fxLive.tab='students';renderLive();}
+function fxBuildTabs(){
+  const tabs=[['students','Students'],['questions','Questions & pacing'],['ann','Announcements']];
+  document.getElementById('live-tabs').innerHTML=tabs.map(([k,l])=>`<div class="fx-tab ${fxLive.tab===k?'on':''}" onclick="fxLive.tab='${k}';fxBuildTabs();fxLivePaint()">${l}</div>`).join('');
+  const tools=document.getElementById('live-tools');
+  tools.innerHTML=fxLive.tab==='students'?`<input class="form-control" style="width:180px" placeholder="Search students…" value="${sxA(fxLive.q)}" oninput="fxLive.q=this.value;fxLivePaint()"><select class="form-control" style="width:auto" onchange="fxLive.filter=this.value;fxLivePaint()">${[['all','All'],['active','Active'],['waiting','Waiting'],['paused','Paused'],['submitted','Submitted'],['alerts','⚠ Alerts']].map(([k,l])=>`<option value="${k}" ${fxLive.filter===k?'selected':''}>${l}</option>`).join('')}</select>`:'';
+}
+function fxBuildControl(){
+  const box=document.getElementById('live-control');if(!box)return;
+  const a=fxSelA();if(!a){box.innerHTML='';return;}
+  const t=APP.tests.find(x=>x.id===a.testId);const legacyUntimed=!sxOn(t)&&!a.timed;
+  box.innerHTML=`<div class="card fx-ctl"><div class="fx-ctl-top" id="live-ctl-dyn"></div>
+  <div class="fx-ctl-grid">
+   <div class="fx-ctl-box"><h4>📢 Announcement</h4><textarea id="fx-ann-text" class="form-control" rows="3" placeholder="Message every student sees instantly…"></textarea>
+     <div style="margin-top:8px">${['5 minutes remaining','Please keep your eyes on your own screen','Raise your hand if you need help','Please submit when you are finished'].map(m=>`<span class="fx-qchip" onclick="document.getElementById('fx-ann-text').value='${m}'">${m}</span>`).join('')}</div>
+     <button class="btn btn-primary btn-sm mt-2" onclick="fxSendAnnouncement()">Send to class</button></div>
+   <div class="fx-ctl-box"><h4>🗓 Schedule</h4>
+     <label class="form-label">Opens</label><input type="datetime-local" id="fx-sch-open" class="form-control" value="${fxToLocalInput(a.opensAt)}">
+     <label class="form-label" style="margin-top:8px">Closes (auto-submits)</label><input type="datetime-local" id="fx-sch-close" class="form-control" value="${fxToLocalInput(a.closesAt)}">
+     <label class="checkbox-wrap" style="margin:10px 0"><input type="checkbox" id="fx-sch-lobby" ${a.lobby?'checked':''}><span style="font-size:12px">Waiting room until I press Start</span></label>
+     <button class="btn btn-secondary btn-sm" onclick="fxSaveSchedule()">Save schedule</button></div>
+   <div class="fx-ctl-box"><h4>⏱ Grant time to everyone</h4>${legacyUntimed?'<div class="form-hint">This assignment has no time limit.</div>':`<div>${[5,10,15,30].map(m=>`<span class="fx-qchip" onclick="fxGrantTime('class',${m})">+${m} min</span>`).join('')}</div><div class="flex gap-2 mt-2"><input type="number" id="fx-time-custom" class="form-control" style="width:90px" min="1" placeholder="min"><button class="btn btn-secondary btn-sm" onclick="fxGrantTime('class',parseInt(document.getElementById('fx-time-custom').value))">Add</button></div><div class="form-hint mt-2">Individual extra time: use ⏱ on a student row.</div>`}</div>
+  </div></div>`;
+}
+function fxPaintControl(){
+  const el=document.getElementById('live-ctl-dyn');const a=fxSelA();if(!el||!a)return;
+  const st=fxSessionStatus(a);const subs=getLiveSubs();
+  const wait=subs.filter(s=>s.status==='waiting').length,act=subs.filter(s=>s.status==='in-progress').length,done=subs.filter(s=>s.status==='submitted').length;
+  let btns='';
+  if(st.k==='lobby')btns=`<button class="btn btn-primary btn-lg" onclick="fxStartClass()">▶ Start exam for entire class</button>`;
+  else if(st.k==='scheduled')btns=`<button class="btn btn-primary" onclick="fxAssignUpdate(fxSelA(),{opensAt:null},'Opened now.')">Open now</button>`;
+  else if(st.k==='closed')btns=`<button class="btn btn-primary" onclick="fxAssignUpdate(fxSelA(),{closedAt:null,closesAt:null},'Entry reopened.')">Reopen entry</button>`;
+  else btns=(a.classPaused?`<button class="btn btn-primary" onclick="fxPauseClass(false)">▶ Resume class</button>`:`<button class="btn btn-secondary" onclick="fxPauseClass(true)">⏸ Pause class</button>`)+`<button class="btn btn-danger" onclick="fxCloseNow()">⏹ Close &amp; submit all</button>`;
+  el.innerHTML=`<span class="fx-pill ${st.k==='live'?'live':''}" style="background:${st.color}"><i></i>${st.label}</span>
+   <div style="font-size:13px;color:var(--ink-soft);line-height:1.6">${st.k==='scheduled'?`Opens ${fxDt(a.opensAt)}`:''}${a.closesAt&&st.k!=='closed'?`Closes ${fxDt(a.closesAt)}`:''}${st.k==='lobby'?`<strong style="color:var(--ink)">${wait}</strong> student${wait!==1?'s':''} waiting`:`<strong style="color:var(--ink)">${act}</strong> active · <strong style="color:var(--ink)">${done}</strong> submitted`}</div>
+   <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${btns}</div>`;
+}
+async function fxStartClass(){const a=fxSelA();await fxAssignUpdate(a,{startedAt:fxIso(),classPaused:false},'Exam started for the class.');}
+async function fxPauseClass(on){
+  const a=fxSelA();const ids=fxActive().map(s=>s.id);
+  if(!(await fxAssignUpdate(a,{classPaused:on},null)))return;
+  ids.forEach(id=>{fxPend[id]={want:on,at:Date.now()};});
+  const r=await fxSendOps(ids,{type:on?'pause':'resume'});toast(`${on?'Paused':'Resumed'} ${r.ok} of ${r.total} student${r.total!==1?'s':''}.`,r.ok===r.total?'success':'error');fxLivePaint();
+}
+async function fxCloseNow(){
+  const a=fxSelA();const ids=fxActive().map(s=>s.id);
+  if(!confirm(`Close the exam now? ${ids.length} active student${ids.length!==1?'s':''} will be submitted immediately and no one else can start.`))return;
+  const iso=fxIso();if(!(await fxAssignUpdate(a,{closedAt:iso,closesAt:iso},null)))return;
+  const r=await fxSendOps(ids,{type:'closeExam'});toast(`Closed. ${r.ok} of ${r.total} students submitted.`,'success');
+}
+async function fxSaveSchedule(){
+  const a=fxSelA();const o=document.getElementById('fx-sch-open').value,c=document.getElementById('fx-sch-close').value;
+  const opensAt=o?new Date(o).toISOString():null,closesAt=c?new Date(c).toISOString():null;
+  if(opensAt&&closesAt&&new Date(closesAt)<=new Date(opensAt)){toast('Closing time must be after opening time.','error');return;}
+  const ok=await fxAssignUpdate(a,{opensAt,closesAt,closedAt:(closesAt&&new Date(closesAt)>new Date())?null:a.closedAt,lobby:document.getElementById('fx-sch-lobby').checked},'Schedule saved.');
+  if(ok)fxSendOps(fxActive().map(s=>s.id),{type:'sched',closesAt});
+}
+async function fxSendAnnouncement(){
+  const a=fxSelA();const ta=document.getElementById('fx-ann-text');const text=ta.value.trim();if(!text){toast('Type a message first.','info');return;}
+  const list=(a.announcements||[]).concat([{id:uid(),text,at:fxIso()}]);
+  const ok=await fxAssignUpdate(a,{announcements:list},null);if(!ok)return;
+  const ids=fxActive().map(s=>s.id);const r=await fxSendOps(ids,{type:'announce',text});
+  ta.value='';toast(`Sent to ${r.ok} of ${r.total} active student${r.total!==1?'s':''}${getLiveSubs().some(s=>s.status==='waiting')?' (waiting students see it too)':''}.`,'success');
+}
+function fxOpenTimeModal(target){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Grant extra time</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">${[5,10,15,30,60].map(m=>`<button class="fx-chipbtn" onclick="fxGrantTime('${target}',${m});closeModal()">+${m} min</button>`).join('')}
+  <div class="flex gap-2 mt-3"><input type="number" id="fx-tm-c" class="form-control" style="width:100px" min="1" placeholder="minutes"><button class="btn btn-primary btn-sm" onclick="fxGrantTime('${target}',parseInt(document.getElementById('fx-tm-c').value));closeModal()">Add</button></div></div>`,'400px');
+}
+async function fxGrantTime(target,mins){
+  if(!(mins>0)){toast('Enter a number of minutes.','info');return;}
+  const ids=target==='class'?fxActive().map(s=>s.id):[target];
+  if(!ids.length){toast('No active students.','info');return;}
+  const r=await fxSendOps(ids,{type:'addTime',secs:mins*60});
+  toast(`Added ${mins} min for ${r.ok} of ${r.total} student${r.total!==1?'s':''}.`,r.ok===r.total?'success':'error');
+}
+async function fxTogglePause(sid){
+  const s=APP.submissions.find(x=>x.id===sid);const want=!s.held;
+  fxPend[sid]={want,at:Date.now()};fxLivePaint();
+  const r=await fxSendOps([sid],{type:want?'pause':'resume'});
+  if(!r.ok){delete fxPend[sid];toast('Couldn’t reach that student.','error');fxLivePaint();}
+}
+function fxOpenReopen(sid){
+  const s=APP.submissions.find(x=>x.id===sid),a=APP.assignments.find(x=>x.id===s.assignmentId)||{},t=APP.tests.find(x=>x.id===s.testId);
+  const timed=sxOn(t)?sxSections(t).some(x=>sxBaseLimitMin(a,x)):!!a.timed;
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Reopen ${sxE(s.studentName)}’s exam</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><p style="font-size:13px;line-height:1.7;margin-bottom:12px">Their answers are kept. They continue by opening the same link and entering the same name. You can grade again after they resubmit.</p>
+  ${timed?`<label class="form-label">Time they get back (minutes)</label><input type="number" id="fx-ro-min" class="form-control" style="width:120px" value="10" min="1">`:''}</div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxReopen('${sid}',${timed?"parseInt(document.getElementById('fx-ro-min').value)||10":'0'})">Reopen</button></div>`,'440px');
+}
+function fxReopen(sid,mins){
+  const s=APP.submissions.find(x=>x.id===sid),a=APP.assignments.find(x=>x.id===s.assignmentId)||{},t=APP.tests.find(x=>x.id===s.testId);
+  const R=Math.max(0,mins)*60,now=Date.now(),iso=fxIso();
+  s.status='in-progress';delete s.submittedAt;s.reopened=true;s.reopenedAt=iso;s.note='Reopened by instructor';s.held=false;delete s.heldAt;s.paused=false;delete s.curved;
+  if(sxOn(t)&&s.sectionState){
+    const st=s.sectionState;st.completed=false;
+    if(st.decisions&&st.decisions.length&&st.decisions[st.decisions.length-1].to==='end')st.decisions.pop();
+    const ss=st.status[st.current]||(st.status[st.current]={}),sec=sxById(t,st.current);
+    if(ss.startedAt){
+      delete ss.endedAt;delete ss.endReason;st.phase='active';
+      const lim=sec?sxLimitSecs(t,a,sec,ss):null;
+      if(lim!==null&&R){const lim0=lim-(ss.extraSecs||0),el=Math.floor((ss.activeMs||0)/1000);ss.extraSecs=Math.max(ss.extraSecs||0,el+R-lim0);}
+      ss.resumedAt=iso;
+    }else st.phase='intro';
+  }else if(a.timed&&s.startedAt&&R){
+    const L=a.maxMinutes*60+(s.extraSecs||0);
+    s.originalStartedAt=s.originalStartedAt||s.startedAt;
+    s.startedAt=new Date(now-(L-R)*1000).toISOString();
+  }
+  save();closeModal();toast('Reopened. The student can continue from the same link.','success');fxLivePaint();
+}
+function fxLegacyRemaining(s,a){
+  if(!a.timed||!s.startedAt)return null;
+  const end=s.held&&s.heldAt?new Date(s.heldAt).getTime():Date.now();
+  return a.maxMinutes*60+(s.extraSecs||0)-Math.floor((end-new Date(s.startedAt).getTime())/1000);
+}
+const fxSubTime=s=>Object.keys(s.qTimes||{}).reduce((x,k)=>x+(+s.qTimes[k]||0),0);
+function fxAnsweredCount(s,t){return sxOn(t)?sxProgress(t,s).answered:Object.keys(s.answers||{}).length;}
+function fxStatusOf(s){if(s.status==='waiting')return'waiting';if(s.status==='submitted')return'submitted';if(s.held)return'paused';return'active';}
+function fxAlerts(s){
+  const out=[];
+  if(s.strikes)out.push(['⚠ '+s.strikes+' fullscreen exit'+(s.strikes!==1?'s':''),'#FEE2E2','#991B1B']);
+  if(s.tabSwitches)out.push(['Left tab ×'+s.tabSwitches,'#FEF3C7','#92400E']);
+  if(s.noiseFlags&&s.noiseFlags.length)out.push(['🔊 '+s.noiseFlags.length+' noise flag'+(s.noiseFlags.length!==1?'s':''),'#FEE2E2','#991B1B']);
+  if(s.status==='in-progress'&&!s.held&&s.lastActiveAt){const ago=(Date.now()-new Date(s.lastActiveAt).getTime())/1000;if(ago>60)out.push(['No signal '+fxFmtDur(ago),'#F3F4F6','#374151']);}
+  if(s.status==='in-progress'&&s.tabActive===false)out.push(['Tab inactive','#FEF3C7','#92400E']);
+  return out;
+}
+function fxDots(s,t){
+  let items;try{items=sxOn(t)?sxGradableItems(t,s):flatQuestions(t);}catch(e){items=[];}
+  if(!items.length||items.length>120)return'';
+  return `<div class="fx-dots">${items.map(it=>`<i class="${s.answers&&s.answers[it.key]!==undefined?'on':''}"></i>`).join('')}</div>`;
+}
+function fxLiveRow(s,t,a){
+  const stt=fxStatusOf(s);const pg=sxOn(t)?sxProgress(t,s):{answered:Object.keys(s.answers||{}).length,total:flatQuestions(t).length};
+  const pct=pg.total?Math.round(pg.answered/pg.total*100):0;const tot=fxSubTime(s),avg=pg.answered?tot/pg.answered:null;
+  const pend=fxPend[s.id];if(pend&&(Date.now()-pend.at>15000||!!s.held===pend.want))delete fxPend[s.id];
+  const pen=fxPend[s.id];
+  const chips={waiting:['Waiting','#FEF3C7','#92400E'],active:['Active','#CFFAFE','#0E7490'],paused:['Paused','#FEF3C7','#92400E'],submitted:['Submitted','#DCFCE7','#166534']}[stt];
+  let timeInfo='';
+  if(stt==='active'||stt==='paused'){
+    if(sxOn(t)&&s.sectionState)timeInfo=s.held?'<span style="font-size:11px;color:var(--ochre);font-weight:600">⏸ Paused</span>':sxLiveTime(s,t,a);
+    else{const r=fxLegacyRemaining(s,a);if(r!==null)timeInfo=`<span style="font-size:11px;font-family:'Courier Prime',monospace;font-weight:700;color:${r<300?'var(--rust)':'var(--ochre)'}">${r>0?formatTimerDisplay(r)+' left':"time's up"}</span>`;}
+  }
+  const c=stt==='submitted'?fxCurvedFor(s,t,a):null;const ng=stt==='submitted'&&needsGrading(s,t);
+  const badges=fxAlerts(s).map(([l,bg,fg])=>`<span class="fx-badge" style="background:${bg};color:${fg}">${l}</span>`).join('')+(s.reopened?'<span class="fx-badge" style="background:#EDE9FE;color:#6D28D9">Reopened</span>':'')+(pen?'<span class="fx-badge" style="background:#E0E7FF;color:#3730A3">'+(pen.want?'Pausing…':'Resuming…')+'</span>':'');
+  let acts='';
+  if(stt==='active'||stt==='paused'){acts+=`<button class="btn btn-secondary btn-sm" onclick="fxTogglePause('${s.id}')">${s.held?'▶ Resume':'⏸ Pause'}</button><button class="btn btn-secondary btn-sm" title="Grant time" onclick="fxOpenTimeModal('${s.id}')">⏱+</button>`;}
+  if(stt==='submitted')acts+=`<button class="btn btn-primary btn-sm" onclick="openGradingStudent('${s.id}')">Grade</button><button class="btn btn-secondary btn-sm" onclick="fxOpenReopen('${s.id}')">↺ Reopen</button><button class="btn btn-ghost btn-sm" onclick="copyResultsLink('${s.id}')" title="Copy results link">🔗</button>`;
+  if(stt!=='waiting')acts+=`<button class="btn btn-secondary btn-sm" onclick="openStudentControl('${s.id}')">···</button>`;
+  acts+=`<button class="btn btn-danger btn-sm btn-icon" title="Delete response" onclick="deleteSubmission('${s.id}')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button>`;
+  return `<div class="fx-srow"><div class="student-avatar" style="background:${avatarColor(s.studentName)};color:#fff;width:40px;height:40px;font-size:12px;font-weight:700;flex-shrink:0">${initials(s.studentName)}</div>
+   <div style="flex:1;min-width:200px"><div style="font-size:14px;font-weight:600">${sxE(s.studentName)}</div><div class="text-xs text-muted">${sxE(t.title)}</div>
+   ${stt!=='waiting'&&stt!=='submitted'?`<div class="fx-bar" style="margin-top:6px;max-width:320px"><div style="width:${pct}%;background:var(--slate-blue)"></div></div><div class="text-xs text-muted" style="margin-top:3px">${pg.answered}/${pg.total} answered${avg!==null?` · ⏱ ${fxFmtDur(avg)} avg/question`:''}</div>${fxDots(s,t)}`:''}
+   ${stt==='submitted'&&tot?`<div class="text-xs text-muted" style="margin-top:3px">⏱ ${fxFmtDur(tot)} total${pg.answered?` · ${fxFmtDur(tot/pg.answered)} avg/question`:''}</div>`:''}
+   ${sxLiveSectionLine(s,t)}<div>${badges}</div></div>
+   <div style="text-align:right;min-width:110px"><span class="status-chip" style="background:${chips[1]};color:${chips[2]}">${chips[0]}</span><div style="margin-top:4px">${timeInfo}</div>
+   ${stt==='submitted'?`<div style="font-size:14px;font-weight:700;margin-top:4px">${s.score||0}/${calcTotalPoints(t,s)} <span class="text-muted" style="font-weight:400;font-size:12px">${sxPctOf(t,s,0)}%</span></div>${c?`<span class="fx-curved">curved ${fxCurvedLabel(c)}</span>`:''}${ng?'<div style="font-size:10px;color:var(--ochre)">Needs grading</div>':''}`:''}</div>
+   <div class="flex gap-2" style="flex-wrap:wrap;justify-content:flex-end">${acts}</div></div>`;
+}
+function fxStudentsHtml(subs){
+  let list=subs.slice();const q=fxLive.q.trim().toLowerCase();
+  if(q)list=list.filter(s=>s.studentName.toLowerCase().includes(q));
+  const f=fxLive.filter;
+  if(f==='alerts')list=list.filter(s=>fxAlerts(s).length);else if(f!=='all')list=list.filter(s=>fxStatusOf(s)===f);
+  const order={active:0,paused:1,waiting:2,submitted:3};list.sort((x,y)=>order[fxStatusOf(x)]-order[fxStatusOf(y)]||x.studentName.localeCompare(y.studentName));
+  if(!list.length)return `<div style="padding:40px;text-align:center;color:var(--ink-soft);font-style:italic">${subs.length?'No students match.':'No students in this session yet'}</div>`;
+  return list.map(s=>{const t=APP.tests.find(x=>x.id===s.testId)||{title:'Unknown',questions:[]};const a=APP.assignments.find(x=>x.id===s.assignmentId)||{};return fxLiveRow(s,t,a);}).join('');
+}
+function fxQuestionsHtml(subs){
+  const a=fxSelA();if(!a)return `<div style="padding:40px;text-align:center;color:var(--ink-soft)">Pick one assignment above to see question-level pacing.</div>`;
+  const t=APP.tests.find(x=>x.id===a.testId);if(!t)return '';
+  const fqs=flatQuestions(t);const real=subs.filter(s=>s.status!=='waiting');
+  const rows=fqs.map((item,i)=>{
+    let N=0,answered=0,autoN=0,correct=0,sumT=0,tn=0;
+    real.forEach(s=>{
+      if(!sxSubTook(t,s,item))return;N++;
+      const ans=s.answers?s.answers[item.key]:undefined;
+      if(ans!==undefined){answered++;if(['mc','ms','short'].includes(item.q.type)){autoN++;const ov=s.mcOverrides&&s.mcOverrides[item.key]!==undefined;if(ov?s.mcOverrides[item.key]>0:isAnswerCorrect(item.q,ans))correct++;}}
+      const tm=s.qTimes&&s.qTimes[item.key];if(tm>0){sumT+=tm;tn++;}
+    });
+    return{i,item,N,answered,autoN,correct,avg:tn?sumT/tn:null,tn};
+  });
+  const withT=rows.filter(r=>r.avg!==null);const maxAvg=Math.max(1,...withT.map(r=>r.avg));
+  const slow=withT.slice().sort((x,y)=>y.avg-x.avg)[0];
+  const overall=withT.length?withT.reduce((x,r)=>x+r.avg,0)/withT.length:null;
+  const hard=rows.filter(r=>r.autoN>=2).sort((x,y)=>x.correct/x.autoN-y.correct/y.autoN)[0];
+  return `<div style="padding:16px 20px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+    <div class="sx-msg sx-ok" style="margin:0">⏱ Average per question: <strong>${fxFmtDur(overall)}</strong></div>
+    ${slow?`<div class="sx-msg sx-warn" style="margin:0">Slowest: <strong>Q${slow.i+1}</strong> (${fxFmtDur(slow.avg)})</div>`:''}
+    ${hard?`<div class="sx-msg sx-err" style="margin:0">Hardest so far: <strong>Q${hard.i+1}</strong> (${Math.round(hard.correct/hard.autoN*100)}% correct)</div>`:''}</div>
+  <table class="sx-tbl" style="margin:0"><thead><tr><th style="padding-left:20px">#</th><th>Question</th><th>Answered</th><th>Correct</th><th style="min-width:200px">Avg time</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td style="padding-left:20px;font-weight:700">${r.i+1}</td><td style="max-width:360px"><div class="truncate">${sxE(stripHtml(r.item.q.stem)||'(No text)')}</div><span class="type-chip">${r.item.q.type}</span></td>
+   <td>${r.answered}/${r.N}</td><td>${r.autoN?Math.round(r.correct/r.autoN*100)+'%':'—'}</td>
+   <td>${r.avg!==null?`<div class="flex items-center gap-2"><div class="fx-bar" style="flex:1"><div style="width:${r.avg/maxAvg*100}%;background:${r===slow?'#D97706':'var(--slate-blue)'}"></div></div><span style="font-size:12px;font-weight:700;min-width:54px;text-align:right">${fxFmtDur(r.avg)}</span></div>`:'<span class="text-muted">—</span>'}</td></tr>`).join('')}</tbody></table>`;
+}
+function fxAnnHtml(){
+  const a=fxSelA();if(!a)return `<div style="padding:40px;text-align:center;color:var(--ink-soft)">Pick one assignment above.</div>`;
+  const l=(a.announcements||[]).slice().reverse();
+  return l.length?l.map(m=>`<div class="fx-srow"><div style="font-size:22px">📢</div><div style="flex:1"><div style="font-size:14px;line-height:1.6">${sxE(m.text)}</div><div class="text-xs text-muted">${fxDt(m.at)}</div></div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('fx-ann-text').value=${JSON.stringify(m.text).replace(/"/g,'&quot;')};window.scrollTo(0,0)">Reuse</button></div>`).join(''):`<div style="padding:40px;text-align:center;color:var(--ink-soft);font-style:italic">No announcements sent yet.</div>`;
+}
+function fxLiveStatsHtml(subs){
+  const real=subs.filter(s=>s.status!=='waiting');
+  const act=subs.filter(s=>s.status==='in-progress'),wait=subs.filter(s=>s.status==='waiting').length,paused=act.filter(s=>s.held).length;
+  const done=subs.filter(s=>s.status==='submitted');
+  const avgs=real.map(s=>{const t=APP.tests.find(x=>x.id===s.testId);const n=t?fxAnsweredCount(s,t):0;return n?fxSubTime(s)/n:null;}).filter(x=>x!==null&&x>0);
+  const pace=avgs.length?avgs.reduce((x,y)=>x+y,0)/avgs.length:null;
+  const sc=done.map(s=>{const t=APP.tests.find(x=>x.id===s.testId);return t?sxPctOf(t,s,0):0;});
+  const alerts=subs.filter(s=>fxAlerts(s).length).length;
+  const card=(l,v,sub,color)=>`<div class="stat-card" style="--before-color:${color}"><div class="stat-label">${l}</div><div class="stat-value" style="color:${color}">${v}</div><div class="stat-change">${sub}</div></div>`;
+  return card('Students',real.length,wait?wait+' in waiting room':'Joined','var(--ink)')+card('Active now',act.length-paused,paused?paused+' paused':'Testing','var(--ochre)')+card('Submitted',done.length,sc.length?'Avg '+Math.round(sc.reduce((x,y)=>x+y,0)/sc.length)+'%':'Completed','var(--sage)')+card('Avg pace',pace?fxFmtDur(pace):'—','per question'+(alerts?` · ⚠ ${alerts} alert${alerts!==1?'s':''}`:''),'var(--slate-blue)');
+}
+function fxLivePaint(){
+  if(!document.getElementById('live-root'))return;
+  const subs=getLiveSubs();
+  document.getElementById('live-stats').innerHTML=fxLiveStatsHtml(subs);
+  fxPaintControl();
+  const list=document.getElementById('live-list');
+  list.innerHTML=fxLive.tab==='students'?fxStudentsHtml(subs):fxLive.tab==='questions'?fxQuestionsHtml(subs):fxAnnHtml();
+  const tm=document.getElementById('live-update-time');if(tm)tm.textContent='Updated '+new Date().toLocaleTimeString();
+}
+async function refreshLiveData(){
+  if(!document.getElementById('live-root')){if(livePollingInterval){clearInterval(livePollingInterval);livePollingInterval=null;}return;}
+  await refreshFromServer();fxLivePaint();
+}
+function renderLiveStats(){return fxLiveStatsHtml(getLiveSubs());}
+function renderLiveList(subs){return fxStudentsHtml(subs);}
+
+/* ───────────── 8. ANALYTICS: avg time per question ───────────── */
+const fxOrigRQB=window.renderQuestionBreakdown;
+window.renderQuestionBreakdown=function(t,subs){
+  let html=fxOrigRQB(t,subs);if(!html)return html;
+  flatQuestions(t).forEach((item,i)=>{
+    let sum=0,n=0;subs.forEach(s=>{const v=s.qTimes&&s.qTimes[item.key];if(v>0){sum+=v;n++;}});
+    if(!n)return;
+    html=html.replace(`>Q${i+1}</span>`,`>Q${i+1}</span><span class="badge badge-slate" style="flex-shrink:0">⏱ ${fxFmtDur(sum/n)} avg</span>`);
+  });
+  return html;
+};
 
 </script>
 </body>
