@@ -753,429 +753,858 @@ function satSkillsForDomain(subject,domain){const s=SAT_DOMAINS[subject];return 
    instant-paint cache / offline fallback.
 ══════════════════════════════════════════════════════════ */
 const API_URL='/.netlify/functions/data';
+/* ══════════════════════════════════════════════════════════
+   CLOUD SYNC v2 — makes EdAssess work across the internet, and never loses work
+
+   HOW SAVING WORKS NOW
+   • Every test / assignment / submission is saved on its OWN (small request), so one big
+     test can't block the others and a student's autosave can't overwrite your edit.
+   • Tests carry a revision number. If another tab/device saved first, you're ASKED what to
+     do (keep mine / use theirs / keep both) — nothing is silently overwritten.
+   • Photos are shrunk and uploaded separately instead of being embedded in the test.
+   • Unsaved edits are mirrored to a local DRAFT (localStorage + IndexedDB) before any network
+     call, and restored on the next load if a save never landed.
+   • Every request has a timeout; failures retry with backoff (never a tight loop).
+   • "Saved" is shown only after the server confirms (explicit saves also read the data back).
+   • The server snapshots every test (version history) and keeps deleted items in a trash.
+══════════════════════════════════════════════════════════ */
 let _serverReachable=true;
 let _syncFailNotified=false;
-let _syncInFlight={tests:false,assignments:false};
+let _syncInFlight={tests:false,assignments:false};                 // kept for older code paths
 let _submissionSyncInFlight=new Set();
 let _peerSessionSyncInFlight=new Set();
-const _lastSynced={tests:null,assignments:null,submissions:{},peerSessions:{}};
+// id → JSON string of what the server last CONFIRMED, per kind
+const _lastSynced={tests:{},assignments:{},submissions:{},peerSessions:{}};
+const EA_KINDS=['tests','assignments','submissions','peerSessions'];
+const EA_META={tests:{},assignments:{},submissions:{},peerSessions:{}};   // id → {rev,inflight,fails,nextTry,conflict,error,force}
+let _legacyServer=false;            // server is the OLD data.js (no v2 actions) — fall back to whole-list saves
+let _lastSavedAt=0;
+let _lastCallAt=0,_firstPendingAt=0,_syncTimer=null;
+const EA_ACT={tests:'putTest',assignments:'putAssignment',submissions:'upsertSubmission',peerSessions:'upsertPeerSession'};
 
-function cacheLocally(){
-  localStorage.setItem('ea_tests',JSON.stringify(APP.tests));
-  localStorage.setItem('ea_submissions',JSON.stringify(APP.submissions));
-  localStorage.setItem('ea_assignments',JSON.stringify(APP.assignments));
-  localStorage.setItem('ea_peerSessions',JSON.stringify(APP.peerSessions));
+const eaMeta=(kind,id)=>EA_META[kind][id]||(EA_META[kind][id]={});
+const eaBackoff=n=>Math.min(30000,1000*Math.pow(2,Math.max(0,n-1)))*(0.75+Math.random()*0.5);
+// what we compare/send: tests ignore the server-managed `rev` so confirming a save doesn't look like a new edit
+function eaSyncStr(kind,o){
+  if(kind==='tests'&&o&&o.rev!==undefined){const c=Object.assign({},o);delete c.rev;return JSON.stringify(c);}
+  return JSON.stringify(o);
+}
+function eaStable(o){
+  const norm=v=>Array.isArray(v)?v.map(norm):(v&&typeof v==='object')?Object.keys(v).sort().reduce((a,k)=>{a[k]=norm(v[k]);return a;},{}):v;
+  return JSON.stringify(norm(JSON.parse(JSON.stringify(o))));
+}
+function eaStripRev(t){const c=JSON.parse(JSON.stringify(t));delete c.rev;return c;}
+// replace an object's contents but keep its identity (the builder holds references to APP.currentTest etc.)
+function eaReplaceInPlace(target,src){
+  Object.keys(target).forEach(k=>delete target[k]);
+  Object.assign(target,JSON.parse(JSON.stringify(src)));
 }
 
-async function apiPost(body){
+/* ── local cache (instant paint / offline) — never allowed to throw ── */
+function cacheLocally(){
+  const put=(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){try{localStorage.removeItem(k);}catch(e2){}return false;}};
+  put('ea_tests',JSON.stringify(APP.tests));
+  put('ea_assignments',JSON.stringify(APP.assignments));
+  put('ea_peerSessions',JSON.stringify(APP.peerSessions));
+  // submissions can be large (many students): keep only what this device may need to resume
+  put('ea_submissions',JSON.stringify(APP.submissions.filter(s=>s.status==='in-progress').slice(-50)));
+}
+
+/* ── IndexedDB mirror for drafts (roomy, survives quota limits) ── */
+let _idbP=null;
+function eaIdb(){
+  if(_idbP) return _idbP;
+  _idbP=new Promise(res=>{
+    try{
+      if(typeof indexedDB==='undefined'||!indexedDB) return res(null);
+      const r=indexedDB.open('ea-local',1);
+      r.onupgradeneeded=()=>{r.result.createObjectStore('drafts',{keyPath:'key'});};
+      r.onsuccess=()=>res(r.result);
+      r.onerror=()=>res(null);r.onblocked=()=>res(null);
+    }catch(e){res(null);}
+  });
+  return _idbP;
+}
+async function eaIdbDo(mode,fn){
+  const db=await eaIdb();if(!db) return null;
+  return new Promise(res=>{
+    try{const tx=db.transaction('drafts',mode);const out=fn(tx.objectStore('drafts'));tx.oncomplete=()=>res(out&&out.result!==undefined?out.result:true);tx.onerror=tx.onabort=()=>res(null);}
+    catch(e){res(null);}
+  });
+}
+const eaDraftKey=(kind,id)=>`ea_draft:${kind}:${id}`;
+function eaDraftWrite(kind,obj,str){
+  const m=eaMeta(kind,obj.id);
+  const rec={key:eaDraftKey(kind,obj.id),kind,id:obj.id,ts:Date.now(),baseRev:m.rev===undefined?(obj.rev===undefined?null:obj.rev):m.rev,json:str};
+  const s=JSON.stringify(rec);
+  if(s.length<600000){try{localStorage.setItem(rec.key,s);}catch(e){}}
+  eaIdbDo('readwrite',st=>st.put(rec));
+}
+function eaDraftDrop(kind,id){
+  try{localStorage.removeItem(eaDraftKey(kind,id));}catch(e){}
+  eaIdbDo('readwrite',st=>st.delete(eaDraftKey(kind,id)));
+}
+async function eaDraftReadAll(){
+  const out={};
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('ea_draft:')){try{const r=JSON.parse(localStorage.getItem(k));if(r&&r.key)out[r.key]=r;}catch(e){}}}}catch(e){}
+  const all=await eaIdbDo('readonly',st=>st.getAll());
+  if(Array.isArray(all)) all.forEach(r=>{if(r&&r.key&&(!out[r.key]||(out[r.key].ts||0)<(r.ts||0)))out[r.key]=r;});
+  return Object.values(out);
+}
+
+/* ── HTTP: every request has a timeout ── */
+async function apiPost(body,opts){
+  const timeout=(opts&&opts.timeout)||25000;
+  const ctl=typeof AbortController!=='undefined'?new AbortController():null;
+  const timer=ctl?setTimeout(()=>ctl.abort(),timeout):null;
   try{
-    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined});
     _serverReachable=true; // we got a response at all, so the network/server is reachable
     if(res.ok) return res.json();
-    // Non-network failure (e.g. the 409 wipe guard) — surface it instead of
-    // masking it as a generic connection problem, so the caller can react
-    // appropriately instead of just retrying forever.
     const errBody=await res.json().catch(()=>({}));
     return {__httpError:true,status:res.status,...errBody};
   }catch(e){
     _serverReachable=false;
-    console.warn('EdAssess: could not reach cloud storage, change saved locally only.',e);
+    console.warn('EdAssess: could not reach cloud storage, change kept locally.',e&&e.name);
     return null;
-  }
+  }finally{if(timer)clearTimeout(timer);}
 }
-
-async function loadState(){
+async function eaGet(query,timeout){
+  const ctl=typeof AbortController!=='undefined'?new AbortController():null;
+  const timer=ctl?setTimeout(()=>ctl.abort(),timeout||25000):null;
   try{
-    const cachedSubs=JSON.parse(localStorage.getItem('ea_submissions')||'[]');
-    cachedSubs.forEach(s=>_lastSynced.submissions[s.id]=JSON.stringify(s));
-    const cachedPS=JSON.parse(localStorage.getItem('ea_peerSessions')||'[]');
-    cachedPS.forEach(p=>_lastSynced.peerSessions[p.id]=JSON.stringify(p));
-    _lastSynced.tests=localStorage.getItem('ea_tests')||'[]';
-    _lastSynced.assignments=localStorage.getItem('ea_assignments')||'[]';
-  }catch(e){}
-  try{
-    const res=await fetch(API_URL,{cache:'no-store'});
-    if(res.ok){
-      const data=await res.json();
-      APP.tests=Array.isArray(data.tests)?data.tests:[];
-      APP.submissions=Array.isArray(data.submissions)?data.submissions:[];
-      APP.assignments=Array.isArray(data.assignments)?data.assignments:[];
-      APP.peerSessions=Array.isArray(data.peerSessions)?data.peerSessions:[];
-      cacheLocally();
-      _lastSynced.tests=JSON.stringify(APP.tests);
-      _lastSynced.assignments=JSON.stringify(APP.assignments);
-      _lastSynced.submissions={};
-      APP.submissions.forEach(s=>_lastSynced.submissions[s.id]=JSON.stringify(s));
-      _lastSynced.peerSessions={};
-      APP.peerSessions.forEach(p=>_lastSynced.peerSessions[p.id]=JSON.stringify(p));
-      _serverReachable=true;
-    } else {
-      _serverReachable=false;
-    }
-  }catch(e){
-    _serverReachable=false;
-    console.warn('EdAssess: could not reach cloud storage on load, using local cache.',e);
-  }
-  updateSaveStatusUI();
-  // Belt-and-suspenders: even if nothing else triggers a save for a while,
-  // keep retrying any change that hasn't been confirmed by the server yet
-  // (e.g. a Test Settings save — like tagging an SAT Domain — that failed
-  // to reach the cloud on the first try). This guarantees it eventually
-  // lands instead of silently staying local-only forever.
-  setInterval(syncToServer,8000);
-  // Never let the tab close/refresh silently mid-save without warning —
-  // this is the other half of "saving is weird": if a save is genuinely
-  // still in flight (or known to have failed and not yet retried), the
-  // browser will now ask for confirmation before leaving.
-  window.addEventListener('beforeunload',(e)=>{
-    if(hasPendingChanges()){
-      e.preventDefault();
-      e.returnValue='';
-      return '';
-    }
-  });
+    const qs=query?'?'+new URLSearchParams(query).toString():'';
+    const res=await fetch(API_URL+qs,{cache:'no-store',signal:ctl?ctl.signal:undefined});
+    if(!res.ok){let j=null;try{j=await res.json();}catch(e){}return {__httpError:true,status:res.status,...(j||{})};}
+    _serverReachable=true;return await res.json();
+  }catch(e){_serverReachable=false;return null;}
+  finally{if(timer)clearTimeout(timer);}
 }
 
-function hasPendingChanges(){
-  return _syncInFlight.tests||_syncInFlight.assignments||_submissionSyncInFlight.size>0||_peerSessionSyncInFlight.size>0||
-    JSON.stringify(APP.tests)!==_lastSynced.tests||
-    JSON.stringify(APP.assignments)!==_lastSynced.assignments||
-    (APP.submissions||[]).some(s=>s.status==='in-progress'&&_lastSynced.submissions[s.id]!==undefined&&_lastSynced.submissions[s.id]!==JSON.stringify(s));
-}
-
-function save(){
-  cacheLocally();
-  syncToServer();
-}
-
-// A save is only considered "done" once the server confirms it — the local
-// _lastSynced snapshot is NOT updated optimistically. That matters: if we
-// marked it synced before confirmation and the request then failed (flaky
-// connection, cold-start timeout, etc.), every subsequent click of Save
-// would see "nothing changed since last sync" and silently do nothing —
-// exactly the bug where SAT Domain/Focus Skill tags (or anything else)
-// looked saved locally but never actually reached the shared assessment.
-//
-// This is BACKGROUND, best-effort sync used for live-typing autosave
-// (every keystroke in the builder). For the explicit "Save"/"Publish"
-// buttons, use reliableSaveTests()/reliableSaveAssignments() below instead
-// — those await server confirmation AND read the data back to verify it
-// before the UI is allowed to say "Saved."
-function syncToServer(){
-  updateSaveStatusUI();
-  const testsStr=JSON.stringify(APP.tests);
-  if(testsStr!==_lastSynced.tests&&!_syncInFlight.tests){
-    _syncInFlight.tests=true;
-    updateSaveStatusUI();
-    apiPost({action:'saveTests',tests:APP.tests}).then(res=>{
-      _syncInFlight.tests=false;
-      if(res&&!res.__httpError){_lastSynced.tests=testsStr;_onSyncOk();}
-      else if(res&&res.__httpError&&res.status===409){_onWipeGuardBlocked('tests',testsStr,res);}
-      else _onSyncFail();
-      // A newer edit may have arrived while this request was in flight —
-      // re-check immediately instead of waiting for the next timer tick,
-      // so no change is ever silently dropped.
-      if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
-    });
-  }
-  const asgStr=JSON.stringify(APP.assignments);
-  if(asgStr!==_lastSynced.assignments&&!_syncInFlight.assignments){
-    _syncInFlight.assignments=true;
-    updateSaveStatusUI();
-    apiPost({action:'saveAssignments',assignments:APP.assignments}).then(res=>{
-      _syncInFlight.assignments=false;
-      if(res&&!res.__httpError){_lastSynced.assignments=asgStr;_onSyncOk();}
-      else if(res&&res.__httpError&&res.status===409){_onWipeGuardBlocked('assignments',asgStr,res);}
-      else _onSyncFail();
-      if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
-    });
-  }
-  APP.submissions.forEach(s=>{
-    const str=JSON.stringify(s);
-    if(_lastSynced.submissions[s.id]!==str&&!_submissionSyncInFlight.has(s.id)){
-      _submissionSyncInFlight.add(s.id);
-      apiPost({action:'upsertSubmission',submission:s}).then(res=>{
-        _submissionSyncInFlight.delete(s.id);
-        if(res&&!res.__httpError){_lastSynced.submissions[s.id]=str;_onSyncOk();}
-        else _onSyncFail();
-        if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
-      });
-    }
-  });
-  APP.peerSessions.forEach(p=>{
-    const str=JSON.stringify(p);
-    if(_lastSynced.peerSessions[p.id]!==str&&!_peerSessionSyncInFlight.has(p.id)){
-      _peerSessionSyncInFlight.add(p.id);
-      apiPost({action:'upsertPeerSession',peerSession:p}).then(res=>{
-        _peerSessionSyncInFlight.delete(p.id);
-        if(res&&!res.__httpError){_lastSynced.peerSessions[p.id]=str;_onSyncOk();}
-        else _onSyncFail();
-        if(res&&!res.__httpError) syncToServer();   // retry on the 8s timer after a failure, not in a hot loop
-      });
-    }
-  });
-  updateSaveStatusUI();
-}
-
-/* ══════════════════════════════════════════════════════════
-   GUARANTEED SAVE — used by explicit "Save"/"Publish" buttons.
-   Unlike the background autosave above, this:
-     1. Sends the write and AWAITS the server's confirmation.
-     2. Reads the data back from the server and byte-for-byte
-        compares it to what was just sent, so "saved" means the
-        server's copy is PRECISELY what's on screen — not just that
-        a request didn't error.
-     3. Retries with backoff (up to 5 attempts) on any failure or
-        mismatch before giving up.
-     4. Returns {ok:true} only when all of the above succeeded, or
-        {ok:false, error, wipeGuard} otherwise — callers MUST check
-        this and must not tell the user "Saved" unless ok is true.
-══════════════════════════════════════════════════════════ */
-async function reliableSave(collection,maxAttempts=5){
-  cacheLocally();
-  const key=collection; // 'tests' | 'assignments'
-  const action=collection==='tests'?'saveTests':'saveAssignments';
-  const payload=JSON.stringify(APP[collection]);
-  for(let attempt=1;attempt<=maxAttempts;attempt++){
-    const body={action};
-    body[collection]=APP[collection];
-    const res=await apiPost(body);
-    if(res&&res.__httpError&&res.status===409){
-      return {ok:false,wipeGuard:true,error:res.error||'The server refused this save to protect existing data.'};
-    }
-    if(res&&!res.__httpError){
-      // Verify using the state the POST response itself just wrote and
-      // returned — NOT a separate follow-up GET. A second GET can land on
-      // a different edge node / hit propagation lag in the blob store
-      // (especially right after a large write, like a bulk import) and
-      // read back a stale copy, which used to cause a false "mismatch"
-      // here and roll back the publish even though the save had actually
-      // succeeded. The POST's own response is the authoritative,
-      // just-written copy — no race possible against that.
-      if(res.state&&Object.prototype.hasOwnProperty.call(res.state,collection)){
-        const verifyStr=JSON.stringify(res.state[collection]);
-        if(verifyStr===payload){
-          _lastSynced[key]=payload;
-          _onSyncOk();
-          return {ok:true};
-        }
-        // The server's own echo of what it just wrote doesn't match what
-        // we sent — genuinely retry-worthy (rare: e.g. it coerced/rejected
-        // part of the payload).
-      } else {
-        // Older backend that doesn't echo state back — fall back to a
-        // verification GET, but only as a last resort.
+/* ── images: shrink big photos, upload them separately, keep tests small ── */
+const EA_DATA_URI=/data:(?:image\/(?:png|jpe?g|gif|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+/g;
+const _eaImgCache=new Map();
+function eaShrinkDataUrl(dataUrl,maxDim=1600,quality=0.82){
+  return new Promise(resolve=>{
+    try{
+      if(!dataUrl.startsWith('data:image/')||dataUrl.startsWith('data:image/gif')||dataUrl.length<250000||typeof Image==='undefined'||!document.createElement) return resolve(dataUrl);
+      const img=new Image();
+      const giveUp=setTimeout(()=>resolve(dataUrl),6000);   // some files never fire onload OR onerror — never wait forever
+      const finish=v=>{clearTimeout(giveUp);resolve(v);};
+      img.onload=()=>{
         try{
-          const verifyRes=await fetch(API_URL,{cache:'no-store'});
-          if(verifyRes.ok){
-            const verifyData=await verifyRes.json();
-            const verifyStr=JSON.stringify(verifyData[collection]);
-            if(verifyStr===payload){
-              _lastSynced[key]=payload;
-              _onSyncOk();
-              return {ok:true};
-            }
-          }
-        }catch(e){ /* verification fetch failed — fall through to retry */ }
-      }
-    }
-    if(attempt<maxAttempts){
-      await new Promise(r=>setTimeout(r,350*Math.pow(2,attempt-1)));
-    }
+          const sc=Math.min(1,maxDim/Math.max(img.width,img.height));
+          const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*sc));c.height=Math.max(1,Math.round(img.height*sc));
+          const ctx=c.getContext&&c.getContext('2d');if(!ctx) return finish(dataUrl);
+          ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+          const out=c.toDataURL('image/jpeg',quality);
+          finish(out&&out.length<dataUrl.length?out:dataUrl);
+        }catch(e){finish(dataUrl);}
+      };
+      img.onerror=()=>finish(dataUrl);
+      img.src=dataUrl;
+    }catch(e){resolve(dataUrl);}
+  });
+}
+// file picker → small data URL (replaces raw FileReader dumps of multi-MB photos)
+function eaReadImageFile(file,cb){
+  const r=new FileReader();
+  r.onload=async e=>{cb(await eaShrinkDataUrl(e.target.result));};
+  r.onerror=()=>toast('Could not read that image.','error');
+  r.readAsDataURL(file);
+}
+async function eaUploadDataUrl(uri){
+  if(_eaImgCache.has(uri)) return _eaImgCache.get(uri);
+  const small=await eaShrinkDataUrl(uri);
+  const res=await apiPost({action:'putImage',dataUrl:small},{timeout:40000});
+  if(res&&res.url){_eaImgCache.set(uri,res.url);return res.url;}
+  return null;
+}
+// mutate `root` in place: every sizeable embedded image becomes a URL
+async function eaExternalizeImages(root){
+  const holders=[];
+  (function walk(n){
+    if(Array.isArray(n)){n.forEach((v,i)=>{if(typeof v==='string'){if(v.includes('data:image/')||v.includes('data:application/pdf'))holders.push([n,i]);}else if(v&&typeof v==='object')walk(v);});}
+    else if(n&&typeof n==='object'){Object.keys(n).forEach(k=>{const v=n[k];if(typeof v==='string'){if(v.includes('data:image/')||v.includes('data:application/pdf'))holders.push([n,k]);}else if(v&&typeof v==='object')walk(v);});}
+  })(root);
+  const uris=new Set();
+  holders.forEach(([p,k])=>{(p[k].match(EA_DATA_URI)||[]).forEach(u=>{if(u.length>6000)uris.add(u);});});
+  if(!uris.size) return 0;
+  const map=new Map();
+  const list=[...uris];
+  for(let i=0;i<list.length;i+=3){
+    await Promise.all(list.slice(i,i+3).map(async u=>{const url=await eaUploadDataUrl(u);if(url)map.set(u,url);}));
   }
-  _onSyncFail();
-  return {ok:false,error:'Could not confirm the save reached the server after several attempts. Your edits are still here locally — check your connection and try again.'};
+  let n=0;
+  holders.forEach(([p,k])=>{
+    const next=p[k].replace(EA_DATA_URI,u=>{if(map.has(u)){n++;return map.get(u);}return u;});
+    if(next!==p[k])p[k]=next;
+  });
+  return n;
+}
+// for backups: make the file self-contained again (so it doesn't depend on the cloud)
+async function eaInlineImages(obj){
+  const text=JSON.stringify(obj);
+  const urls=[...new Set(text.match(/\/\.netlify\/functions\/data\?img=[a-f0-9]{40}/g)||[])];
+  const map={};
+  for(let i=0;i<urls.length;i+=4){
+    await Promise.all(urls.slice(i,i+4).map(async u=>{
+      try{
+        const r=await fetch(u);if(!r.ok)return;
+        const b=await r.blob();
+        map[u]=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b);});
+      }catch(e){}
+    }));
+  }
+  return JSON.parse(text.replace(/\/\.netlify\/functions\/data\?img=[a-f0-9]{40}/g,u=>map[u]||u));
+}
+
+/* ── the sync engine ── */
+function save(){
+  _lastCallAt=Date.now();
+  if(!_firstPendingAt) _firstPendingAt=_lastCallAt;
+  try{cacheLocally();}catch(e){}
+  eaSchedule(0);          // students' answers & submissions go out at once; TESTS wait for typing to settle (see eaRunSync)
+  updateSaveStatusUI();
+}
+function syncToServer(){eaSchedule(0);}
+function eaSchedule(ms){
+  if(_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>{_syncTimer=null;eaRunSync();},Math.max(0,ms));
+}
+function eaDirty(kind){
+  const out=[];
+  APP[kind].forEach(o=>{if(!o||!o.id)return;const str=eaSyncStr(kind,o);if(_lastSynced[kind][o.id]!==str)out.push({id:o.id,str,obj:o});});
+  return out;
+}
+function eaPendingDeletes(kind){
+  const ids=new Set(APP[kind].map(o=>o.id));
+  return Object.keys(_lastSynced[kind]).filter(id=>!ids.has(id));
+}
+const eaIsBusy=()=>EA_KINDS.some(k=>Object.keys(EA_META[k]).some(id=>EA_META[k][id].inflight));
+let _eaActive=0;
+
+// Background pass: push what changed. Honors the typing debounce and each record's backoff.
+function eaRunSync(){
+  const now=Date.now();
+  let wait=null;
+  const quiet=now-_lastCallAt>=700||now-_firstPendingAt>=4000;   // let typing settle, but never wait more than 4s
+  const todo=[];
+  ['tests','assignments','submissions','peerSessions'].forEach(kind=>{
+    // submissions & peer sessions: only treat as changed when something actually saved recently (cheap), or on the safety sweep
+    eaDirty(kind).forEach(d=>{
+      const m=eaMeta(kind,d.id);
+      if(m.conflict||m.fatal) return;
+      eaDraftWrite(kind,d.obj,d.str);
+      if(m.inflight) return;
+      if(kind==='tests'&&!quiet){wait=wait===null?350:Math.min(wait,350);return;}
+      if(m.nextTry&&m.nextTry>now){const w=m.nextTry-now;wait=wait===null?w:Math.min(wait,w);return;}
+      todo.push([kind,d.id]);
+    });
+  });
+  const dels=eaPendingDeletesGuarded();
+  dels.forEach(([kind,id])=>{const m=eaMeta(kind,id);if(m.inflight)return;if(m.nextTry&&m.nextTry>now){const w=m.nextTry-now;wait=wait===null?w:Math.min(wait,w);return;}todo.push([kind,id,'del']);});
+  if(!todo.length&&!eaIsBusy()) _firstPendingAt=0;
+  todo.forEach(([kind,id,del])=>{
+    if(_eaActive>=4){wait=wait===null?200:Math.min(wait,200);return;}
+    _eaActive++;
+    (del?eaPushDelete(kind,id):eaPushOnce(kind,id,25000)).then(r=>{
+      _eaActive--;
+      const m=eaMeta(kind,id);
+      if(r.ok){m.fails=0;m.nextTry=0;m.error=null;_onSyncOk();}
+      else if(r.conflict||r.fatal){updateSaveStatusUI();if(r.conflict)eaShowConflict();}
+      else if(!r.busy){m.fails=(m.fails||0)+1;m.nextTry=Date.now()+(r.migrating?3000:eaBackoff(m.fails));m.error=r.error||'Could not reach the server';_onSyncFail();}
+      eaSchedule(r.ok?50:400);
+    });
+  });
+  if(wait!==null) eaSchedule(Math.max(120,wait));
+  updateSaveStatusUI();
+}
+
+// one attempt to save one record. Resolves {ok} | {ok:false,retry..}|{conflict}|{fatal}
+async function eaPushOnce(kind,id,timeout){
+  const m=eaMeta(kind,id);
+  if(m.inflight) return {ok:false,busy:true};
+  const obj=APP[kind].find(x=>x.id===id);
+  if(!obj) return {ok:true,gone:true};
+  m.inflight=true;eaMarkInflight(kind,id,true);
+  try{
+    if(kind==='tests'){try{await eaExternalizeImages(obj);}catch(e){}}
+    // every push of a submission carries a rising version; the server ignores a stale one that arrives late
+    if(kind==='submissions'){m.v=Math.max(m.v||0,obj._v||0)+1;obj._v=m.v;}
+    const str=eaSyncStr(kind,obj);
+    if(_legacyServer&&(kind==='tests'||kind==='assignments')) return await eaLegacyPush(kind,id,str,timeout);
+    const body={action:EA_ACT[kind]};
+    if(kind==='tests'){body.test=obj;body.baseRev=m.rev!==undefined?m.rev:(obj.rev!==undefined?obj.rev:null);if(m.force)body.force=true;}
+    else if(kind==='assignments') body.assignment=obj;
+    else if(kind==='submissions') body.submission=obj;
+    else body.peerSession=obj;
+    const res=await apiPost(body,{timeout});
+    if(res===null) return {ok:false,retry:true,error:'No connection to the server (or it took too long).'};
+    if(res.__httpError){
+      if(res.status===409&&res.conflict){m.conflict={server:res.server||null,deleted:!!res.deleted,serverRev:res.serverRev,at:Date.now()};m.error=res.error;return {ok:false,conflict:true,error:res.error};}
+      if(res.status===400&&/Unknown action/i.test(res.error||'')){_legacyServer=true;eaShowServerOutdated();return await eaLegacyPush(kind,id,str,timeout);}
+      if(res.status===413){m.fatal=true;m.error=res.error||'This is too large to save. Shrink or remove large images.';return {ok:false,fatal:true,error:m.error};}
+      if(res.status===503&&res.migrating) return {ok:false,retry:true,migrating:true,error:res.error};
+      if(res.status>=400&&res.status<500&&res.status!==408&&res.status!==429){m.fatal=true;m.error=res.error||('The server refused this save ('+res.status+').');return {ok:false,fatal:true,error:m.error};}
+      return {ok:false,retry:true,error:res.error||('Server error '+res.status)};
+    }
+    // success
+    if(kind==='tests'){
+      if(res.rev!==undefined){m.rev=res.rev;obj.rev=res.rev;}
+      m.force=false;
+      // server pulled embedded images out → adopt its slimmer copy, but only if nothing changed meanwhile
+      if(res.test&&eaSyncStr(kind,obj)===str){eaReplaceInPlace(obj,res.test);_lastSynced[kind][id]=eaSyncStr(kind,obj);}
+      else _lastSynced[kind][id]=str;
+    } else _lastSynced[kind][id]=str;
+    if(eaSyncStr(kind,obj)===_lastSynced[kind][id]) eaDraftDrop(kind,id);
+    m.fatal=false;_lastSavedAt=Date.now();
+    return {ok:true};
+  }finally{m.inflight=false;eaMarkInflight(kind,id,false);}
+}
+function eaMarkInflight(kind,id,on){
+  if(kind==='submissions'){on?_submissionSyncInFlight.add(id):_submissionSyncInFlight.delete(id);}
+  else if(kind==='peerSessions'){on?_peerSessionSyncInFlight.add(id):_peerSessionSyncInFlight.delete(id);}
+  else _syncInFlight[kind]=on||Object.keys(EA_META[kind]).some(k=>EA_META[kind][k].inflight);
+  updateSaveStatusUI();
+}
+async function eaPushDelete(kind,id){
+  const m=eaMeta(kind,id);m.inflight=true;
+  try{
+    const res=await apiPost({action:kind==='tests'?'deleteTest':'deleteAssignment',id},{timeout:20000});
+    if(res&&!res.__httpError){delete _lastSynced[kind][id];delete EA_META[kind][id];eaDraftDrop(kind,id);return {ok:true};}
+    if(res&&res.__httpError&&res.status===400&&/Unknown action/i.test(res.error||'')){_legacyServer=true;delete _lastSynced[kind][id];return {ok:true};}
+    return {ok:false,retry:true,error:(res&&res.error)||'No connection'};
+  }finally{if(EA_META[kind][id])EA_META[kind][id].inflight=false;}
+}
+// OLD data.js: whole-list saves (kept only so a mismatched deployment still saves)
+async function eaLegacyPush(kind,id,str,timeout){
+  const res=await apiPost(kind==='tests'?{action:'saveTests',tests:APP.tests}:{action:'saveAssignments',assignments:APP.assignments},{timeout});
+  if(res&&!res.__httpError){APP[kind].forEach(o=>{_lastSynced[kind][o.id]=eaSyncStr(kind,o);eaDraftDrop(kind,o.id);});_lastSavedAt=Date.now();return {ok:true};}
+  if(res&&res.__httpError&&res.status===409) return {ok:false,fatal:true,error:res.error||'The server refused this save to protect existing data.'};
+  return {ok:false,retry:true,error:(res&&res.error)||'No connection'};
+}
+let _outdatedShown=false;
+function eaShowServerOutdated(){
+  if(_outdatedShown) return;_outdatedShown=true;
+  toast('⚠ Your server function (netlify/functions/data.js) is the OLD version. Saving still works, but please deploy the updated data.js — it fixes lost-save problems.','error');
+}
+
+// Deleting tests/assignments is detected as "was on the server, now gone locally". If a LOT vanish at once
+// (a bug or a stale cache, not a person) ask first instead of deleting.
+let _wipeAsked={};
+function eaPendingDeletesGuarded(){
+  const out=[];
+  ['tests','assignments'].forEach(kind=>{
+    const ids=eaPendingDeletes(kind);if(!ids.length) return;
+    const known=Object.keys(_lastSynced[kind]).length;
+    const approved=ids.filter(id=>eaMeta(kind,id).approvedDelete);
+    const mass=ids.length>=3&&ids.length>=known*0.5;
+    if(mass&&approved.length<ids.length){
+      const sig=kind+':'+ids.sort().join(',');
+      if(!_wipeAsked[sig]){_wipeAsked[sig]=true;setTimeout(()=>eaAskMassDelete(kind,ids),0);}
+      return;
+    }
+    ids.forEach(id=>out.push([kind,id]));
+  });
+  return out;
+}
+function eaAskMassDelete(kind,ids){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">⚠ ${ids.length} ${kind} disappeared at once</h2></div>
+  <div class="modal-body"><p style="font-size:14px;line-height:1.7">${ids.length} of your ${kind} are no longer in this browser, but they still exist in the cloud. That's unusual — it can happen with an out-of-date tab. Nothing has been deleted.</p></div>
+  <div class="modal-footer"><button class="btn btn-primary" onclick="eaMassRestore('${kind}',${JSON.stringify(ids).replace(/"/g,'&quot;')})">Bring them back from the cloud</button>
+  <button class="btn btn-secondary" onclick="eaMassConfirm('${kind}',${JSON.stringify(ids).replace(/"/g,'&quot;')})">I deleted them — delete from the cloud too</button></div>`,'520px');
+}
+async function eaMassRestore(kind,ids){closeModal();await refreshFromServer(true);toast('Restored from the cloud.','success');}
+function eaMassConfirm(kind,ids){ids.forEach(id=>{eaMeta(kind,id).approvedDelete=true;});closeModal();toast('They are in the trash for now — you can recover them from Backup & Version History.','info');eaSchedule(0);}
+
+// Push one record RIGHT NOW (waiting for any background push of the same record to finish first, so two
+// requests for one record never race each other).
+async function eaSaveNow(kind,id,timeout){
+  for(let w=0;w<200&&eaMeta(kind,id).inflight;w++) await new Promise(r=>setTimeout(r,50));
+  return eaPushOnce(kind,id,timeout||20000);
+}
+/* ── explicit Save / Publish: confirmed + verified, bounded in time ── */
+async function reliableSave(collection,maxAttempts=3){
+  const kind=collection;
+  try{cacheLocally();}catch(e){}
+  const started=Date.now();
+  const note=(msg)=>{try{eaProgress(msg);}catch(e){}};
+  const dirty=eaDirty(kind).map(d=>d.id);
+  const dels=eaPendingDeletes(kind);
+  // clear any backoff so we push NOW
+  dirty.forEach(id=>{const m=eaMeta(kind,id);m.nextTry=0;m.fatal=false;});
+  let lastErr='Could not confirm the save reached the server.';
+  for(const id of dirty){
+    let done=false;
+    for(let attempt=1;attempt<=maxAttempts&&!done;attempt++){
+      if(attempt>1) note(`Still trying… (attempt ${attempt} of ${maxAttempts})`);
+      const r=await eaSaveNow(kind,id,attempt===1?20000:30000);
+      if(r.ok){
+        const v=await eaVerify(kind,id);
+        if(v.ok){done=true;break;}
+        lastErr=v.error;
+      }else if(r.conflict){eaShowConflict();return {ok:false,conflict:true,error:'This test was changed somewhere else — choose how to combine them, then save again.'};}
+      else if(r.fatal){return {ok:false,tooLarge:/large|413/i.test(r.error||''),error:r.error};}
+      else lastErr=r.error||lastErr;
+      if(!done&&attempt<maxAttempts) await new Promise(res=>setTimeout(res,500*Math.pow(2,attempt-1)));
+    }
+    if(!done){_onSyncFail();return {ok:false,error:lastErr+' Your edits are still here and saved as a local draft — check your connection and try again.',offerBackup:true};}
+  }
+  for(const id of dels){const r=await eaPushDelete(kind,id);if(!r.ok){_onSyncFail();return {ok:false,error:'Could not confirm the deletion reached the server.'};}}
+  _onSyncOk();note('');
+  return {ok:true,ms:Date.now()-started};
 }
 function reliableSaveTests(){return reliableSave('tests');}
 function reliableSaveAssignments(){return reliableSave('assignments');}
-
-function forceSyncNow(){
-  toast('Retrying save…','info');
-  syncToServer();
+// read the record back from the server and compare — "saved" must mean the server really has it
+async function eaVerify(kind,id){
+  if(_legacyServer) return {ok:true};
+  if(kind==='tests'){
+    const r=await eaGet({test:id},15000);
+    if(!r||!r.test) return {ok:false,error:'The server did not return the test after saving.'};
+    const local=APP.tests.find(t=>t.id===id);
+    if(!local) return {ok:true};
+    if(eaStable(eaStripRev(local))!==eaStable(eaStripRev(r.test))){
+      // the user kept typing during the save — that's fine, those edits are still pending
+      return {ok:eaSyncStr('tests',local)!==_lastSynced.tests[id]};
+    }
+    return {ok:true};
+  }
+  if(kind==='assignments'){
+    const r=await eaGet({exam:id},15000);
+    if(!r||!r.assignments||!r.assignments.length) return {ok:false,error:'The server did not return the assignment after saving.'};
+    return {ok:true};
+  }
+  return {ok:true};
+}
+let _progEl=null;
+function eaProgress(msg){
+  if(!msg){if(_progEl){_progEl.remove();_progEl=null;}return;}
+  if(!_progEl){_progEl=document.createElement('div');_progEl.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1f2937;color:#fff;padding:10px 18px;border-radius:10px;font:600 13px Inter,sans-serif;z-index:100001;box-shadow:0 8px 30px rgba(0,0,0,.3)';document.body.appendChild(_progEl);}
+  _progEl.textContent=msg;
 }
 
-/* ── Save-status badge (always visible in the sidebar) ─────────────── */
+function hasPendingChanges(){
+  if(EA_KINDS.some(k=>eaDirty(k).some(d=>{const m=eaMeta(k,d.id);return !m.fatal;}))) return true;
+  if(eaIsBusy()) return true;
+  return ['tests','assignments'].some(k=>eaPendingDeletes(k).length>0);
+}
+// last-chance copy when the tab is closing / hidden: synchronous localStorage drafts + kick the IndexedDB writes
+function eaEmergencyDrafts(){
+  try{EA_KINDS.forEach(kind=>eaDirty(kind).forEach(d=>eaDraftWrite(kind,d.obj,d.str)));}catch(e){}
+}
+function forceSyncNow(){
+  toast('Retrying save…','info');
+  EA_KINDS.forEach(k=>Object.keys(EA_META[k]).forEach(id=>{const m=EA_META[k][id];m.nextTry=0;m.fails=0;m.fatal=false;}));
+  eaSchedule(0);
+  if(EA_KINDS.some(k=>Object.keys(EA_META[k]).some(id=>EA_META[k][id].conflict))) eaShowConflict();
+  else if(eaProblems().length) eaOpenSyncPanel();
+}
+
+/* ── status badge + panel ── */
+function eaProblems(){
+  const out=[];
+  EA_KINDS.forEach(kind=>Object.keys(EA_META[kind]).forEach(id=>{
+    const m=EA_META[kind][id];if(!(m.error||m.conflict||m.fatal)) return;
+    const o=APP[kind].find(x=>x.id===id);
+    if(!o&&!m.conflict) return;
+    out.push({kind,id,title:(o&&(o.title||o.studentName))||id,error:m.error,conflict:!!m.conflict,fatal:!!m.fatal});
+  }));
+  return out;
+}
 function updateSaveStatusUI(){
   if(typeof sxUpdateSavePill==='function') sxUpdateSavePill();
   const badge=document.getElementById('save-status-badge');
   const text=document.getElementById('save-status-text');
   if(!badge||!text) return;
-  const saving=_syncInFlight.tests||_syncInFlight.assignments||_submissionSyncInFlight.size>0||_peerSessionSyncInFlight.size>0;
-  let state;
-  if(saving) state='saving';
-  else if(!_serverReachable||_syncFailNotified) state='error';
-  else state='synced';
+  const pending=EA_KINDS.some(k=>eaDirty(k).length>0);
+  const conflict=EA_KINDS.some(k=>Object.keys(EA_META[k]).some(id=>EA_META[k][id].conflict));
+  const fatal=EA_KINDS.some(k=>Object.keys(EA_META[k]).some(id=>EA_META[k][id].fatal));
+  const saving=eaIsBusy();
+  let state,label;
+  if(conflict){state='error';label='⚠ Changed elsewhere — click to resolve';}
+  else if(fatal){state='error';label='⚠ Can’t save — click for details';}
+  else if(saving){state='saving';label='Saving…';}
+  else if(!_serverReachable||_syncFailNotified){state='error';label=pending?'⚠ Not saved yet — will retry · click':'⚠ Offline — click to retry';}
+  else if(pending){state='saving';label='Saving…';}
+  else{state='synced';label=_lastSavedAt?'All changes saved':'All changes saved';}
   badge.className='save-status-badge '+state;
-  text.textContent=state==='saving'?'Saving…':state==='error'?'⚠ Not saved — click to retry':'All changes saved';
+  text.textContent=label;
 }
-
-// The server refused to overwrite existing tests/assignments with what
-// looks like an accidental empty list (see data.js wipe guard). This is
-// NOT a connection problem — it's the safety net working as intended — so
-// it gets its own message instead of the generic "check your connection"
-// one, and we don't spam it repeatedly for the same blocked value.
-const _wipeGuardShownFor={tests:null,assignments:null};
-function _onWipeGuardBlocked(collection,blockedValueStr,res){
-  _serverReachable=true;
-  updateSaveStatusUI();
-  if(_wipeGuardShownFor[collection]===blockedValueStr) return; // already told them about this exact state
-  _wipeGuardShownFor[collection]=blockedValueStr;
-  const label=collection==='tests'?'tests':'assignments';
-  toast(`⚠ Your local ${label} list looks empty compared to the cloud (which has ${res.currentCount||'some'} ${label}), so nothing was overwritten. If you meant to clear everything, do it from the ${label==='tests'?'Tests':'Live Monitor'} page directly. Otherwise, reload the page to pull the correct data back down.`,'error');
+function eaOpenSyncPanel(){
+  const probs=eaProblems();
+  const dirty=EA_KINDS.reduce((n,k)=>n+eaDirty(k).length,0);
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Save status</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <p style="font-size:14px;line-height:1.7;margin-bottom:12px">${_serverReachable?'Connected to the cloud.':'<strong style="color:var(--rust)">Can’t reach the cloud right now.</strong> Your work is safe on this device and will save automatically when the connection returns.'} ${dirty?`<strong>${dirty}</strong> change${dirty!==1?'s':''} waiting to be saved.`:'Everything is saved.'}</p>
+    ${probs.length?probs.map(p=>`<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13px"><strong>${escapeHtml(p.title)}</strong><div style="color:var(--rust);margin-top:2px">${escapeHtml(p.error||(p.conflict?'Changed somewhere else':'Problem'))}</div></div>`).join(''):''}
+  </div>
+  <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal();forceSyncNow()">Retry now</button>
+    <button class="btn btn-secondary" onclick="eaDownloadUnsaved()">⬇ Download unsaved work</button></div>`,'520px');
 }
-
+async function eaDownloadUnsaved(){
+  const payload={exportedAt:new Date().toISOString(),app:'EdAssess',version:2,unsaved:true,tests:[],assignments:[],submissions:[]};
+  EA_KINDS.forEach(kind=>eaDirty(kind).forEach(d=>{const key=kind==='peerSessions'?null:kind;if(key)payload[key].push(JSON.parse(d.str));}));
+  if(!payload.tests.length&&!payload.assignments.length&&!payload.submissions.length){APP.tests.forEach(t=>payload.tests.push(eaStripRev(t)));}
+  const data=await eaInlineImages(payload).catch(()=>payload);
+  eaDownloadJson(data,`edassess-unsaved-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`);
+}
+function eaDownloadJson(obj,name){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+// if saving keeps failing for a while, say so loudly and persistently (a toast alone is easy to miss)
+let _failSince=0,_failBanner=null,_failTimer=null;
+function eaFailBanner(show){
+  if(!show){if(_failBanner){_failBanner.remove();_failBanner=null;}return;}
+  if(_failBanner||!document.body) return;
+  _failBanner=document.createElement('div');
+  _failBanner.id='ea-fail-banner';
+  _failBanner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100002;background:#B91C1C;color:#fff;padding:10px 16px;font:600 13px Inter,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 12px rgba(0,0,0,.3)';
+  _failBanner.innerHTML='<span>⚠ Your latest changes still haven’t reached the cloud. They’re safe on this device — keep this tab open.</span><button style="background:#fff;color:#B91C1C;border:0;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer" onclick="eaOpenSyncPanel()">Details</button><button style="background:transparent;color:#fff;border:1px solid #fff;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer" onclick="eaDownloadUnsaved()">Download my work</button>';
+  document.body.appendChild(_failBanner);
+}
 function _onSyncFail(){
   _serverReachable=false;
+  if(!_failSince){_failSince=Date.now();_failTimer=setTimeout(()=>{if(_failSince&&hasPendingChanges())eaFailBanner(true);},45000);}
   updateSaveStatusUI();
   if(!_syncFailNotified){
     _syncFailNotified=true;
-    toast('Could not save to the cloud — check your connection. Your change is cached locally and will keep retrying automatically.','error');
+    toast('Could not save to the cloud — your work is kept on this device as a draft and will keep retrying. Don’t close this tab until it says “All changes saved”.','error');
   }
 }
 function _onSyncOk(){
   _serverReachable=true;
-  updateSaveStatusUI();
+  if(_failSince){_failSince=0;if(_failTimer)clearTimeout(_failTimer);eaFailBanner(false);}
+  _lastSavedAt=_lastSavedAt||Date.now();
   if(_syncFailNotified){
     _syncFailNotified=false;
     toast('Reconnected — your changes are saved.','success');
   }
+  updateSaveStatusUI();
 }
 
-async function refreshFromServer(){
+/* ── conflicts: someone (another tab/device) saved this test first ── */
+let _conflictOpen=false;
+function eaShowConflict(){
+  if(_conflictOpen) return;
+  const hit=[];
+  ['tests'].forEach(kind=>Object.keys(EA_META[kind]).forEach(id=>{if(EA_META[kind][id].conflict)hit.push(id);}));
+  if(!hit.length) return;
+  const id=hit[0];const m=EA_META.tests[id];const mine=APP.tests.find(t=>t.id===id);
+  _conflictOpen=true;
+  const theirs=m.server;
+  const q=t=>t?(t.questions||[]).length:0;
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">⚠ “${escapeHtml((mine&&mine.title)||'This test')}” was changed somewhere else</h2></div>
+  <div class="modal-body"><p style="font-size:14px;line-height:1.7;margin-bottom:14px">${m.deleted?'This test was <strong>deleted</strong> in another tab or device after you opened it.':'Another tab or device saved this test after you opened it. Nothing has been overwritten — choose what to keep.'}</p>
+    <div style="display:flex;gap:12px;font-size:13px">
+      <div style="flex:1;border:1px solid var(--border);border-radius:8px;padding:10px"><div style="font-weight:700">Your version</div>${mine?q(mine)+' questions':'—'}</div>
+      ${theirs?`<div style="flex:1;border:1px solid var(--border);border-radius:8px;padding:10px"><div style="font-weight:700">Their version</div>${q(theirs)} questions<div class="text-xs text-muted">saved ${formatDate(theirs.updatedAt)||''}</div></div>`:''}
+    </div></div>
+  <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+    <button class="btn btn-primary" onclick="eaResolveConflict('${id}','mine')">Keep mine${m.deleted?' (restore it)':''}</button>
+    ${theirs?`<button class="btn btn-secondary" onclick="eaResolveConflict('${id}','copy')">Keep both</button><button class="btn btn-secondary" onclick="eaResolveConflict('${id}','theirs')">Use theirs</button>`:`<button class="btn btn-secondary" onclick="eaResolveConflict('${id}','theirs')">Accept the deletion</button>`}
+  </div>`,'560px');
+}
+function eaResolveConflict(id,choice){
+  const m=eaMeta('tests',id);const mine=APP.tests.find(t=>t.id===id);const theirs=m.server;
+  _conflictOpen=false;closeModal();
+  if(choice==='mine'){
+    m.conflict=null;m.error=null;m.force=true;if(theirs&&theirs.rev!==undefined)m.rev=theirs.rev;
+    toast('Keeping your version. Theirs is saved in Version History.','success');
+  } else if(choice==='theirs'){
+    m.conflict=null;m.error=null;
+    if(theirs){if(mine)eaReplaceInPlace(mine,theirs);else APP.tests.push(theirs);m.rev=theirs.rev;_lastSynced.tests[id]=eaSyncStr('tests',mine||theirs);eaDraftDrop('tests',id);}
+    else{APP.tests=APP.tests.filter(t=>t.id!==id);delete _lastSynced.tests[id];delete EA_META.tests[id];eaDraftDrop('tests',id);}
+    toast('Using the other version.','info');
+  } else if(choice==='copy'){
+    const copy=JSON.parse(JSON.stringify(mine));copy.id=uid();copy.title=(copy.title||'Test')+' (my version)';delete copy.rev;copy.published=false;
+    APP.tests.push(copy);
+    m.conflict=null;m.error=null;
+    if(theirs){eaReplaceInPlace(mine,theirs);m.rev=theirs.rev;_lastSynced.tests[id]=eaSyncStr('tests',mine);eaDraftDrop('tests',id);}
+    toast('Saved your version as a new test.','success');
+  }
+  save();updateSaveStatusUI();
+  if(typeof renderTests==='function'&&document.getElementById('tests-list'))renderTests();
+  if(document.getElementById('builder-editor')&&typeof renderBuilder==='function'&&APP.currentTest)renderBuilder();
+  const more=Object.keys(EA_META.tests).filter(k=>EA_META.tests[k].conflict);
+  if(more.length)setTimeout(eaShowConflict,200);
+}
+
+/* ── loading ── */
+function eaScopeQuery(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('exam')) return {exam:p.get('exam')};
+  if(p.get('results')) return {results:p.get('results')};
+  return null;
+}
+async function eaFetchWithRetry(query,tries=3){
+  let last=null;
+  for(let i=0;i<tries;i++){
+    const r=await eaGet(query,25000);
+    if(r&&!r.__httpError) return r;
+    last=r;
+    if(r&&r.__httpError&&r.status<500&&r.status!==408&&r.status!==429) return r;
+    await new Promise(res=>setTimeout(res,(r&&r.migrating?3000:700*(i+1))));
+  }
+  return last;
+}
+async function eaFetchAllSubs(assignment){
+  const subs=[];let after=null,guard=0;
+  do{
+    const q={part:'subs'};if(after)q.after=after;if(assignment)q.assignment=assignment;
+    const r=await eaFetchWithRetry(q,2);
+    if(!r||r.__httpError) return {ok:false,subs};
+    subs.push(...(r.submissions||[]));after=r.next;guard++;
+  }while(after&&guard<200);
+  return {ok:true,subs};
+}
+async function eaFetchServer(){
+  const scoped=eaScopeQuery();
+  if(scoped){const r=await eaFetchWithRetry(scoped);if(!r||r.__httpError) return null;return r;}
+  const core=await eaFetchWithRetry({part:'core'});
+  if(!core||core.__httpError) return null;
+  if(Array.isArray(core.submissions)){core.peerSessions=core.peerSessions||[];return core;}   // old server: whole state in one reply
+  return {...core,submissions:[],needSubs:true};     // submissions are pulled incrementally right after (also seeds the fingerprints)
+}
+function eaAdoptRemote(kind,remoteList,{keepLocalDirty=true}={}){
+  const remoteIds=new Set();
+  remoteList.forEach(remote=>{
+    remoteIds.add(remote.id);
+    const local=APP[kind].find(x=>x.id===remote.id);
+    const m=eaMeta(kind,remote.id);
+    const dirty=local&&_lastSynced[kind][remote.id]!==eaSyncStr(kind,local);
+    if(!local){APP[kind].push(remote);_lastSynced[kind][remote.id]=eaSyncStr(kind,remote);if(kind==='tests')m.rev=remote.rev;return;}
+    if(m.inflight||m.conflict||(keepLocalDirty&&dirty)){
+      // keep local edits; just learn the server's revision so our next save is based on it (a real clash is caught by the server)
+      return;
+    }
+    if(kind==='submissions') Object.assign(local,remote); else eaReplaceInPlace(local,remote);
+    _lastSynced[kind][remote.id]=eaSyncStr(kind,local);
+    if(kind==='tests')m.rev=remote.rev;
+  });
+  return remoteIds;
+}
+async function loadState(){
   try{
-    const res=await fetch(API_URL,{cache:'no-store'});
-    if(!res.ok) return false;
-    const data=await res.json();
-    // If there's a local edit still waiting to be confirmed by the server
-    // (e.g. a Test Settings save in flight), don't let this poll stomp on
-    // it with the server's older copy — that would silently discard the
-    // teacher's change. Only adopt the remote copy when nothing local is
-    // pending; the pending write itself keeps retrying via syncToServer().
-    const testsPending=JSON.stringify(APP.tests)!==_lastSynced.tests;
-    const asgPending=JSON.stringify(APP.assignments)!==_lastSynced.assignments;
-    if(Array.isArray(data.tests)&&!testsPending){
-      APP.tests=data.tests;
-      _lastSynced.tests=JSON.stringify(APP.tests);
+    ['tests','assignments','peerSessions'].forEach(kind=>{
+      const key={tests:'ea_tests',assignments:'ea_assignments',peerSessions:'ea_peerSessions'}[kind];
+      JSON.parse(localStorage.getItem(key)||'[]').forEach(o=>{if(o&&o.id&&o.rev!==undefined&&kind==='tests')eaMeta(kind,o.id).rev=o.rev;});
+    });
+  }catch(e){}
+  let loaded=false;
+  const data=await eaFetchServer();
+  if(data){
+    loaded=true;
+    const scoped=!!data.scoped;
+    // 1) adopt the server's records, replacing whatever stale copies the local cache held
+    ['tests','assignments','peerSessions','submissions'].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[];});
+    const localSubs=APP.submissions.slice();
+    APP.tests=[];APP.assignments=[];APP.peerSessions=[];APP.submissions=[];
+    EA_KINDS.forEach(k=>{_lastSynced[k]={};});
+    data.tests.forEach(t=>{APP.tests.push(t);_lastSynced.tests[t.id]=eaSyncStr('tests',t);eaMeta('tests',t.id).rev=t.rev;});
+    data.assignments.forEach(a=>{APP.assignments.push(a);_lastSynced.assignments[a.id]=eaSyncStr('assignments',a);});
+    data.peerSessions.forEach(p=>{APP.peerSessions.push(p);_lastSynced.peerSessions[p.id]=eaSyncStr('peerSessions',p);});
+    data.submissions.forEach(s=>{APP.submissions.push(s);_lastSynced.submissions[s.id]=eaSyncStr('submissions',s);});
+    _serverReachable=true;_lastCoreAt=Date.now();
+    if(data.needSubs){
+      if(_deltaUnsupported||!(await eaSyncSubsDelta(null))){
+        const sres=await eaFetchAllSubs();
+        sres.subs.forEach(s=>{APP.submissions.push(s);_lastSynced.submissions[s.id]=eaSyncStr('submissions',s);});
+      }
     }
-    if(Array.isArray(data.assignments)&&!asgPending){
-      APP.assignments=data.assignments;
-      _lastSynced.assignments=JSON.stringify(APP.assignments);
+    // 2) bring back any work that never finished saving (this is what used to be silently thrown away)
+    try{await eaRecoverDrafts(scoped);}catch(e){console.warn('draft recovery failed',e);}
+    cacheLocally();
+  } else {
+    _serverReachable=false;
+    console.warn('EdAssess: could not reach cloud storage on load, using local cache.');
+    // cache fallback: everything we had stays; mark as already-known so we don't "delete" it later
+    ['tests','assignments','peerSessions','submissions'].forEach(kind=>APP[kind].forEach(o=>{if(o&&o.id&&_lastSynced[kind][o.id]===undefined)_lastSynced[kind][o.id]=eaSyncStr(kind,o);}));
+    try{await eaRecoverDrafts(false);}catch(e){}
+  }
+  updateSaveStatusUI();
+  // safety sweep: respects each record's backoff, so it can never become a hot loop
+  setInterval(()=>eaSchedule(0),5000);
+  window.addEventListener('beforeunload',(e)=>{
+    eaEmergencyDrafts();
+    if(hasPendingChanges()){e.preventDefault();e.returnValue='';return '';}
+  });
+  window.addEventListener('pagehide',eaEmergencyDrafts);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){eaEmergencyDrafts();eaSchedule(0);}});
+  window.addEventListener('online',()=>{EA_KINDS.forEach(k=>Object.keys(EA_META[k]).forEach(id=>{EA_META[k][id].nextTry=0;}));eaSchedule(0);});
+  eaSchedule(0);
+}
+// Drafts are, by definition, edits the server never confirmed.
+async function eaRecoverDrafts(scoped){
+  const drafts=await eaDraftReadAll();
+  if(!drafts.length) return;
+  const recovered=[];
+  for(const d of drafts){
+    let obj;try{obj=JSON.parse(d.json);}catch(e){eaDraftDrop(d.kind,d.id);continue;}
+    const kind=d.kind;if(!APP[kind]) continue;
+    if(scoped&&kind!=='submissions'){eaDraftDrop(kind,d.id);continue;}
+    const local=APP[kind].find(x=>x.id===d.id);
+    const m=eaMeta(kind,d.id);
+    if(kind==='submissions'){
+      if(local&&local.status==='submitted'){eaDraftDrop(kind,d.id);continue;}
+      if(local&&eaSyncStr(kind,local)===d.json){eaDraftDrop(kind,d.id);continue;}
+      if(!local&&scoped&&eaScopeQuery()&&eaScopeQuery().exam&&obj.assignmentId!==eaScopeQuery().exam){continue;}
+      if(local) Object.assign(local,obj); else APP.submissions.push(obj);
+      recovered.push(obj.studentName||'a response');continue;
     }
-    if(Array.isArray(data.submissions)){
-      data.submissions.forEach(remote=>{
-        const local=APP.submissions.find(s=>s.id===remote.id);
-        const localPending=local&&_lastSynced.submissions[remote.id]!==JSON.stringify(local);
-        if(!local){
-          APP.submissions.push(remote);
-          _lastSynced.submissions[remote.id]=JSON.stringify(remote);
-        } else if(!localPending){
-          Object.assign(local,remote);
-          _lastSynced.submissions[remote.id]=JSON.stringify(local);
-        }
-        // else: a local edit to this submission hasn't synced yet — keep it,
-        // syncToServer() will retry pushing it.
+    if(local){
+      if(eaSyncStr(kind,local)===d.json){eaDraftDrop(kind,d.id);continue;}     // server already has exactly this
+      const serverRev=kind==='tests'?local.rev:undefined;
+      if(kind==='tests'&&d.baseRev!==null&&d.baseRev!==undefined&&serverRev!==undefined&&serverRev!==d.baseRev){
+        // the test moved on elsewhere while this device held unsaved edits → let the person decide
+        const server=JSON.parse(JSON.stringify(local));
+        eaReplaceInPlace(local,obj);local.rev=serverRev;
+        m.rev=serverRev;m.conflict={server,deleted:false,serverRev,at:Date.now()};m.error='Changed somewhere else';
+        recovered.push('conflict:'+(obj.title||'a test'));continue;
+      }
+      eaReplaceInPlace(local,obj);if(kind==='tests')local.rev=serverRev;
+      recovered.push(obj.title||'a '+kind.slice(0,-1));
+    } else {
+      // the server doesn't have it: either it was never saved (recover!) or it was deleted elsewhere (still recover; it's the user's work)
+      APP[kind].push(obj);delete _lastSynced[kind][d.id];if(kind==='tests'){delete obj.rev;delete m.rev;}
+      recovered.push(obj.title||'a '+kind.slice(0,-1));
+    }
+  }
+  if(recovered.length){
+    const names=recovered.filter(r=>!r.startsWith('conflict:'));
+    if(names.length) setTimeout(()=>toast(`Recovered unsaved work: ${names.slice(0,3).map(n=>'“'+n+'”').join(', ')}${names.length>3?` and ${names.length-3} more`:''}. Saving it now…`,'success'),600);
+    if(recovered.some(r=>r.startsWith('conflict:'))) setTimeout(eaShowConflict,900);
+  }
+}
+// incremental submissions refresh: costs one list call + only the records that changed
+const _subEtags={};          // storage key → fingerprint we already hold
+let _lastCoreAt=0,_deltaUnsupported=false;
+async function eaSyncSubsDelta(assignment){
+  const prefix=assignment?'v2/sub/'+assignment+'/':'v2/sub/';
+  const myKnown={};Object.keys(_subEtags).forEach(k=>{if(k.startsWith(prefix))myKnown[k]=_subEtags[k];});
+  for(let guard=0;guard<100;guard++){
+    const r=await apiPost({action:'syncSubs',assignment:assignment||undefined,known:myKnown},{timeout:25000});
+    if(!r) return false;
+    if(r.__httpError){if(r.status===400&&/Unknown action/i.test(r.error||'')){_deltaUnsupported=true;}return false;}
+    (r.submissions||[]).forEach(remote=>{
+      const local=APP.submissions.find(s=>s.id===remote.id);
+      const pending=local&&_lastSynced.submissions[remote.id]!==eaSyncStr('submissions',local);
+      if(!local){APP.submissions.push(remote);_lastSynced.submissions[remote.id]=eaSyncStr('submissions',remote);}
+      else if(!pending&&!eaMeta('submissions',remote.id).inflight){Object.assign(local,remote);_lastSynced.submissions[remote.id]=eaSyncStr('submissions',local);}
+    });
+    Object.assign(_subEtags,r.etags||{});Object.assign(myKnown,r.etags||{});
+    if(!r.more){
+      // records that vanished on the server (deleted elsewhere) and that we hold unmodified
+      const live=new Set(r.keys||[]);
+      Object.keys(_subEtags).forEach(k=>{
+        if(!k.startsWith(prefix)||live.has(k)) return;
+        const id=k.split('/').pop();delete _subEtags[k];
+        const local=APP.submissions.find(s=>s.id===id);
+        if(local&&_lastSynced.submissions[id]===eaSyncStr('submissions',local)){APP.submissions=APP.submissions.filter(s=>s.id!==id);delete _lastSynced.submissions[id];}
       });
+      return true;
+    }
+  }
+  return true;
+}
+// instructor polling (live monitor): adopt remote changes WITHOUT disturbing anything being edited or saved
+async function refreshFromServer(force){
+  try{
+    // live monitor calls this every 3 s: tests/assignments only need re-checking every ~15 s,
+    // submissions are fetched incrementally (only what changed)
+    if(!force&&!_deltaUnsupported&&Date.now()-_lastCoreAt<15000){
+      const ok=await eaSyncSubsDelta(typeof activeAssignmentFilter!=='undefined'&&activeAssignmentFilter&&activeAssignmentFilter!=='all'?activeAssignmentFilter:null);
+      if(ok){cacheLocally();eaSchedule(0);return true;}
+    }
+    _lastCoreAt=Date.now();
+    const core=await eaGet({part:'core'},20000);
+    if(!core||core.__httpError) return false;
+    if(Array.isArray(core.submissions)){   // old server
+      eaAdoptRemote('tests',core.tests||[]);eaAdoptRemote('assignments',core.assignments||[]);eaAdoptRemote('submissions',core.submissions);
+      cacheLocally();return true;
+    }
+    const tIds=eaAdoptRemote('tests',core.tests||[],{keepLocalDirty:!force});
+    const aIds=eaAdoptRemote('assignments',core.assignments||[],{keepLocalDirty:!force});
+    eaAdoptRemote('peerSessions',core.peerSessions||[]);
+    // things deleted elsewhere and untouched here disappear here too
+    APP.tests=APP.tests.filter(t=>tIds.has(t.id)||_lastSynced.tests[t.id]===undefined||eaMeta('tests',t.id).inflight||_lastSynced.tests[t.id]!==eaSyncStr('tests',t));
+    Object.keys(_lastSynced.tests).forEach(id=>{if(!tIds.has(id)&&!APP.tests.find(t=>t.id===id))delete _lastSynced.tests[id];});
+    APP.assignments=APP.assignments.filter(a=>aIds.has(a.id)||_lastSynced.assignments[a.id]===undefined||eaMeta('assignments',a.id).inflight||_lastSynced.assignments[a.id]!==eaSyncStr('assignments',a));
+    Object.keys(_lastSynced.assignments).forEach(id=>{if(!aIds.has(id)&&!APP.assignments.find(a=>a.id===id))delete _lastSynced.assignments[id];});
+    if(!_deltaUnsupported&&await eaSyncSubsDelta(null)){/* done incrementally */}
+    else{
+      const sres=await eaFetchAllSubs();
+      if(sres.ok){
+        sres.subs.forEach(remote=>{
+          const local=APP.submissions.find(s=>s.id===remote.id);
+          const pending=local&&_lastSynced.submissions[remote.id]!==eaSyncStr('submissions',local);
+          if(!local){APP.submissions.push(remote);_lastSynced.submissions[remote.id]=eaSyncStr('submissions',remote);}
+          else if(!pending&&!eaMeta('submissions',remote.id).inflight){Object.assign(local,remote);_lastSynced.submissions[remote.id]=eaSyncStr('submissions',local);}
+        });
+      }
     }
     cacheLocally();
-    if(testsPending||asgPending) syncToServer();
+    eaSchedule(0);
     return true;
-  }catch(e){
-    return false;
-  }
+  }catch(e){return false;}
 }
 
 /* ══════════════════════════════════════════════════════════
-   BACKUP & VERSION HISTORY
-   Two independent layers of protection against data loss:
-   1. Manual export/import — a JSON file you keep on YOUR computer,
-      completely outside Netlify. The ultimate fallback if the cloud
-      store itself is ever unavailable or misbehaves.
-   2. Version history — the server automatically snapshots the
-      previous version of `tests`/`assignments` every time either one
-      changes, so any accidental overwrite (stale tab, bad sync, etc.)
-      can be undone from here without needing a backup file at all.
+   BACKUP, TRASH & VERSION HISTORY
+   Three independent layers against data loss:
+   1. Draft recovery — unsaved edits survive reloads and failed saves (automatic).
+   2. Cloud history — the server snapshots every test as you work, and keeps deleted
+      tests/assignments in a trash. Restore from here without needing any file.
+   3. Manual backup — a file on YOUR computer, independent of the cloud.
 ══════════════════════════════════════════════════════════ */
-
-function exportBackup(){
-  const payload={
-    exportedAt:new Date().toISOString(),
-    app:'EdAssess',
-    version:1,
-    tests:APP.tests,
-    assignments:APP.assignments,
-    submissions:APP.submissions,
-  };
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`edassess-backup-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
-  document.body.appendChild(a);a.click();a.remove();
-  URL.revokeObjectURL(url);
+async function exportBackup(){
+  toast('Preparing backup (including images)…','info');
+  const payload={exportedAt:new Date().toISOString(),app:'EdAssess',version:2,
+    tests:APP.tests.map(eaStripRev),assignments:APP.assignments,submissions:APP.submissions};
+  let data=payload;
+  try{data=await eaInlineImages(payload);}catch(e){}
+  eaDownloadJson(data,`edassess-backup-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`);
   toast('Backup downloaded. Keep this file somewhere safe.','success');
 }
-
-function triggerImportBackup(){
-  document.getElementById('backup-import-input').click();
-}
-
+function triggerImportBackup(){document.getElementById('backup-import-input').click();}
 function handleImportBackupFile(ev){
   const file=ev.target.files[0];
   if(!file) return;
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     let data;
-    try{ data=JSON.parse(e.target.result); }
-    catch(err){ toast('That file is not valid JSON.','error'); return; }
-    if(!data||(!Array.isArray(data.tests)&&!Array.isArray(data.assignments)&&!Array.isArray(data.submissions))){
-      toast('That file doesn\'t look like an EdAssess backup.','error');
-      return;
-    }
-    const testCount=Array.isArray(data.tests)?data.tests.length:0;
-    const asgCount=Array.isArray(data.assignments)?data.assignments.length:0;
-    const subCount=Array.isArray(data.submissions)?data.submissions.length:0;
-    if(!confirm(`Restore this backup?\n\n${testCount} test(s), ${asgCount} assignment(s), ${subCount} submission(s)\nBacked up: ${data.exportedAt||'unknown time'}\n\nThis REPLACES everything currently in EdAssess. This cannot be undone from here — if you're unsure, export a fresh backup of the current state first.`)) return;
-    if(Array.isArray(data.tests))APP.tests=data.tests;
-    if(Array.isArray(data.assignments))APP.assignments=data.assignments;
-    if(Array.isArray(data.submissions))APP.submissions=data.submissions;
-    cacheLocally();
-    apiPost({action:'fullSave',tests:APP.tests,assignments:APP.assignments,submissions:APP.submissions}).then(res=>{
-      if(res&&!res.__httpError){toast('Backup restored.','success');openBackupPanel();renderDashboard();}
-      else if(res&&res.__httpError){toast('Restore failed: '+(res.error||'server error')+' — your local copy is updated but not yet saved to the cloud.','error');}
-      else toast('Restored locally, but could not reach the cloud store — it will keep retrying.','error');
+    try{data=JSON.parse(e.target.result);}catch(err){toast('That file is not valid JSON.','error');return;}
+    if(!data||(!Array.isArray(data.tests)&&!Array.isArray(data.assignments)&&!Array.isArray(data.submissions))){toast('That file doesn\'t look like an EdAssess backup.','error');return;}
+    const nt=(data.tests||[]).length,na=(data.assignments||[]).length,ns=(data.submissions||[]).length;
+    if(!confirm(`Restore this backup?\n\n${nt} test(s), ${na} assignment(s), ${ns} submission(s)\nBacked up: ${data.exportedAt||'unknown time'}\n\nItems in the file replace the items with the same ID. Anything not in the file is left alone. Replaced tests are kept in Version History.`)) return;
+    (data.tests||[]).forEach(t=>{
+      if(!t||!t.id) return;
+      const c=JSON.parse(JSON.stringify(t));delete c.rev;
+      const i=APP.tests.findIndex(x=>x.id===c.id);
+      if(i>=0){c.rev=APP.tests[i].rev;APP.tests[i]=c;eaMeta('tests',c.id).force=true;}
+      else APP.tests.push(c);
     });
+    (data.assignments||[]).forEach(a=>{if(!a||!a.id)return;const i=APP.assignments.findIndex(x=>x.id===a.id);if(i>=0)APP.assignments[i]=a;else APP.assignments.push(a);});
+    let subFail=0;
+    for(const s of (data.submissions||[])){
+      if(!s||!s.id) continue;
+      const i=APP.submissions.findIndex(x=>x.id===s.id);if(i>=0)APP.submissions[i]=s;else APP.submissions.push(s);
+    }
+    save();
+    toast('Restoring… your tests are saved one by one.','info');
+    const r1=await reliableSave('tests'),r2=await reliableSave('assignments');
+    if(r1.ok&&r2.ok){toast('Backup restored and confirmed.','success');openBackupPanel();if(document.getElementById('tests-list'))renderTests();}
+    else toast('Restored on this device, but not everything reached the cloud yet — it keeps retrying. '+((r1.error||r2.error)||''),'error');
   };
   reader.readAsText(file);
   ev.target.value='';
 }
 
-async function fetchVersionHistory(collection){
-  try{
-    const res=await fetch(`${API_URL}?history=${collection}`,{cache:'no-store'});
-    if(!res.ok) return [];
-    const data=await res.json();
-    return data.versions||[];
-  }catch(e){ return []; }
-}
-
-async function restoreHistoryVersion(collection,index){
-  if(!confirm(`Restore this ${collection==='tests'?'test list':'assignment list'} version? The current version will itself be saved to history first, so this is safe to try.`)) return;
-  const res=await apiPost({action:'restoreVersion',collection,index});
-  if(res&&res.state){
-    APP.tests=res.state.tests;
-    APP.assignments=res.state.assignments;
-    cacheLocally();
-    _lastSynced.tests=JSON.stringify(APP.tests);
-    _lastSynced.assignments=JSON.stringify(APP.assignments);
-    toast('Version restored.','success');
-    openBackupPanel();
-    if(document.getElementById('page-tests'))renderTests();
-    if(document.getElementById('page-dashboard'))renderDashboard();
-  } else {
-    toast('Could not restore that version — it may have aged out.','error');
-  }
-}
-
+let _histKind='tests';
 async function openBackupPanel(){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   openModal(`
@@ -1186,51 +1615,76 @@ async function openBackupPanel(){
   <div class="modal-body">
     <div style="background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:20px">
       <div style="font-weight:700;font-family:'Inter',sans-serif;font-size:16px;margin-bottom:6px">Manual Backup</div>
-      <p class="form-hint" style="margin-bottom:12px">A file saved to YOUR computer, completely independent of the cloud store. This is your ultimate safety net — keep one from before any big change.</p>
+      <p class="form-hint" style="margin-bottom:12px">A file saved to YOUR computer (images included), completely independent of the cloud. Keep one from before any big change.</p>
       <div class="flex gap-2">
         <button class="btn btn-primary btn-sm" onclick="exportBackup()">⬇ Download Backup Now</button>
         <button class="btn btn-secondary btn-sm" onclick="triggerImportBackup()">⬆ Restore From File…</button>
         <input type="file" id="backup-import-input" accept="application/json" style="display:none" onchange="handleImportBackupFile(event)">
       </div>
     </div>
-    <div style="font-weight:700;font-family:'Inter',sans-serif;font-size:16px;margin-bottom:10px">Version History</div>
-    <p class="form-hint" style="margin-bottom:14px">Every save automatically snapshots the previous version here — up to the last 40 changes to your tests and assignments. If anything ever gets overwritten by mistake, restore it from here.</p>
+    <div style="font-weight:700;font-family:'Inter',sans-serif;font-size:16px;margin-bottom:10px">Cloud history</div>
+    <p class="form-hint" style="margin-bottom:14px">The cloud automatically keeps earlier versions of every test as you work on it (the last 60), and keeps tests and assignments you delete in the trash. Restoring never loses your current version — it is saved to history first.</p>
     <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button class="btn btn-secondary btn-sm" onclick="renderHistoryTab('tests')" id="hist-tab-tests">Tests</button>
-      <button class="btn btn-ghost btn-sm" onclick="renderHistoryTab('assignments')" id="hist-tab-assignments">Assignments</button>
+      <button class="btn btn-secondary btn-sm" onclick="renderHistoryTab('tests')" id="hist-tab-tests">Test versions</button>
+      <button class="btn btn-ghost btn-sm" onclick="renderHistoryTab('trash')" id="hist-tab-trash">Recently deleted</button>
     </div>
-    <div id="history-list" style="max-height:340px;overflow-y:auto">
-      <div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div>
-    </div>
+    <div id="history-list" style="max-height:340px;overflow-y:auto"><div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div></div>
   </div>
-  <div class="modal-footer">
-    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-  </div>`,'560px');
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div>`,'600px');
   renderHistoryTab('tests');
 }
-
-async function renderHistoryTab(collection){
-  const testsTab=document.getElementById('hist-tab-tests');
-  const asgTab=document.getElementById('hist-tab-assignments');
-  if(testsTab)testsTab.className=collection==='tests'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
-  if(asgTab)asgTab.className=collection==='assignments'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
-  const listEl=document.getElementById('history-list');
-  if(!listEl) return;
-  listEl.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div>`;
-  const versions=await fetchVersionHistory(collection);
-  if(!versions.length){
-    listEl.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px;font-style:italic">No history yet — this appears once a change is saved.</div>`;
+async function renderHistoryTab(kind,testId){
+  _histKind=kind;
+  const tabT=document.getElementById('hist-tab-tests'),tabD=document.getElementById('hist-tab-trash');
+  if(tabT)tabT.className=kind==='tests'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
+  if(tabD)tabD.className=kind==='trash'?'btn btn-secondary btn-sm':'btn btn-ghost btn-sm';
+  const el=document.getElementById('history-list');if(!el) return;
+  el.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px">Loading…</div>`;
+  if(kind==='trash'){
+    const [tt,aa]=await Promise.all([eaGet({trash:'tests'}),eaGet({trash:'assignments'})]);
+    const items=[...((tt&&tt.items)||[]).map(i=>({...i,k:'tests'})),...((aa&&aa.items)||[]).map(i=>({...i,k:'assignments'}))];
+    if(!items.length){el.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px;font-style:italic">Nothing deleted recently.</div>`;return;}
+    el.innerHTML=items.map(i=>`<div class="flex items-center justify-between" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--cream)">
+      <div><div style="font-size:13px;font-weight:600">${escapeHtml(i.title||(i.k==='tests'?'(untitled test)':'Assignment '+i.id))}</div><div style="font-size:11px;color:var(--ink-soft)">${i.k==='tests'?i.count+' questions · ':'assignment · '}deleted ${formatDate(i.deletedAt)} ${formatTime(i.deletedAt)}</div></div>
+      <button class="btn btn-secondary btn-sm" onclick="restoreFromTrash('${i.k}','${i.id}')">Restore</button></div>`).join('');
     return;
   }
-  listEl.innerHTML=versions.map(v=>`
-    <div class="flex items-center justify-between" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--cream)">
-      <div>
-        <div style="font-size:13px;font-weight:600">${formatDate(v.ts)} · ${formatTime(v.ts)}</div>
-        <div style="font-size:11px;color:var(--ink-soft)">${v.count} ${collection==='tests'?'test(s)':'assignment(s)'}</div>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="restoreHistoryVersion('${collection}',${v.index})">Restore</button>
-    </div>`).join('');
+  // test versions: pick a test, then a version
+  const tests=APP.tests;
+  if(!tests.length){el.innerHTML=`<div class="text-sm text-muted" style="text-align:center;padding:20px;font-style:italic">No tests yet.</div>`;return;}
+  const sel=testId||(APP.currentTest&&APP.currentTest.id)||tests[0].id;
+  const r=await eaGet({history:'tests',id:sel});
+  const versions=(r&&r.versions)||[];
+  el.innerHTML=`<select class="form-control" style="margin-bottom:10px" onchange="renderHistoryTab('tests',this.value)">${tests.map(t=>`<option value="${t.id}" ${t.id===sel?'selected':''}>${escapeHtml(t.title||'(untitled)')}</option>`).join('')}</select>`+
+  (versions.length?versions.map(v=>`<div class="flex items-center justify-between" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;background:var(--cream)">
+    <div><div style="font-size:13px;font-weight:600">${formatDate(v.ts)} · ${formatTime(v.ts)}</div><div style="font-size:11px;color:var(--ink-soft)">${v.count} question${v.count!==1?'s':''} · “${escapeHtml(v.title||'')}”</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="restoreHistoryVersion('${sel}',${v.rev})">Restore</button></div>`).join(''):
+  `<div class="text-sm text-muted" style="text-align:center;padding:20px;font-style:italic">No earlier versions yet — they appear as you keep editing.</div>`);
 }
+async function restoreHistoryVersion(testId,rev){
+  if(!confirm('Restore this version of the test? Your current version is saved to history first, so this is safe to try.')) return;
+  const res=await apiPost({action:'restoreTestVersion',id:testId,rev});
+  if(res&&res.test){
+    const i=APP.tests.findIndex(t=>t.id===testId);
+    if(i>=0)eaReplaceInPlace(APP.tests[i],res.test);else APP.tests.push(res.test);
+    const t=APP.tests.find(x=>x.id===testId);
+    eaMeta('tests',testId).rev=res.test.rev;_lastSynced.tests[testId]=eaSyncStr('tests',t);eaMeta('tests',testId).conflict=null;
+    cacheLocally();toast('Version restored.','success');renderHistoryTab('tests',testId);
+    if(document.getElementById('tests-list'))renderTests();
+    if(document.getElementById('builder-editor')&&APP.currentTest&&APP.currentTest.id===testId)renderBuilder();
+  } else toast('Could not restore that version — it may have aged out.','error');
+}
+async function restoreFromTrash(kind,id){
+  const res=await apiPost({action:'restoreTrash',id,kind});
+  if(res&&!res.__httpError){
+    if(kind==='tests'&&res.test){APP.tests=APP.tests.filter(t=>t.id!==id);APP.tests.push(res.test);eaMeta('tests',id).rev=res.test.rev;_lastSynced.tests[id]=eaSyncStr('tests',res.test);}
+    else if(res.assignment){APP.assignments=APP.assignments.filter(a=>a.id!==id);APP.assignments.push(res.assignment);_lastSynced.assignments[id]=eaSyncStr('assignments',res.assignment);}
+    cacheLocally();toast('Restored.','success');renderHistoryTab('trash');
+    if(document.getElementById('tests-list'))renderTests();
+  } else toast('Could not restore that item.','error');
+}
+// older UI hooks
+async function fetchVersionHistory(){return [];}
 
 function deleteSubmission(sid,opts){
   opts=opts||{};
@@ -1272,7 +1726,6 @@ function deleteSession(aid){
   APP.assignments=APP.assignments.filter(aa=>aa.id!==aid);
   APP.submissions=APP.submissions.filter(s=>s.assignmentId!==aid);
   subIds.forEach(id=>delete _lastSynced.submissions[id]);
-  _lastSynced.assignments=null; // force re-sync
   cacheLocally();
   if(subIds.length) apiPost({action:'deleteSubmissions',ids:subIds});
   apiPost({action:'deleteAssignment',id:aid});
@@ -2439,9 +2892,7 @@ function updateQSidebar(i){
 function handleImgFile(event,i){
   const file=event.target.files[0];
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{APP.currentTest.questions[i].image=e.target.result;save();selectQ(i);};
-  reader.readAsDataURL(file);
+  eaReadImageFile(file,url=>{APP.currentTest.questions[i].image=url;save();selectQ(i);});
 }
 
 function handleImgDrop(event,i){
@@ -2449,9 +2900,7 @@ function handleImgDrop(event,i){
   document.getElementById('img-drop-'+i)?.classList.remove('dragging');
   const file=event.dataTransfer.files[0];
   if(!file||!file.type.startsWith('image/'))return;
-  const reader=new FileReader();
-  reader.onload=e=>{APP.currentTest.questions[i].image=e.target.result;save();selectQ(i);};
-  reader.readAsDataURL(file);
+  eaReadImageFile(file,url=>{APP.currentTest.questions[i].image=url;save();selectQ(i);});
 }
 
 function removeQImage(i){APP.currentTest.questions[i].image=null;save();selectQ(i);}
@@ -2459,21 +2908,19 @@ function removeQImage(i){APP.currentTest.questions[i].image=null;save();selectQ(
 function handlePassageImg(event,i){
   const file=event.target.files[0];
   if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
+  eaReadImageFile(file,url=>{
     const el=document.getElementById('editor-passage-'+i);
     if(el){
       const qed=el.querySelector('.ql-editor');
       if(qed){
         const img=document.createElement('img');
-        img.src=e.target.result;img.style.maxWidth='100%';
+        img.src=url;img.style.maxWidth='100%';
         qed.appendChild(img);
         const d=getQuestionDocs(APP.currentTest.questions[i])[_activeDocByQ[i]||0];
         if(d){d.content=qed.innerHTML;save();}
       }
     }
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 document.addEventListener('paste',e=>{
@@ -2482,9 +2929,8 @@ document.addEventListener('paste',e=>{
   for(const item of items){
     if(item.type.startsWith('image/')){
       const file=item.getAsFile();
-      const reader=new FileReader();
-      reader.onload=ev=>{APP.currentTest.questions[activeQIndex].image=ev.target.result;save();selectQ(activeQIndex);};
-      reader.readAsDataURL(file);
+      const qi=activeQIndex;
+      eaReadImageFile(file,url=>{APP.currentTest.questions[qi].image=url;save();selectQ(qi);});
     }
   }
 });
@@ -2907,14 +3353,15 @@ function handleRefMaterialFile(e){
   const isPdf=file.type==='application/pdf';
   const isImg=file.type.startsWith('image/');
   if(!isPdf&&!isImg){toast('Please upload an image or PDF file.','error');return;}
+  if(isPdf&&file.size>3.5*1024*1024){toast('That PDF is over 3.5 MB, which is more than can be saved to the cloud. Compress it (or save it at a lower quality) and try again.','error');return;}
   if(file.size>15*1024*1024){toast('File is too large (max 15MB).','error');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    APP.currentTest.referenceMaterial={type:isPdf?'pdf':'image',dataUrl:ev.target.result,name:file.name};
+  const done=url=>{
+    APP.currentTest.referenceMaterial={type:isPdf?'pdf':'image',dataUrl:url,name:file.name};
     save();openTestSettings();
     toast('Reference material uploaded.','success');
   };
-  reader.readAsDataURL(file);
+  if(isImg) eaReadImageFile(file,done);
+  else{const reader=new FileReader();reader.onload=ev=>done(ev.target.result);reader.readAsDataURL(file);}
 }
 
 function removeRefMaterial(){
@@ -4254,33 +4701,33 @@ function loadStudentExam(){
 let _studentTestPollInterval=null;
 
 function startStudentTestPoll(){
-  // Poll frequently so both teacher edits (fixed typos, changed questions)
-  // AND an instructor's "Force Submit" propagate to the student in near
-  // real time without requiring the student to do anything.
+  // Poll often so teacher edits, an instructor's "Force Submit", +time and "end section" reach the
+  // student quickly. Uses the light endpoint (the student's own record + the test only if it changed).
   if(_studentTestPollInterval) clearInterval(_studentTestPollInterval);
   _studentTestPollInterval=setInterval(async ()=>{
     if(!APP.currentStudentExam) return;
     const {sub,a}=APP.currentStudentExam;
     if(sub.status!=='in-progress') return;
     try{
-      const res=await fetch(API_URL,{cache:'no-store'});
-      if(!res.ok) return;
-      const data=await res.json();
-      // Update tests in APP
-      if(Array.isArray(data.tests)){
-        APP.tests=data.tests;
-        // Refresh the test reference in currentStudentExam so next render picks up changes
-        const updated=data.tests.find(t=>t.id===a.testId);
-        if(updated) APP.currentStudentExam.t=updated;
+      const cur=APP.currentStudentExam.t;
+      const r=await eaGet({sub:sub.id,testId:a.testId,testRev:(cur&&cur.rev!==undefined)?cur.rev:''},8000);
+      if(!r||r.__httpError) return;
+      let remote=r.submission, newTest=r.test;
+      if(Array.isArray(r.submissions)){   // old server returned everything
+        remote=r.submissions.find(s=>s.id===sub.id);
+        newTest=(r.tests||[]).find(t=>t.id===a.testId);
+      }
+      if(newTest){
+        const i=APP.tests.findIndex(t=>t.id===newTest.id);
+        if(i>=0)APP.tests[i]=newTest;else APP.tests.push(newTest);
+        APP.currentStudentExam.t=newTest;
+        _lastSynced.tests[newTest.id]=eaSyncStr('tests',newTest);
         sxOnTestRefreshed();
       }
-      // Detect an instructor-side Force Submit and end the exam locally to match.
-      if(Array.isArray(data.submissions)){
-        const remoteSub=data.submissions.find(s=>s.id===sub.id);
-        if(remoteSub) sxApplyInstructorOps(remoteSub);
-        if(remoteSub&&remoteSub.status==='submitted'&&sub.status==='in-progress'){
-          handleRemoteForceSubmit(remoteSub);
-        }
+      if(remote){
+        sxApplyInstructorOps(remote);
+        // Detect an instructor-side Force Submit and end the exam locally to match.
+        if(remote.status==='submitted'&&sub.status==='in-progress') handleRemoteForceSubmit(remote);
       }
     }catch(e){}
   },4000);
@@ -7518,20 +7965,16 @@ function sxUpdateSavePill(){
 /* ── verified save: POST, then independently read it back ───────── */
 function sxSubForCompare(s){const c=JSON.parse(JSON.stringify(s));delete c.instructorOps;return JSON.stringify(c);}
 async function sxReliableSaveSubmission(sub,maxAttempts=5){
-  cacheLocally();
+  try{cacheLocally();}catch(e){}
   for(let attempt=1;attempt<=maxAttempts;attempt++){
-    const res=await apiPost({action:'upsertSubmission',submission:sub});
-    if(res&&!res.__httpError){
-      try{
-        const r=await fetch(API_URL,{cache:'no-store'});
-        if(r.ok){
-          const d=await r.json();
-          const remote=(d.submissions||[]).find(x=>x.id===sub.id);
-          if(remote&&sxSubForCompare(remote)===sxSubForCompare(sub)){
-            _lastSynced.submissions[sub.id]=JSON.stringify(sub);_onSyncOk();return {ok:true};
-          }
-        }
-      }catch(e){}
+    const res=await eaSaveNow('submissions',sub.id,20000);
+    if(res&&res.ok){
+      // read it back (one small request) — "saved" must mean the server really has it
+      const d=await eaGet({sub:sub.id},15000);
+      const remote=d&&(d.submission||(Array.isArray(d.submissions)?d.submissions.find(x=>x.id===sub.id):null));   // (old server returns everything)
+      if(remote&&sxSubForCompare(remote)===sxSubForCompare(sub)){
+        _onSyncOk();return {ok:true};
+      }
     }
     if(attempt<maxAttempts) await new Promise(r=>setTimeout(r,300*Math.pow(2,attempt-1)));
   }
