@@ -760,7 +760,7 @@ table th{font-family:var(--f-body);font-weight:700;letter-spacing:.08em}
 .student-qbar{border-top:1px solid var(--border)}
 .student-header-title,.student-timer-display{font-family:var(--f-display)!important;font-weight:400}
 .student-timer-display{font-size:30px}
-.student-single,.student-passage,.student-question-area{font-family:var(--f-read);font-size:19px;line-height:1.75}
+.student-single,.student-passage,.student-question-area{font-family:var(--f-read);font-size:16px;line-height:1.7}
 .student-q-num{border-radius:8px;font-family:var(--f-display);font-weight:400}
 .student-q-flag{border-radius:999px}
 .student-nav-btn,.student-qpill{border-radius:999px;font-family:var(--f-body);letter-spacing:0}
@@ -818,6 +818,11 @@ table th{font-family:var(--f-body);font-weight:700;letter-spacing:.08em}
 .fx-notif{background:#fff;border-left:6px solid var(--hl);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 16px;animation:fxRise .3s ease both}
 .fx-notif-h{font:800 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
 .fx-notif-t{font-size:15px;line-height:1.5;margin-bottom:10px;word-wrap:break-word}.fx-notif-b{display:flex;gap:8px}
+
+#fx-tsp{position:fixed;top:48px;right:16px;z-index:100005;width:290px;background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow-lg);padding:16px 18px;font-family:var(--f-body);color:var(--ink)}
+.fx-tsp-h{font:800 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.fx-tsp-v{display:flex;align-items:baseline;gap:10px;margin:6px 0 8px}.fx-tsp-v b{font:800 34px var(--f-body);letter-spacing:-.03em}.fx-tsp-v span{font-size:12px;color:var(--ink-soft)}
+#fx-tsp input[type=range]{width:100%;accent-color:var(--ink)}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -6451,7 +6456,7 @@ function renderSingleStudentQ(q,key,a,fqs){
     <div style="flex:1"></div>
     ${(q.type==='mc'||q.type==='ms')?`<button class="bb-eliminator-btn${eliminatorMode?' active':''}" onclick="toggleEliminatorMode()" title="Answer Eliminator — cross out choices you've ruled out">ABC</button>`:''}
   </div>`;
-  html+=`<div style="font-family:var(--f-body);font-size:19px;line-height:1.7;margin-bottom:24px;color:var(--bb-text)">${renderStem(q.stem)||'<em style="color:var(--ink-soft)">No question text</em>'}</div>`;
+  html+=`<div style="font-family:var(--f-body);font-size:17px;line-height:1.65;margin-bottom:22px;color:var(--bb-text)">${renderStem(q.stem)||'<em style="color:var(--ink-soft)">No question text</em>'}</div>`;
   if(q.image) html+=`<img src="${q.image}" style="max-width:100%;max-height:280px;border-radius:var(--r);margin-bottom:24px;object-fit:contain;border:1px solid var(--border)">`;
   if(q.type==='mc'){
     html+=opts.map((opt,j)=>{
@@ -9250,7 +9255,7 @@ function fxA11yApply(){
   const b=document.body,A=fxA11y,f=FX_FONTS[A.font]||FX_FONTS.default;
   const lh={normal:null,relaxed:'2',loose:'2.5'}[A.spacing];
   const ls={normal:null,wide:['.04em','.12em'],wider:['.09em','.25em']}[A.letter];
-  b.classList.toggle('fx-zoom',A.size!==100);b.style.setProperty('--fx-zoom',A.size/100);
+  const exx=APP.currentStudentExam,z=A.size/100*(exx&&exx.t&&typeof fxTestScale==='function'?fxTestScale(exx.t)/100:1);b.classList.toggle('fx-zoom',Math.abs(z-1)>.001);b.style.setProperty('--fx-zoom',z);
   b.classList.toggle('fx-font',!!f.css);if(f.css)b.style.setProperty('--fx-font',f.css);
   b.classList.toggle('fx-lh',!!lh);if(lh)b.style.setProperty('--fx-lh',lh);
   b.classList.toggle('fx-ls',!!ls);if(ls){b.style.setProperty('--fx-ls',ls[0]);b.style.setProperty('--fx-ws',ls[1]);}
@@ -9378,7 +9383,7 @@ function fxPreviewBoot(t,a){
   studentState={currentQ:0,flagged:{},highlights:{},eliminated:{},activeDoc:{}};
   timerHidden=false;_timerLocked=false;_timerWarningShown=false;
   if(!document.getElementById('fx-ribbon')){
-    document.body.insertAdjacentHTML('beforeend',`<div class="fx-ribbon" id="fx-ribbon"><span>PREVIEW — nothing here is saved or scored</span><button onclick="fxRestartPreview()">↺ Restart</button><button onclick="fxExitPreview()">✕ Exit preview</button></div>`);
+    document.body.insertAdjacentHTML('beforeend',`<div class="fx-ribbon" id="fx-ribbon"><span>PREVIEW — nothing here is saved or scored</span><button onclick="fxOpenTextPanel()">Text size</button><button onclick="fxRestartPreview()">↺ Restart</button><button onclick="fxExitPreview()">✕ Exit preview</button></div>`);
   }
   if(a.timed)startExamTimer(sub.id,a.maxMinutes);
   renderStudentExam();
@@ -9410,7 +9415,7 @@ window.addQuestion=function(type){
 };
 function fxDecorateBuilder(){
   const bar=document.querySelector('#page-builder .topbar > .flex.gap-2');
-  if(bar&&!bar.querySelector('.fx-pv-btn'))bar.insertAdjacentHTML('afterbegin','<button class="btn btn-secondary btn-sm fx-pv-btn" onclick="fxPrevReturn=\'builder\';fxOpenPreviewDialog()">Preview</button>');
+  if(bar&&!bar.querySelector('.fx-pv-btn'))bar.insertAdjacentHTML('afterbegin','<button class="btn btn-secondary btn-sm fx-pv-btn" onclick="fxPrevReturn=\'builder\';fxOpenPreviewDialog()">Preview</button><button class="btn btn-secondary btn-sm fx-pv-btn" onclick="fxTextSizePreview()">Text size</button>');
   const g=document.querySelector('#page-builder .q-type-grid');
   if(g&&!g.querySelector('.fx-up-type'))g.insertAdjacentHTML('beforeend','<div class="q-type-btn fx-up-type" onclick="addQuestion(\'upload\')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span>Upload<br>Work</span></div>');
   fxDecorateEditor();
@@ -10258,6 +10263,41 @@ setInterval(async()=>{
   if(!APP.submissions.some(s=>s.status==='in-progress'))return;
   try{await refreshFromServer();}catch(e){}
 },8000);
+
+/* ───────────── TEACHER-SET TEXT SIZE ───────────── */
+function fxTestScale(t){return Math.max(60,Math.min(150,(t&&+t.fontScale)||100));}
+function fxOpenTextPanel(){
+  const ex=APP.currentStudentExam;if(!ex||!fxPrev)return;
+  const old=document.getElementById('fx-tsp');if(old){old.remove();return;}
+  const v=fxTestScale(ex.t);
+  document.body.insertAdjacentHTML('beforeend',`<div id="fx-tsp"><div class="fx-tsp-h">Student text size</div>
+    <div class="fx-tsp-v"><b id="fx-tsp-n">${v}%</b><span>Default is 100%</span></div>
+    <input type="range" id="fx-tsp-r" min="70" max="140" step="5" value="${v}" oninput="fxTextSet(this.value)">
+    <div style="margin:10px 0 14px">${[80,90,100,110,125].map(n=>`<span class="fx-qchip" onclick="fxTextSet(${n})">${n}%</span>`).join('')}</div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="btn btn-primary btn-sm" onclick="fxTextSave()">Save for this test</button><button class="btn btn-ghost btn-sm" onclick="document.getElementById('fx-tsp').remove()">Close</button><span id="fx-tsp-st" style="font-size:12px;color:var(--ink-soft)"></span></div></div>`);
+}
+function fxTextSet(v){
+  const ex=APP.currentStudentExam;if(!ex)return;v=Math.max(60,Math.min(150,parseInt(v)||100));
+  ex.t=Object.assign({},ex.t,{fontScale:v});
+  const n=document.getElementById('fx-tsp-n');if(n)n.textContent=v+'%';const r=document.getElementById('fx-tsp-r');if(r)r.value=v;
+  const st=document.getElementById('fx-tsp-st');if(st)st.textContent='';
+  fxA11yApply();
+}
+function fxTextSave(){
+  const ex=APP.currentStudentExam;if(!ex)return;const v=fxTestScale(ex.t);
+  const real=APP.tests.find(x=>x.id===ex.t.id);if(!real)return;
+  if(v===100)delete real.fontScale;else real.fontScale=v;
+  save();const st=document.getElementById('fx-tsp-st');if(st)st.textContent='Saved ✓';toast('Text size saved for this test.','success');
+}
+function fxTextSizePreview(){
+  const t=APP.currentTest;if(!t)return;fxPrevReturn='builder';
+  const a={id:'preview-a',testId:t.id,releaseScores:true,timed:false,maxMinutes:30,shuffleItems:false,shuffleChoices:false,allowDesmos:false,locked:false,maxStrikes:2,ultraLockdown:false,createdAt:fxIso(),preview:true};
+  if(sxOn(t)){a.sectionOverrides={};t.sections.forEach(s=>{a.sectionOverrides[s.id]={limitMin:null};});}
+  fxPreviewBoot(t,a);setTimeout(fxOpenTextPanel,250);
+}
+{const o=window.sxOnTestRefreshed;window.sxOnTestRefreshed=function(){o.apply(this,arguments);try{fxA11yApply();}catch(e){}};}
+{const o=window.fxExitPreview;window.fxExitPreview=function(){const p=document.getElementById('fx-tsp');if(p)p.remove();o.apply(this,arguments);fxA11yApply();};}
+{const o=fxDecorateStudent;fxDecorateStudent=function(){try{fxA11yApply();}catch(e){}o();};}
 </script>
 </body>
 </html>
