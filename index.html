@@ -802,6 +802,22 @@ table th{font-family:var(--f-body);font-weight:700;letter-spacing:.08em}
 .stat-value,.student-q-num,.question-number,.student-timer-display{font-family:var(--f-body)!important;font-weight:800!important;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .stat-value{font-size:46px!important}
 .student-timer-display{font-size:28px!important}
+
+/* messaging */
+.fx-thread{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding:4px 2px}
+.fx-bub{max-width:82%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;word-wrap:break-word}
+.fx-bub span{display:block;font-size:10.5px;opacity:.6;margin-top:3px;font-weight:600}
+.fx-bub.me{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+.fx-bub.them{align-self:flex-start;background:var(--paper-aged);color:var(--ink);border-bottom-left-radius:4px}
+.fx-mrow{padding:16px 20px;border-bottom:1px solid var(--border)}.fx-mrow.new{background:var(--hl-soft)}
+.fx-mhead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fx-mreply{margin-top:10px}
+.fx-dotb{display:inline-block;min-width:20px;padding:1px 7px;border-radius:999px;background:var(--rust);color:#fff;font:800 11px var(--f-body);text-align:center}
+.fx-navbadge{margin-left:auto;min-width:20px;padding:1px 7px;border-radius:999px;background:var(--rust);color:#fff;font:800 11px var(--f-body);text-align:center}
+#fx-notifs{position:fixed;top:84px;right:20px;z-index:100004;display:flex;flex-direction:column;gap:10px;width:min(340px,92vw)}
+.fx-notif{background:#fff;border-left:6px solid var(--hl);border-radius:10px;box-shadow:var(--shadow-lg);padding:14px 16px;animation:fxRise .3s ease both}
+.fx-notif-h{font:800 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+.fx-notif-t{font-size:15px;line-height:1.5;margin-bottom:10px;word-wrap:break-word}.fx-notif-b{display:flex;gap:8px}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -9587,7 +9603,7 @@ const fxOrigSET=window.startExamTimer;
 window.startExamTimer=function(sid,min){const s=APP.submissions.find(x=>x.id===sid);fxOrigSET(sid,min+((s&&s.extraSecs)||0)/60);};
 function fxShowAnnouncement(op){
   const el=document.createElement('div');el.className='fx-ann';
-  el.innerHTML=`<div style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:26px"></div><div style="flex:1"><div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2563EB;margin-bottom:4px">Message from your instructor</div><div style="font-size:16px;line-height:1.6">${sxE(op.text||'')}</div></div><button onclick="this.closest('.fx-ann').remove()" class="btn btn-primary btn-sm">Got it</button></div>`;
+  el.innerHTML=`<div style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:26px"></div><div style="flex:1"><div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2563EB;margin-bottom:4px">${op.reply?'Reply from your instructor':'Message from your instructor'}</div><div style="font-size:16px;line-height:1.6">${sxE(op.text||'')}</div></div><div style="display:flex;flex-direction:column;gap:6px"><button onclick="this.closest('.fx-ann').remove()" class="btn btn-primary btn-sm">Got it</button>${op.reply?`<button onclick="this.closest('.fx-ann').remove();fxOpenChat()" class="btn btn-secondary btn-sm">Reply</button>`:''}</div></div>`;
   document.body.appendChild(el);
 }
 function fxApplyOp(op,sub,t,a){
@@ -9600,7 +9616,7 @@ function fxApplyOp(op,sub,t,a){
     case 'endSection':return 'endSection';
     case 'pause':fxHold(true);return;
     case 'resume':fxHold(false);return;
-    case 'announce':fxShowAnnouncement(op);return;
+    case 'announce':if(op.reply){sub.messages=sub.messages||[];sub.messages.push({id:op.id,at:op.at||fxIso(),from:'instructor',text:op.text});}fxShowAnnouncement(op);return;
     case 'upload':if(op.key&&op.url)fxUpAdd(op.key,op.url);return;
     case 'sched':if(op.closesAt!==undefined){a.closesAt=op.closesAt;fxWarnedClose=false;}return;
     case 'closeExam':fxHoldOverlay(false);forceSubmitStudent(sub.id,'closed');return;
@@ -9892,8 +9908,8 @@ function renderLive(){
 }
 function fxLiveSwitch(id){activeAssignmentFilter=id||null;fxLive.tab='students';renderLive();}
 function fxBuildTabs(){
-  const tabs=[['students','Students'],['questions','Questions & pacing'],['ann','Announcements']];
-  document.getElementById('live-tabs').innerHTML=tabs.map(([k,l])=>`<div class="fx-tab ${fxLive.tab===k?'on':''}" onclick="fxLive.tab='${k}';fxBuildTabs();fxLivePaint()">${l}</div>`).join('');
+  const tabs=[['students','Students'],['questions','Questions & pacing'],['msgs','Messages'],['ann','Announcements']];
+  document.getElementById('live-tabs').innerHTML=tabs.map(([k,l])=>`<div data-k="${k}" class="fx-tab ${fxLive.tab===k?'on':''}" onclick="fxLive.tab='${k}';fxBuildTabs();fxLivePaint()">${l}</div>`).join('');
   const tools=document.getElementById('live-tools');
   tools.innerHTML=fxLive.tab==='students'?`<input class="form-control" style="width:180px" placeholder="Search students…" value="${sxA(fxLive.q)}" oninput="fxLive.q=this.value;fxLivePaint()"><select class="form-control" style="width:auto" onchange="fxLive.filter=this.value;fxLivePaint()">${[['all','All'],['active','Active'],['waiting','Waiting'],['paused','Paused'],['submitted','Submitted'],['alerts','Alerts']].map(([k,l])=>`<option value="${k}" ${fxLive.filter===k?'selected':''}>${l}</option>`).join('')}</select>`:'';
 }
@@ -10108,7 +10124,10 @@ function fxLivePaint(){
   document.getElementById('live-stats').innerHTML=fxLiveStatsHtml(subs);
   fxPaintControl();
   const list=document.getElementById('live-list');
-  list.innerHTML=fxLive.tab==='students'?fxStudentsHtml(subs):fxLive.tab==='questions'?fxQuestionsHtml(subs):fxAnnHtml();
+  const ae=document.activeElement,aid=ae&&ae.id&&list.contains(ae)?ae.id:null,ass=aid?ae.selectionStart:0;
+  list.innerHTML=fxLive.tab==='students'?fxStudentsHtml(subs):fxLive.tab==='questions'?fxQuestionsHtml(subs):fxLive.tab==='msgs'?fxMsgsHtml(subs):fxAnnHtml();
+  if(aid){const n=document.getElementById(aid);if(n){n.focus();try{n.setSelectionRange(ass,ass);}catch(e){}}}
+  fxMsgBadge();
   const tm=document.getElementById('live-update-time');if(tm)tm.textContent='Updated '+new Date().toLocaleTimeString();
 }
 async function refreshLiveData(){
@@ -10130,6 +10149,115 @@ window.renderQuestionBreakdown=function(t,subs){
   return html;
 };
 
+
+/* ───────────── MESSAGING: student → instructor (and replies) ───────────── */
+function fxId(){return 'm'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fxAgo(iso){const s=Math.max(0,(Date.now()-new Date(iso).getTime())/1000);return s<45?'now':s<3600?Math.round(s/60)+' min ago':new Date(iso).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
+/* student side */
+let fxChatLast=0;
+function fxChatThread(sub){return (sub.messages||[]).slice().sort((a,b)=>new Date(a.at)-new Date(b.at));}
+function fxChatHtml(sub){
+  const th=fxChatThread(sub);
+  return `<div class="modal-header"><h2 class="serif" style="font-size:22px">Message your instructor</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div id="fx-chat-th" class="fx-thread">${th.length?th.map(m=>`<div class="fx-bub ${m.from==='student'?'me':'them'}">${sxE(m.text)}<span>${m.from==='student'?'You':'Instructor'} · ${fxAgo(m.at)}</span></div>`).join(''):'<div class="text-muted" style="text-align:center;padding:18px 0">No messages yet.</div>'}</div>
+  <textarea id="fx-chat-in" class="form-control" rows="3" maxlength="500" placeholder="Type your message…" style="margin-top:12px"></textarea></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="fxChatSend()">Send</button></div>`;
+}
+function fxOpenChat(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub)return;
+  openModal(fxChatHtml(ex.sub),'480px');
+  const th=document.getElementById('fx-chat-th');if(th)th.scrollTop=th.scrollHeight;
+  setTimeout(()=>{const i=document.getElementById('fx-chat-in');if(i)i.focus();},50);
+}
+function fxChatSend(){
+  const ex=APP.currentStudentExam;if(!ex||!ex.sub)return;
+  const el=document.getElementById('fx-chat-in');const text=(el&&el.value||'').trim().slice(0,500);if(!text)return;
+  if(Date.now()-fxChatLast<2500){toast('Please wait a moment before sending another.','error');return;}
+  const sub=ex.sub;sub.messages=sub.messages||[];
+  if(sub.messages.filter(m=>m.from==='student').length>=40){toast('Message limit reached.','error');return;}
+  fxChatLast=Date.now();
+  sub.messages.push({id:fxId(),at:fxIso(),from:'student',text});
+  save();toast('Sent to your instructor.','success');
+  const m=document.querySelector('#modal-container .modal');if(m){m.innerHTML=fxChatHtml(sub);const th=document.getElementById('fx-chat-th');if(th)th.scrollTop=th.scrollHeight;}
+}
+const fxOrigDS=fxDecorateStudent;
+fxDecorateStudent=function(){
+  fxOrigDS();
+  const pop=document.getElementById('q-nav-popup');
+  if(pop&&!pop.querySelector('.fx-pop-msg'))pop.insertAdjacentHTML('beforeend',`<div class="fx-pop-msg" style="margin-top:12px"><button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="toggleQNav&&document.getElementById('q-nav-popup')&&toggleQNav();fxOpenChat()">Message instructor</button></div>`);
+};
+
+/* instructor side */
+const fxMsgSeen=FX_LOCAL('ea_msgseen_v1',{});
+const fxDraft={},fxLocalReplies={},fxAlerted={};let fxMsgInit=false;
+function fxMsgSaveSeen(){try{localStorage.setItem('ea_msgseen_v1',JSON.stringify(fxMsgSeen));}catch(e){}}
+function fxSMsgs(s){return (s.messages||[]).filter(m=>m&&m.from==='student');}
+function fxUnread(s){return Math.max(0,fxSMsgs(s).length-(fxMsgSeen[s.id]||0));}
+function fxUnreadTotal(){return APP.submissions.reduce((n,s)=>n+fxUnread(s),0);}
+function fxInstThread(s){
+  const st=fxSMsgs(s).map(m=>({at:m.at,from:'student',text:m.text}));
+  const rp=(s.instructorOps||[]).filter(o=>o.type==='announce'&&o.reply).map(o=>({at:o.at,from:'instructor',text:o.text}));
+  const loc=(fxLocalReplies[s.id]||[]).filter(r=>!rp.some(x=>x.text===r.text));
+  return st.concat(rp,loc).sort((a,b)=>new Date(a.at)-new Date(b.at));
+}
+function fxMarkRead(sid){const s=APP.submissions.find(x=>x.id===sid);if(!s)return;fxMsgSeen[sid]=fxSMsgs(s).length;fxAlerted[sid]=fxMsgSeen[sid];fxMsgSaveSeen();fxMsgBadge();fxLivePaint();}
+function fxBeep(){try{const C=window.AudioContext||window.webkitAudioContext;const c=fxBeep.c||(fxBeep.c=new C());const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.35);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.36);}catch(e){}}
+function fxMsgBadge(){
+  const n=fxUnreadTotal();
+  document.title=(n?`(${n}) `:'')+document.title.replace(/^\(\d+\)\s/,'');
+  const nav=document.querySelector('.nav-item[data-page="live"]');
+  if(nav){let b=nav.querySelector('.fx-navbadge');if(n){if(!b){b=document.createElement('span');b.className='fx-navbadge';nav.appendChild(b);}b.textContent=n;}else if(b)b.remove();}
+  const tab=document.querySelector('.fx-tab[data-k="msgs"]');if(tab)tab.innerHTML='Messages'+(n?` <b class="fx-dotb">${n}</b>`:'');
+}
+function fxNotify(s,msg){
+  let box=document.getElementById('fx-notifs');if(!box){box=document.createElement('div');box.id='fx-notifs';document.body.appendChild(box);}
+  const el=document.createElement('div');el.className='fx-notif';
+  el.innerHTML=`<div class="fx-notif-h">${sxE(s.studentName||'Student')}</div><div class="fx-notif-t">${sxE((msg&&msg.text)||'')}</div><div class="fx-notif-b"><button class="btn btn-primary btn-sm" onclick="fxOpenMsgs('${sxA(s.id)}');this.closest('.fx-notif').remove()">Reply</button><button class="btn btn-ghost btn-sm" onclick="this.closest('.fx-notif').remove()">Dismiss</button></div>`;
+  box.appendChild(el);setTimeout(()=>{if(el.parentNode)el.remove();},20000);
+  fxBeep();
+  try{if('Notification' in window&&Notification.permission==='granted'&&document.hidden){new Notification((s.studentName||'Student')+' sent a message',{body:(msg&&msg.text)||''});}}catch(e){}
+}
+function fxMsgScan(){
+  if(!document.getElementById('app')||document.getElementById('app').classList.contains('hidden'))return;
+  APP.submissions.forEach(s=>{
+    const u=fxUnread(s),cnt=fxSMsgs(s).length;
+    if(!fxMsgInit){fxAlerted[s.id]=cnt;return;}
+    if(cnt>(fxAlerted[s.id]||0)){const last=fxSMsgs(s).slice(-1)[0];fxAlerted[s.id]=cnt;if(u)fxNotify(s,last);}
+  });
+  fxMsgInit=true;fxMsgBadge();
+}
+function fxOpenMsgs(sid){
+  const s=APP.submissions.find(x=>x.id===sid);if(s)activeAssignmentFilter=s.assignmentId;
+  fxLive.tab='msgs';showPage('live');setTimeout(()=>{fxBuildTabs();fxLivePaint();const e=document.getElementById('fx-rp-'+sid);if(e)e.focus();},60);
+}
+function fxMsgsHtml(subs){
+  const rows=subs.filter(s=>fxSMsgs(s).length||fxInstThread(s).length).sort((a,b)=>{const la=fxInstThread(a).slice(-1)[0],lb=fxInstThread(b).slice(-1)[0];return new Date(lb.at)-new Date(la.at);});
+  let perm='';
+  if('Notification' in window&&Notification.permission==='default')perm=`<div style="padding:12px 20px;border-bottom:1px solid var(--border)"><button class="btn btn-secondary btn-sm" onclick="Notification.requestPermission().then(()=>fxLivePaint())">Enable desktop alerts</button></div>`;
+  if(!rows.length)return perm+`<div style="padding:44px;text-align:center;color:var(--ink-soft)">No messages from students yet.</div>`;
+  return perm+rows.map(s=>{
+    const u=fxUnread(s),th=fxInstThread(s).slice(-8);
+    return `<div class="fx-mrow ${u?'new':''}"><div class="fx-mhead"><strong>${sxE(s.studentName)}</strong><span class="text-muted" style="font-size:12px">${s.status==='in-progress'?'In exam':'Submitted'}</span>${u?`<span class="fx-dotb">${u} new</span>`:''}<span style="flex:1"></span>${u?`<button class="btn btn-ghost btn-sm" onclick="fxMarkRead('${sxA(s.id)}')">Mark read</button>`:''}</div>
+      <div class="fx-thread">${th.map(m=>`<div class="fx-bub ${m.from==='instructor'?'me':'them'}">${sxE(m.text)}<span>${m.from==='instructor'?'You':sxE(s.studentName)} · ${fxAgo(m.at)}</span></div>`).join('')}</div>
+      ${s.status==='in-progress'?`<div class="fx-mreply"><div>${['Yes','No','Re-read the question','Come see me'].map(q=>`<span class="fx-qchip" onclick="fxDraft['${sxA(s.id)}']='${q}';document.getElementById('fx-rp-${sxA(s.id)}').value='${q}'">${q}</span>`).join('')}</div>
+      <div style="display:flex;gap:8px"><input id="fx-rp-${sxA(s.id)}" class="form-control" placeholder="Reply…" maxlength="500" value="${sxA(fxDraft[s.id]||'')}" oninput="fxDraft['${sxA(s.id)}']=this.value" onkeydown="if(event.key==='Enter')fxReply('${sxA(s.id)}')"><button class="btn btn-primary" onclick="fxReply('${sxA(s.id)}')">Send</button></div></div>`:''}</div>`;
+  }).join('');
+}
+async function fxReply(sid){
+  const el=document.getElementById('fx-rp-'+sid);const text=((el&&el.value)||fxDraft[sid]||'').trim().slice(0,500);if(!text)return;
+  const r=await fxSendOps([sid],{type:'announce',text,reply:true});
+  if(!r.ok){toast('Couldn’t reach that student.','error');return;}
+  (fxLocalReplies[sid]=fxLocalReplies[sid]||[]).push({at:fxIso(),from:'instructor',text});fxDraft[sid]='';
+  toast('Reply sent.','success');fxMarkRead(sid);
+}
+const fxOrigRFS=window.refreshFromServer;
+window.refreshFromServer=async function(f){const r=await fxOrigRFS(f);try{fxMsgScan();}catch(e){}return r;};
+setInterval(async()=>{
+  const app=document.getElementById('app');if(!app||app.classList.contains('hidden'))return;
+  if(APP.currentPage==='builder'||APP.currentPage==='live')return;   // the Live Monitor already polls
+  if(!APP.submissions.some(s=>s.status==='in-progress'))return;
+  try{await refreshFromServer();}catch(e){}
+},8000);
 </script>
 </body>
 </html>
