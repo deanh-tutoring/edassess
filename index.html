@@ -749,7 +749,7 @@ table th{font-family:var(--f-body);font-weight:700;letter-spacing:.08em}
 .login-art-bg{background:transparent;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:36px 36px}
 .login-art svg{opacity:.0!important}
 .login-art div[style*="72px"]{font-family:var(--f-display)!important;font-weight:400!important;color:#fff!important;font-size:96px!important;letter-spacing:-.02em!important;text-align:left;line-height:.95!important}
-.login-art div[style*="72px"]::first-line{background:linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 90%,transparent 90%);color:var(--ink)!important;padding:0 .08em}
+.login-art div[style*="72px"]::first-line{color:var(--hl)!important}
 .login-box{background:#fff;box-shadow:-30px 0 80px rgba(0,0,0,.3)}
 .login-eyebrow{font-family:var(--f-body);color:var(--rust);font-weight:800;letter-spacing:.2em}
 .login-title{font-family:var(--f-display)!important;font-size:52px;font-weight:400;font-style:normal;color:var(--ink)}
@@ -904,6 +904,23 @@ li[data-list="bullet"]{list-style:disc}li[data-list="ordered"]{list-style:decima
 li[data-list="checked"]::before{content:"☑ "}li[data-list="unchecked"]::before{content:"☐ "}
 li[data-list]>.ql-ui{display:none}
 li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
+
+/* join */
+.join-wrap{margin:22px 0 18px}
+.join-code{width:100%;text-align:center;font:500 38px var(--f-mono);letter-spacing:.32em;padding:16px 10px 16px 24px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);text-transform:uppercase;outline:0;margin-bottom:12px}
+.join-code::placeholder{color:var(--border-dark);letter-spacing:.2em}
+.join-code:focus{box-shadow:0 0 0 5px var(--hl)}
+.join-err{min-height:20px;margin-top:10px;font-size:13px;font-weight:600;color:var(--rust)}
+.inst-details{margin-top:14px;border-top:1px solid var(--border);padding-top:14px}
+.inst-details summary{cursor:pointer;font:700 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px}
+.inst-details[open] summary{color:var(--ink)}
+.fx-codechip{display:inline-block;font:500 14px var(--f-mono);letter-spacing:.16em;background:var(--hl);color:var(--ink);padding:4px 10px;border-radius:6px;cursor:pointer}
+.fx-codechip.big{font-size:20px;padding:6px 14px;margin-left:4px}
+.fx-codechip:hover{background:#FFE680}
+.fx-codebox{text-align:center;background:var(--hl-soft);border:2px dashed var(--ink);border-radius:14px;padding:18px;margin-bottom:18px}
+.fx-codelbl{font:800 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.fx-codeval{font:500 52px var(--f-mono);letter-spacing:.3em;padding-left:.3em;cursor:pointer;line-height:1.2}
+.fx-codehint{font-size:13px;color:var(--ink-soft)}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -927,8 +944,14 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
   </div>
   <!-- Login form -->
   <div class="login-box animate-in">
-    <div class="login-eyebrow">Instructor Portal</div>
-    <h1 class="login-title">Welcome<br>back.</h1>
+    <div class="login-eyebrow">Students</div>
+    <h1 class="login-title" style="font-size:44px">Join an<br>assessment.</h1>
+    <div class="join-wrap">
+      <input id="join-code" class="join-code" maxlength="10" placeholder="CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');document.getElementById('join-err').textContent=''" onkeydown="if(event.key==='Enter')fxJoin()">
+      <button id="join-btn" class="btn btn-primary btn-lg login-btn" onclick="fxJoin()">Join</button>
+      <div id="join-err" class="join-err"></div>
+    </div>
+    <details class="inst-details" id="inst-details"><summary>Instructor sign in</summary>
     
     <div class="form-group">
       <label class="form-label">Username</label>
@@ -943,6 +966,7 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
       Sign In
     </button>
+    </details>
   </div>
 </div>
 
@@ -3814,7 +3838,7 @@ function openAssignModal(testId){
 
 async function createAssignment(testId){
   const a={
-    id:uid(),testId,
+    id:uid(),testId,code:fxNewCode(),
     releaseScores:document.getElementById('as-release').checked,
     timed:document.getElementById('as-timed').checked,
     maxMinutes:parseInt(document.getElementById('as-minutes').value)||60,
@@ -3848,6 +3872,7 @@ async function createAssignment(testId){
     <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
   <div class="modal-body">
+    <div class="fx-codebox"><div class="fx-codelbl">Join code</div><div class="fx-codeval" onclick="fxCopyCode('${a.code}')" title="Click to copy">${a.code}</div><div class="fx-codehint">Students enter this on the main page</div></div>
     <div style="background:var(--sage-pale);border:1px solid #BBF7D0;border-radius:var(--r-lg);padding:20px;text-align:center;margin-bottom:20px">
       <svg fill="none" stroke="var(--sage)" stroke-width="2" viewBox="0 0 24 24" width="32" height="32" style="margin:0 auto 8px;display:block"><path d="M5 13l4 4L19 7"/></svg>
       <div style="font-weight:600;color:var(--sage);font-size:14px;letter-spacing:.06em">Assignment is live!</div>
@@ -9986,7 +10011,7 @@ function renderLive(){
   const top=`<div class="topbar"><div class="flex items-center gap-3"><h1 class="page-title">Live Monitor</h1><div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r)"><span style="width:7px;height:7px;border-radius:50%;background:var(--rust);display:inline-block" class="pulse"></span><span style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--rust)">LIVE</span></div></div><span style="font-size:11px;color:var(--ink-soft)" id="live-update-time"></span></div>`;
   if(!APP.assignments.length&&!APP.submissions.length){el.innerHTML=top+`<div class="page-content"><div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">No active sessions</h2><p style="color:var(--ink-soft);font-size:18px">Assign a test to start monitoring students</p></div></div>`;return;}
   el.innerHTML=top+`<div class="page-content" id="live-root">
-    <div class="fx-lv-bar"><button class="btn btn-ghost btn-sm fxa-back" onclick="fxLiveBack()">← All assignments</button><span class="fxa-ttl">${sxE((fxAsgInfo(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{})).title)}</span>
+    <div class="fx-lv-bar"><button class="btn btn-ghost btn-sm fxa-back" onclick="fxLiveBack()">← All assignments</button><span class="fxa-ttl">${sxE((fxAsgInfo(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{})).title)}</span>${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code?`<span class="fx-codechip big" onclick="fxCopyCode('${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}')" title="Students join with this code">${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}</span>`:''}
       ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard(location.href.split('?')[0]+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
     <div id="live-control"></div>
     <div class="grid-4 mb-6" id="live-stats"></div>
@@ -10538,7 +10563,7 @@ function fxAsgRowsHtml(mode){
       :(i.avg!==null?`<b>${i.avg}%</b> avg`:'—');
     return `<div class="fxa-row" onclick="${open}('${sxA(i.a.id)}')"><div class="fxa-c fxa-name">${fxAsgThumb(i.title)}<div><div class="fxa-t">${sxE(i.title)}</div>${i.a.name&&i.a.name!==i.title?`<div class="fxa-s">${sxE(i.a.name)}</div>`:`<div class="fxa-s">${(i.t.questions||[]).length} question${(i.t.questions||[]).length===1?'':'s'}</div>`}</div></div>
       <div class="fxa-c"><span class="fxa-pill" style="background:${st[1]}">${st[0]}</span></div>
-      <div class="fxa-c">${nSub} of ${nAll}</div><div class="fxa-c">${nSub-i.pend}</div><div class="fxa-c">${extra}</div><div class="fxa-c fxa-date">${fxAsgShort(i.a.createdAt)}</div>
+      <div class="fxa-c">${nSub} of ${nAll}</div><div class="fxa-c">${nSub-i.pend}</div><div class="fxa-c">${extra}</div><div class="fxa-c fxa-date">${mode==='live'&&i.a.code?`<span class="fx-codechip" onclick="event.stopPropagation();fxCopyCode('${i.a.code}')" title="Copy code">${i.a.code}</span>`:fxAsgShort(i.a.createdAt)}</div>
       <div class="fxa-c" style="justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();${open}('${sxA(i.a.id)}')">${btn}</button></div></div>`;
   }).join('');
   return{counts,html:rows||`<div class="fxa-empty">${counts.all?'No assignments match.':mode==='live'?'No assignments yet. Assign a test from My Tests to start.':'Nothing here yet.'}</div>`};
@@ -10553,7 +10578,7 @@ function fxAsgSearch(mode,v){fxAsgUi[mode].q=v;fxAsgPaint(mode);}
 function fxAsgLanding(mode,pageId,title){
   const el=document.getElementById(pageId);const r=fxAsgRowsHtml(mode);
   const tabs=[['all','All'],['notopen','Not open'],['progress','In progress'],['grading','In grading'],['done','Done']];
-  const head={live:['Assignment','Status','Submitted','Graded','Now','Created',''],grade:['Assignment','Status','Submitted','Graded','Grading','Created',''],an:['Assignment','Status','Submitted','Graded','Average','Created','']};
+  const head={live:['Assignment','Status','Submitted','Graded','Now','Join code',''],grade:['Assignment','Status','Submitted','Graded','Grading','Created',''],an:['Assignment','Status','Submitted','Graded','Average','Created','']};
   el.innerHTML=`<div class="topbar"><h1 class="page-title">${title}</h1></div>
   <div class="page-content" id="asg-${mode}">
     <div class="fxa-tools"><label class="fxa-search"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search assignments" value="${sxA(fxAsgUi[mode].q)}" oninput="fxAsgSearch('${mode}',this.value)"></label>
@@ -10741,6 +10766,42 @@ mkQuill=function(id,content){
   if(content)q.clipboard.dangerouslyPasteHTML(content);
   return q;
 };
+
+/* ───────────── JOIN CODES ───────────── */
+const FX_CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function fxNewCode(){
+  const used=new Set(APP.assignments.map(a=>a.code));let c;
+  do{c=Array.from({length:6},()=>FX_CODE_CH[Math.floor(Math.random()*FX_CODE_CH.length)]).join('');}while(used.has(c));
+  return c;
+}
+let fxCodeSaving=false;
+async function fxEnsureCodes(){
+  const need=APP.assignments.filter(a=>a&&a.id&&!a.code&&!a.preview);
+  if(!need.length||fxCodeSaving)return;fxCodeSaving=true;
+  need.forEach(a=>{a.code=fxNewCode();});
+  try{await reliableSave('assignments');}catch(e){}
+  fxCodeSaving=false;
+  try{if(APP.currentPage==='live'&&document.getElementById('asg-live'))fxAsgPaint('live');}catch(e){}
+}
+function fxCopyCode(c){try{navigator.clipboard.writeText(c);toast('Code copied.','success');}catch(e){}}
+async function fxJoin(){
+  const inp=document.getElementById('join-code'),err=document.getElementById('join-err'),btn=document.getElementById('join-btn');
+  const code=(inp.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<4){err.textContent='Enter the code from your instructor.';inp.focus();return;}
+  btn.disabled=true;btn.textContent='Joining…';
+  let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0;
+  if(!id){const r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
+  if(id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(id);return;}
+  btn.disabled=false;btn.textContent='Join';
+  err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';
+  inp.select();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const p=new URLSearchParams(location.search).get('join');
+  setTimeout(()=>{const lp=document.getElementById('login-page'),i=document.getElementById('join-code');
+    if(i&&lp&&!lp.classList.contains('hidden')){if(p){i.value=p.toUpperCase().replace(/[^A-Z0-9]/g,'');fxJoin();}else i.focus();}},900);
+});
+{const o=window.showPage;window.showPage=function(p){const r=o(p);setTimeout(fxEnsureCodes,400);return r;};}
 </script>
 </body>
 </html>
