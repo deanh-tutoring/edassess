@@ -9,6 +9,8 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathlive@0.98.6/dist/mathlive.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
 <style>
@@ -823,6 +825,85 @@ table th{font-family:var(--f-body);font-weight:700;letter-spacing:.08em}
 .fx-tsp-h{font:800 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
 .fx-tsp-v{display:flex;align-items:baseline;gap:10px;margin:6px 0 8px}.fx-tsp-v b{font:800 34px var(--f-body);letter-spacing:-.03em}.fx-tsp-v span{font-size:12px;color:var(--ink-soft)}
 #fx-tsp input[type=range]{width:100%;accent-color:var(--ink)}
+
+/* rubric builder */
+.fxr-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.fxr-tot{font:800 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;background:var(--hl);color:var(--ink);padding:4px 10px;border-radius:999px}
+.fxr-card{border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:#fff}
+.fxr-top{display:flex;align-items:center;gap:8px}
+.fxr-n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font:800 12px var(--f-body);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fxr-act{display:flex;gap:2px}.fxr-act button{border:0;background:transparent;width:26px;height:26px;border-radius:6px;cursor:pointer;color:var(--ink-soft);font-size:14px}.fxr-act button:hover{background:var(--paper-aged);color:var(--ink)}
+.fxr-lv{margin-top:8px}.fxr-lv summary{cursor:pointer;font:700 12px var(--f-body);color:var(--ink-mid);letter-spacing:.04em}
+.fxr-lvl{display:flex;align-items:center;gap:8px;margin-top:6px}.fxr-lvl b{width:26px;text-align:center;font:800 13px var(--f-body)}
+.fxr-empty{padding:10px 2px;color:var(--ink-soft);font-style:italic}
+.rubric-pt-btn{min-width:34px;text-align:center}
+
+/* math editor */
+:root{--keyboard-zindex:100010}
+.fx-mf{display:block;width:100%;font-size:30px;padding:14px 16px;border:1.5px solid var(--ink);border-radius:10px;background:#fff;min-height:84px;--caret-color:var(--rust);--selection-background-color:var(--hl);--selection-color:var(--ink);--hue:230}
+.fx-mf:focus-within{box-shadow:0 0 0 4px var(--hl-soft)}
+math-field::part(menu-toggle){display:none}
+math-field::part(virtual-keyboard-toggle){display:none}
+body.fx-math-open .modal-backdrop{align-items:flex-start!important;padding-top:48px}
+
+/* assignment table */
+.fxa-tools{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.fxa-search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border-dark);border-radius:8px;padding:0 12px;height:40px;min-width:280px;color:var(--ink-soft)}
+.fxa-search:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px var(--hl-soft)}
+.fxa-search input{border:0;outline:0;background:transparent;flex:1;font:500 14px var(--f-body);color:var(--ink)}
+.fxa-tabs{display:flex;margin-left:auto;filter:drop-shadow(0 1px 0 var(--border))}
+.fxa-tab{border:0;cursor:pointer;background:#fff;color:var(--ink-mid);font:800 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;height:40px;padding:0 26px 0 30px;margin-left:-10px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%);display:flex;align-items:center;gap:8px;transition:background .15s}
+.fxa-tab:first-child{margin-left:0;padding-left:22px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);border-radius:8px 0 0 8px}
+.fxa-tab:hover{background:var(--hl-soft)}
+.fxa-tab.on{background:var(--ink);color:#fff}
+.fxa-tab b{font:700 11px var(--f-body);opacity:.65;letter-spacing:0}
+.fxa-table{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-sm);overflow-x:auto}
+.fxa-head,.fxa-row{display:grid;grid-template-columns:minmax(280px,2.6fr) 130px 110px 90px 130px 90px 120px;align-items:center;min-width:900px}
+.fxa-head{background:var(--paper-warm);border-bottom:1px solid var(--border)}
+.fxa-head .fxa-c{font:800 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);padding:12px 16px}
+.fxa-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.fxa-row:last-child{border-bottom:0}.fxa-row:hover{background:var(--hl-soft)}
+.fxa-c{padding:14px 16px;font-size:14px;display:flex;align-items:center;gap:8px}
+.fxa-name{gap:14px}
+.fxa-thumb{width:52px;height:36px;border-radius:6px;color:#fff;font:400 15px var(--f-display);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -10px 18px rgba(0,0,0,.18)}
+.fxa-t{font-weight:700;line-height:1.25}.fxa-s{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.fxa-pill{color:#fff;font:800 10.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:5px;white-space:nowrap}
+.fxa-date{color:var(--ink-soft);font-size:13px}
+.fxa-live{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:#2A52D9}.fxa-live i{width:8px;height:8px;border-radius:50%;background:#2A52D9;animation:pulse 1.4s infinite}
+.fxa-empty{padding:56px 20px;text-align:center;color:var(--ink-soft)}
+.fxa-back{margin-right:4px}.fxa-ttl{font:400 20px var(--f-display);margin-right:8px}
+
+/* editor+ */
+.ql-toolbar.ql-snow{border-color:var(--border-dark);border-radius:10px 10px 0 0;background:var(--paper-warm);display:flex;flex-wrap:wrap;align-items:center;gap:2px 0}
+.ql-container.ql-snow{border-color:var(--border-dark);border-radius:0 0 10px 10px;background:#fff}
+.ql-editor{font-family:var(--f-read);font-size:16px;line-height:1.65}
+.ql-editor h1,.ql-editor h2,.ql-editor h3,.ql-editor h4{font-family:var(--f-display);font-weight:400;margin:.6em 0 .3em}
+.ql-editor blockquote{border-left:4px solid var(--hl);background:var(--hl-soft);padding:6px 14px;margin:8px 0}
+.ql-editor pre.ql-syntax{background:var(--ink);color:#F3F4F8;border-radius:8px;font-family:var(--f-mono);font-size:13px}
+.ql-editor code{background:var(--paper-aged);padding:1px 5px;border-radius:4px;font-family:var(--f-mono);font-size:.9em}
+.ql-editor img{max-width:100%;height:auto;cursor:pointer}
+.ql-editor hr,.fx-div hr,.student-single hr{border:0;border-top:2px solid var(--border-dark);margin:16px 0}
+.fx-tb{width:auto!important;padding:0 7px!important;font:700 13px var(--f-body)!important;color:var(--ink-mid)}
+.fx-mdtable{margin:10px 0;overflow-x:auto}.fx-mdtable:hover{outline:2px dashed var(--border-dark);outline-offset:3px;cursor:pointer}
+.fx-mdtable table,.student-single table,.student-passage table{border-collapse:collapse;width:100%;font-size:.95em}
+.fx-mdtable th,.fx-mdtable td,.student-single table th,.student-single table td,.student-passage table th,.student-passage table td{border:1px solid var(--border-dark);padding:7px 10px;text-align:left}
+.fx-mdtable th,.student-single table th,.student-passage table th{background:var(--paper-warm);font-weight:700}
+.ql-align-center{text-align:center}.ql-align-right{text-align:right}.ql-align-justify{text-align:justify}
+.student-single img,.student-passage img{max-width:100%;height:auto}
+.fx-imgbox{position:absolute;border:2px solid var(--ink);box-shadow:0 0 0 2px var(--hl);pointer-events:none;z-index:5}
+.fx-h{position:absolute;width:12px;height:12px;background:var(--hl);border:2px solid var(--ink);border-radius:3px;pointer-events:auto}
+.fx-h-nw{left:-8px;top:-8px;cursor:nwse-resize}.fx-h-ne{right:-8px;top:-8px;cursor:nesw-resize}.fx-h-sw{left:-8px;bottom:-8px;cursor:nesw-resize}.fx-h-se{right:-8px;bottom:-8px;cursor:nwse-resize}
+.fx-imgbar{position:absolute;left:50%;top:-44px;transform:translateX(-50%);background:var(--ink);border-radius:8px;display:flex;align-items:center;gap:2px;padding:4px;pointer-events:auto;white-space:nowrap;box-shadow:var(--shadow)}
+.fx-imgbar button{border:0;background:transparent;color:#fff;font:700 12px var(--f-body);padding:5px 8px;border-radius:5px;cursor:pointer}.fx-imgbar button:hover{background:rgba(255,255,255,.15)}
+.fx-imgbar i{width:1px;height:16px;background:rgba(255,255,255,.3);margin:0 4px}
+.fxt-wrap{overflow:auto;max-height:50vh}.fxt{border-collapse:collapse;width:100%}.fxt td{border:1px solid var(--border-dark);padding:0}.fxt td.h{background:var(--hl-soft)}
+.fxt input{width:100%;border:0;padding:9px 10px;font:500 14px var(--f-body);background:transparent;outline:0}.fxt input:focus{background:#fff;box-shadow:inset 0 0 0 2px var(--ink)}
+.fxt-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+
+li[data-list="bullet"]{list-style:disc}li[data-list="ordered"]{list-style:decimal}
+li[data-list="checked"]::before{content:"☑ "}li[data-list="unchecked"]::before{content:"☐ "}
+li[data-list]>.ql-ui{display:none}
+li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -4454,7 +4535,7 @@ function renderPeerReviewCard(ps,pair,doneCount,totalCount){
           <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Rubric</div>
           ${q.rubric.map((row,ri)=>{
             const scored=draftScores[ri];
-            const pts=[];for(let p=0;p<=row.maxPoints;p+=.5)pts.push(Math.round(p*2)/2);
+            const pts=[];for(let p=0;p<=row.maxPoints;p+=q.rubricHalf?.5:1)pts.push(Math.round(p*2)/2);
             return `<div class="rubric-row">
               <div style="flex:1">
                 <div style="font-size:12px;font-weight:600;letter-spacing:.03em">${row.criterion}</div>
@@ -4606,7 +4687,7 @@ function openGradingStudent(sid){
         ansHtml+=`
         <div class="flex items-center gap-2 mt-2" style="padding-top:8px;border-top:1px solid var(--border)">
           <label style="font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase">Override score:</label>
-          <input type="number" min="0" max="${q.points||1}" step="0.5" class="form-control" style="width:70px" value="${(s.mcOverrides&&s.mcOverrides[qKey]!==undefined)?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${q.points||1})">
+          <input type="number" min="0" max="${q.points||1}" step="${q.rubricHalf?0.5:1}" class="form-control" style="width:70px" value="${(s.mcOverrides&&s.mcOverrides[qKey]!==undefined)?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${q.points||1},${q.rubricHalf?1:0})">
           <span style="font-size:11px;color:var(--ink-soft)">/ ${q.points||1} pts (leave blank for auto)</span>
         </div>`;
       } else if(q.type==='short'){
@@ -4616,7 +4697,7 @@ function openGradingStudent(sid){
         <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)"><strong style="color:var(--sage)">Accepted answers:</strong> ${(q.correctAnswers||[]).filter(Boolean).join(' · ')||'<em>None set</em>'}</div>
         <div class="flex items-center gap-2 mt-2" style="padding-top:8px;border-top:1px solid var(--border)">
           <label style="font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase">Override score:</label>
-          <input type="number" min="0" max="${q.points||1}" step="0.5" class="form-control" style="width:70px" value="${(s.mcOverrides&&s.mcOverrides[qKey]!==undefined)?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${q.points||1})">
+          <input type="number" min="0" max="${q.points||1}" step="${q.rubricHalf?0.5:1}" class="form-control" style="width:70px" value="${(s.mcOverrides&&s.mcOverrides[qKey]!==undefined)?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${q.points||1},${q.rubricHalf?1:0})">
           <span style="font-size:11px;color:var(--ink-soft)">/ ${q.points||1} pts (leave blank for auto)</span>
         </div>`;
       } else {
@@ -4626,14 +4707,15 @@ function openGradingStudent(sid){
             <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;font-family:var(--f-body)">Rubric</div>
             ${q.rubric.map((row,ri)=>{
               const scored=(s.rubricScores&&s.rubricScores[qKey]&&s.rubricScores[qKey][ri])||0;
-              const pts=[];for(let p=0;p<=row.maxPoints;p+=row.maxPoints>4?.5:.5)pts.push(Math.round(p*2)/2);
+              const pts=[];for(let p=0;p<=row.maxPoints;p+=q.rubricHalf?.5:1)pts.push(Math.round(p*2)/2);
               return`<div class="rubric-row">
                 <div style="flex:1">
                   <div style="font-size:12px;font-weight:600;letter-spacing:.03em">${row.criterion}</div>
                   ${row.description?`<div class="text-xs text-muted">${row.description}</div>`:''}
+                  ${row.levels&&row.levels[scored]?`<div class="text-xs" style="margin-top:3px;color:var(--ink-mid)"><em>${sxE(row.levels[scored])}</em></div>`:''}
                 </div>
                 <div class="rubric-pts-btns">
-                  ${pts.map(p=>`<button class="rubric-pt-btn ${scored===p?'selected':''}" onclick="setRubricScore('${sid}','${qKey}',${ri},${p},${row.maxPoints})">${p}pts</button>`).join('')}
+                  ${pts.map(p=>`<button class="rubric-pt-btn ${scored===p?'selected':''}" title="${sxA((row.levels&&row.levels[p])||'')}" onclick="setRubricScore('${sid}','${qKey}',${ri},${p},${row.maxPoints})">${p}</button>`).join('')}
                 </div>
                 <div style="margin-left:8px;font-size:13px;font-weight:600;min-width:50px;text-align:right">${scored}/${row.maxPoints}</div>
               </div>`;
@@ -4643,7 +4725,7 @@ function openGradingStudent(sid){
         ansHtml+=`
         <div class="flex items-center gap-2 mt-2">
           <label style="font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase">Override score:</label>
-          <input type="number" min="0" max="${q.points||1}" step="0.5" class="form-control" style="width:70px" value="${(s.manualScores&&s.manualScores[qKey])||''}" oninput="setManualScore('${sid}','${qKey}',this.value,${q.points||1})" placeholder="pts">
+          <input type="number" min="0" max="${q.points||1}" step="${q.rubricHalf?0.5:1}" class="form-control" style="width:70px" value="${(s.manualScores&&s.manualScores[qKey])||''}" oninput="setManualScore('${sid}','${qKey}',this.value,${q.points||1},${q.rubricHalf?1:0})" placeholder="pts">
           <span style="font-size:11px;color:var(--ink-soft)">/ ${q.points||1} pts max</span>
         </div>`;
       }
@@ -5968,7 +6050,7 @@ function renderStudentExam(){
       const edEl=document.getElementById('essay-editor-'+q.key);
       if(edEl&&!edEl.dataset.quill){
         edEl.dataset.quill='1';
-        const ed=new Quill(edEl,{theme:'snow',modules:{toolbar:[['bold','italic','underline'],['link'],['clean']]}});
+        const ed=new Quill(edEl,{theme:'snow',modules:{toolbar:[['bold','italic','underline'],['link'],['clean']]}});try{fxEdInit();fxQuillShortcuts(ed);}catch(e){}
         const existing=APP.currentStudentExam.sub.answers[q.key];
         if(existing) ed.clipboard.dangerouslyPasteHTML(existing);
         ed.on('text-change',()=>{APP.currentStudentExam.sub.answers[q.key]=ed.root.innerHTML;save();});
@@ -9832,11 +9914,12 @@ function fxSetOverride(sid){
 
 /* ───────────── 6. GRADE CENTER (curve column + CSV) ───────────── */
 function renderGrading(){
+  if(!fxGr.open||!APP.assignments.find(a=>a.id===fxGr.open)){fxGr.open=null;return fxAsgLanding('grade','page-grading','Grade Center');}
   const el=document.getElementById('page-grading');
-  const subs=APP.submissions.filter(s=>s.status==='submitted');
+  const subs=APP.submissions.filter(s=>s.status==='submitted'&&s.assignmentId===fxGr.open);
   const groups={};subs.forEach(s=>{(groups[s.assignmentId||'none']=groups[s.assignmentId||'none']||[]).push(s);});
   const keys=Object.keys(groups).sort((x,y)=>{const ax=APP.assignments.find(a=>a.id===x),ay=APP.assignments.find(a=>a.id===y);return new Date((ay&&ay.createdAt)||0)-new Date((ax&&ax.createdAt)||0);});
-  el.innerHTML=`<div class="topbar"><h1 class="page-title">Grade Center</h1><span class="badge badge-ochre">${subs.length} submission${subs.length!==1?'s':''}</span></div>
+  el.innerHTML=`<div class="topbar"><div class="flex items-center gap-3">${fxBackBtn('fxGradeBack','All assignments')}<h1 class="page-title">Grade Center</h1></div><span class="badge badge-ochre">${subs.length} submission${subs.length!==1?'s':''}</span></div>
   <div class="page-content">${!subs.length?`<div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">All caught up.</h2><p style="color:var(--ink-soft);font-size:18px">No submissions waiting for review</p></div>`:keys.map(aid=>{
     const a=APP.assignments.find(x=>x.id===aid)||{id:aid},list=groups[aid];
     const t=APP.tests.find(x=>x.id===(a.testId||list[0].testId))||{title:'Unknown',questions:[]};
@@ -9897,13 +9980,13 @@ async function fxAssignUpdate(a,changes,msg){
 }
 function renderLive(){
   if(livePollingInterval){clearInterval(livePollingInterval);livePollingInterval=null;}
-  if(!activeAssignmentFilter&&APP.assignments.length)activeAssignmentFilter=APP.assignments.slice().sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt))[0].id;
+  if(!fxLive.open||!activeAssignmentFilter){fxLive.open=false;activeAssignmentFilter=null;fxAsgLanding('live','page-live','Live Monitor');livePollingInterval=setInterval(async()=>{if(!document.getElementById('asg-live')){clearInterval(livePollingInterval);livePollingInterval=null;return;}try{await refreshFromServer();}catch(e){}fxAsgPaint('live');},5000);return;}
   if(activeAssignmentFilter&&!APP.assignments.find(a=>a.id===activeAssignmentFilter))activeAssignmentFilter=null;
   const el=document.getElementById('page-live');
   const top=`<div class="topbar"><div class="flex items-center gap-3"><h1 class="page-title">Live Monitor</h1><div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r)"><span style="width:7px;height:7px;border-radius:50%;background:var(--rust);display:inline-block" class="pulse"></span><span style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--rust)">LIVE</span></div></div><span style="font-size:11px;color:var(--ink-soft)" id="live-update-time"></span></div>`;
   if(!APP.assignments.length&&!APP.submissions.length){el.innerHTML=top+`<div class="page-content"><div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">No active sessions</h2><p style="color:var(--ink-soft);font-size:18px">Assign a test to start monitoring students</p></div></div>`;return;}
   el.innerHTML=top+`<div class="page-content" id="live-root">
-    <div class="fx-lv-bar"><select class="form-control" style="width:auto;min-width:260px" onchange="fxLiveSwitch(this.value)"><option value="">All assignments</option>${APP.assignments.slice().sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt)).map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);return `<option value="${a.id}" ${a.id===activeAssignmentFilter?'selected':''}>${sxE(t?t.title:'Unknown')} · ${formatDate(a.createdAt)}</option>`;}).join('')}</select>
+    <div class="fx-lv-bar"><button class="btn btn-ghost btn-sm fxa-back" onclick="fxLiveBack()">← All assignments</button><span class="fxa-ttl">${sxE((fxAsgInfo(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{})).title)}</span>
       ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard(location.href.split('?')[0]+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
     <div id="live-control"></div>
     <div class="grid-4 mb-6" id="live-stats"></div>
@@ -10233,7 +10316,7 @@ function fxMsgScan(){
 }
 function fxOpenMsgs(sid){
   const s=APP.submissions.find(x=>x.id===sid);if(s)activeAssignmentFilter=s.assignmentId;
-  fxLive.tab='msgs';showPage('live');setTimeout(()=>{fxBuildTabs();fxLivePaint();const e=document.getElementById('fx-rp-'+sid);if(e)e.focus();},60);
+  fxLive.tab='msgs';fxLive.open=true;fxLive.keep=true;showPage('live');setTimeout(()=>{fxBuildTabs();fxLivePaint();const e=document.getElementById('fx-rp-'+sid);if(e)e.focus();},60);
 }
 function fxMsgsHtml(subs){
   const rows=subs.filter(s=>fxSMsgs(s).length||fxInstThread(s).length).sort((a,b)=>{const la=fxInstThread(a).slice(-1)[0],lb=fxInstThread(b).slice(-1)[0];return new Date(lb.at)-new Date(la.at);});
@@ -10298,6 +10381,366 @@ function fxTextSizePreview(){
 {const o=window.sxOnTestRefreshed;window.sxOnTestRefreshed=function(){o.apply(this,arguments);try{fxA11yApply();}catch(e){}};}
 {const o=window.fxExitPreview;window.fxExitPreview=function(){const p=document.getElementById('fx-tsp');if(p)p.remove();o.apply(this,arguments);fxA11yApply();};}
 {const o=fxDecorateStudent;fxDecorateStudent=function(){try{fxA11yApply();}catch(e){}o();};}
+
+/* ───────────── ADVANCED RUBRICS · whole-number scoring ───────────── */
+const FXR_TPL={
+ 'Math solution':[['Setup','Identifies the relevant quantities and relationships',2],['Method','Applies a valid method with work shown',2],['Accuracy','Calculations are correct',2],['Final answer','States the answer with units',1]],
+ 'Short response (CER)':[['Claim','Makes a clear, relevant claim',2],['Evidence','Supports the claim with accurate evidence',2],['Reasoning','Explains how the evidence supports the claim',2]],
+ 'Holistic 0–4':[['Overall quality','',4,{4:'Complete, accurate, well supported',3:'Mostly complete, minor errors',2:'Partially complete',1:'Minimal understanding shown',0:'No attempt or off-topic'}]],
+ 'Lab report':[['Hypothesis','',3],['Data & procedure','',3],['Analysis','',4]]
+};
+function fxRubHolder(ref){const T=APP.currentTest;const p=String(ref).split('.');return p[1]!==undefined?T.questions[+p[0]].subQuestions[+p[1]]:T.questions[+p[0]];}
+function fxRubBox(ref){const p=String(ref).split('.');return document.getElementById(p[1]!==undefined?`subq-rubric-${p[0]}-${p[1]}`:`rubric-${p[0]}`);}
+function fxRubDraw(ref){const el=fxRubBox(ref);if(el)el.innerHTML=fxRubEditor(ref);}
+const fxRubOpen={};
+function fxRubEditor(ref){
+  const h=fxRubHolder(ref),R=h.rubric||[],half=!!h.rubricHalf;
+  const tot=R.reduce((n,r)=>n+(+r.maxPoints||0),0),mism=R.length&&tot!==(+h.points||1);
+  const bar=`<div class="fxr-bar"><span class="fxr-tot">${tot} pt${tot===1?'':'s'} total</span>${mism?`<button class="btn btn-ghost btn-sm" onclick="fxRubSync('${ref}')">Set question to ${tot} pts</button>`:''}
+    <label class="checkbox-wrap" style="margin-left:auto"><input type="checkbox" ${half?'checked':''} onchange="fxRubHalf('${ref}',this.checked)"><span style="font-size:13px">Allow half points</span></label>
+    <select class="form-control" style="width:auto;font-size:13px" onchange="fxRubTpl('${ref}',this.value);this.value=''"><option value="">Add from template…</option>${Object.keys(FXR_TPL).map(k=>`<option>${k}</option>`).join('')}</select></div>`;
+  if(!R.length)return bar+`<div class="fxr-empty">No criteria yet.</div>`;
+  return bar+R.map((r,ri)=>{
+    const max=+r.maxPoints||1,canLv=max<=12&&Number.isInteger(max),open=fxRubOpen[ref+':'+ri]||(r.levels&&Object.values(r.levels).some(Boolean));
+    return `<div class="fxr-card"><div class="fxr-top"><span class="fxr-n">${ri+1}</span>
+      <input class="form-control" style="flex:1" value="${sxA(r.criterion||'')}" placeholder="Criterion name" oninput="fxRubSet('${ref}',${ri},'criterion',this.value)">
+      <input class="form-control" type="number" min="1" max="100" step="${half?.5:1}" style="width:76px" value="${max}" title="Points" oninput="fxRubSet('${ref}',${ri},'maxPoints',this.value)" onchange="fxRubDraw('${ref}')">
+      <span class="text-muted" style="font-size:12px">pts</span>
+      <span class="fxr-act"><button title="Move up" onclick="fxRubMove('${ref}',${ri},-1)">↑</button><button title="Move down" onclick="fxRubMove('${ref}',${ri},1)">↓</button><button title="Duplicate" onclick="fxRubDup('${ref}',${ri})">⧉</button><button title="Delete" onclick="fxRubDel('${ref}',${ri})">✕</button></span></div>
+      <input class="form-control" style="margin-top:8px" value="${sxA(r.description||'')}" placeholder="What is this criterion assessing? (optional)" oninput="fxRubSet('${ref}',${ri},'description',this.value)">
+      ${canLv?`<details class="fxr-lv" ${open?'open':''} ontoggle="fxRubOpen['${ref}:${ri}']=this.open"><summary>Performance levels</summary>
+        ${Array.from({length:max+1},(_,k)=>max-k).map(p=>`<div class="fxr-lvl"><b>${p}</b><input class="form-control" value="${sxA((r.levels&&r.levels[p])||'')}" placeholder="${p===max?'Full credit looks like…':p===0?'No credit when…':'Partial credit when…'}" oninput="fxRubLevel('${ref}',${ri},${p},this.value)"></div>`).join('')}</details>`:''}
+    </div>`;
+  }).join('');
+}
+function fxRubSet(ref,ri,k,v){
+  const h=fxRubHolder(ref),r=h.rubric[ri];
+  if(k==='maxPoints'){let n=parseFloat(v);if(!(n>0))n=1;n=h.rubricHalf?Math.round(n*2)/2:Math.round(n);r.maxPoints=Math.max(h.rubricHalf?.5:1,n);}
+  else r[k]=v;
+  save();
+}
+function fxRubLevel(ref,ri,p,v){const r=fxRubHolder(ref).rubric[ri];r.levels=r.levels||{};if(v.trim())r.levels[p]=v;else delete r.levels[p];save();}
+function fxRubAdd(ref){const h=fxRubHolder(ref);h.rubric=h.rubric||[];h.rubric.push({criterion:'',description:'',maxPoints:1});save();fxRubDraw(ref);}
+function fxRubDel(ref,ri){fxRubHolder(ref).rubric.splice(ri,1);save();fxRubDraw(ref);}
+function fxRubDup(ref,ri){const R=fxRubHolder(ref).rubric;R.splice(ri+1,0,JSON.parse(JSON.stringify(R[ri])));save();fxRubDraw(ref);}
+function fxRubMove(ref,ri,d){const R=fxRubHolder(ref).rubric,j=ri+d;if(j<0||j>=R.length)return;[R[ri],R[j]]=[R[j],R[ri]];save();fxRubDraw(ref);}
+function fxRubHalf(ref,on){const h=fxRubHolder(ref);h.rubricHalf=!!on;if(!on)(h.rubric||[]).forEach(r=>{r.maxPoints=Math.max(1,Math.round(r.maxPoints||1));});save();fxRubDraw(ref);}
+function fxRubSync(ref){const h=fxRubHolder(ref);h.points=h.rubric.reduce((n,r)=>n+(+r.maxPoints||0),0);save();fxRubDraw(ref);toast('Question points updated to match the rubric.','success');}
+function fxRubTpl(ref,name){
+  const t=FXR_TPL[name];if(!t)return;const h=fxRubHolder(ref);h.rubric=h.rubric||[];
+  t.forEach(c=>h.rubric.push({criterion:c[0],description:c[1],maxPoints:c[2],...(c[3]?{levels:{...c[3]}}:{})}));
+  save();fxRubDraw(ref);
+}
+renderRubric=function(i){return fxRubEditor(String(i));};
+renderSubQRubric=function(pi,si){return fxRubEditor(pi+'.'+si);};
+addRubricRow=function(i){fxRubAdd(String(i));};
+addSubQRubricRow=function(pi,si){fxRubAdd(pi+'.'+si);};
+function fxStepOf(q){return q&&q.rubricHalf?.5:1;}
+function fxRound(v,half){v=parseFloat(v)||0;return half?Math.round(v*2)/2:Math.round(v);}
+/* keep scroll position when the grading modal redraws */
+{const o=window.openGradingStudent;window.openGradingStudent=function(sid){
+  const mc=document.getElementById('modal-container');
+  const snap=mc?[...mc.querySelectorAll('*')].map((e,i)=>e.scrollTop>0?[i,e.scrollTop]:null).filter(Boolean):[];
+  const wy=window.scrollY;
+  const r=o.apply(this,arguments);
+  const restore=()=>{const els=mc?mc.querySelectorAll('*'):[];snap.forEach(([i,t])=>{if(els[i])els[i].scrollTop=t;});window.scrollTo(0,wy);};
+  restore();requestAnimationFrame(restore);return r;};}
+setRubricScore=function(sid,qKey,ri,pts,max){
+  const s=APP.submissions.find(ss=>ss.id===sid);if(!s)return;
+  s.rubricScores=s.rubricScores||{};s.rubricScores[qKey]=s.rubricScores[qKey]||{};
+  if(s.rubricScores[qKey][ri]===pts)delete s.rubricScores[qKey][ri];else s.rubricScores[qKey][ri]=pts;
+  save();recalcAndSave(sid);openGradingStudent(sid);
+};
+setManualScore=function(sid,qKey,val,max,half){
+  const s=APP.submissions.find(ss=>ss.id===sid);if(!s)return;
+  s.manualScores=s.manualScores||{};
+  if(val===''||val===null)delete s.manualScores[qKey];else s.manualScores[qKey]=Math.min(fxRound(val,half),max);
+  save();recalcAndSave(sid);
+};
+setMCOverride=function(sid,qKey,val,max,half){
+  const s=APP.submissions.find(ss=>ss.id===sid);if(!s)return;
+  s.mcOverrides=s.mcOverrides||{};
+  if(val===''||val===null)delete s.mcOverrides[qKey];else s.mcOverrides[qKey]=Math.min(fxRound(val,half),max);
+  save();recalcAndSave(sid);
+};
+
+/* ───────────── INLINE MATH EDITOR (MathLive) ───────────── */
+const fxLegacyMathKb=openMathKeyboard;
+let fxMathCb=null;
+openMathKeyboard=function(initial,onInsert){
+  if(!(window.customElements&&customElements.get('math-field')))return fxLegacyMathKb(initial,onInsert);
+  fxMathCb=onInsert;document.body.classList.add('fx-math-open');
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Math</h2><button class="btn btn-ghost btn-icon" onclick="fxMathClose()">✕</button></div>
+  <div class="modal-body" style="padding:18px 22px"><math-field id="fx-mf" class="fx-mf" default-mode="math" placeholder="\\text{Type or tap math}"></math-field></div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="fxMathKbToggle()">Keyboard</button><span style="flex:1"></span><button class="btn btn-secondary" onclick="fxMathClose()">Cancel</button><button class="btn btn-primary" onclick="fxMathCommit()">Insert</button></div>`,'560px');
+  const mf=document.getElementById('fx-mf');
+  try{MathfieldElement.soundsDirectory=null;MathfieldElement.plonkSound=null;}catch(e){}
+  mf.mathVirtualKeyboardPolicy='manual';
+  mf.value=initial||'';
+  mf.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.stopPropagation();fxMathCommit();}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();fxMathClose();}});
+  setTimeout(()=>{mf.focus();if(window.matchMedia&&matchMedia('(pointer:coarse)').matches)try{mathVirtualKeyboard.show();}catch(e){}},60);
+};
+function fxMathKbToggle(){try{const k=window.mathVirtualKeyboard;if(k.visible)k.hide();else{k.show();}const mf=document.getElementById('fx-mf');if(mf)mf.focus();}catch(e){}}
+function fxMathClose(){document.body.classList.remove('fx-math-open');try{window.mathVirtualKeyboard.hide();}catch(e){}fxMathCb=null;closeModal();}
+function fxMathCommit(){
+  const mf=document.getElementById('fx-mf');let latex=mf?(mf.getValue?mf.getValue('latex-expanded'):mf.value):'';latex=latex.replace(/\\placeholder(\[[^\]]*\])?\{[^}]*\}/g,'').trim();const cb=fxMathCb;
+  document.body.classList.remove('fx-math-open');try{window.mathVirtualKeyboard.hide();}catch(e){}fxMathCb=null;closeModal();
+  if(latex&&cb)cb(latex);
+}
+/* click an inserted formula to edit it in place */
+document.addEventListener('click',e=>{
+  const sp=e.target.closest&&e.target.closest('.math-inline[data-latex]');
+  if(!sp||!sp.closest('.ql-editor,.short-editor-field,.short-answer-editor'))return;
+  e.preventDefault();e.stopPropagation();
+  openMathKeyboard(sp.getAttribute('data-latex'),latex=>{
+    sp.setAttribute('data-latex',latex);sp.innerHTML=_katexStr(latex,false);
+    const host=sp.closest('.ql-editor,.short-editor-field,.short-answer-editor');if(host)host.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+},true);
+
+/* ───────────── ASSIGNMENT TABLE (Live Monitor · Grade Center · Analytics) ───────────── */
+const fxAsgUi={live:{f:'all',q:''},grade:{f:'all',q:''},an:{f:'all',q:''}};
+const fxGr={open:null},fxAn={open:null};
+const FXA_ST={notopen:['Not open','#6B7389'],progress:['In progress','#2A52D9'],grading:['In grading','#C98A00'],done:['Done','#10885F']};
+const FXA_COL=['#141A2E','#D7263D','#2A52D9','#10885F','#C98A00','#B4236B','#0F7C8F','#6A3FD1'];
+function fxAsgInfo(a){
+  const t=APP.tests.find(x=>x.id===a.testId)||{title:a.name||'Untitled',questions:[]};
+  const subs=APP.submissions.filter(s=>s.assignmentId===a.id&&!fxIsPrev(s.id));
+  const sub=subs.filter(s=>s.status==='submitted'),prog=subs.filter(s=>s.status==='in-progress');
+  const pend=sub.filter(s=>{try{return needsGrading(s,t);}catch(e){return false;}}).length;
+  const now=Date.now(),closed=a.closedAt||(a.closesAt&&new Date(a.closesAt)<=now);
+  const future=(a.opensAt&&new Date(a.opensAt)>now)||(a.lobby&&!a.startedAt&&!subs.length);
+  let k;
+  if(prog.length)k='progress';else if(sub.length&&pend)k='grading';else if(sub.length)k='done';else if(closed)k='done';else if(future)k='notopen';else k='progress';
+  let avg=null;if(sub.length){const p=sub.map(s=>sxPctOf(t,s,0));avg=Math.round(p.reduce((x,y)=>x+y,0)/p.length);}
+  return{a,t,subs,sub,prog,pend,k,avg,title:t.title||a.name||'Untitled'};
+}
+function fxAsgThumb(title){
+  let h=0;for(const c of title)h=(h*31+c.charCodeAt(0))>>>0;
+  const w=(title.match(/[A-Za-z0-9]+/g)||['?']).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  return `<span class="fxa-thumb" style="background:${FXA_COL[h%FXA_COL.length]}">${sxE(w)}</span>`;
+}
+function fxAsgShort(iso){if(!iso)return '—';const d=new Date(iso);return isNaN(d)?'—':d.toLocaleDateString([], {month:'short',day:'numeric'});}
+function fxAsgRowsHtml(mode){
+  const U=fxAsgUi[mode];
+  let infos=APP.assignments.filter(a=>!a.preview).map(fxAsgInfo);
+  if(mode==='grade')infos=infos.filter(i=>i.sub.length);
+  if(mode==='an')infos=infos.filter(i=>i.sub.length);
+  infos.sort((x,y)=>new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0));
+  const counts={all:infos.length,notopen:0,progress:0,grading:0,done:0};infos.forEach(i=>counts[i.k]++);
+  const q=(U.q||'').trim().toLowerCase();
+  const list=infos.filter(i=>(U.f==='all'||i.k===U.f)&&(!q||i.title.toLowerCase().includes(q)||(i.a.name||'').toLowerCase().includes(q)));
+  const open={live:'fxLiveOpen',grade:'fxGradeOpen',an:'fxAnOpen'}[mode],btn={live:'Monitor',grade:'Grade',an:'Analyze'}[mode];
+  const rows=list.map(i=>{
+    const st=FXA_ST[i.k];const nSub=i.sub.length,nAll=i.subs.length;
+    const extra=mode==='live'?(i.prog.length?`<span class="fxa-live"><i></i>${i.prog.length} active</span>`:'<span class="text-muted">—</span>')
+      :mode==='grade'?(i.pend?`<b style="color:var(--gold)">${i.pend} to grade</b>`:'<span style="color:var(--sage);font-weight:700">All graded</span>')
+      :(i.avg!==null?`<b>${i.avg}%</b> avg`:'—');
+    return `<div class="fxa-row" onclick="${open}('${sxA(i.a.id)}')"><div class="fxa-c fxa-name">${fxAsgThumb(i.title)}<div><div class="fxa-t">${sxE(i.title)}</div>${i.a.name&&i.a.name!==i.title?`<div class="fxa-s">${sxE(i.a.name)}</div>`:`<div class="fxa-s">${(i.t.questions||[]).length} question${(i.t.questions||[]).length===1?'':'s'}</div>`}</div></div>
+      <div class="fxa-c"><span class="fxa-pill" style="background:${st[1]}">${st[0]}</span></div>
+      <div class="fxa-c">${nSub} of ${nAll}</div><div class="fxa-c">${nSub-i.pend}</div><div class="fxa-c">${extra}</div><div class="fxa-c fxa-date">${fxAsgShort(i.a.createdAt)}</div>
+      <div class="fxa-c" style="justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();${open}('${sxA(i.a.id)}')">${btn}</button></div></div>`;
+  }).join('');
+  return{counts,html:rows||`<div class="fxa-empty">${counts.all?'No assignments match.':mode==='live'?'No assignments yet. Assign a test from My Tests to start.':'Nothing here yet.'}</div>`};
+}
+function fxAsgPaint(mode){
+  const box=document.getElementById('asg-body-'+mode);if(!box)return;
+  const r=fxAsgRowsHtml(mode);box.innerHTML=r.html;
+  document.querySelectorAll(`#asg-${mode} .fxa-tab`).forEach(t=>{const k=t.dataset.k;t.querySelector('b').textContent=r.counts[k];t.classList.toggle('on',fxAsgUi[mode].f===k);});
+}
+function fxAsgSet(mode,f){fxAsgUi[mode].f=f;fxAsgPaint(mode);}
+function fxAsgSearch(mode,v){fxAsgUi[mode].q=v;fxAsgPaint(mode);}
+function fxAsgLanding(mode,pageId,title){
+  const el=document.getElementById(pageId);const r=fxAsgRowsHtml(mode);
+  const tabs=[['all','All'],['notopen','Not open'],['progress','In progress'],['grading','In grading'],['done','Done']];
+  const head={live:['Assignment','Status','Submitted','Graded','Now','Created',''],grade:['Assignment','Status','Submitted','Graded','Grading','Created',''],an:['Assignment','Status','Submitted','Graded','Average','Created','']};
+  el.innerHTML=`<div class="topbar"><h1 class="page-title">${title}</h1></div>
+  <div class="page-content" id="asg-${mode}">
+    <div class="fxa-tools"><label class="fxa-search"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search assignments" value="${sxA(fxAsgUi[mode].q)}" oninput="fxAsgSearch('${mode}',this.value)"></label>
+      <div class="fxa-tabs">${tabs.map(([k,l])=>`<button class="fxa-tab ${fxAsgUi[mode].f===k?'on':''}" data-k="${k}" onclick="fxAsgSet('${mode}','${k}')">${l}<b>${r.counts[k]}</b></button>`).join('')}</div></div>
+    <div class="fxa-table"><div class="fxa-head">${head[mode].map(h=>`<div class="fxa-c">${h}</div>`).join('')}</div><div id="asg-body-${mode}">${r.html}</div></div></div>`;
+}
+/* Live Monitor */
+fxLive.open=false;fxLive.keep=false;
+function fxLiveOpen(id){activeAssignmentFilter=id;fxLive.open=true;fxLive.tab='students';renderLive();}
+function fxLiveBack(){fxLive.open=false;activeAssignmentFilter=null;renderLive();}
+/* Grade Center */
+function fxGradeOpen(id){fxGr.open=id;renderGrading();}
+function fxGradeBack(){fxGr.open=null;renderGrading();}
+/* Analytics */
+function fxAnOpen(id){fxAn.open=id;renderAnalytics();}
+function fxAnBack(){fxAn.open=null;renderAnalytics();}
+function fxBackBtn(fn,label){return `<button class="btn btn-ghost btn-sm fxa-back" onclick="${fn}()">← ${label}</button>`;}
+{const o=window.showPage;window.showPage=function(p){
+  if(!fxLive.keep){if(p==='live')fxLive.open=false;}
+  if(p==='grading')fxGr.open=null;if(p==='analytics')fxAn.open=null;
+  fxLive.keep=false;return o(p);};}
+{const o=window.renderAnalytics;window.renderAnalytics=function(){
+  if(!fxAn.open||!APP.assignments.find(a=>a.id===fxAn.open)){fxAn.open=null;return fxAsgLanding('an','page-analytics','Analytics');}
+  o();const tb=document.querySelector('#page-analytics .topbar');if(tb)tb.insertAdjacentHTML('afterbegin',fxBackBtn('fxAnBack','All assignments'));};}
+
+/* ───────────── EDITOR+ : markdown, tables, dividers, resizable images ───────────── */
+const FX_TB=[['bold','italic','underline','strike','code'],[{header:[1,2,3,4,false]}],[{list:'ordered'},{list:'bullet'},{list:'check'}],['blockquote','code-block'],[{indent:'-1'},{indent:'+1'}],[{script:'sub'},{script:'super'}],[{align:[]}],['link','image'],[{color:[]},{background:[]}],['clean']];
+let fxEdReady=false;
+function fxEdInit(){
+  if(fxEdReady||!window.Quill)return;fxEdReady=true;
+  const BlockEmbed=Quill.import('blots/block/embed');
+  class FxDivider extends BlockEmbed{}FxDivider.blotName='divider';FxDivider.tagName='hr';Quill.register(FxDivider,true);
+  class FxTable extends BlockEmbed{
+    static create(v){const n=super.create();n.setAttribute('contenteditable','false');n.innerHTML=fxCleanTable(typeof v==='string'?v:'');return n;}
+    static value(n){return n.innerHTML;}
+  }
+  FxTable.blotName='fxtable';FxTable.tagName='div';FxTable.className='fx-mdtable';Quill.register(FxTable,true);
+}
+function fxCleanTable(html){
+  const d=document.createElement('div');d.innerHTML=html;
+  const okTag={TABLE:1,THEAD:1,TBODY:1,TR:1,TH:1,TD:1,STRONG:1,EM:1,B:1,I:1,CODE:1,A:1,BR:1,U:1,S:1,DEL:1};
+  (function walk(n){[...n.childNodes].forEach(c=>{
+    if(c.nodeType===3)return;
+    if(c.nodeType!==1||!okTag[c.tagName]){c.replaceWith(document.createTextNode(c.textContent||''));return;}
+    [...c.attributes].forEach(a=>{if(!(c.tagName==='A'&&a.name==='href'&&/^(https?:|mailto:)/i.test(a.value))&&!((c.tagName==='TH'||c.tagName==='TD')&&/^(colspan|rowspan)$/.test(a.name)))c.removeAttribute(a.name);});
+    walk(c);});})(d);
+  return d.innerHTML;
+}
+/* grid <-> html for the table editor */
+function fxTblToGrid(html){
+  const d=document.createElement('div');d.innerHTML=html||'';const rows=[...d.querySelectorAll('tr')].map(tr=>[...tr.children].map(c=>c.textContent));
+  return rows.length?rows:[['',''],['','']];
+}
+function fxGridToTbl(g,header){
+  const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const row=(r,t)=>`<tr>${r.map(c=>`<${t}>${e(c)}</${t}>`).join('')}</tr>`;
+  return `<table>${header?`<thead>${row(g[0],'th')}</thead><tbody>${g.slice(1).map(r=>row(r,'td')).join('')}</tbody>`:`<tbody>${g.map(r=>row(r,'td')).join('')}</tbody>`}</table>`;
+}
+let fxTbl=null;
+function fxTableModal(html,cb){
+  const hasHead=!html||/<th/i.test(html);
+  fxTbl={g:fxTblToGrid(html),head:hasHead,cb};fxTblDraw(true);
+}
+function fxTblDraw(first){
+  const T=fxTbl,html=`<div class="modal-header"><h2 class="serif" style="font-size:20px">Table</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div class="fxt-wrap"><table class="fxt">${T.g.map((r,ri)=>`<tr>${r.map((c,ci)=>`<td class="${T.head&&ri===0?'h':''}"><input value="${sxA(c)}" oninput="fxTbl.g[${ri}][${ci}]=this.value" placeholder="${T.head&&ri===0?'Header':''}"></td>`).join('')}</tr>`).join('')}</table></div>
+  <div class="fxt-bar"><button class="btn btn-secondary btn-sm" onclick="fxTbl.g.push(fxTbl.g[0].map(()=>''));fxTblDraw()">+ Row</button><button class="btn btn-secondary btn-sm" onclick="fxTbl.g.forEach(r=>r.push(''));fxTblDraw()">+ Column</button>
+  <button class="btn btn-ghost btn-sm" onclick="if(fxTbl.g.length>1){fxTbl.g.pop();fxTblDraw()}">− Row</button><button class="btn btn-ghost btn-sm" onclick="if(fxTbl.g[0].length>1){fxTbl.g.forEach(r=>r.pop());fxTblDraw()}">− Column</button>
+  <label class="checkbox-wrap" style="margin-left:auto"><input type="checkbox" ${T.head?'checked':''} onchange="fxTbl.head=this.checked;fxTblDraw()"><span style="font-size:13px">Header row</span></label></div></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxTblDone()">Done</button></div>`;
+  if(first)openModal(html,'640px');else{const m=document.querySelector('#modal-container .modal');if(m)m.innerHTML=html;}
+}
+function fxTblDone(){const T=fxTbl;closeModal();if(T&&T.cb)T.cb(fxGridToTbl(T.g,T.head));}
+/* markdown → editor */
+function fxLooksMd(t){return /^(#{1,6}\s|>\s|[-*+]\s|\d+\.\s|```|\|.+\|)/m.test(t)||/\*\*[^*\n]+\*\*|~~[^~\n]+~~|\[[^\]\n]+\]\([^)\s]+\)|(^|\s)`[^`\n]+`/.test(t);}
+function fxMdInsert(q,md,idx){
+  if(!window.marked){q.insertText(idx,md,'user');return;}
+  const dom=new DOMParser().parseFromString(marked.parse(md,{gfm:true}),'text/html').body;
+  let chunk='';const grow=fn=>{const b=q.getLength();fn();idx+=q.getLength()-b;};
+  const flush=()=>{if(chunk.trim()){const h=chunk;grow(()=>q.clipboard.dangerouslyPasteHTML(idx,h,'user'));}chunk='';};
+  [...dom.childNodes].forEach(n=>{
+    if(n.nodeType===1&&n.tagName==='TABLE'){flush();const h=fxCleanTable(n.outerHTML);grow(()=>q.insertEmbed(idx,'fxtable',h,'user'));}
+    else chunk+=n.nodeType===1?n.outerHTML:(n.textContent||'');});
+  flush();q.setSelection(Math.min(idx,q.getLength()-1),0,'user');
+}
+function fxMdModal(q){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Insert Markdown</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><textarea id="fx-md-in" class="form-control" rows="12" style="font-family:var(--f-mono);font-size:13px" placeholder="# Heading&#10;**bold**, *italic*, ~~strike~~, \`code\`&#10;- list item&#10;&gt; quote&#10;| a | b |&#10;|---|---|&#10;| 1 | 2 |"></textarea></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxMdGo()">Insert</button></div>`,'640px');
+  fxMdTarget=q;fxMdSel=q.getSelection()||{index:Math.max(0,q.getLength()-1),length:0};setTimeout(()=>{const e=document.getElementById('fx-md-in');if(e)e.focus();},50);
+}
+let fxMdTarget=null,fxMdSel=null;
+function fxMdGo(){const t=(document.getElementById('fx-md-in')||{}).value||'';closeModal();if(!t.trim()||!fxMdTarget)return;fxMdInsert(fxMdTarget,t,fxMdSel.index);}
+/* typing shortcuts */
+function fxQuillShortcuts(q){
+  let busy=false;
+  const run=fn=>{busy=true;try{fn();}finally{busy=false;}};
+  q.on('text-change',(delta,old,src)=>{
+    if(src!=='user'||busy)return;
+    let idx=0,ins=null;
+    for(const op of delta.ops){if(op.retain)idx+=op.retain;else if(typeof op.insert==='string'){ins=op.insert;break;}else if(op.delete)break;else break;}
+    if(ins===null||ins.length!==1)return;
+    const pos=idx+1,[line]=q.getLine(idx);if(!line)return;
+    const ls=q.getIndex(line),text=q.getText(ls,pos-ls);let m;
+    if(ins===' '){
+      if((m=text.match(/^(#{1,6}) $/))){run(()=>{q.deleteText(ls,m[0].length,'user');q.formatLine(ls,1,'header',m[1].length,'user');});return;}
+      if((m=text.match(/^> $/))){run(()=>{q.deleteText(ls,2,'user');q.formatLine(ls,1,'blockquote',true,'user');});return;}
+      if((m=text.match(/^\+ $/))){run(()=>{q.deleteText(ls,2,'user');q.formatLine(ls,1,'list','bullet','user');});return;}
+      if((m=text.match(/^```(\w*) $/))){run(()=>{q.deleteText(ls,m[0].length,'user');q.formatLine(ls,1,'code-block',true,'user');});return;}
+      if((m=text.match(/^(-{3,}|\*{3,}|_{3,}) $/))){run(()=>{q.deleteText(ls,m[0].length,'user');q.insertEmbed(ls,'divider',true,'user');q.setSelection(ls+1,0,'user');});return;}
+    }
+    if(ins==='*'||ins==='_'||ins==='~'||ins==='`'){
+      const inl=[[/(\*\*|__)(?=\S)(.+?)(?<=\S)\1$/,2,'bold'],[/~~(?=\S)(.+?)(?<=\S)~~$/,1,'strike'],[/(?<![`\w])`([^`]+)`$/,1,'code'],[/(?<![*\w])\*(?=[^\s*])([^*]+?)(?<=[^\s*])\*$/,1,'italic'],[/(?<![_\w])_(?=[^\s_])([^_]+?)(?<=[^\s_])_$/,1,'italic']];
+      for(const [re,g,fmt] of inl){const mm=text.match(re);if(!mm)continue;
+        const start=pos-mm[0].length,inner=mm[g];
+        run(()=>{q.deleteText(start,mm[0].length,'user');q.insertText(start,inner,fmt,true,'user');q.setSelection(start+inner.length,0,'user');q.format(fmt,false,'user');});return;}
+    }
+    if(ins===')'){
+      if((m=text.match(/(!?)\[([^\]]+)\]\(([^)\s]+)\)$/))){const start=pos-m[0].length;
+        run(()=>{q.deleteText(start,m[0].length,'user');
+          if(m[1]){q.insertEmbed(start,'image',m[3],'user');q.setSelection(start+1,0,'user');}
+          else{q.insertText(start,m[2],'link',m[3],'user');q.setSelection(start+m[2].length,0,'user');q.format('link',false,'user');}});}
+    }
+  });
+  q.root.addEventListener('paste',e=>{
+    const cd=e.clipboardData;if(!cd||!window.marked)return;
+    const html=cd.getData('text/html'),txt=cd.getData('text/plain');
+    if(!txt||(html&&/<(p|div|span|table|b|strong|h\d|ul|ol|li|img)\b/i.test(html))||!fxLooksMd(txt))return;
+    e.preventDefault();e.stopPropagation();
+    const sel=q.getSelection(true);if(sel.length)q.deleteText(sel.index,sel.length,'user');
+    run(()=>fxMdInsert(q,txt,sel.index));
+  },true);
+}
+/* resizable images + edit tables */
+function fxQuillImages(q){
+  const host=q.container;host.style.position='relative';
+  let box=null,img=null;
+  const hide=()=>{if(box){box.remove();box=null;}img=null;};
+  const place=()=>{if(!box||!img)return;const hr=host.getBoundingClientRect(),r=img.getBoundingClientRect();
+    box.style.left=(r.left-hr.left)+'px';box.style.top=(r.top-hr.top)+'px';box.style.width=r.width+'px';box.style.height=r.height+'px';};
+  const commit=()=>{q.update('user');if(img)q.root.dispatchEvent(new Event('input',{bubbles:true}));try{q.emitter.emit('text-change',null,null,'user');}catch(e){}};
+  const setW=w=>{img.setAttribute('width',Math.round(w));img.removeAttribute('height');img.style.width='';place();};
+  const align=v=>{const b=Quill.find(img);if(!b)return;const i=q.getIndex(b);q.formatLine(i,1,'align',v==='left'?false:v,'user');setTimeout(place,10);};
+  function show(el){
+    hide();img=el;
+    box=document.createElement('div');box.className='fx-imgbox';
+    box.innerHTML=`<div class="fx-imgbar"><button data-w="25">25%</button><button data-w="50">50%</button><button data-w="75">75%</button><button data-w="100">100%</button><i></i><button data-a="left">⟸</button><button data-a="center">⇔</button><button data-a="right">⟹</button><i></i><button data-del="1">Delete</button></div>`+['nw','ne','sw','se'].map(c=>`<span class="fx-h fx-h-${c}" data-c="${c}"></span>`).join('');
+    host.appendChild(box);place();
+    box.addEventListener('mousedown',e=>e.preventDefault());
+    box.querySelector('.fx-imgbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.w){const full=q.root.clientWidth-30;setW(full*(+b.dataset.w)/100);commit();}
+      else if(b.dataset.a){align(b.dataset.a);commit();}
+      else if(b.dataset.del){const bl=Quill.find(img);if(bl){q.deleteText(q.getIndex(bl),1,'user');}hide();}});
+    box.querySelectorAll('.fx-h').forEach(h=>h.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      const left=/w$/.test(h.dataset.c),x0=e.clientX,w0=img.getBoundingClientRect().width,max=q.root.clientWidth-30;
+      const mv=ev=>{setW(Math.max(40,Math.min(max,w0+(left?x0-ev.clientX:ev.clientX-x0))));};
+      const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);commit();};
+      document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);}));
+  }
+  q.root.addEventListener('click',e=>{
+    const t=e.target;
+    if(t&&t.tagName==='IMG'){e.preventDefault();show(t);const b=Quill.find(t);if(b)q.setSelection(q.getIndex(b),1,'silent');return;}
+    const tb=t.closest&&t.closest('.fx-mdtable');
+    if(tb){const b=Quill.find(tb);if(b){const i=q.getIndex(b);fxTableModal(tb.innerHTML,h=>{q.deleteText(i,1,'user');q.insertEmbed(i,'fxtable',h,'user');});}return;}
+    hide();
+  });
+  q.root.addEventListener('scroll',place);window.addEventListener('resize',place);
+  q.on('text-change',(d,o,s)=>{if(s==='user'&&box&&img&&!document.body.contains(img))hide();else place();});
+}
+function fxQuillToolbarExtras(q){
+  const tb=q.getModule('toolbar').container;
+  const g=document.createElement('span');g.className='ql-formats';
+  g.innerHTML=`<button type="button" class="fx-tb" title="Table">▦</button><button type="button" class="fx-tb" title="Divider">―</button><button type="button" class="fx-tb fx-tb-md" title="Insert Markdown">M↓</button>`;
+  tb.appendChild(g);const [bt,bd,bm]=g.children;
+  bt.onclick=()=>{const r=q.getSelection(true);fxTableModal('',h=>q.insertEmbed(r.index,'fxtable',h,'user'));};
+  bd.onclick=()=>{const r=q.getSelection(true);q.insertEmbed(r.index,'divider',true,'user');q.setSelection(r.index+1,0,'user');};
+  bm.onclick=()=>fxMdModal(q);
+}
+mkQuill=function(id,content){
+  const el=document.getElementById(id);if(!el||el.dataset.quill)return null;el.dataset.quill='1';
+  fxEdInit();
+  const q=new Quill(el,{theme:'snow',placeholder:'Write here. Markdown works: # heading, **bold**, - list, > quote, ```code```',modules:{toolbar:FX_TB}});
+  try{fxQuillToolbarExtras(q);fxQuillShortcuts(q);fxQuillImages(q);}catch(e){console.warn('editor+',e);}
+  if(content)q.clipboard.dangerouslyPasteHTML(content);
+  return q;
+};
 </script>
 </body>
 </html>
