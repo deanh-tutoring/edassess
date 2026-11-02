@@ -397,4 +397,131 @@ async function handlePost(body) {
     case 'restoreTestVersion': {
       if (!okId(body.id) || !okRev(body.rev)) return bad('Bad request.');
       const hist = await getJ(`${P.hist}${body.id}/${String(body.rev).padStart(8, '0')}`);
-      if
+      if (!hist) return bad('That version has aged out.', 404);
+      const cur = await getJ(P.test + body.id);
+      if (cur) await snapshot(body.id, cur);               // today's version goes to history first → restoring is always undoable
+      const rev = (cur ? cur.rev : 0) + 1;
+      await putJ(P.test + body.id, { rev, updatedAt: new Date().toISOString(), snapTs: Date.now(), data: hist.data });
+      return reply(200, { ok: true, rev, test: { ...hist.data, rev } });
+    }
+    case 'restoreTrash': {
+      if (!okId(body.id)) return bad('Bad request.');
+      const kind = body.kind === 'assignments' ? 'asg' : 'test';
+      const tr = await getJ(`${P.trash}${kind}/${body.id}`);
+      if (!tr) return bad('Not found in trash.', 404);
+      if (kind === 'test') {
+        const cur = await getJ(P.test + body.id);
+        const rev = (cur ? cur.rev : tr.rec.rev || 0) + 1;
+        await putJ(P.test + body.id, { rev, updatedAt: new Date().toISOString(), snapTs: 0, data: tr.rec.data });
+        await delK(`${P.trash}test/${body.id}`);
+        return reply(200, { ok: true, test: { ...tr.rec.data, rev } });
+      }
+      await putJ(P.asg + body.id, tr.rec); await delK(`${P.trash}asg/${body.id}`);
+      return reply(200, { ok: true, assignment: tr.rec });
+    }
+    // ── legacy bulk actions, kept so older cached pages keep working — but now NON-destructive ──
+    case 'saveTests': {
+      const list = Array.isArray(body.tests) ? body.tests : [];
+      if (!list.length) {
+        const have = (await listKeys(P.test)).length;
+        if (have) return bad('Refusing to overwrite existing tests with an empty list.', 409, { currentCount: have });
+      }
+      for (const t of list) {
+        if (!t || !okId(t.id)) continue;
+        const cur = await getJ(P.test + t.id);
+        await putTest(t, cur ? cur.rev : null, true);       // upsert only — never deletes tests that aren't in the list
+      }
+      return legacyReply({ tests: list });
+    }
+    case 'saveAssignments': {
+      const list = Array.isArray(body.assignments) ? body.assignments : [];
+      for (const a of list) if (a && okId(a.id)) await putJ(P.asg + a.id, a);
+      return legacyReply({ assignments: list });
+    }
+    case 'fullSave': {
+      if (Array.isArray(body.tests)) for (const t of body.tests) { if (t && okId(t.id)) { const cur = await getJ(P.test + t.id); await putTest(t, cur ? cur.rev : null, true); } }
+      if (Array.isArray(body.assignments)) for (const a of body.assignments) if (a && okId(a.id)) await putJ(P.asg + a.id, a);
+      if (Array.isArray(body.submissions)) for (const s of body.submissions) if (s && okId(s.id)) await upsertSubmission(s);
+      if (Array.isArray(body.peerSessions)) for (const p of body.peerSessions) if (p && okId(p.id)) await putJ(P.peer + p.id, p);
+      return legacyReply({ tests: body.tests, assignments: body.assignments, submissions: body.submissions, peerSessions: body.peerSessions });
+    }
+    case 'syncSubs': {
+      // Incremental refresh for the live monitor: one list call (record fingerprints), then only the
+      // records whose fingerprint differs from what the client already has.
+      const prefix = body.assignment && okId(body.assignment) ? P.sub + body.assignment + '/' : P.sub;
+      const known = body.known && typeof body.known === 'object' ? body.known : {};
+      const listing = (await store().list({ prefix })).blobs || [];
+      const changed = listing.filter((b) => known[b.key] !== b.etag).sort((a, b) => (a.key < b.key ? -1 : 1));
+      const subs = [], etags = {};
+      let bytes = 0, more = false;
+      for (let i = 0; i < changed.length; i += 12) {
+        const chunk = changed.slice(i, i + 12);
+        const vals = await Promise.all(chunk.map((b) => getJ(b.key)));
+        for (let j = 0; j < chunk.length; j++) {
+          if (!vals[j]) continue;
+          const sz = JSON.stringify(vals[j]).length;
+          if (subs.length && bytes + sz > RESP_BUDGET) { more = true; break; }
+          subs.push(vals[j]); etags[chunk[j].key] = chunk[j].etag; bytes += sz;
+        }
+        if (more) break;
+      }
+      return reply(200, { ok: true, submissions: subs, etags, keys: listing.map((b) => b.key), more });
+    }
+    case 'instructorOp': {
+      // Instructor → live student channel (sectioned tests): add time to a section, or end it.
+      const op = body.op || {};
+      const sub = await findSub(body.submissionId);
+      if (!sub) return bad('Submission not found', 404);
+      const OPS = ['addTime', 'endSection', 'pause', 'resume', 'announce', 'upload', 'sched', 'closeExam'];
+      if (!OPS.includes(op.type)) return bad('Unknown op type');
+      const clean = {
+        id: 'op_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        type: op.type, sectionId: typeof op.sectionId === 'string' ? op.sectionId : null, at: new Date().toISOString(),
+      };
+      if (op.type === 'addTime') {
+        const secs = Number(op.secs);
+        if (!(secs > 0 && secs <= 7200)) return bad('secs must be between 1 and 7200');
+        clean.secs = Math.round(secs);
+      } else if (op.type === 'announce') {
+        const text = String(op.text || '').trim().slice(0, 600);
+        if (!text) return bad('Announcement is empty');
+        clean.text = text; clean.reply = !!op.reply;
+      } else if (op.type === 'sched') {
+        if (op.closesAt === null || op.closesAt === undefined || op.closesAt === '') clean.closesAt = null;
+        else if (Number.isFinite(Date.parse(op.closesAt))) clean.closesAt = new Date(op.closesAt).toISOString();
+        else return bad('Bad closesAt');
+      } else if (op.type === 'upload') {
+        // sent from a student's phone: only accept a photo that was stored through putImage
+        if (!/^[A-Za-z0-9_-]{1,40}$/.test(String(op.key || ''))) return bad('Bad upload key');
+        if (!/^\/\.netlify\/functions\/data\?img=[a-f0-9]{40}$/.test(String(op.url || ''))) return bad('Bad upload url');
+        clean.key = String(op.key); clean.url = String(op.url);
+      }
+      const aid = okId(sub.assignmentId) ? sub.assignmentId : '_';
+      const fresh = (await getJ(P.sub + aid + '/' + sub.id)) || sub;
+      fresh.instructorOps = (fresh.instructorOps || []).concat(clean);
+      await putJ(P.sub + aid + '/' + sub.id, fresh);
+      return reply(200, { ok: true });
+    }
+    default:
+      return bad('Unknown action: ' + body.action);
+  }
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+  try {
+    if (event.httpMethod === 'GET') return await handleGet(event.queryStringParameters || {});
+    if (event.httpMethod === 'POST') {
+      if ((event.body || '').length > MAX_BODY) return bad('That save is too large (over 5.5 MB). Remove or shrink large images and try again.', 413);
+      let body;
+      try { body = JSON.parse(event.body || '{}'); } catch (e) { return bad('Invalid JSON body'); }
+      return await handlePost(body);
+    }
+    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  } catch (err) {
+    if (err instanceof MigrationPending) {
+      return reply(503, { error: 'Upgrading your data store — this takes a moment. Retrying automatically…', migrating: true }, { 'Retry-After': '3' });
+    }
+    return reply(500, { error: err.message || 'Server error' });
+  }
+};
