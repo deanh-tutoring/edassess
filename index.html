@@ -921,6 +921,7 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
 .fx-codelbl{font:800 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
 .fx-codeval{font:500 52px var(--f-mono);letter-spacing:.3em;padding-left:.3em;cursor:pointer;line-height:1.2}
 .fx-codehint{font-size:13px;color:var(--ink-soft)}
+.fx-autherr{background:var(--rust-pale);color:var(--rust);padding:9px 12px;border-radius:var(--r);font-size:13px;margin-bottom:12px}.fx-authlink{display:block;margin-top:14px;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}#fx-credit{position:fixed;left:12px;bottom:12px;z-index:50;background:var(--hl,#ffe14d);color:#111;padding:6px 12px;border-radius:6px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.25);max-width:calc(100vw - 24px)}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -951,21 +952,24 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
       <button id="join-btn" class="btn btn-primary btn-lg login-btn" onclick="fxJoin()">Join</button>
       <div id="join-err" class="join-err"></div>
     </div>
-    <details class="inst-details" id="inst-details"><summary>Instructor sign in</summary>
-    
-    <div class="form-group">
-      <label class="form-label">Username</label>
-      <input type="text" id="login-username" class="form-control" placeholder="Enter username" autocomplete="username">
+    <details class="inst-details" id="inst-details"><summary>Teacher sign in</summary>
+    <div id="auth-signin">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="login-username" class="form-control" autocomplete="username"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-control" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="login-error" class="hidden fx-autherr"></div>
+      <button class="btn btn-primary btn-lg login-btn" onclick="doLogin()">Sign In</button>
+      <a class="fx-authlink" onclick="fxAuthMode('up')">Create a teacher account</a>
     </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" id="login-password" class="form-control" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="auth-signup" class="hidden">
+      <div class="form-group"><label class="form-label">Name students will see</label><input id="su-name" class="form-control" maxlength="60" placeholder="e.g. Ms. Rivera"></div>
+      <div class="form-group"><label class="form-label">Username</label><input id="su-user" class="form-control" autocomplete="username" autocapitalize="off"></div>
+      <div class="form-group"><label class="form-label">Password</label><input id="su-pass" type="password" class="form-control" autocomplete="new-password"></div>
+      <div class="form-group"><label class="form-label">Confirm password</label><input id="su-pass2" type="password" class="form-control" autocomplete="new-password"></div>
+      <div class="form-group"><label class="form-label">Teacher keyword</label><input id="su-key" class="form-control" autocomplete="off" autocapitalize="off" onkeydown="if(event.key==='Enter')fxSignup()"></div>
+      <div id="signup-error" class="hidden fx-autherr"></div>
+      <button class="btn btn-primary btn-lg login-btn" onclick="fxSignup()">Create account</button>
+      <a class="fx-authlink" onclick="fxAuthMode('in')">Back to sign in</a>
     </div>
-    <div id="login-error" class="hidden" style="background:var(--rust-pale);color:var(--rust);padding:10px 14px;border-radius:var(--r);font-size:12px;letter-spacing:.04em;margin-bottom:14px;border:1px solid #FECACA">Invalid username or password.</div>
-    <button class="btn btn-primary btn-lg login-btn" onclick="doLogin()">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-      Sign In
-    </button>
     </details>
   </div>
 </div>
@@ -1022,10 +1026,10 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <div class="sidebar-avatar">A</div>
-        <div class="flex-1 overflow-hidden">
-          <div style="font-size:11px;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Administrator</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.04em">admin</div>
+        <div class="sidebar-avatar" id="fx-me-av" style="cursor:pointer" onclick="fxAccountModal()">A</div>
+        <div class="flex-1 overflow-hidden" style="cursor:pointer" onclick="fxAccountModal()">
+          <div id="fx-me-name" style="font-size:11px;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Teacher</div>
+          <div id="fx-me-role" style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.04em"></div>
         </div>
         <button onclick="doLogout()" style="background:none;border:none;cursor:pointer;padding:4px;border-radius:3px" title="Sign out">
           <svg width="14" height="14" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -7573,7 +7577,7 @@ function loadStudentResults(sid){
         </div>
         <div style="font-family:var(--f-body);font-size:16px;line-height:1.7;color:var(--ink)">${renderStem(q.explanation)}</div>
       </div>`:''}
-      ${comment?`<div style="background:var(--slate-pale);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 14px;margin-top:10px;font-size:13px"><span style="font-weight:700;color:var(--slate-blue);font-family:var(--f-body);font-size:10px;letter-spacing:.08em;text-transform:uppercase">Instructor Feedback: </span><span style="font-family:var(--f-body);font-size:16px">${comment}</span></div>`:''}
+      ${comment?`<div style="background:var(--slate-pale);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 14px;margin-top:10px;font-size:13px"><span style="font-weight:700;color:var(--slate-blue);font-family:var(--f-body);font-size:10px;letter-spacing:.08em;text-transform:uppercase">${s.commentBy&&s.commentBy[qKey]?sxE(fxTName(s.commentBy[qKey]))+' says: ':'Instructor Feedback: '}</span><span style="font-family:var(--f-body);font-size:16px">${comment}</span></div>`:''}
     </div>`;
   });
   sw.innerHTML=`<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
@@ -7661,7 +7665,7 @@ window.addEventListener('DOMContentLoaded',async ()=>{
   } else if(params.get('peerreview')){
     loadPeerReviewFlow(params.get('peerreview'));
   } else {
-    document.getElementById('login-page').classList.remove('hidden');
+    fxBoot();
     if(!_serverReachable){
       toast('Could not connect to cloud storage — working from local cache only. Check your connection or Netlify Blobs setup.','error');
     }
@@ -10272,7 +10276,7 @@ function fxChatThread(sub){return (sub.messages||[]).slice().sort((a,b)=>new Dat
 function fxChatHtml(sub){
   const th=fxChatThread(sub);
   return `<div class="modal-header"><h2 class="serif" style="font-size:22px">Message your instructor</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
-  <div class="modal-body"><div id="fx-chat-th" class="fx-thread">${th.length?th.map(m=>`<div class="fx-bub ${m.from==='student'?'me':'them'}">${sxE(m.text)}<span>${m.from==='student'?'You':'Instructor'} · ${fxAgo(m.at)}</span></div>`).join(''):'<div class="text-muted" style="text-align:center;padding:18px 0">No messages yet.</div>'}</div>
+  <div class="modal-body"><div id="fx-chat-th" class="fx-thread">${th.length?th.map(m=>`<div class="fx-bub ${m.from==='student'?'me':'them'}">${sxE(m.text)}<span>${m.from==='student'?'You':(m.by?fxTName(m.by):'Instructor')} · ${fxAgo(m.at)}</span></div>`).join(''):'<div class="text-muted" style="text-align:center;padding:18px 0">No messages yet.</div>'}</div>
   <textarea id="fx-chat-in" class="form-control" rows="3" maxlength="500" placeholder="Type your message…" style="margin-top:12px"></textarea></div>
   <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="fxChatSend()">Send</button></div>`;
 }
@@ -10309,7 +10313,7 @@ function fxUnread(s){return Math.max(0,fxSMsgs(s).length-(fxMsgSeen[s.id]||0));}
 function fxUnreadTotal(){return APP.submissions.reduce((n,s)=>n+fxUnread(s),0);}
 function fxInstThread(s){
   const st=fxSMsgs(s).map(m=>({at:m.at,from:'student',text:m.text}));
-  const rp=(s.instructorOps||[]).filter(o=>o.type==='announce'&&o.reply).map(o=>({at:o.at,from:'instructor',text:o.text}));
+  const rp=(s.instructorOps||[]).filter(o=>o.type==='announce'&&o.reply).map(o=>({at:o.at,from:'instructor',by:o.by,text:o.text}));
   const loc=(fxLocalReplies[s.id]||[]).filter(r=>!rp.some(x=>x.text===r.text));
   return st.concat(rp,loc).sort((a,b)=>new Date(a.at)-new Date(b.at));
 }
@@ -10803,5 +10807,196 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 {const o=window.showPage;window.showPage=function(p){const r=o(p);setTimeout(fxEnsureCodes,400);return r;};}
 </script>
+<script id="ea-auth">
+/* ═══ ACCOUNTS ═══ */
+const EA_AUTH_KEY='ea_auth_v1';
+window.EA_ME=null;window.EA_AUTH_FAILED=false;
+function eaAuthLoad(){try{return JSON.parse(localStorage.getItem(EA_AUTH_KEY))||null;}catch(e){return null;}}
+function eaToken(){const a=eaAuthLoad();return (a&&a.token)||'';}
+function eaStudentPage(){const p=new URLSearchParams(location.search);return ['exam','results','portal','peerreview','upload'].some(k=>p.get(k));}
+(function(){
+  const f=window.fetch.bind(window);
+  window.fetch=function(u,o){
+    const isApi=typeof u==='string'&&u.indexOf(API_URL)===0;
+    if(isApi&&!eaStudentPage()){const t=eaToken();if(t){o=Object.assign({},o);o.headers=Object.assign({},o.headers,{Authorization:'Bearer '+t});}}
+    return f(u,o).then(r=>{if(isApi&&r.status===401&&!eaStudentPage()&&eaToken()){window.EA_AUTH_FAILED=true;fxSessionExpired();}return r;});
+  };
+})();
+function fxSessionExpired(){
+  if(window._fxExp)return;window._fxExp=true;
+  try{const a=eaAuthLoad();if(a){a.token='';localStorage.setItem(EA_AUTH_KEY,JSON.stringify(a));}}catch(e){}
+  const app=document.getElementById('app');if(app&&!app.classList.contains('hidden')){
+    app.classList.add('hidden');document.getElementById('login-page').classList.remove('hidden');
+    const d=document.getElementById('inst-details');if(d)d.open=true;
+    toast('Your session ended. Sign in again — unsaved work is kept.','info');
+  }
+}
+async function fxWipeCaches(){
+  try{['ea_tests','ea_assignments','ea_peerSessions','ea_submissions'].forEach(k=>localStorage.removeItem(k));
+    for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('ea_draft:'))localStorage.removeItem(k);}}catch(e){}
+  try{await eaIdbDo('readwrite',st=>st.clear());}catch(e){}
+}
+const fxTeachers={};window.fxTeachers=fxTeachers;
+function fxTName(u){u=String(u||'').toLowerCase();return fxTeachers[u]||(u?u:'');}
+function fxTMerge(m){if(m&&typeof m==='object')Object.assign(fxTeachers,m);}
+{const o=window.eaGet;window.eaGet=async function(q,t){const r=await o(q,t);if(r&&r.teachers)fxTMerge(r.teachers);return r;};}
+{const o=window.eaFetchServer;window.eaFetchServer=async function(){
+  if(!eaStudentPage()&&!eaToken())return {tests:[],assignments:[],peerSessions:[],submissions:[],scoped:false};
+  const r=await o();if(r&&r.teachers)fxTMerge(r.teachers);return r;};}
+{const o=window.eaScopeQuery;window.eaScopeQuery=function(){const p=new URLSearchParams(location.search);if(p.get('peerreview'))return {peer:p.get('peerreview')};return o();};}
+const fxMe=()=>EA_ME||(eaAuthLoad()||{}).user||null;
+const fxMine=(o)=>{const me=fxMe();return !o||!o.ownerId||!me||String(o.ownerId).toLowerCase()===me.username.toLowerCase();};
+function fxShowErr(id,msg){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.classList.remove('hidden');}
+function fxAuthMode(m){document.getElementById('auth-signin').classList.toggle('hidden',m!=='in');document.getElementById('auth-signup').classList.toggle('hidden',m!=='up');}
+async function fxAuthDone(r){
+  const a=eaAuthLoad();
+  if(!a||String(a.last||'').toLowerCase()!==r.user.username.toLowerCase())await fxWipeCaches();
+  localStorage.setItem(EA_AUTH_KEY,JSON.stringify({token:r.token,user:r.user,last:r.user.username}));
+  location.reload();
+}
+window.doLogin=async function(){
+  const u=document.getElementById('login-username').value.trim(),p=document.getElementById('login-password').value;
+  document.getElementById('login-error').classList.add('hidden');
+  const r=await apiPost({action:'login',username:u,password:p});
+  if(!r||r.__httpError||!r.token){fxShowErr('login-error',(r&&r.error)||'Could not reach the server.');document.getElementById('login-password').value='';return;}
+  fxAuthDone(r);
+};
+async function fxSignup(){
+  const v=id=>document.getElementById(id).value;
+  if(v('su-pass')!==v('su-pass2')){fxShowErr('signup-error','Passwords do not match.');return;}
+  const r=await apiPost({action:'signup',name:v('su-name'),username:v('su-user'),password:v('su-pass'),keyword:v('su-key')});
+  if(!r||r.__httpError||!r.token){fxShowErr('signup-error',(r&&r.error)||'Could not reach the server.');return;}
+  fxAuthDone(r);
+}
+window.doLogout=async function(){
+  if(typeof hasPendingChanges==='function'&&hasPendingChanges()&&!confirm('Some changes have not finished saving. Sign out and lose them?'))return;
+  await fxWipeCaches();
+  try{const a=eaAuthLoad();localStorage.setItem(EA_AUTH_KEY,JSON.stringify({token:'',last:''}));}catch(e){}
+  location.reload();
+};
+function fxEnterApp(){
+  const a=eaAuthLoad();EA_ME=a&&a.user;
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  const n=document.getElementById('fx-me-name'),r=document.getElementById('fx-me-role'),av=document.getElementById('fx-me-av');
+  if(n)n.textContent=EA_ME.name;if(r)r.textContent=EA_ME.role==='admin'?'Admin · @'+EA_ME.username:'@'+EA_ME.username;if(av)av.textContent=(EA_ME.name||'?')[0].toUpperCase();
+  showPage('dashboard');
+  fxLoadTeachers();
+  if(EA_ME.mustChange)fxAccountModal(true);
+}
+window.fxBoot=function(){
+  document.getElementById('login-page').classList.add('hidden');
+  const a=eaAuthLoad();
+  if(a&&a.token&&a.user&&!EA_AUTH_FAILED){fxEnterApp();return;}
+  document.getElementById('login-page').classList.remove('hidden');
+  if(a&&a.token===''&&a.user){const d=document.getElementById('inst-details');if(d)d.open=true;}
+};
+let fxTeacherList=[];
+async function fxLoadTeachers(){const r=await apiPost({action:'listTeachers'});if(r&&r.teachers){fxTeacherList=r.teachers;r.teachers.forEach(t=>fxTeachers[t.username.toLowerCase()]=t.name);}}
+/* account */
+function fxAccountModal(forced){
+  const me=fxMe();
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">${forced?'Set your password':'Account'}</h2>${forced?'':'<button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button>'}</div>
+  <div class="modal-body">
+   ${forced?'<p style="margin-bottom:12px">Choose a new password to continue.</p>':`<div class="form-group"><label class="form-label">Name students see</label><div style="display:flex;gap:8px"><input id="ac-name" class="form-control" value="${sxA(me.name)}" maxlength="60"><button class="btn btn-secondary" onclick="fxSaveName()">Save</button></div></div>`}
+   <div class="form-group"><label class="form-label">Current password</label><input id="ac-old" type="password" class="form-control" autocomplete="current-password"></div>
+   <div class="form-group"><label class="form-label">New password (8+ characters)</label><input id="ac-new" type="password" class="form-control" autocomplete="new-password"></div>
+   <div id="ac-err" class="hidden" style="color:var(--rust);font-size:13px;margin-bottom:8px"></div>
+   <div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="fxChangePw()">Change password</button>${me.role==='admin'&&!forced?'<button class="btn btn-secondary" onclick="fxUsersModal()">Manage teachers</button>':''}</div>
+  </div>`,'460px');
+}
+async function fxSaveName(){const r=await apiPost({action:'updateProfile',name:document.getElementById('ac-name').value});if(r&&r.user){const a=eaAuthLoad();a.user=r.user;localStorage.setItem(EA_AUTH_KEY,JSON.stringify(a));EA_ME=r.user;document.getElementById('fx-me-name').textContent=r.user.name;toast('Name updated.','success');}else fxShowErr('ac-err',(r&&r.error)||'Failed');}
+async function fxChangePw(){
+  const r=await apiPost({action:'changePassword',oldPassword:document.getElementById('ac-old').value,newPassword:document.getElementById('ac-new').value});
+  if(r&&r.user){const a=eaAuthLoad();a.user=r.user;localStorage.setItem(EA_AUTH_KEY,JSON.stringify(a));EA_ME=r.user;closeModal();toast('Password changed.','success');}
+  else fxShowErr('ac-err',(r&&r.error)||'Failed');
+}
+async function fxUsersModal(){
+  const r=await apiPost({action:'adminListUsers'});if(!r||!r.users){toast('Could not load teachers','error');return;}
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">${r.users.map(u=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="flex:1"><strong>${sxE(u.name)}</strong> <span class="text-muted" style="font-size:12px">@${sxE(u.username)}${u.role==='admin'?' · admin':''}${u.disabled?' · disabled':''}</span></div>
+   <button class="btn btn-secondary btn-sm" onclick="fxResetPw('${sxA(u.username)}')">Reset password</button>
+   ${u.role==='admin'?'':`<button class="btn btn-secondary btn-sm" onclick="fxToggleUser('${sxA(u.username)}',${!u.disabled})">${u.disabled?'Enable':'Disable'}</button>`}</div>`).join('')}</div>`,'560px');
+}
+async function fxResetPw(u){const p=prompt('Temporary password for '+u+' (8+ characters). They must change it at next sign-in.');if(!p)return;const r=await apiPost({action:'adminResetPassword',username:u,newPassword:p});toast(r&&r.ok?'Password reset.':((r&&r.error)||'Failed'),r&&r.ok?'success':'error');}
+async function fxToggleUser(u,d){await apiPost({action:'adminSetDisabled',username:u,disabled:d});fxUsersModal();}
+/* sharing */
+function fxTestRole(t){const me=fxMe();if(!me)return 'owner';if(fxMine(t))return 'owner';const s=(t.sharedWith||[]).find(x=>x.u===me.username.toLowerCase());return s?s.role:'view';}
+function fxShareModal(id){
+  const t=APP.tests.find(x=>x.id===id);if(!t)return;
+  const me=fxMe().username.toLowerCase(),cur={};(t.sharedWith||[]).forEach(s=>cur[s.u]=s.role);
+  const others=fxTeacherList.filter(x=>x.username.toLowerCase()!==me);
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Share “${sxE(t.title)}”</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">${others.length?others.map(o=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="flex:1">${sxE(o.name)} <span class="text-muted" style="font-size:12px">@${sxE(o.username)}</span></div>
+   <select class="form-control fx-sh" data-u="${sxA(o.username.toLowerCase())}" style="width:130px"><option value="">Not shared</option><option value="view" ${cur[o.username.toLowerCase()]==='view'?'selected':''}>Can view</option><option value="edit" ${cur[o.username.toLowerCase()]==='edit'?'selected':''}>Can edit</option></select></div>`).join(''):'<p class="text-muted">No other teachers have accounts yet.</p>'}
+   <div style="margin-top:14px"><button class="btn btn-primary" onclick="fxShareSave('${sxA(id)}')">Save</button></div></div>`,'480px');
+}
+async function fxShareSave(id){
+  const list=[...document.querySelectorAll('.fx-sh')].filter(s=>s.value).map(s=>({u:s.dataset.u,role:s.value}));
+  const r=await apiPost({action:'shareTest',id,sharedWith:list});
+  if(r&&r.ok){const t=APP.tests.find(x=>x.id===id);t.sharedWith=r.sharedWith;if(window._lastSynced)_lastSynced.tests[id]=eaSyncStr('tests',t);cacheLocally();closeModal();toast('Sharing updated.','success');if(APP.currentPage==='tests')renderTests();}
+  else toast((r&&r.error)||'Could not share','error');
+}
+/* co-teachers */
+function fxCoHtml(sel){
+  const me=fxMe().username.toLowerCase();const o=fxTeacherList.filter(x=>x.username.toLowerCase()!==me);
+  if(!o.length)return '';
+  return `<div class="assign-section"><div class="assign-section-title">Co-teachers</div>${o.map(x=>`<label class="checkbox-wrap mb-2"><input type="checkbox" class="fx-co" value="${sxA(x.username.toLowerCase())}" ${(sel||[]).includes(x.username.toLowerCase())?'checked':''}><span style="font-size:13px">${sxE(x.name)}</span></label>`).join('')}</div>`;
+}
+{const o=window.openAssignModal;window.openAssignModal=function(id){o(id);const b=document.querySelector('#modal-container .modal-body');if(b)b.insertAdjacentHTML('beforeend',fxCoHtml([]));};}
+{const o=window.createAssignment;window.createAssignment=async function(testId){
+  const co=[...document.querySelectorAll('.fx-co:checked')].map(c=>c.value);
+  const before=new Set(APP.assignments.map(a=>a.id));
+  const r=await o(testId);
+  const a=APP.assignments.find(x=>!before.has(x.id));
+  if(a&&co.length){const s=await apiPost({action:'setCoTeachers',id:a.id,coTeachers:co});if(s&&s.ok){a.coTeachers=s.coTeachers;_lastSynced.assignments[a.id]=eaSyncStr('assignments',a);cacheLocally();}}
+  return r;};}
+function fxCoModal(aid){
+  const a=APP.assignments.find(x=>x.id===aid);if(!a||!fxMine(a))return;
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Co-teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">${fxCoHtml(a.coTeachers)||'<p class="text-muted">No other teachers yet.</p>'}<button class="btn btn-primary" onclick="fxCoSave('${sxA(aid)}')">Save</button></div>`,'440px');
+}
+async function fxCoSave(aid){
+  const co=[...document.querySelectorAll('.fx-co:checked')].map(c=>c.value);
+  const s=await apiPost({action:'setCoTeachers',id:aid,coTeachers:co});
+  if(s&&s.ok){const a=APP.assignments.find(x=>x.id===aid);a.coTeachers=s.coTeachers;_lastSynced.assignments[aid]=eaSyncStr('assignments',a);cacheLocally();closeModal();toast('Co-teachers updated.','success');}else toast((s&&s.error)||'Failed','error');
+}
+/* teacher UI: owner badges, share buttons, read-only for view shares */
+{const o=window.renderTestsList;window.renderTestsList=function(tests){
+  let h=o(tests);const el=document.createElement('div');el.innerHTML=h;
+  const rows=el.querySelectorAll('.test-row');
+  tests.forEach((t,i)=>{const row=rows[i];if(!row)return;
+    const role=fxTestRole(t);const meta=row.querySelector('.text-muted');
+    if(role!=='owner'&&meta)meta.insertAdjacentHTML('beforeend',` · by ${sxE(fxTName(t.ownerId||'deanh'))} (${role==='edit'?'can edit':'view only'})`);
+    else if((t.sharedWith||[]).length&&meta)meta.insertAdjacentHTML('beforeend',` · shared with ${t.sharedWith.length}`);
+    const act=row.querySelector('.test-actions');
+    if(act&&role==='owner')act.insertAdjacentHTML('afterbegin',`<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();fxShareModal('${t.id}')">Share</button>`);
+    if(act&&role!=='owner'){const d=act.querySelector('.btn-danger');if(d)d.remove();if(role==='view'){const e=act.querySelector('.btn-secondary');if(e){e.textContent='View';e.setAttribute('onclick',`event.stopPropagation();fxPreviewTest('${t.id}')`);}}}
+    if(role==='view')row.setAttribute('onclick',`fxPreviewTest('${t.id}')`);
+  });
+  return el.innerHTML;};}
+{const o=window.renderBuilder;window.renderBuilder=function(){o();const t=APP.currentTest;if(!t)return;const role=fxTestRole(t);const bar=document.querySelector('#page-builder .topbar .flex.gap-2');
+  if(bar&&role==='owner')bar.insertAdjacentHTML('afterbegin',`<button class="btn btn-secondary btn-sm" onclick="fxShareModal('${t.id}')">Share</button>`);
+  if(bar&&role!=='owner')bar.insertAdjacentHTML('afterbegin',`<span class="badge badge-gray" style="align-self:center">By ${sxE(fxTName(t.ownerId||'deanh'))}</span>`);};}
+{const o=window.openBuilder;window.openBuilder=function(id){const t=APP.tests.find(x=>x.id===id);if(t&&fxTestRole(t)==='view'){fxPreviewTest(id);toast('Shared with you as view-only.','info');return;}return o(id);};}
+{const o=window.fxAsgRowsHtml;if(o)window.fxAsgRowsHtml=function(mode){const r=o(mode);
+  const el=document.createElement('div');el.innerHTML=r.html;
+  [...el.children].forEach(row=>{const m=/(?:Live|Grade|An)Open\('([^']+)'\)|Open\('([^']+)'\)/.exec(row.getAttribute('onclick')||'');const id=m&&(m[1]||m[2]);const a=id&&APP.assignments.find(x=>x.id===id);if(!a)return;
+    const first=row.querySelector('.fxa-c');
+    const note=fxMine(a)?((a.coTeachers||[]).length?'with '+a.coTeachers.map(fxTName).join(', '):''):'by '+fxTName(a.ownerId||'deanh');
+    if(first&&note)first.insertAdjacentHTML('beforeend',`<div class="text-muted" style="font-size:11px">${sxE(note)}</div>`);});
+  r.html=el.innerHTML;return r;};}
+/* student-facing names */
+function fxCreditLine(a,t,s){
+  const set=[];const push=u=>{u=String(u||'').toLowerCase();if(u&&!set.includes(u))set.push(u);};
+  if(a){push(a.ownerId||'deanh');(a.coTeachers||[]).forEach(push);}else if(t)push(t.ownerId||'deanh');
+  let h=set.length?`Assigned by <b>${set.map(u=>sxE(fxTName(u))).join(', ')}</b>`:'';
+  if(s&&s.gradedBy)h+=(h?' · ':'')+`Graded by <b>${sxE(fxTName(s.gradedBy))}</b>`;
+  return h;
+}
+function fxCreditPill(h){if(!h)return;let e=document.getElementById('fx-credit');if(!e){e=document.createElement('div');e.id='fx-credit';document.body.appendChild(e);}e.innerHTML=h;}
+{const o=window.loadStudentExam;window.loadStudentExam=function(){o();const id=new URLSearchParams(location.search).get('exam');const a=APP.assignments.find(x=>x.id===id);const t=a&&APP.tests.find(x=>x.id===a.testId);fxCreditPill(fxCreditLine(a,t,null));};}
+{const o=window.loadStudentResults;window.loadStudentResults=function(sid){o(sid);const s=APP.submissions.find(x=>x.id===sid);if(!s)return;const a=APP.assignments.find(x=>x.id===s.assignmentId);const t=APP.tests.find(x=>x.id===s.testId);fxCreditPill(fxCreditLine(a,t,s));};}
+</script>
+
 </body>
 </html>
