@@ -8946,7 +8946,7 @@ async function sxSaveManager(){
   } else toast('Saved.','success');
 }
 // fingerprint of everything that affects a score
-function sxGradingSig(t){return JSON.stringify([t.grading||null,(t.sections||[]).map(s=>[s.id,s.scored,s.weight,s.creditFloor,s.creditCap,s.minPercent,s.branchOnly])]);}
+function sxGradingSig(t){return JSON.stringify([t.grading||null,(t.sections||[]).map(s=>[s.id,s.scored,s.weight,s.creditFloor,s.creditCap,s.minPercent,s.branchOnly,s.satLevel])]);}
 function sxRescoreAll(t){
   let n=0;(APP.submissions||[]).forEach(s=>{if(s.testId===t.id&&s.status==='submitted'){autoScore(s,t);n++;}});
   save();toast(`Re-scored ${n} submission${n!==1?'s':''}.`,'success');
@@ -8997,6 +8997,7 @@ function sxTabSections(){
           <div><label class="sx-lbl">Shuffle questions</label>${sxSel([['inherit','Use assignment setting'],['on','Shuffle'],['off','Keep order']],s.shuffleItems===true?'on':s.shuffleItems===false?'off':'inherit',`sxField('${s.id}','shuffleItems',this.value,'tri')`)}</div>
           <div><label class="sx-lbl">Shuffle choices</label>${sxSel([['inherit','Use assignment setting'],['on','Shuffle'],['off','Keep order']],s.shuffleChoices===true?'on':s.shuffleChoices===false?'off':'inherit',`sxField('${s.id}','shuffleChoices',this.value,'tri')`)}</div>
           <div><label class="sx-lbl">Break after (minutes)</label><input type="number" min="0" class="form-control" placeholder="none" value="${s.breakAfterMin||''}" oninput="sxField('${s.id}','breakAfterMin',this.value,'nnum')"></div>
+          ${APP.currentTest&&APP.currentTest.satSubject?`<div><label class="sx-lbl">SAT module 2 difficulty</label><select class="form-control" onchange="sxField('${s.id}','satLevel',this.value,'str')"><option value="" ${!s.satLevel?'selected':''}>Auto</option><option value="easy" ${s.satLevel==='easy'?'selected':''}>Easier</option><option value="hard" ${s.satLevel==='hard'?'selected':''}>Harder</option></select></div>`:''}
           <div><label class="sx-lbl">Branch-only module</label><label class="flex gap-2 items-center" style="font-size:12px"><input type="checkbox" ${s.branchOnly?'checked':''} onchange="sxField('${s.id}','branchOnly',this.checked,'bool');sxRefresh()"> Only reachable via routing</label></div>
         </div>
       </div>`:''}</div>`;}).join('');
@@ -11022,7 +11023,7 @@ function fxSatCalc(t,sub,g){
   const S1=Math.min(650,200+450*f1);
   const easy=450+200*f2,hard=450+350*f2;
   const label=(m2.title||'')+' '+(m2.id||'');
-  let h=/hard|upper|advanced/i.test(label)?1:/easy|easier|lower|basic/i.test(label)?0:clamp((f1-0.4)/0.4,0,1);
+  const lv=(t.sections||[]).find(x=>x.id===m2.id);let h=lv&&lv.satLevel==='hard'?1:lv&&lv.satLevel==='easy'?0:/hard|upper|advanced/i.test(label)?1:/easy|easier|lower|basic/i.test(label)?0:clamp((f1-0.4)/0.4,0,1);
   if(m1===m2)h=clamp((f1-0.4)/0.4,0,1);
   const S2=easy*(1-h)+hard*h;
   const W=0.55*S1+0.45*S2;
