@@ -922,6 +922,7 @@ li[data-list="checked"],li[data-list="unchecked"]{list-style:none}
 .fx-codeval{font:500 52px var(--f-mono);letter-spacing:.3em;padding-left:.3em;cursor:pointer;line-height:1.2}
 .fx-codehint{font-size:13px;color:var(--ink-soft)}
 .fx-autherr{background:var(--rust-pale);color:var(--rust);padding:9px 12px;border-radius:var(--r);font-size:13px;margin-bottom:12px}.fx-authlink{display:block;margin-top:14px;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}#fx-credit{position:fixed;left:12px;bottom:12px;z-index:50;background:var(--hl,#ffe14d);color:#111;padding:6px 12px;border-radius:6px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.25);max-width:calc(100vw - 24px)}
+.fx-still *,.fx-still *::before,.fx-still *::after{animation-duration:0s!important;animation-delay:0s!important}.answer-btn{transition:background-color .12s,border-color .12s,box-shadow .12s}
 </style>
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
@@ -7595,7 +7596,7 @@ function loadStudentResults(sid){
           <div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase">${s.studentName} · ${t.title}</div>
           <div style="font-size:36px;font-family:var(--f-body);color:var(--ink);font-weight:300">${s.score||0} / ${totalPts} points</div>
           <div style="font-size:13px;color:var(--ink-soft);margin-top:4px;font-style:italic">Submitted ${formatDate(s.submittedAt)}</div>
-          ${sxUsesEngine(t)?`<div style="margin-top:8px;font-size:15px;font-weight:600">${(()=>{const G=sxGrading(t),g=sxComputeGrade(t,s),o=[];if(g.letter&&G.showLetter)o.push('Grade '+sxE(g.letter));if(g.scaled!==null&&G.showScaled)o.push('Scaled '+g.scaled);if(g.passed!==null&&G.showPassFail)o.push(g.passed?'<span style="color:var(--sage)">✓ Passing</span>':'<span style="color:var(--rust)">✗ Not passing</span>');return o.join(' · ');})()}</div>`:''}
+          ${sxUsesEngine(t)?`<div style="margin-top:8px;font-size:15px;font-weight:600">${(()=>{const G=sxGrading(t),g=sxComputeGrade(t,s),o=[];if(g.letter&&G.showLetter)o.push('Grade '+sxE(g.letter));if(g.scaled!==null&&G.showScaled)o.push((t.satSubject?'SAT score ':'Scaled ')+g.scaled);if(g.passed!==null&&G.showPassFail)o.push(g.passed?'<span style="color:var(--sage)">✓ Passing</span>':'<span style="color:var(--rust)">✗ Not passing</span>');return o.join(' · ');})()}</div>`:''}
           ${s.note?`<div style="font-size:12px;color:var(--rust);margin-top:6px;letter-spacing:.04em">Note: ${s.note}</div>`:''}
         </div>
       </div>
@@ -10996,6 +10997,88 @@ function fxCreditLine(a,t,s){
 function fxCreditPill(h){if(!h)return;let e=document.getElementById('fx-credit');if(!e){e=document.createElement('div');e.id='fx-credit';document.body.appendChild(e);}e.innerHTML=h;}
 {const o=window.loadStudentExam;window.loadStudentExam=function(){o();const id=new URLSearchParams(location.search).get('exam');const a=APP.assignments.find(x=>x.id===id);const t=a&&APP.tests.find(x=>x.id===a.testId);fxCreditPill(fxCreditLine(a,t,null));};}
 {const o=window.loadStudentResults;window.loadStudentResults=function(sid){o(sid);const s=APP.submissions.find(x=>x.id===sid);if(!s)return;const a=APP.assignments.find(x=>x.id===s.assignmentId);const t=APP.tests.find(x=>x.id===s.testId);fxCreditPill(fxCreditLine(a,t,s));};}
+</script>
+
+<script id="ea-polish">
+/* ═══ SAT SCALED SCORE ═══
+   S1  = min(650, 200 + 450·f1)            f = (points earned ÷ points possible) in that module
+   S2E = 450 + 200·f2   (easier module 2)  S2H = 450 + 350·f2   (harder module 2)
+   W   = 0.55·S1 + 0.45·S2                 R  = 200 + 600·(W − 312.5)/405
+   Because f is a fraction, any module length works. A one-module or unsectioned test uses its overall
+   fraction for both modules. If the module-2 difficulty isn't named ("harder"/"easier" in its title),
+   it is blended smoothly from module-1 performance. The reported range is R ± 20 rounded to 10 and
+   limited to 200–800; shorter tests widen it. A perfect paper is always 800.                          */
+function fxSatCalc(t,sub,g){
+  if(!t||!t.satSubject||!g||!g.sections)return null;
+  const rows=g.sections.filter(r=>r.scored&&r.max>0&&r.reached!==false);
+  if(!rows.length)return null;
+  const tot=rows.reduce((a,r)=>({p:a.p+r.points,m:a.m+r.max,n:a.n+r.count}),{p:0,m:0,n:0});
+  const perfect=!g.pending&&tot.p>=tot.m-1e-9;
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  let m1,m2,n;
+  if(rows.length>=2){m1=rows[0];m2=rows[1];n=m1.count+m2.count;}
+  else{m1=m2=rows[0];n=rows[0].count;}
+  const f1=m1.points/m1.max,f2=m2.points/m2.max;
+  const S1=Math.min(650,200+450*f1);
+  const easy=450+200*f2,hard=450+350*f2;
+  const label=(m2.title||'')+' '+(m2.id||'');
+  let h=/hard|upper|advanced/i.test(label)?1:/easy|easier|lower|basic/i.test(label)?0:clamp((f1-0.4)/0.4,0,1);
+  if(m1===m2)h=clamp((f1-0.4)/0.4,0,1);
+  const S2=easy*(1-h)+hard*h;
+  const W=0.55*S1+0.45*S2;
+  const R=200+600*(W-312.5)/405;
+  const r10=x=>Math.round(x/10)*10,c=x=>clamp(r10(x),200,800);
+  const full=t.satSubject==='sat-math'?44:54;
+  const margin=n>=full?20:Math.min(100,Math.ceil(20*Math.sqrt(full/Math.max(1,n))/10)*10);
+  let score=c(R),lo=c(R-margin),hi=c(R+margin);
+  if(perfect){score=800;lo=800;hi=800;}
+  return {score,lo,hi,margin,partial:n<full,text:lo===hi?String(score):`${score} (${lo}–${hi})`};
+}
+{const o=window.sxComputeGrade;window.sxComputeGrade=function(t,s){const g=o(t,s);if(t&&t.satSubject){try{const r=fxSatCalc(t,s,g);if(r){g.scaled=r.text;g.sat=r;}}catch(e){}}return g;};}
+{const o=window.sxGrading;window.sxGrading=function(t){const G=o(t);if(t&&t.satSubject)G.showScaled=true;return G;};}
+{const o=window.sxUsesEngine;window.sxUsesEngine=function(t){return o(t)||!!(t&&t.satSubject);};}
+
+/* ═══ NO VISUAL REFRESH ═══ */
+// keep every scroll position and the focused field across a re-render
+function fxKeep(fn){
+  const keyOf=(el,i)=>(el.id?'#'+el.id:(el.className&&typeof el.className==='string'?'.'+el.className.split(/\s+/)[0]:el.tagName))+'|'+i;
+  const saved=[];const seen={};
+  document.querySelectorAll('body *').forEach(el=>{if(el.scrollTop>0||el.scrollLeft>0){const base=keyOf(el,0).split('|')[0];seen[base]=(seen[base]||0);saved.push([base,seen[base]++,el.scrollTop,el.scrollLeft]);}});
+  const wy=window.scrollY,ae=document.activeElement,aid=ae&&ae.id,ss=ae&&ae.selectionStart,se=ae&&ae.selectionEnd;
+  document.body.classList.add('fx-still');
+  let r;try{r=fn();}finally{
+    const cnt={};
+    saved.forEach(([base,idx,top,left])=>{let list;try{list=document.querySelectorAll(base.startsWith('#')?base:base.startsWith('.')?base:base);}catch(e){return;}const el=list[idx];if(el){el.scrollTop=top;el.scrollLeft=left;}});
+    if(wy)window.scrollTo(0,wy);
+    if(aid){const e=document.getElementById(aid);if(e&&e!==document.activeElement){e.focus();try{e.setSelectionRange(ss,se);}catch(x){}}}
+    requestAnimationFrame(()=>document.body.classList.remove('fx-still'));
+  }
+  return r;
+}
+['renderStudentExam','renderLive','renderGrading','renderAnalytics','renderDashboard','renderTests'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){return fxKeep(()=>o.apply(this,arguments));};});
+// pages only "rise in" when you navigate to them, never when they refresh themselves
+{const o=window.showPage;window.showPage=function(p){const r=o(p);const pg=document.getElementById('page-'+p);if(pg)setTimeout(()=>pg.classList.remove('animate-in'),900);return r;};}
+// choosing an answer changes only the choice itself — no rebuild of the question
+window.selectAnswer=function(key,displayJ,type){
+  const ex=APP.currentStudentExam,sub=ex.sub,a=ex.a;
+  let j=displayJ;
+  if(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])j=sub.shuffledChoices[key][displayJ];
+  if(type==='mc'){sub.answers[key]=j;}
+  else{if(!Array.isArray(sub.answers[key]))sub.answers[key]=[];const arr=sub.answers[key];const i=arr.indexOf(j);if(i>=0)arr.splice(i,1);else arr.push(j);}
+  save();saveLocalResume();
+  const btns=[...document.querySelectorAll('#student-wrapper .answer-btn')].filter(b=>(b.getAttribute('onclick')||'').indexOf("selectAnswer('"+key+"'")===0);
+  if(!btns.length){renderStudentExam();return;}
+  btns.forEach(b=>{
+    const m=/selectAnswer\('[^']*',(\d+)/.exec(b.getAttribute('onclick'));if(!m)return;
+    const dj=+m[1];const aj=(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][dj]:dj;
+    const on=type==='mc'?sub.answers[key]===aj:(sub.answers[key]||[]).includes(aj);
+    b.classList.toggle('selected',on);
+  });
+  // answered counter + question-palette dot
+  const fq=examItems();const n=fq.filter(f=>sub.answers&&sub.answers[f.key]!==undefined).length;
+  document.querySelectorAll('#student-wrapper span').forEach(sp=>{const tn=sp.firstChild;if(tn&&tn.nodeType===3&&/^\d+\/\d+ answered/.test(tn.nodeValue))tn.nodeValue=tn.nodeValue.replace(/^\d+/,n);});
+  try{fxDecorateStudent();}catch(e){}
+};
 </script>
 
 </body>
