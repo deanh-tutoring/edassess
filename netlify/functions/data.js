@@ -237,7 +237,7 @@ async function readCore(user) {
   const ids = new Set(tests.map((x) => x.id));
   const peers = p.vals.filter(Boolean).filter((x) => ownerOf(x) === lc(user.username) || (ids.has(x.testId) && asgs.some((g) => g.testId === x.testId)));
   const names = await namesFor(new Set([...tests.map((x) => ownerOf(x)), ...tests.flatMap((x) => (x.sharedWith || []).map((s) => s.u)), ...asgs.map(ownerOf), ...asgs.flatMap((x) => x.coTeachers || [])]));
-  return { tests, assignments: asgs, peerSessions: peers, teachers: names };
+  return { tests, assignments: asgs, peerSessions: peers, teachers: names, classes: await classesForTeacher(user) };
 }
 // Submissions come in pages that respect the response-size cap.
 async function readSubsPage(prefix, after, keyOk) {
@@ -293,14 +293,21 @@ async function findSub(id) {
 }
 
 /* ── submissions / peer / assignments ── */
-async function upsertSubmission(sub, user) {
+async function upsertSubmission(sub, user, student) {
   if (!sub || !okId(sub.id)) return bad('Submission needs a valid id.');
   const aid = okId(sub.assignmentId) ? sub.assignmentId : '_';
   const clean = JSON.parse(JSON.stringify(sub));
   await externalizeImages(clean);
   const key = P.sub + aid + '/' + sub.id;
   const prev = await getJ(key);
-  delete clean.gradedBy; delete clean.commentBy;
+  delete clean.gradedBy; delete clean.commentBy; delete clean.studentKey;
+  if (!user) {
+    const asg0 = okId(clean.assignmentId) ? await getJ(P.asg + clean.assignmentId) : null;
+    const deny = await accessCheckAssignment(asg0, student);
+    if (deny) return deny;
+    if (prev && prev.studentKey && (!student || student.key !== prev.studentKey)) return reply(403, { error: 'This submission belongs to another account.' });
+    if (student) { clean.studentKey = student.key; if (asg0 && asg0.requireAccount) clean.studentName = student.name; }
+  } else if (prev && prev.studentKey) clean.studentKey = prev.studentKey;
   if (user) {
     if (!(await canTouchSub(clean, user)) && !(prev && (await canTouchSub(prev, user)))) return bad('You do not have access to this assignment.', 403);
     const me = lc(user.username);
@@ -322,6 +329,7 @@ async function upsertSubmission(sub, user) {
     clean.instructorOps = (clean.instructorOps || []).concat(prev.instructorOps.filter((o) => !have.has(o.id)));
   }
   await putJ(key, clean);
+  if (clean.studentKey) await putJ(SS_PREFIX + clean.studentKey + '/' + clean.id, { id: clean.id, aid, at: new Date().toISOString() });
   if (!prev) await putJ(P.subidx + sub.id, aid);
   return reply(200, { ok: true, serverTime: new Date().toISOString() });
 }
@@ -355,6 +363,12 @@ async function putSimple(prefix, obj, user) {
         const t = await getJ(P.test + clean.testId);
         if (!t || !testRole(t.data, user)) return bad('You do not have access to that test.', 403);
       }
+    }
+    {
+      const mine = (await allClasses()).filter((c) => classRole(c, user)).map((c) => c.id);
+      clean.classIds = (Array.isArray(clean.classIds) ? clean.classIds : []).filter((id) => mine.includes(id));
+      clean.requireAccount = !!clean.requireAccount;
+      clean.dueAt = clean.dueAt ? String(clean.dueAt).slice(0, 40) : null;
     }
     dropAsgCache();
   } else if (prefix === P.peer) {
@@ -418,7 +432,7 @@ async function userFromEvent(event) {
   const h = event.headers || {};
   const m = /^Bearer\s+(.+)$/i.exec(h.authorization || h.Authorization || '');
   const name = m && readToken(m[1]);
-  if (!name) return null;
+  if (!name || name.startsWith('s:')) return null;
   const u = await getJ(U_PREFIX + name);
   return u && !u.disabled ? u : null;
 }
@@ -547,8 +561,246 @@ async function cleanCoTeachers(list, owner) {
   return (await cleanSharing((Array.isArray(list) ? list : []).map((u) => ({ u })), owner)).map((s) => s.u);
 }
 
+/* ═══════════════ STUDENT ACCOUNTS & CLASSES ═══════════════
+   A student account is just "First L" (first name + last initial) and a password.
+   Teachers own classes; students join with a code or accept a teacher's invite by name.          */
+const S_PREFIX = 'v2/stu/', C_PREFIX = 'v2/class/', SS_PREFIX = 'v2/stusub/';
+const capWord = (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+function normStudentName(raw) {
+  const m = /^([A-Za-z][A-Za-z'’-]{0,23})\s+([A-Za-z])\.?([2-9]?)$/.exec(String(raw || '').trim().replace(/\s+/g, ' '));
+  if (!m) return null;
+  const first = m[1].split('-').map(capWord).join('-');
+  const name = `${first} ${m[2].toUpperCase()}${m[3]}`;
+  return { name, key: name.toLowerCase().replace(/[’']/g, '').replace(/\s/g, '_') };
+}
+const NAME_HELP = 'Use your first name and last initial, like “Sam K”. If a classmate has the same name, add a number after your initial (Sam K2).';
+const pubStudent = (s) => ({ key: s.key, name: s.name, mustChange: !!s.mustChange, role: 'student' });
+async function setStudentPw(s, pw, mustChange) {
+  s.salt = crypto.randomBytes(16).toString('hex'); s.hash = hashPw(pw, s.salt); s.mustChange = !!mustChange;
+  s.fails = 0; s.lockUntil = 0; s.pwAt = new Date().toISOString();
+  await putJ(S_PREFIX + s.key, s);
+}
+async function studentFromEvent(event) {
+  const h = event.headers || {};
+  const m = /^Bearer\s+(.+)$/i.exec(h.authorization || h.Authorization || '');
+  const t = m && readToken(m[1]);
+  if (!t || !t.startsWith('s:')) return null;
+  const s = await getJ(S_PREFIX + t.slice(2));
+  return s && !s.disabled ? s : null;
+}
+const STU_ERR = () => reply(401, { error: 'Please sign in to your student account.', needAccount: true });
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+async function newClassCode() {
+  for (let i = 0; i < 30; i++) {
+    let c = ''; for (let k = 0; k < 6; k++) c += CODE_CHARS[crypto.randomInt(CODE_CHARS.length)];
+    const taken = (await allClasses()).some((x) => x.joinCode === c) || (await allAsgs()).some((a) => String(a.code || '').toUpperCase() === c);
+    if (!taken) return c;
+  }
+  throw new Error('code');
+}
+let _clsCache = { t: 0, vals: [] };
+async function allClasses() {
+  if (Date.now() - _clsCache.t < 2500) return _clsCache.vals;
+  const vals = (await mapLimit(await listKeys(C_PREFIX), 24, getJ)).filter(Boolean);
+  _clsCache = { t: Date.now(), vals };
+  return vals;
+}
+const dropClsCache = () => { _clsCache = { t: 0, vals: [] }; };
+async function saveClass(c) { await putJ(C_PREFIX + c.id, c); dropClsCache(); }
+function classRole(c, user) {
+  if (!user || !c) return null;
+  const me = lc(user.username);
+  if (ownerOf(c) === me) return 'owner';
+  return (c.coTeachers || []).map(lc).includes(me) ? 'edit' : null;
+}
+const clsClean = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [] });
+async function classesForTeacher(user) {
+  const mine = (await allClasses()).filter((c) => classRole(c, user));
+  const out = [];
+  for (const c of mine) {
+    const x = clsClean(c);
+    x.invites = await Promise.all((c.invites || []).map(async (i) => ({ ...i, registered: !!(await getJ(S_PREFIX + i.key)) })));
+    out.push(x);
+  }
+  return out;
+}
+const testMax = (t) => ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
+async function studentHome(s) {
+  const classes = (await allClasses()).filter((c) => !c.archived || (c.students || []).some((x) => x.key === s.key));
+  const mine = classes.filter((c) => (c.students || []).some((x) => x.key === s.key));
+  const invites = classes.filter((c) => !c.archived && (c.invites || []).some((i) => i.key === s.key));
+  const ids = new Set(mine.map((c) => c.id));
+  const asgAll = await allAsgs();
+  const subKeys = await listKeys(SS_PREFIX + s.key + '/');
+  const idx = (await mapLimit(subKeys, 12, getJ)).filter(Boolean);
+  const subs = (await mapLimit(idx.map((i) => i.id), 12, findSub)).filter(Boolean);
+  const wanted = new Map();
+  asgAll.filter((a) => (a.classIds || []).some((id) => ids.has(id))).forEach((a) => wanted.set(a.id, a));
+  for (const sub of subs) if (okId(sub.assignmentId) && !wanted.has(sub.assignmentId)) { const a = asgAll.find((x) => x.id === sub.assignmentId); if (a) wanted.set(a.id, a); }
+  const tcache = {};
+  const assignments = [];
+  for (const a of wanted.values()) {
+    if (!(a.testId in tcache)) { const r = okId(a.testId) ? await getJ(P.test + a.testId) : null; tcache[a.testId] = r ? r.data : null; }
+    const t = tcache[a.testId];
+    assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
+  }
+  const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, curved: x.curvedScore == null ? null : x.curvedScore }));
+  const set = new Set();
+  for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); }
+  assignments.forEach((a) => set.add(a.ownerId));
+  subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
+  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
+  return { student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
+}
+async function studentAction(body, student) {
+  const a = body.action;
+  if (a === 'studentSignup' || a === 'studentLogin') {
+    if (!secret()) return bad('Accounts are not configured yet: the site owner must set EA_AUTH_SECRET.', 500);
+    const n = normStudentName(body.name);
+    if (!n) return bad(NAME_HELP);
+    const pw = String(body.password || '');
+    if (a === 'studentSignup') {
+      if (pw.length < 6) return bad('Choose a password with at least 6 characters.');
+      if (await getJ(S_PREFIX + n.key)) return bad('There is already an account named ' + n.name + '. Sign in instead — or, if you are a different student, add a number after your initial (for example ' + n.name.replace(/\d*$/, '') + '2).', 409);
+      const s = { key: n.key, name: n.name, createdAt: new Date().toISOString() };
+      await setStudentPw(s, pw, false);
+      return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s), created: true });
+    }
+    const s = await getJ(S_PREFIX + n.key);
+    if (!s) { hashPw(pw, 'x'.repeat(16)); return bad('No account with that name yet. Tap “Create my account” to set one up.', 404); }
+    if (s.lockUntil && s.lockUntil > Date.now()) return bad('Too many attempts. Wait a minute and try again.', 429);
+    if (s.disabled || !sameStr(hashPw(pw, s.salt), s.hash)) {
+      s.fails = (s.fails || 0) + 1;
+      if (s.fails >= 5) { s.fails = 0; s.lockUntil = Date.now() + 60000; }
+      await putJ(S_PREFIX + s.key, s);
+      return bad('Wrong name or password. Forgot it? Ask your teacher to have the administrator reset it.', 401);
+    }
+    s.fails = 0; s.lockUntil = 0; s.lastLogin = new Date().toISOString();
+    await putJ(S_PREFIX + s.key, s);
+    return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s) });
+  }
+  const SA = ['studentMe', 'studentChangePassword', 'joinClass', 'respondInvite', 'leaveClass'];
+  if (!SA.includes(a)) return null;
+  if (!student) return STU_ERR();
+  if (a === 'studentMe') return reply(200, await studentHome(student));
+  if (a === 'studentChangePassword') {
+    if (String(body.newPassword || '').length < 6) return bad('Choose a password with at least 6 characters.');
+    if (!sameStr(hashPw(body.oldPassword || '', student.salt), student.hash)) return bad('Current password is wrong.', 403);
+    await setStudentPw(student, body.newPassword, false);
+    return reply(200, { ok: true, student: pubStudent(student) });
+  }
+  if (a === 'joinClass') {
+    const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const c = (await allClasses()).find((x) => x.joinCode === code && !x.archived);
+    if (!c) return bad('No class has that code. Check it with your teacher.', 404);
+    c.students = c.students || [];
+    if (!c.students.some((x) => x.key === student.key)) c.students.push({ key: student.key, name: student.name, joinedAt: new Date().toISOString() });
+    c.invites = (c.invites || []).filter((i) => i.key !== student.key);
+    await saveClass(c);
+    return reply(200, { ok: true, classId: c.id, name: c.name });
+  }
+  const c = okId(body.classId) ? await getJ(C_PREFIX + body.classId) : null;
+  if (!c) return bad('Class not found.', 404);
+  if (a === 'respondInvite') {
+    if (!(c.invites || []).some((i) => i.key === student.key)) return bad('That invitation is no longer there.', 404);
+    c.invites = c.invites.filter((i) => i.key !== student.key);
+    if (body.accept) { c.students = c.students || []; if (!c.students.some((x) => x.key === student.key)) c.students.push({ key: student.key, name: student.name, joinedAt: new Date().toISOString() }); }
+    await saveClass(c);
+    return reply(200, { ok: true });
+  }
+  if (a === 'leaveClass') { c.students = (c.students || []).filter((x) => x.key !== student.key); await saveClass(c); return reply(200, { ok: true }); }
+  return null;
+}
+async function classAction(body, user) {
+  const a = body.action;
+  const CA = ['createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled'];
+  if (!CA.includes(a)) return null;
+  if (!user) return AUTH_ERR();
+  if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
+  if (a.startsWith('admin')) {
+    if (user.role !== 'admin') return bad('Admin only.', 403);
+    if (a === 'adminListStudents') {
+      const ss = (await mapLimit(await listKeys(S_PREFIX), 12, getJ)).filter(Boolean);
+      const cls = await allClasses();
+      const out = [];
+      for (const s of ss) {
+        const mine = cls.filter((c) => (c.students || []).some((x) => x.key === s.key));
+        const n = (await listKeys(SS_PREFIX + s.key + '/')).length;
+        out.push({ key: s.key, name: s.name, createdAt: s.createdAt, lastLogin: s.lastLogin || null, disabled: !!s.disabled, mustChange: !!s.mustChange, submissions: n, classes: mine.map((c) => ({ id: c.id, name: c.name, teacher: ownerOf(c) })) });
+      }
+      const names = await namesFor(new Set(out.flatMap((s) => s.classes.map((c) => c.teacher))));
+      out.forEach((s) => s.classes.forEach((c) => { c.teacherName = names[c.teacher] || c.teacher; }));
+      return reply(200, { students: out.sort((x, y) => x.name.localeCompare(y.name)) });
+    }
+    const s = await getJ(S_PREFIX + String(body.key || ''));
+    if (!s) return bad('No such student.', 404);
+    if (a === 'adminSetStudentDisabled') { s.disabled = !!body.disabled; await putJ(S_PREFIX + s.key, s); return reply(200, { ok: true }); }
+    if (String(body.newPassword || '').length < 6) return bad('Password needs at least 6 characters.');
+    await setStudentPw(s, body.newPassword, true);
+    return reply(200, { ok: true });
+  }
+  if (a === 'createClass') {
+    const name = String(body.name || '').trim().slice(0, 60);
+    if (!name) return bad('Give the class a name.');
+    const c = { id: crypto.randomBytes(8).toString('hex'), name, subject: String(body.subject || '').trim().slice(0, 40), period: String(body.period || '').trim().slice(0, 20), ownerId: lc(user.username), coTeachers: [], joinCode: await newClassCode(), students: [], invites: [], announcements: [], createdAt: new Date().toISOString() };
+    await saveClass(c);
+    return reply(200, { ok: true, class: clsClean(c) });
+  }
+  const c = okId(body.id || body.classId) ? await getJ(C_PREFIX + (body.id || body.classId)) : null;
+  const role = classRole(c, user);
+  if (!c || !role) return bad('Class not found.', 404);
+  if ((a === 'deleteClass' || a === 'setClassCoTeachers') && role !== 'owner') return bad('Only the class owner can do that.', 403);
+  if (a === 'deleteClass') { await delK(C_PREFIX + c.id); dropClsCache(); return reply(200, { ok: true }); }
+  if (a === 'setClassCoTeachers') { c.coTeachers = await cleanCoTeachers(body.coTeachers, ownerOf(c)); await saveClass(c); return reply(200, { ok: true, coTeachers: c.coTeachers }); }
+  if (a === 'updateClass') {
+    if (body.name !== undefined) { const n = String(body.name).trim().slice(0, 60); if (n) c.name = n; }
+    if (body.subject !== undefined) c.subject = String(body.subject).trim().slice(0, 40);
+    if (body.period !== undefined) c.period = String(body.period).trim().slice(0, 20);
+    if (body.archived !== undefined) c.archived = !!body.archived;
+    await saveClass(c); return reply(200, { ok: true, class: clsClean(c) });
+  }
+  if (a === 'regenClassCode') { c.joinCode = await newClassCode(); await saveClass(c); return reply(200, { ok: true, joinCode: c.joinCode }); }
+  if (a === 'inviteStudents') {
+    const res = { invited: [], already: [], bad: [] };
+    c.students = c.students || []; c.invites = c.invites || [];
+    for (const raw of Array.isArray(body.names) ? body.names.slice(0, 80) : []) {
+      const n = normStudentName(raw);
+      if (!n) { if (String(raw).trim()) res.bad.push(String(raw).trim()); continue; }
+      if (c.students.some((x) => x.key === n.key) || c.invites.some((i) => i.key === n.key)) { res.already.push(n.name); continue; }
+      c.invites.push({ key: n.key, name: n.name, at: new Date().toISOString(), by: lc(user.username) });
+      res.invited.push(n.name);
+    }
+    await saveClass(c);
+    return reply(200, { ok: true, ...res });
+  }
+  if (a === 'cancelInvite') { c.invites = (c.invites || []).filter((i) => i.key !== body.key); await saveClass(c); return reply(200, { ok: true }); }
+  if (a === 'removeStudent') { c.students = (c.students || []).filter((x) => x.key !== body.key); await saveClass(c); return reply(200, { ok: true }); }
+  if (a === 'postAnnouncement') {
+    const text = String(body.text || '').trim().slice(0, 1000);
+    if (!text) return bad('Write something first.');
+    c.announcements = c.announcements || [];
+    c.announcements.push({ id: crypto.randomBytes(6).toString('hex'), text, by: lc(user.username), at: new Date().toISOString() });
+    c.announcements = c.announcements.slice(-40);
+    await saveClass(c); return reply(200, { ok: true });
+  }
+  if (a === 'deleteAnnouncement') { c.announcements = (c.announcements || []).filter((x) => x.id !== body.annId); await saveClass(c); return reply(200, { ok: true }); }
+  return null;
+}
+async function accessCheckAssignment(asg, student) {
+  // returns an error reply when this assignment needs an account the caller doesn't have
+  if (!asg || !asg.requireAccount) return null;
+  if (!student) return STU_ERR();
+  if ((asg.classIds || []).length) {
+    const cls = await allClasses();
+    const ok = cls.some((c) => asg.classIds.includes(c.id) && (c.students || []).some((x) => x.key === student.key));
+    if (!ok) return reply(403, { error: 'This assessment is for a class you are not in yet.', notInClass: true });
+  }
+  return null;
+}
+
+
 /* ── GET ── */
-async function handleGet(q, user) {
+async function handleGet(q, user, student) {
   await ensureMigrated();
   if (q.img) {
     if (!/^[a-f0-9]{40}$/.test(q.img)) return bad('Bad image id.', 400);
@@ -569,8 +821,12 @@ async function handleGet(q, user) {
     const keys = await listKeys(P.asg);
     const vals = await mapLimit(keys, 24, getJ);
     const a = vals.find((v) => v && String(v.code || '').toUpperCase() === c);
-    return a ? reply(200, { id: a.id }) : bad('Not found', 404);
+    if (a) return reply(200, { id: a.id });
+    const cl = (await allClasses()).find((x) => x.joinCode === c && !x.archived);
+    return cl ? reply(200, { classCode: true, name: cl.name, teacher: (await namesFor(new Set([ownerOf(cl)])))[ownerOf(cl)] }) : bad('Not found', 404);
   }
+  if (q.part === 'student') { if (!student) return STU_ERR(); return reply(200, await studentHome(student)); }
+  if (q.part === 'classes' && user) return reply(200, { classes: await classesForTeacher(user) });
   if (q.peer) {
     // student peer-review page: only the session, its test and the submissions it covers
     if (!okId(q.peer)) return bad('Bad id.');
@@ -602,8 +858,11 @@ async function handleGet(q, user) {
   if (q.exam) {
     if (!okId(q.exam)) return bad('Bad id.');
     const asg = await getJ(P.asg + q.exam);
+    const deny = (user ? null : await accessCheckAssignment(asg, student));
+    if (deny) return deny;
     const test = asg && okId(asg.testId) ? await getJ(P.test + asg.testId) : null;
     const page = asg ? await readSubsPage(P.sub + q.exam + '/', null) : { submissions: [], next: null };
+    if (asg && asg.requireAccount) page.submissions = page.submissions.filter((x) => x.studentKey === student.key);
     return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: asg ? [asg] : [], submissions: page.submissions, peerSessions: [], teachers: await teachersForStudent(asg, test, page.submissions), scoped: 'exam', truncated: !!page.next });
   }
   if (q.results) {
@@ -651,10 +910,14 @@ async function handleGet(q, user) {
 // Old cached pages verify a save by comparing the `state` echoed in the reply with what they sent.
 // Echo exactly the records we just wrote (small), never the whole database.
 function legacyReply(echo) { return reply(200, { ok: true, state: echo || {} }); }
-async function handlePost(body, user) {
+async function handlePost(body, user, student) {
   await ensureMigrated();
   const au = await authAction(body, user);
   if (au) return au;
+  const sa = await studentAction(body, student);
+  if (sa) return sa;
+  const ca = await classAction(body, user);
+  if (ca) return ca;
   const PUBLIC = ['upsertSubmission', 'putImage', 'upsertPeerSession', 'putPeerSession'];
   const publicOp = body.action === 'instructorOp' && body.op && body.op.type === 'upload';
   if (!user && !PUBLIC.includes(body.action) && !publicOp) return AUTH_ERR();
@@ -663,7 +926,7 @@ async function handlePost(body, user) {
     case 'putAssignment': return putSimple(P.asg, body.assignment, user);
     case 'putPeerSession':
     case 'upsertPeerSession': return putSimple(P.peer, body.peerSession, user);
-    case 'upsertSubmission': return upsertSubmission(body.submission, user);
+    case 'upsertSubmission': return upsertSubmission(body.submission, user, student);
     case 'putImage': {
       const m = /^data:(image\/(?:png|jpe?g|gif|webp)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/.exec(body.dataUrl || '');
       if (!m) return bad('Not a supported image or PDF.');
@@ -814,12 +1077,13 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   try {
     const user = await userFromEvent(event);
-    if (event.httpMethod === 'GET') return await handleGet(event.queryStringParameters || {}, user);
+    const student = await studentFromEvent(event);
+    if (event.httpMethod === 'GET') return await handleGet(event.queryStringParameters || {}, user, student);
     if (event.httpMethod === 'POST') {
       if ((event.body || '').length > MAX_BODY) return bad('That save is too large (over 5.5 MB). Remove or shrink large images and try again.', 413);
       let body;
       try { body = JSON.parse(event.body || '{}'); } catch (e) { return bad('Invalid JSON body'); }
-      return await handlePost(body, user);
+      return await handlePost(body, user, student);
     }
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   } catch (err) {
