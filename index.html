@@ -983,6 +983,78 @@ body.pv-open{overflow:hidden}
 #fx-hold *{color:var(--ink)!important}
 #fx-hold button{color:#fff!important;background:var(--ink)!important}
 #fx-hold [style*="rgba(255,255,255"]{opacity:.8}
+
+/* students */
+:root{--hl:#FDE68A}
+.stu-joinnote{background:#FEF3C7;border:1px solid #F5D97A;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.stu-hint{font-size:12px;color:var(--text-muted,#6b7280);margin-bottom:12px;line-height:1.5}
+body.stu-mode{background:var(--bg,#FAF8F4)}
+#stu-app{min-height:100vh;background:var(--bg,#FAF8F4);color:var(--ink,#1a1a1a);font-family:var(--f-body)}
+.stu-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;padding:0 28px;height:62px;background:#fff;border-bottom:1px solid var(--border,#e5e2da)}
+.stu-brand{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.02em}
+.stu-top nav{display:flex;gap:4px;flex:1}
+.stu-top nav a{padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;color:#555;display:flex;gap:6px;align-items:center}
+.stu-top nav a:hover{background:#f3f1ea}.stu-top nav a.on{background:var(--ink,#1a1a1a);color:#fff}
+.stu-top nav a i{font-style:normal;background:var(--rust,#C2410C);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.stu-me{display:flex;align-items:center;gap:8px;border:1px solid var(--border,#e5e2da);background:#fff;border-radius:999px;padding:4px 14px 4px 4px;font-weight:600;font-size:14px;cursor:pointer}
+.stu-me span{width:28px;height:28px;border-radius:50%;background:var(--ink,#1a1a1a);color:#fff;display:grid;place-items:center;font-size:13px}
+#stu-menu{position:fixed;top:56px;right:24px;z-index:60;background:#fff;border:1px solid var(--border,#e5e2da);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px;min-width:190px}
+#stu-menu a{display:block;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px}#stu-menu a:hover{background:#f3f1ea}
+.stu-main{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+.stu-hero{margin-bottom:22px}.stu-eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#777;margin-bottom:6px}
+.stu-hero h1{font-family:var(--f-display);font-size:44px;line-height:1.05;letter-spacing:-.03em;font-weight:700;margin:0}
+.stu-hero h1 u{text-decoration:none;background:linear-gradient(transparent 62%,var(--hl) 62%)}
+.stu-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:22px}
+.stu-stat{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:14px;padding:16px;font-size:13px;color:#666}
+.stu-stat span{display:block;font-family:var(--f-display);font-size:32px;font-weight:700;color:var(--ink,#1a1a1a);line-height:1.1}
+.stu-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start}
+.stu-card{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.stu-card-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.stu-card-h h2{font-family:var(--f-display);font-size:20px;margin:0}.stu-card-h a{font-size:13px;cursor:pointer;color:#555;font-weight:600}
+.stu-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:13px 0;border-top:1px solid #efece4;flex-wrap:wrap}
+.stu-card-h+.stu-row{border-top:0}
+.stu-row-title{font-weight:600;font-size:15px}.stu-row-meta,.stu-muted{font-size:12.5px;color:#777}
+.stu-row-side{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stu-due{font-size:12.5px;font-weight:600;color:#555}.stu-due.late{color:var(--rust,#C2410C)}
+.stu-pill{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;background:#eee}
+.stu-pill.todo{background:#FEF3C7;color:#92400E}.stu-pill.progress{background:#DBEAFE;color:#1E40AF}.stu-pill.done{background:#DCFCE7;color:#166534}.stu-pill.closed{background:#F3F4F6;color:#6B7280}.stu-pill.scheduled{background:#EDE9FE;color:#5B21B6}
+.stu-btn{display:inline-block;border:1.5px solid var(--ink,#1a1a1a);background:var(--ink,#1a1a1a);color:#fff;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit}
+.stu-btn.ghost{background:#fff;color:var(--ink,#1a1a1a)}.stu-btn+.stu-btn{margin-left:6px}
+.stu-empty{padding:18px 0;color:#888;font-size:14px}
+.stu-invite{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#FEF9E7;border:1px solid #F5D97A;border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.stu-class{padding:11px 12px;margin:0 -12px;border-radius:10px;cursor:pointer}.stu-class:hover{background:#f6f4ee}.stu-class-name{font-weight:700}
+.stu-join{display:flex;gap:8px;margin-top:12px}.stu-join input{flex:1;min-width:0;border:1.5px solid var(--border,#d9d5ca);border-radius:10px;padding:8px 12px;font-family:monospace;letter-spacing:.14em;font-weight:700}
+.stu-ann{padding:10px 0;border-top:1px solid #efece4;font-size:14px}
+.stu-grade{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid #efece4;text-decoration:none;color:inherit}
+.stu-score{font-family:var(--f-display);font-size:26px;font-weight:700}
+.stu-new{font-style:normal;background:var(--hl);border-radius:6px;font-size:10.5px;font-weight:800;padding:2px 6px;text-transform:uppercase}
+.stu-filters{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.stu-tabs{display:flex;background:#fff;border:1px solid var(--border,#e5e2da);border-radius:999px;padding:3px}
+.stu-tabs button{border:0;background:none;padding:7px 16px;border-radius:999px;font-weight:600;cursor:pointer;font-family:inherit}.stu-tabs button.on{background:var(--ink,#1a1a1a);color:#fff}
+.stu-filters select{border:1px solid var(--border,#e5e2da);border-radius:999px;padding:8px 14px;background:#fff;font-family:inherit}
+.stu-table,.fxc-table{width:100%;border-collapse:collapse;font-size:14px}
+.stu-table th,.fxc-table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:#888;padding:8px 6px;border-bottom:1px solid #e5e2da}
+.stu-table td,.fxc-table td{padding:11px 6px;border-bottom:1px solid #f1eee7;vertical-align:top}
+.stu-spark{width:100%;max-width:520px;height:80px}.stu-mini{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#777;margin:18px 0 4px}
+@media(max-width:760px){.stu-cols{grid-template-columns:1fr}.stu-top{padding:0 14px;gap:10px}.stu-brand{font-size:19px}.stu-me{font-size:0;padding:4px}.stu-hero h1{font-size:34px}.stu-main{padding:22px 14px 60px}}
+/* teacher classes */
+.fxc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.fxc-card{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:16px;padding:18px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.fxc-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.08)}.fxc-card.arch{opacity:.6}
+.fxc-name{font-family:var(--f-display);font-size:21px;font-weight:700}.fxc-sub{font-size:12.5px;color:#777}
+.fxc-meta{display:flex;gap:14px;font-size:13px;margin:12px 0}.fxc-code{font-family:monospace;letter-spacing:.2em;font-weight:800;background:#f3f1ea;border-radius:8px;padding:6px 10px;display:inline-block}
+.fxc-empty{text-align:center;padding:70px 20px}.fxc-empty h2{font-family:var(--f-display);font-size:30px}
+.fxc-codebar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid var(--border,#e5e2da);border-radius:16px;padding:16px 20px;margin-bottom:16px}
+.fxc-bigcode{font-family:monospace;font-size:34px;font-weight:800;letter-spacing:.22em}
+.fxc-tabs{display:flex;gap:6px;margin-bottom:14px}.fxc-tabs button{border:1px solid var(--border,#e5e2da);background:#fff;border-radius:999px;padding:7px 16px;font-weight:600;cursor:pointer;font-family:inherit}.fxc-tabs button.on{background:var(--ink,#1a1a1a);color:#fff}
+.fxc-two{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}@media(max-width:860px){.fxc-two{grid-template-columns:1fr}}
+.fxc-panel{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.fxc-panel textarea{width:100%;border:1px solid var(--border,#d9d5ca);border-radius:10px;padding:10px;font-family:inherit;margin-bottom:8px;resize:vertical}
+.fxc-h{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#777;margin-bottom:8px;font-weight:700}
+.fxc-x{color:var(--rust,#C2410C);cursor:pointer;font-size:12.5px;font-weight:600}.fxc-none{color:#888;padding:16px 6px}
+.fxc-inv{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px}.fxc-inv i{display:block;font-style:normal;font-size:11.5px;color:#888}
+.fxc-asg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #efece4;flex-wrap:wrap}.fxc-asg-r{display:flex;gap:8px;align-items:center;font-size:13px;color:#666}
+.fxs-off{opacity:.55}
 </style>
 </head>
 <body>
@@ -1039,6 +1111,16 @@ body.pv-open{overflow:hidden}
       <button id="join-btn" class="btn btn-primary btn-lg login-btn" onclick="fxJoin()">Join</button>
       <div id="join-err" class="join-err"></div>
     </div>
+    <details class="inst-details" id="stu-details"><summary>Student sign in</summary>
+    <div id="stu-join-note" class="stu-joinnote hidden"></div>
+    <div class="form-group"><label class="form-label">First name + last initial</label><input type="text" id="stu-name" class="form-control" placeholder="e.g. Sam K" autocomplete="username" autocapitalize="words"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" id="stu-pass" class="form-control" autocomplete="current-password" onkeydown="if(event.key==='Enter'&&stuMode==='in')fxStuAuth()"></div>
+    <div class="form-group hidden" id="stu-pass2-wrap"><label class="form-label">Confirm password</label><input type="password" id="stu-pass2" class="form-control" autocomplete="new-password" onkeydown="if(event.key==='Enter')fxStuAuth()"></div>
+    <div id="stu-note" class="hidden stu-hint">Use your first name and last initial (like <b>Sam K</b>). If someone already has that name, add a number: <b>Sam K2</b>. Choose a password of 6+ characters — your teacher can reset it but can’t see it.</div>
+    <div id="stu-err" class="hidden fx-autherr"></div>
+    <button class="btn btn-primary btn-lg login-btn" id="stu-go" onclick="fxStuAuth()">Sign in</button>
+    <a class="fx-authlink" id="stu-swap" onclick="fxStuMode(stuMode==='in'?'up':'in')">First time here? <b>Create my account</b></a>
+    </details>
     <details class="inst-details" id="inst-details"><summary>Teacher sign in</summary>
     <div id="auth-signin">
       <div class="form-group"><label class="form-label">Username</label><input type="text" id="login-username" class="form-control" autocomplete="username"></div>
@@ -1094,6 +1176,10 @@ body.pv-open{overflow:hidden}
         Live Monitor
       </a>
       <div class="nav-section" style="margin-top:16px">Tools</div>
+      <a class="nav-item" onclick="showPage('classes')" data-page="classes">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Classes
+      </a>
       <a class="nav-item" onclick="showPage('grading')" data-page="grading">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Grade Center
@@ -1131,6 +1217,7 @@ body.pv-open{overflow:hidden}
     <div id="page-tests" class="page-view hidden"></div>
     <div id="page-live" class="page-view hidden"></div>
     <div id="page-grading" class="page-view hidden"></div>
+    <div id="page-classes" class="page-view hidden"></div>
     <div id="page-peer" class="page-view hidden"></div>
     <div id="page-analytics" class="page-view hidden"></div>
     <div id="page-builder" class="page-view hidden" style="height:100%;overflow:hidden;display:flex;flex-direction:column"></div>
@@ -1138,6 +1225,7 @@ body.pv-open{overflow:hidden}
 </div>
 
 <!-- ═══════════ STUDENT TEST WRAPPER ═══════════ -->
+<div id="stu-app" class="hidden"></div>
 <div id="student-wrapper" class="hidden"></div>
 
 <!-- ═══════════ MODALS ═══════════ -->
@@ -3942,6 +4030,7 @@ async function createAssignment(testId){
     createdAt:new Date().toISOString(),
   };
   Object.assign(a,sxReadAssign(APP.tests.find(x=>x.id===testId)));
+  if(window.fxAsgExtras)Object.assign(a,fxAsgExtras());
   APP.assignments.push(a);
   const btn=document.getElementById('create-assignment-btn');
   setBtnSaving(btn,true,'Generating…');
@@ -11168,7 +11257,7 @@ function fxPrivacyOpen(){
   <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Privacy <u>policy</u></h1><div class="pv-date">Last updated November 3, 2026</div><section id="pv0"><h2><i>1</i>Overview</h2><p class="lead">EdAssess collects only what it needs to run classroom assessments: a student's name and answers, and a teacher's account details. We do not sell data, show ads, or track people across other sites.</p>
 <h3>Who this covers</h3>
 <p>This policy applies to everyone who uses EdAssess, operated by <mark>[Operator name]</mark> (“we”, “us”):</p>
-<ul><li><b>Students</b> join an assessment with a link or short join code. Students do not create accounts.</li><li><b>Teachers</b> create accounts to build tests, assign them, monitor sessions and grade work. Teachers can share tests and co-teach assignments with other teachers.</li></ul>
+<ul><li><b>Students</b> join an assessment with a link or short join code. Students can take many assessments without an account. Students may also create an optional account (first name and last initial, plus a password stored only as a salted hash) to join classes and see their assignments and grades. Teachers can see the names, class membership and results of students in their own classes; an administrator can list student accounts and reset a password but can never see it.</li><li><b>Teachers</b> create accounts to build tests, assign them, monitor sessions and grade work. Teachers can share tests and co-teach assignments with other teachers.</li></ul>
 <p>EdAssess is run on behalf of teachers and schools. For student work, the teacher or school that assigned it decides what is collected and how long it is kept; we store and process it for them.</p>
 <h3>The short version</h3>
 <table><tr><th>Question</th><th>Answer</th></tr>
@@ -11230,5 +11319,394 @@ window.addEventListener('DOMContentLoaded',()=>{if(new URLSearchParams(location.
   const sp=new URLSearchParams(location.search);if(sp.get('results')||sp.get('portal')||sp.get('peerreview')||sp.get('upload'))document.body.insertAdjacentHTML('beforeend','<a id="pv-link-stu" class="pv-foot stu" onclick="fxPrivacyOpen()">Privacy</a>');
 });
 </script>
+<script id="ea-students">
+/* ═══ STUDENT ACCOUNTS, CLASSES, STUDENT HOME ═══ */
+const EA_STU_KEY='ea_stu_v1';
+function stuLoad(){try{return JSON.parse(localStorage.getItem(EA_STU_KEY))||null;}catch(e){return null;}}
+function stuToken(){const a=stuLoad();return (a&&a.token)||'';}
+function stuSave(o){try{localStorage.setItem(EA_STU_KEY,JSON.stringify(o));}catch(e){}}
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* one fetch wrapper for both kinds of sign-in: a browser is a teacher OR a student at a time */
+(function(){
+  const f=window.fetch.bind(window);
+  window.fetch=function(u,o){
+    const isApi=typeof u==='string'&&u.indexOf(API_URL)===0;
+    let kind='';
+    if(isApi){
+      const sp=eaStudentPage(),tt=eaToken(),st=stuToken();
+      const tok=sp?st:(tt||st);kind=sp?(st?'s':''):(tt?'t':(st?'s':''));
+      if(tok){o=Object.assign({},o);o.headers=Object.assign({},o.headers,{Authorization:'Bearer '+tok});}
+    }
+    return f(u,o).then(r=>{
+      if(!isApi)return r;
+      if(r.status===401&&kind==='t'){window.EA_AUTH_FAILED=true;fxSessionExpired();}
+      if(kind==='s'&&r.status===401&&!eaStudentPage()){stuSave({token:'',student:(stuLoad()||{}).student});fxStuLogout(true);}
+      if(eaStudentPage()&&(r.status===401||r.status===403)&&/[?&]exam=/.test(u)){
+        r.clone().json().then(j=>{window.__fxGate=j&&j.notInClass?'class':(j&&j.needAccount?'account':'');}).catch(()=>{});
+      }
+      return r;
+    });
+  };
+})();
+/* ── login page: student panel ── */
+let stuMode='in';
+function fxStuMode(m){stuMode=m;document.getElementById('stu-pass2-wrap').classList.toggle('hidden',m!=='up');document.getElementById('stu-go').textContent=m==='up'?'Create my account':'Sign in';document.getElementById('stu-swap').innerHTML=m==='up'?'Already have an account? <b>Sign in</b>':'First time here? <b>Create my account</b>';document.getElementById('stu-note').classList.toggle('hidden',m!=='up');}
+async function fxStuAuth(){
+  const name=document.getElementById('stu-name').value.trim(),pw=document.getElementById('stu-pass').value,err=document.getElementById('stu-err');
+  err.classList.add('hidden');
+  if(stuMode==='up'&&pw!==document.getElementById('stu-pass2').value){err.textContent='Passwords do not match.';err.classList.remove('hidden');return;}
+  const r=await apiPost({action:stuMode==='up'?'studentSignup':'studentLogin',name,password:pw});
+  if(!r||r.__httpError||!r.token){err.textContent=(r&&r.error)||'Could not reach the server.';err.classList.remove('hidden');
+    if(r&&r.status===404)fxStuMode('up');return;}
+  try{const a=eaAuthLoad();if(a)localStorage.setItem(EA_AUTH_KEY,JSON.stringify({token:'',last:a.last||''}));}catch(e){}
+  const prev=stuLoad();if(prev&&prev.student&&prev.student.key!==r.student.key)await fxWipeCaches();
+  stuSave({token:r.token,student:r.student});
+  const ret=new URLSearchParams(location.search).get('return');
+  if(ret&&/^[A-Za-z0-9_-]{4,40}$/.test(ret)){location.href=location.href.split('?')[0]+'?exam='+ret;return;}
+  location.reload();
+}
+function fxClassCodeFound(code,r){
+  try{localStorage.setItem('ea_pending_join',code);}catch(e){}
+  const d=document.getElementById('stu-details');d.open=true;
+  const n=document.getElementById('stu-join-note');n.innerHTML=`Sign in to join <b>${E(r.name)}</b>${r.teacher?' with '+E(r.teacher):''}.`;n.classList.remove('hidden');
+  document.getElementById('join-err').textContent='';document.getElementById('stu-name').focus();
+}
+window.fxJoin=async function(){
+  const inp=document.getElementById('join-code'),err=document.getElementById('join-err'),btn=document.getElementById('join-btn');
+  const code=(inp.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<4){err.textContent='Enter the code from your teacher.';inp.focus();return;}
+  btn.disabled=true;btn.textContent='Joining…';
+  let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0,r=null;
+  if(!id){r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
+  btn.disabled=false;btn.textContent='Join';
+  if(id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(id);return;}
+  if(r&&r.classCode){if(stuToken()){fxStuEnter().then(()=>fxStuJoinCode(code));}else fxClassCodeFound(code,r);return;}
+  err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';inp.select();
+};
+/* ── boot ── */
+{const o=window.fxBoot;window.fxBoot=function(){
+  const a=eaAuthLoad();
+  if(a&&a.token&&a.user&&!EA_AUTH_FAILED){o();return;}
+  if(stuToken()){document.getElementById('login-page').classList.add('hidden');fxStuEnter();return;}
+  o();
+};}
+/* ── student app ── */
+const STU={page:'home',data:null,tab:'all',cls:'all',loading:false};
+function fxStuLogout(silent){
+  try{localStorage.setItem(EA_STU_KEY,JSON.stringify({token:'',student:null}));}catch(e){}
+  fxWipeCaches();location.href=location.href.split('?')[0].split('#')[0];
+}
+async function fxStuEnter(){
+  const s=stuLoad();if(!s||!s.token)return;
+  document.getElementById('login-page').classList.add('hidden');
+  const app=document.getElementById('stu-app');app.classList.remove('hidden');
+  STU.page=(location.hash.replace('#/','')||'home');if(!['home','assignments','grades'].includes(STU.page))STU.page='home';
+  document.body.classList.add('stu-mode');
+  stuPaint();await stuRefresh();
+  try{const code=localStorage.getItem('ea_pending_join');if(code){localStorage.removeItem('ea_pending_join');await fxStuJoinCode(code);}}catch(e){}
+  if(STU.data&&STU.data.student.mustChange)stuPwModal(true);
+  if(!STU.timer){STU.timer=setInterval(()=>{if(!document.hidden)stuRefresh(true);},45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)stuRefresh(true);});}
+}
+async function stuRefresh(quiet){
+  const r=await apiPost({action:'studentMe'});
+  if(r&&!r.__httpError&&r.student){STU.data=r;Object.assign(fxTeachers,r.teachers||{});}
+  else if(!quiet&&!STU.data)STU.error=(r&&r.error)||'Could not load your classes.';
+  stuPaint();
+}
+function stuGo(p){STU.page=p;location.hash='#/'+p;stuPaint();window.scrollTo(0,0);}
+const tN=u=>fxTName(u);
+function stuTeachers(c){return [c.ownerId,...(c.coTeachers||[])].map(tN).join(', ');}
+function stuSubFor(aid){const subs=(STU.data.submissions||[]).filter(s=>s.assignmentId===aid);return subs.find(s=>s.status==='submitted')||subs[0]||null;}
+function stuState(a,sub){
+  const now=Date.now();
+  if(sub&&sub.status==='submitted')return 'done';
+  if(a.closedAt||(a.closesAt&&new Date(a.closesAt)<=now))return 'closed';
+  if(a.opensAt&&new Date(a.opensAt)>now)return 'scheduled';
+  return sub?'progress':'todo';
+}
+function stuWhen(iso){if(!iso)return '';const d=new Date(iso),n=new Date(),diff=d-n,day=864e5;
+  const t=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  const dd=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/day);
+  if(diff<0)return 'Overdue · '+d.toLocaleDateString([],{month:'short',day:'numeric'});
+  if(dd===0)return 'Due today '+t;if(dd===1)return 'Due tomorrow '+t;
+  if(dd<7)return 'Due '+d.toLocaleDateString([],{weekday:'long'})+' '+t;
+  return 'Due '+d.toLocaleDateString([],{month:'short',day:'numeric'});}
+const stuClassName=(a)=>{const c=(STU.data.classes||[]).find(c=>(a.classIds||[]).includes(c.id));return c?c.name:'';};
+function stuPct(a,sub){if(!sub||sub.score==null||!a.maxPoints)return null;return Math.round(sub.curved!=null?sub.curved:sub.score/a.maxPoints*100);}
+function stuSeen(){try{return JSON.parse(localStorage.getItem('ea_stu_seen')||'[]');}catch(e){return [];}}
+function stuMarkSeen(){try{const ids=(STU.data.submissions||[]).filter(s=>s.status==='submitted').map(s=>s.id);localStorage.setItem('ea_stu_seen',JSON.stringify(ids));}catch(e){}}
+function stuRow(a){
+  const sub=stuSubFor(a.id),st=stuState(a,sub),pct=stuPct(a,sub);
+  const meta=[stuClassName(a),a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' min':'',a.satSubject?(a.satSubject==='sat-math'?'SAT Math':'SAT Reading & Writing'):''].filter(Boolean).map(E).join(' · ');
+  const due=a.dueAt&&st!=='done'?`<span class="stu-due ${new Date(a.dueAt)<new Date()?'late':''}">${E(stuWhen(a.dueAt))}</span>`:'';
+  const label={todo:'To do',progress:'In progress',done:'Submitted',closed:'Closed',scheduled:'Not open yet'}[st];
+  let btn='';
+  if(st==='todo')btn=`<a class="stu-btn" href="?exam=${E(a.id)}">Start</a>`;
+  else if(st==='progress')btn=`<a class="stu-btn" href="?exam=${E(a.id)}">Resume</a>`;
+  else if(st==='done')btn=a.releaseScores?`<a class="stu-btn ghost" href="?results=${E(sub.id)}">View results</a>`:'<span class="stu-muted">Awaiting results</span>';
+  else if(st==='scheduled')btn=`<span class="stu-muted">Opens ${E(new Date(a.opensAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span>`;
+  return `<div class="stu-row"><div class="stu-row-main"><div class="stu-row-title">${E(a.title)}</div><div class="stu-row-meta">${meta}</div></div>
+   <div class="stu-row-side">${due}<span class="stu-pill ${st}">${label}${st==='done'&&a.releaseScores&&pct!=null?' · '+pct+'%':''}</span>${btn}</div></div>`;
+}
+function stuHome(){
+  const d=STU.data,first=d.student.name.split(' ')[0];
+  const as=d.assignments;
+  const todo=as.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).sort((x,y)=>(new Date(x.dueAt||x.closesAt||'2999')-new Date(y.dueAt||y.closesAt||'2999')));
+  const done=as.filter(a=>stuState(a,stuSubFor(a.id))==='done');
+  const pcts=done.map(a=>a.releaseScores?stuPct(a,stuSubFor(a.id)):null).filter(x=>x!=null);
+  const avg=pcts.length?Math.round(pcts.reduce((x,y)=>x+y,0)/pcts.length):null;
+  const seen=stuSeen();
+  const recent=done.filter(a=>a.releaseScores).sort((x,y)=>new Date(stuSubFor(y.id).submittedAt||0)-new Date(stuSubFor(x.id).submittedAt||0)).slice(0,3);
+  const anns=(d.classes||[]).flatMap(c=>(c.announcements||[]).map(x=>({...x,cls:c.name}))).sort((x,y)=>new Date(y.at)-new Date(x.at)).slice(0,5);
+  const hr=new Date().getHours();const hello=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  return `<div class="stu-hero"><div class="stu-eyebrow">${E(new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'}))}</div><h1>${hello}, <u>${E(first)}</u>.</h1></div>
+  ${(d.invites||[]).map(i=>`<div class="stu-invite"><div><b>${E(tN(i.ownerId))}</b> invited you to <b>${E(i.name)}</b></div><div><button class="stu-btn" onclick="stuInvite('${E(i.id)}',true)">Join</button><button class="stu-btn ghost" onclick="stuInvite('${E(i.id)}',false)">Decline</button></div></div>`).join('')}
+  <div class="stu-stats">
+    <div class="stu-stat"><span>${todo.length}</span>to do</div>
+    <div class="stu-stat"><span>${done.length}</span>completed</div>
+    <div class="stu-stat"><span>${avg==null?'—':avg+'%'}</span>average</div>
+    <div class="stu-stat"><span>${(d.classes||[]).length}</span>${(d.classes||[]).length===1?'class':'classes'}</div>
+  </div>
+  <div class="stu-cols"><div>
+    <div class="stu-card"><div class="stu-card-h"><h2>Up next</h2><a onclick="stuGo('assignments')">All assignments →</a></div>
+      ${todo.length?todo.slice(0,5).map(stuRow).join(''):`<div class="stu-empty">${as.length?'You’re all caught up.':'Nothing assigned yet. Join a class to see assignments here.'}</div>`}</div>
+    <div class="stu-card"><div class="stu-card-h"><h2>Recent grades</h2><a onclick="stuGo('grades')">All grades →</a></div>
+      ${recent.length?recent.map(a=>{const s=stuSubFor(a.id),p=stuPct(a,s);return `<a class="stu-grade" href="?results=${E(s.id)}"><div><div class="stu-row-title">${E(a.title)}${seen.includes(s.id)?'':' <i class="stu-new">New</i>'}</div><div class="stu-row-meta">${E(stuClassName(a))}${s.gradedBy?' · graded by '+E(tN(s.gradedBy)):''}</div></div><div class="stu-score" style="color:${p>=80?'var(--sage)':p>=60?'#B45309':'var(--rust)'}">${p==null?'—':p+'%'}</div></a>`;}).join(''):'<div class="stu-empty">Released grades will show up here.</div>'}</div>
+  </div><div>
+    <div class="stu-card"><div class="stu-card-h"><h2>Your classes</h2></div>
+      ${(d.classes||[]).map(c=>`<div class="stu-class" onclick="stuClassModal('${E(c.id)}')"><div class="stu-class-name">${E(c.name)}</div><div class="stu-row-meta">${E(stuTeachers(c))}${c.period?' · '+E(c.period):''}</div></div>`).join('')||'<div class="stu-empty">You haven’t joined a class yet.</div>'}
+      <div class="stu-join"><input id="stu-code" maxlength="10" placeholder="CLASS CODE" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" onkeydown="if(event.key==='Enter')fxStuJoinCode()"><button class="stu-btn" onclick="fxStuJoinCode()">Join class</button></div></div>
+    <div class="stu-card"><div class="stu-card-h"><h2>Announcements</h2></div>
+      ${anns.length?anns.map(x=>`<div class="stu-ann"><div class="stu-row-meta">${E(x.cls)} · ${E(tN(x.by))} · ${E(new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}))}</div><div>${E(x.text)}</div></div>`).join(''):'<div class="stu-empty">No announcements.</div>'}</div>
+  </div></div>`;
+}
+function stuAssignments(){
+  const d=STU.data;let as=d.assignments.slice();
+  if(STU.cls!=='all')as=as.filter(a=>(a.classIds||[]).includes(STU.cls));
+  const stOf=a=>stuState(a,stuSubFor(a.id));
+  const grp={todo:as.filter(a=>['todo','progress'].includes(stOf(a))),soon:as.filter(a=>stOf(a)==='scheduled'),done:as.filter(a=>['done','closed'].includes(stOf(a)))};
+  const sec=(t,l,empty)=>`<div class="stu-card"><div class="stu-card-h"><h2>${t}</h2><span class="stu-muted">${l.length}</span></div>${l.length?l.sort((x,y)=>new Date(x.dueAt||x.createdAt||0)-new Date(y.dueAt||y.createdAt||0)).map(stuRow).join(''):`<div class="stu-empty">${empty}</div>`}</div>`;
+  const show=STU.tab;
+  return `<div class="stu-hero"><h1><u>Assignments</u></h1></div>
+  <div class="stu-filters"><div class="stu-tabs">${[['all','All'],['todo','To do'],['done','Done']].map(([k,l])=>`<button class="${show===k?'on':''}" onclick="STU.tab='${k}';stuPaint()">${l}</button>`).join('')}</div>
+   <select onchange="STU.cls=this.value;stuPaint()"><option value="all">All classes</option>${(d.classes||[]).map(c=>`<option value="${E(c.id)}" ${STU.cls===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select></div>
+  ${show!=='done'?sec('To do',grp.todo,'Nothing due right now.'):''}
+  ${show==='all'&&grp.soon.length?sec('Coming up',grp.soon,''):''}
+  ${show!=='todo'?sec('Completed',grp.done,'Finished assignments appear here.'):''}`;
+}
+function stuGrades(){
+  const d=STU.data;stuMarkSeenLater();
+  const rows=d.assignments.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted').sort((x,y)=>new Date(y.s.submittedAt||0)-new Date(x.s.submittedAt||0));
+  const rel=rows.filter(x=>x.a.releaseScores&&stuPct(x.a,x.s)!=null);
+  const avg=rel.length?Math.round(rel.reduce((t,x)=>t+stuPct(x.a,x.s),0)/rel.length):null;
+  const byClass=(d.classes||[]).map(c=>{const r=rel.filter(x=>(x.a.classIds||[]).includes(c.id));return {c,n:r.length,avg:r.length?Math.round(r.reduce((t,x)=>t+stuPct(x.a,x.s),0)/r.length):null};});
+  const pts=rel.slice().reverse().map(x=>stuPct(x.a,x.s));
+  let spark='';
+  if(pts.length>1){const W=300,H=70,P=6;const xs=i=>P+i*(W-2*P)/(pts.length-1),ys=v=>H-P-(Math.max(0,Math.min(100,v))/100)*(H-2*P);
+    spark=`<svg viewBox="0 0 ${W} ${H}" class="stu-spark"><polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pts.map((v,i)=>xs(i)+','+ys(v)).join(' ')}"/>${pts.map((v,i)=>`<circle cx="${xs(i)}" cy="${ys(v)}" r="3.5" fill="var(--hl)" stroke="var(--ink)" stroke-width="1.5"/>`).join('')}</svg>`;}
+  const seen=stuSeen();
+  return `<div class="stu-hero"><h1><u>Grades</u></h1></div>
+  <div class="stu-stats"><div class="stu-stat"><span>${avg==null?'—':avg+'%'}</span>overall average</div><div class="stu-stat"><span>${rows.length}</span>submitted</div>
+   ${byClass.map(b=>`<div class="stu-stat"><span>${b.avg==null?'—':b.avg+'%'}</span>${E(b.c.name)}</div>`).join('')}</div>
+  ${spark?`<div class="stu-card"><div class="stu-card-h"><h2>Trend</h2><span class="stu-muted">oldest → newest</span></div>${spark}</div>`:''}
+  <div class="stu-card"><div class="stu-card-h"><h2>All grades</h2></div>
+  ${rows.length?`<table class="stu-table"><thead><tr><th>Assignment</th><th>Class</th><th>Submitted</th><th>Score</th><th></th></tr></thead><tbody>${rows.map(({a,s})=>{const p=stuPct(a,s),rel=a.releaseScores;return `<tr><td><b>${E(a.title)}</b>${rel&&!seen.includes(s.id)?' <i class="stu-new">New</i>':''}${s.gradedBy?`<div class="stu-row-meta">graded by ${E(tN(s.gradedBy))}</div>`:''}</td><td>${E(stuClassName(a)||'—')}</td><td>${E(s.submittedAt?new Date(s.submittedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${rel&&p!=null?`<b>${s.score}/${a.maxPoints}</b> <span class="stu-muted">${p}%</span>`:'<span class="stu-muted">Awaiting release</span>'}</td><td>${rel?`<a class="stu-btn ghost" href="?results=${E(s.id)}">Review</a>`:''}</td></tr>`;}).join('')}</tbody></table>`:'<div class="stu-empty">No submitted work yet.</div>'}</div>`;
+}
+let _seenT=null;function stuMarkSeenLater(){clearTimeout(_seenT);_seenT=setTimeout(stuMarkSeen,2500);}
+function stuPaint(){
+  const app=document.getElementById('stu-app');if(!app||app.classList.contains('hidden'))return;
+  const s=(stuLoad()||{}).student||{name:''};
+  const nav=[['home','Home'],['assignments','Assignments'],['grades','Grades']];
+  let body='';
+  if(!STU.data)body=STU.error?`<div class="stu-empty">${E(STU.error)}</div>`:'<div class="stu-empty">Loading…</div>';
+  else body=STU.page==='assignments'?stuAssignments():STU.page==='grades'?stuGrades():stuHome();
+  const todoN=STU.data?STU.data.assignments.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).length:0;
+  app.innerHTML=`<header class="stu-top"><div class="stu-brand">EdAssess</div><nav>${nav.map(([k,l])=>`<a class="${STU.page===k?'on':''}" onclick="stuGo('${k}')">${l}${k==='assignments'&&todoN?`<i>${todoN}</i>`:''}</a>`).join('')}</nav>
+   <button class="stu-me" onclick="stuMenu(event)"><span>${E((s.name||'?')[0])}</span>${E(s.name)}</button></header><main class="stu-main">${body}</main>`;
+}
+function stuMenu(e){
+  e.stopPropagation();document.getElementById('stu-menu')?.remove();
+  const m=document.createElement('div');m.id='stu-menu';m.innerHTML=`<a onclick="stuPwModal()">Change password</a><a onclick="fxPrivacyOpen()">Privacy policy</a><a onclick="fxStuLogout()">Sign out</a>`;
+  document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
+}
+async function fxStuJoinCode(code){
+  code=code||(document.getElementById('stu-code')||{}).value||'';code=code.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<4){toast('Enter the class code from your teacher.','error');return;}
+  const r=await apiPost({action:'joinClass',code});
+  if(r&&r.ok){toast('Joined '+r.name+'.','success');await stuRefresh();}else toast((r&&r.error)||'Could not join.','error');
+}
+async function stuInvite(id,acc){const r=await apiPost({action:'respondInvite',classId:id,accept:acc});if(r&&r.ok){toast(acc?'Joined the class.':'Invitation declined.','success');await stuRefresh();}else toast((r&&r.error)||'Failed','error');}
+function stuClassModal(id){
+  const c=STU.data.classes.find(x=>x.id===id);if(!c)return;
+  const as=STU.data.assignments.filter(a=>(a.classIds||[]).includes(id));
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:24px">${E(c.name)}</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div class="stu-row-meta" style="margin-bottom:14px">${E(stuTeachers(c))}${c.period?' · '+E(c.period):''}${c.subject?' · '+E(c.subject):''}</div>
+  <h3 class="stu-mini">Announcements</h3>${(c.announcements||[]).map(x=>`<div class="stu-ann"><div class="stu-row-meta">${E(tN(x.by))} · ${E(new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}))}</div>${E(x.text)}</div>`).join('')||'<div class="stu-empty" style="padding:8px 0">None yet.</div>'}
+  <h3 class="stu-mini">Assignments</h3>${as.map(stuRow).join('')||'<div class="stu-empty" style="padding:8px 0">None yet.</div>'}
+  <div style="margin-top:18px"><button class="stu-btn ghost" onclick="stuLeave('${E(id)}')">Leave class</button></div></div>`,'620px');
+}
+async function stuLeave(id){if(!confirm('Leave this class? Your past work stays on your account.'))return;const r=await apiPost({action:'leaveClass',classId:id});if(r&&r.ok){closeModal();await stuRefresh();}}
+function stuPwModal(forced){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">${forced?'Choose a new password':'Change password'}</h2>${forced?'':'<button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button>'}</div>
+  <div class="modal-body">${forced?'<p style="margin-bottom:12px">Your password was reset. Choose a new one to continue.</p>':''}
+  <div class="form-group"><label class="form-label">${forced?'Temporary password':'Current password'}</label><input id="sp-old" type="password" class="form-control"></div>
+  <div class="form-group"><label class="form-label">New password (6+ characters)</label><input id="sp-new" type="password" class="form-control"></div>
+  <div id="sp-err" class="hidden fx-autherr"></div><button class="btn btn-primary" onclick="stuPwSave()">Save password</button></div>`,'420px');
+}
+async function stuPwSave(){const r=await apiPost({action:'studentChangePassword',oldPassword:document.getElementById('sp-old').value,newPassword:document.getElementById('sp-new').value});
+  if(r&&r.ok){closeModal();toast('Password changed.','success');if(STU.data)STU.data.student.mustChange=false;}else{const e=document.getElementById('sp-err');e.textContent=(r&&r.error)||'Failed';e.classList.remove('hidden');}}
+/* ── exam page: account gate + signed-in name ── */
+{const o=window.loadStudentExam;window.loadStudentExam=function(){
+  const id=new URLSearchParams(location.search).get('exam');
+  if(!APP.assignments.find(a=>a.id===id)){
+    fetch(API_URL+'?exam='+encodeURIComponent(id),{cache:'no-store'}).then(async r=>{
+      let j={};try{j=await r.json();}catch(e){}
+      if(r.status===401&&j.needAccount)fxExamGate('account');else if(r.status===403&&j.notInClass)fxExamGate('class');else o();
+    }).catch(()=>o());
+    return;
+  }
+  return o.apply(this,arguments);};}
+function fxExamGate(kind){
+  const id=new URLSearchParams(location.search).get('exam');
+  const home=location.href.split('?')[0];
+  document.getElementById('login-page').classList.add('hidden');document.getElementById('app').classList.add('hidden');const w=document.getElementById('student-wrapper');w.classList.remove('hidden');
+  w.innerHTML=kind==='class'
+   ?`<div class="ea-done"><div class="ea-done-card"><h2 class="ea-done-h" style="font-size:36px"><u>Not your class.</u></h2><p class="ea-done-p">This assessment is assigned to a class you haven’t joined. Ask your teacher for the class code, then join from your home page.</p><a class="ea-btn-line" href="${home}">Go to my home →</a></div></div>`
+   :`<div class="ea-done"><div class="ea-done-card" style="text-align:left"><div class="ea-eyebrow">Student account required</div><h2 class="ea-done-h" style="font-size:38px;margin:6px 0 10px"><u>Sign in to start.</u></h2><p class="ea-done-p" style="margin-bottom:18px">Your teacher set this assessment to count toward your account.</p>
+   <div class="form-group"><label class="form-label">First name + last initial</label><input id="gt-name" class="form-control" placeholder="e.g. Sam K" autocomplete="off"></div>
+   <div class="form-group"><label class="form-label">Password</label><input id="gt-pass" type="password" class="form-control"></div>
+   <div class="form-group hidden" id="gt-p2w"><label class="form-label">Confirm password</label><input id="gt-pass2" type="password" class="form-control"></div>
+   <div id="gt-err" class="hidden fx-autherr"></div><button class="btn btn-primary btn-lg" style="width:100%" id="gt-go" onclick="fxGateGo()">Sign in</button>
+   <a class="fx-authlink" id="gt-swap" onclick="fxGateSwap()">First time here? <b>Create my account</b></a></div></div>`;
+  window.__gateMode='in';window.__gateId=id;
+}
+function fxGateSwap(){window.__gateMode=window.__gateMode==='up'?'in':'up';const up=window.__gateMode==='up';document.getElementById('gt-p2w').classList.toggle('hidden',!up);document.getElementById('gt-go').textContent=up?'Create my account':'Sign in';document.getElementById('gt-swap').innerHTML=up?'Already have an account? <b>Sign in</b>':'First time here? <b>Create my account</b>';}
+async function fxGateGo(){
+  const up=window.__gateMode==='up',err=document.getElementById('gt-err');err.classList.add('hidden');
+  const pw=document.getElementById('gt-pass').value;
+  if(up&&pw!==document.getElementById('gt-pass2').value){err.textContent='Passwords do not match.';err.classList.remove('hidden');return;}
+  const r=await apiPost({action:up?'studentSignup':'studentLogin',name:document.getElementById('gt-name').value,password:pw});
+  if(!r||!r.token){err.textContent=(r&&r.error)||'Could not reach the server.';err.classList.remove('hidden');if(r&&r.status===404)fxGateSwap();return;}
+  stuSave({token:r.token,student:r.student});location.reload();
+}
+{const o=window.renderNameEntry;window.renderNameEntry=function(a,t){
+  let h=o(a,t);const s=(stuLoad()||{}).student;
+  if(s&&stuToken()){
+    h=h.replace(/(<input type="text" id="student-name-input")/,`$1 value="${E(s.name)}" readonly`);
+    h=h.replace(/Example: [^<]*/,`Signed in to your account — this will be saved to your grades.`);
+  }
+  return h;};}
+/* ── teacher: classes ── */
+const FXC={open:null,tab:'roster',pre:null};
+function fxMyClasses(){return (APP.classes||[]).filter(c=>!c.archived);}
+async function fxClsReload(){const r=await apiPost({action:'listClasses'});if(r&&r.classes){APP.classes=r.classes;}if(APP.currentPage==='classes')fxRenderClasses();}
+{const o=window.eaFetchServer;window.eaFetchServer=async function(){const r=await o();if(r&&r.classes)APP.classes=r.classes;return r;};}
+{const o=window.showPage;window.showPage=function(p){const r=o(p);if(p==='classes'){document.getElementById('page-classes').classList.remove('hidden');fxClsReload();fxRenderClasses();}return r;};}
+function fxClassStats(c){
+  const asg=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
+  const ids=new Set(asg.map(a=>a.id));
+  return c.students.map(s=>{
+    const subs=(APP.submissions||[]).filter(x=>x.studentKey===s.key&&ids.has(x.assignmentId)&&x.status==='submitted');
+    const pcts=subs.map(x=>{const t=APP.tests.find(t=>t.id===x.testId);if(!t)return null;const tot=calcTotalPoints(t,x);return tot>0&&x.score!=null?x.score/tot*100:null;}).filter(v=>v!=null);
+    return {s,done:subs.length,total:asg.length,avg:pcts.length?Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length):null};
+  });
+}
+function fxRenderClasses(){
+  const pg=document.getElementById('page-classes');if(!pg)return;
+  const cs=APP.classes||[];
+  if(FXC.open){const c=cs.find(x=>x.id===FXC.open);if(c){pg.innerHTML=fxClassDetail(c);return;}FXC.open=null;}
+  pg.innerHTML=`<div class="topbar"><h1 class="page-title">Classes</h1><button class="btn btn-primary" onclick="fxClassNew()">+ New class</button></div>
+  <div class="page-body">${cs.length?`<div class="fxc-grid">${cs.map(c=>`<div class="fxc-card ${c.archived?'arch':''}" onclick="FXC.open='${c.id}';FXC.tab='roster';fxRenderClasses()">
+     <div class="fxc-name">${E(c.name)}</div><div class="fxc-sub">${E([c.subject,c.period].filter(Boolean).join(' · '))||'&nbsp;'}</div>
+     <div class="fxc-meta"><span><b>${c.students.length}</b> students</span>${c.invites.length?`<span><b>${c.invites.length}</b> invited</span>`:''}${c.archived?'<span>archived</span>':''}</div>
+     <div class="fxc-code">${E(c.joinCode)}</div></div>`).join('')}</div>`
+    :`<div class="fxc-empty"><h2>No classes yet.</h2><p>Create a class, then invite students by name or hand out its join code.</p><button class="btn btn-primary" onclick="fxClassNew()">+ New class</button></div>`}</div>`;
+}
+function fxClassDetail(c){
+  const me=fxMe().username.toLowerCase(),owner=c.ownerId===me;
+  const tabs=[['roster','Roster'],['assignments','Assignments'],['news','Announcements']];
+  let body='';
+  if(FXC.tab==='roster'){
+    const st=fxClassStats(c);
+    body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
+     ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the code.</td></tr>'}</tbody></table></div>
+     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
+      ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
+  }else if(FXC.tab==='assignments'){
+    const as=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
+    body=`<div class="fxc-panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="fxc-h" style="margin:0">Assigned to this class</div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">+ Assign a test</button></div>
+     ${as.map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted').length;return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span>${subs}/${c.students.length} submitted</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;
+  }else{
+    body=`<div class="fxc-panel"><textarea id="fxc-ann" rows="3" placeholder="Post an announcement to students in this class"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div>
+     ${[...c.announcements].reverse().map(x=>`<div class="fxc-panel fxc-ann"><div class="fxc-sub">${E(fxTName(x.by))} · ${E(new Date(x.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} <a class="fxc-x" onclick="fxClassUnpost('${c.id}','${x.id}')">Delete</a></div>${E(x.text)}</div>`).join('')}`;
+  }
+  return `<div class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← Classes</button><h1 class="page-title">${E(c.name)}</h1></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
+   <div class="page-body"><div class="fxc-codebar"><div><div class="fxc-h" style="margin:0">Class join code</div><div class="fxc-bigcode">${E(c.joinCode)}</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
+   <div class="fxc-tabs">${tabs.map(([k,l])=>`<button class="${FXC.tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
+}
+function fxCopyText(t){try{navigator.clipboard.writeText(t);toast('Copied.','success');}catch(e){toast(t,'info');}}
+function fxClassNew(){openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">New class</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">
+  <div class="form-group"><label class="form-label">Class name</label><input id="cn-name" class="form-control" placeholder="Period 3 Algebra"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="form-group"><label class="form-label">Subject</label><input id="cn-sub" class="form-control"></div><div class="form-group"><label class="form-label">Period</label><input id="cn-per" class="form-control"></div></div>
+  <button class="btn btn-primary" onclick="fxClassCreate()">Create class</button></div>`,'440px');}
+async function fxClassCreate(){const r=await apiPost({action:'createClass',name:document.getElementById('cn-name').value,subject:document.getElementById('cn-sub').value,period:document.getElementById('cn-per').value});
+  if(r&&r.class){closeModal();await fxClsReload();FXC.open=r.class.id;FXC.tab='roster';fxRenderClasses();}else toast((r&&r.error)||'Failed','error');}
+function fxClassEdit(id){const c=APP.classes.find(x=>x.id===id);openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Edit class</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">
+  <div class="form-group"><label class="form-label">Class name</label><input id="cn-name" class="form-control" value="${E(c.name)}"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="form-group"><label class="form-label">Subject</label><input id="cn-sub" class="form-control" value="${E(c.subject)}"></div><div class="form-group"><label class="form-label">Period</label><input id="cn-per" class="form-control" value="${E(c.period)}"></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="fxClassSaveEdit('${id}')">Save</button><button class="btn btn-secondary" onclick="fxClassArchive('${id}',${!c.archived})">${c.archived?'Unarchive':'Archive'}</button>${c.ownerId===fxMe().username.toLowerCase()?`<button class="btn btn-secondary" style="color:var(--rust)" onclick="fxClassDelete('${id}')">Delete class</button>`:''}</div></div>`,'460px');}
+async function fxClassSaveEdit(id){const r=await apiPost({action:'updateClass',id,name:document.getElementById('cn-name').value,subject:document.getElementById('cn-sub').value,period:document.getElementById('cn-per').value});if(r&&r.ok){closeModal();fxClsReload();}else toast((r&&r.error)||'Failed','error');}
+async function fxClassArchive(id,v){await apiPost({action:'updateClass',id,archived:v});closeModal();FXC.open=null;fxClsReload();}
+async function fxClassDelete(id){if(!confirm('Delete this class? Students keep their past work.'))return;await apiPost({action:'deleteClass',id});closeModal();FXC.open=null;fxClsReload();}
+async function fxClassInvite(id){const names=document.getElementById('fxc-names').value.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);if(!names.length)return;
+  const r=await apiPost({action:'inviteStudents',classId:id,names});if(r&&r.ok){toast((r.invited.length?r.invited.length+' invited. ':'')+(r.already.length?r.already.length+' already in. ':'')+(r.bad.length?'Skipped (use “First L”): '+r.bad.join(', '):''),r.bad.length?'error':'success');fxClsReload();}else toast((r&&r.error)||'Failed','error');}
+async function fxClassCancel(id,key){await apiPost({action:'cancelInvite',classId:id,key});fxClsReload();}
+async function fxClassRemove(id,key,name){if(!confirm('Remove '+name+' from this class? Their submitted work stays.'))return;await apiPost({action:'removeStudent',classId:id,key});fxClsReload();}
+async function fxClassRegen(id){if(!confirm('Make a new code? The old code stops working for new joins.'))return;await apiPost({action:'regenClassCode',classId:id});fxClsReload();}
+async function fxClassPost(id){const r=await apiPost({action:'postAnnouncement',classId:id,text:document.getElementById('fxc-ann').value});if(r&&r.ok)fxClsReload();else toast((r&&r.error)||'Failed','error');}
+async function fxClassUnpost(id,annId){await apiPost({action:'deleteAnnouncement',classId:id,annId});fxClsReload();}
+function fxClassCo(id){const c=APP.classes.find(x=>x.id===id);const me=fxMe().username.toLowerCase();
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Co-teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">${fxTeacherList.filter(t=>t.username.toLowerCase()!==me).map(t=>`<label class="checkbox-wrap mb-2"><input type="checkbox" class="fx-cct" value="${E(t.username.toLowerCase())}" ${(c.coTeachers||[]).includes(t.username.toLowerCase())?'checked':''}><span>${E(t.name)}</span></label>`).join('')||'<p class="text-muted">No other teachers yet.</p>'}<div style="margin-top:12px"><button class="btn btn-primary" onclick="fxClassCoSave('${id}')">Save</button></div></div>`,'420px');}
+async function fxClassCoSave(id){const co=[...document.querySelectorAll('.fx-cct:checked')].map(c=>c.value);await apiPost({action:'setClassCoTeachers',id,coTeachers:co});closeModal();fxClsReload();}
+function fxClassAssign(id){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Assign a test</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">${(APP.tests||[]).filter(t=>t.published!==false).map(t=>`<div class="fxc-asg" style="cursor:pointer" onclick="FXC.pre='${id}';closeModal();openAssignModal('${t.id}')"><div><b>${E(t.title)}</b><div class="fxc-sub">${(t.questions||[]).length} questions</div></div><span class="btn btn-secondary btn-sm">Choose</span></div>`).join('')||'<p class="text-muted">Publish a test first.</p>'}</div>`,'520px');}
+/* assign modal additions */
+function fxAsgFields(sel,access,due){
+  const cs=fxMyClasses();
+  return `<div class="assign-section"><div class="assign-section-title">Classes &amp; access</div>
+   ${cs.length?cs.map(c=>`<label class="checkbox-wrap mb-2"><input type="checkbox" class="fx-cls" value="${E(c.id)}" ${sel.includes(c.id)?'checked':''}><span style="font-size:13px">${E(c.name)} <span class="text-muted">· ${c.students.length} students</span></span></label>`).join(''):'<div class="text-muted" style="font-size:13px;margin-bottom:8px">No classes yet — create one on the Classes page.</div>'}
+   <div class="form-group" style="margin-top:10px"><label class="form-label">Who can take it</label><select id="as-access" class="form-control"><option value="open" ${!access?'selected':''}>Anyone with the link or code (no account)</option><option value="account" ${access?'selected':''}>Signed-in students only (saved to their account)</option></select></div>
+   <div class="form-group" style="margin:0"><label class="form-label">Due date (optional)</label><input id="as-due" type="datetime-local" class="form-control" value="${E(due||'')}"></div></div>`;
+}
+function fxAsgExtras(){
+  const classIds=[...document.querySelectorAll('.fx-cls:checked')].map(c=>c.value);
+  const acc=document.getElementById('as-access');const due=document.getElementById('as-due');
+  return {classIds,requireAccount:!!acc&&acc.value==='account',dueAt:due&&due.value?new Date(due.value).toISOString():null};
+}
+{const o=window.openAssignModal;window.openAssignModal=function(id){o(id);const t=APP.tests.find(x=>x.id===id);const b=document.querySelector('#modal-container .modal-body');if(b){b.insertAdjacentHTML('beforeend',fxAsgFields(FXC.pre?[FXC.pre]:[],FXC.pre?true:!!(t&&t.defaultAccount),''));FXC.pre=null;}};}
+function fxAsgAccessModal(aid){
+  const a=APP.assignments.find(x=>x.id===aid);if(!a)return;
+  const loc=a.dueAt?new Date(new Date(a.dueAt)-new Date(a.dueAt).getTimezoneOffset()*6e4).toISOString().slice(0,16):'';
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Assignment settings</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">${fxAsgFields(a.classIds||[],a.requireAccount,loc)}<div style="margin-top:12px"><button class="btn btn-primary" onclick="fxAsgAccessSave('${aid}')">Save</button></div></div>`,'480px');
+}
+async function fxAsgAccessSave(aid){const a=APP.assignments.find(x=>x.id===aid);Object.assign(a,fxAsgExtras());const r=await reliableSaveAssignments();closeModal();if(r&&r.ok){toast('Saved.','success');fxRenderClasses();}else toast('Could not save.','error');}
+/* admin: all students */
+async function fxStudentsModal(){
+  const r=await apiPost({action:'adminListStudents'});if(!r||!r.students){toast((r&&r.error)||'Could not load students','error');return;}
+  window.__fxStus=r.students;
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">All students <span class="text-muted" style="font-size:14px">${r.students.length}</span></h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><input class="form-control" placeholder="Search by name or class" oninput="fxStuFilter(this.value)" style="margin-bottom:12px"><div id="fxs-list"></div></div>`,'760px');
+  fxStuFilter('');
+}
+function fxStuFilter(q){
+  q=(q||'').toLowerCase();const l=(window.__fxStus||[]).filter(s=>!q||s.name.toLowerCase().includes(q)||s.classes.some(c=>c.name.toLowerCase().includes(q)));
+  document.getElementById('fxs-list').innerHTML=`<table class="fxc-table"><thead><tr><th>Student</th><th>Classes</th><th>Work</th><th>Last sign-in</th><th></th></tr></thead><tbody>${l.map(s=>`<tr class="${s.disabled?'fxs-off':''}"><td><b>${E(s.name)}</b>${s.disabled?' <i class="stu-new" style="background:#eee">disabled</i>':''}${s.mustChange?' <i class="stu-new">reset</i>':''}</td><td>${s.classes.map(c=>`${E(c.name)} <span class="text-muted">(${E(c.teacherName)})</span>`).join('<br>')||'—'}</td><td>${s.submissions}</td><td>${s.lastLogin?E(new Date(s.lastLogin).toLocaleDateString()):'—'}</td><td style="white-space:nowrap"><a class="fxc-x" onclick="fxStuReset('${s.key}','${E(s.name)}')">Reset password</a> · <a class="fxc-x" onclick="fxStuDisable('${s.key}',${!s.disabled})">${s.disabled?'Enable':'Disable'}</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students.</td></tr>'}</tbody></table>`;
+}
+async function fxStuReset(key,name){const p=prompt('Temporary password for '+name+' (6+ characters). They choose a new one at next sign-in.');if(!p)return;const r=await apiPost({action:'adminResetStudentPassword',key,newPassword:p});toast(r&&r.ok?'Password reset. Give '+name+' the temporary password.':((r&&r.error)||'Failed'),r&&r.ok?'success':'error');}
+async function fxStuDisable(key,v){await apiPost({action:'adminSetStudentDisabled',key,disabled:v});fxStudentsModal();}
+{const o=window.fxAccountModal;window.fxAccountModal=function(f){o(f);const me=fxMe();if(me&&me.role==='admin'&&!f){const b=document.querySelector('#modal-container .modal-body > div:last-child');if(b)b.insertAdjacentHTML('beforeend','<button class="btn btn-secondary" onclick="fxStudentsModal()">Manage students</button>');}};}
+</script>
+
 </body>
 </html>
