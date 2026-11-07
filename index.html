@@ -1055,6 +1055,52 @@ body.stu-mode{background:var(--bg,#FAF8F4)}
 .fxc-inv{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px}.fxc-inv i{display:block;font-style:normal;font-size:11.5px;color:#888}
 .fxc-asg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #efece4;flex-wrap:wrap}.fxc-asg-r{display:flex;gap:8px;align-items:center;font-size:13px;color:#666}
 .fxs-off{opacity:.55}
+
+/* LMS layer */
+.lms-hello{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.lms-hello h1{font-family:var(--f-display);font-size:34px;letter-spacing:-.02em;margin:0}
+.lms-btn{background:var(--ink,#1a1a1a);color:#fff;border:1.5px solid var(--ink,#1a1a1a);border-radius:10px;padding:9px 18px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}.lms-btn.sm{padding:6px 14px;font-size:13px}.lms-btn.ghost{background:#fff;color:var(--ink,#1a1a1a)}.lms-btn+.lms-btn{margin-left:6px}
+.lms-h{font-size:13px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.08em;margin:6px 0 10px}
+.lms-cols{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}.lms-cols.c{grid-template-columns:260px 1fr}.lms-cols.c>aside{order:0}
+@media(max-width:860px){.lms-cols,.lms-cols.c{grid-template-columns:1fr}}
+.lms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.lms-card{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:14px;overflow:hidden;cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column;min-height:196px}
+.lms-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-2px)}
+.lms-banner{padding:16px 18px;color:#fff;height:100px;display:flex;flex-direction:column;justify-content:flex-end;background-image:linear-gradient(135deg,rgba(255,255,255,.12),rgba(0,0,0,.12))}
+.lms-card-n{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.15}.lms-card-t{font-size:12.5px;opacity:.9;margin-top:2px}
+.lms-card-b{padding:14px 18px;flex:1}.lms-due-l{font-size:11.5px;color:#777;margin-bottom:2px}.lms-due-t{font-weight:600;font-size:14px}.lms-more{font-size:12px;color:#888;margin-top:4px}.lms-none{font-size:13px;color:#999}
+.lms-panel{background:#fff;border:1px solid var(--border,#e5e2da);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.lms-empty{text-align:center;color:#777;padding:36px 20px}.lms-empty-s{color:#888;font-size:14px;padding:6px 0}
+.lms-invite{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--border,#e5e2da);border-left:4px solid #E0A526;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:14px}
+.lms-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #f0ede6}.lms-row:first-child{border-top:0}
+.lms-ico{width:34px;height:34px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:15px;flex:none}
+.lms-row-main{flex:1;min-width:0}.lms-row-t{font-weight:600;font-size:14.5px}.lms-row-m{font-size:12.5px;color:#777}
+.lms-row-r{display:flex;align-items:center;gap:12px;font-size:13px;color:#555;flex:none}.lms-st b{color:var(--ink,#1a1a1a)}
+.lms-red{color:#B4351F;font-weight:600}.lms-muted{color:#999}
+.lms-go,.lms-link{font-weight:700;font-size:13px;color:var(--ink,#1a1a1a);text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lms-go{background:var(--ink,#1a1a1a);color:#fff;text-decoration:none;padding:5px 14px;border-radius:8px}
+aside .lms-row{flex-wrap:wrap}aside .lms-row-r{width:100%;justify-content:space-between;padding-left:46px}
+.lms-more-l{display:block;margin-top:8px;font-size:13px;font-weight:600;cursor:pointer;color:#555}
+.lms-grade{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid #f0ede6;text-decoration:none;color:inherit;font-size:14px}.lms-grade small{display:block;color:#888;font-size:12px}.lms-grade b{font-size:17px}
+.lms-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E0A526;vertical-align:middle}
+.lms-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border,#e5e2da);margin:0 0 18px}
+.lms-tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;font-weight:700;font-size:14px;color:#666;cursor:pointer;font-family:inherit;margin-bottom:-1px}.lms-tabs button.on{color:var(--ink,#1a1a1a);border-color:var(--ink,#1a1a1a)}.lms-tabs button span{margin-left:6px;font-size:12px;background:#eee;border-radius:99px;padding:1px 7px}
+.lms-sel{border:1px solid var(--border,#d9d5ca);border-radius:10px;padding:8px 12px;background:#fff;font-family:inherit}
+.lms-crumb{display:inline-block;margin-bottom:10px;font-size:13.5px;font-weight:600;color:#555;cursor:pointer}
+.lms-hero{border-radius:14px;color:#fff;padding:26px 28px;min-height:130px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px;background-image:linear-gradient(135deg,rgba(255,255,255,.14),rgba(0,0,0,.14))}
+.lms-hero h1{font-family:var(--f-display);font-size:34px;margin:0 0 4px;letter-spacing:-.02em}.lms-hero-b{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-family:inherit}
+.lms-post{display:flex;gap:12px;background:#fff;border:1px solid var(--border,#e5e2da);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.lms-av{width:38px;height:38px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}.lms-av.sq{border-radius:10px}
+.lms-post-b{flex:1;min-width:0}.lms-post-h{display:flex;gap:8px;align-items:baseline;font-size:13.5px;flex-wrap:wrap}.lms-post-h span{color:#999;font-size:12px}.lms-post-t{margin-top:4px;font-size:14.5px;white-space:pre-wrap;line-height:1.5}
+.lms-post.asg .lms-row{border:0;padding:6px 0 0}
+.lms-up{display:block;padding:8px 0;border-top:1px solid #f0ede6;color:inherit;text-decoration:none;font-size:14px;font-weight:600}.lms-up:first-of-type{border-top:0}.lms-up small{display:block;color:#888;font-weight:400;font-size:12px}
+.lms-gh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.lms-gh-n{font-family:var(--f-display);font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px}.lms-gh-n i{width:12px;height:12px;border-radius:3px;display:inline-block}.lms-gh-a{font-family:var(--f-display);font-size:30px;font-weight:700}
+.lms-tbl{width:100%;border-collapse:collapse;font-size:14px}.lms-tbl td{padding:10px 4px;border-top:1px solid #f0ede6}.lms-tbl td.r{text-align:right;white-space:nowrap}.lms-tbl small{display:block;color:#888;font-size:12px}.lms-pct{color:#777;font-size:12.5px;margin-left:4px}
+.lms-t-top{display:flex;justify-content:space-between;align-items:center;padding:18px 32px 12px}
+.lms-compose textarea{width:100%;border:1px solid var(--border,#d9d5ca);border-radius:10px;padding:10px;font-family:inherit;resize:vertical}
+.lms-gb{border-collapse:collapse;font-size:13.5px;min-width:100%}.lms-gb th,.lms-gb td{padding:10px 14px;border-bottom:1px solid #f0ede6;text-align:center;white-space:nowrap}.lms-gb th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#777;background:#faf8f3}.lms-gb .s{text-align:left;position:sticky;left:0;background:#fff;font-weight:600}.lms-gb th.s{background:#faf8f3}.lms-gb tr.avg td{background:#faf8f3;font-weight:700}
+.lms-cell{cursor:pointer;font-weight:700;position:relative;padding:3px 8px;border-radius:6px}.lms-cell:hover{background:#f0ede6}.lms-cell i{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#E0A526}
+.fx-back{position:fixed;top:14px;left:16px;z-index:50;background:#fff;border:1px solid var(--border,#d9d5ca);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;color:var(--ink,#1a1a1a);text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.fx-back-l{display:inline-block;margin-top:14px}
 </style>
 </head>
 <body>
@@ -1329,7 +1375,7 @@ function eaStable(o){
   const norm=v=>Array.isArray(v)?v.map(norm):(v&&typeof v==='object')?Object.keys(v).sort().reduce((a,k)=>{a[k]=norm(v[k]);return a;},{}):v;
   return JSON.stringify(norm(JSON.parse(JSON.stringify(o))));
 }
-function eaStripRev(t){const c=JSON.parse(JSON.stringify(t));delete c.rev;return c;}
+function eaStripRev(t){const c=JSON.parse(JSON.stringify(t));['rev','ownerId','sharedWith','coTeachers','editedBy','lastEditedBy'].forEach(k=>delete c[k]);return c;}
 // replace an object's contents but keep its identity (the builder holds references to APP.currentTest etc.)
 function eaReplaceInPlace(target,src){
   Object.keys(target).forEach(k=>delete target[k]);
@@ -4973,7 +5019,7 @@ function openGradingStudent(sid){
     <div class="flex gap-2">
       <button class="btn btn-secondary" onclick="closeModal()">Close</button>
       <button class="btn btn-danger" onclick="deleteSubmission('${sid}')">Delete Response</button>
-      <button class="btn btn-primary" onclick="recalcAndSave('${sid}');toast('Score saved.','success');renderGrading()">Save & Recalculate</button>
+      <button class="btn btn-primary" onclick="fxGradeSave('${sid}')">Save &amp; mark graded</button>
     </div>
   </div>`,'800px');
 }
@@ -5019,6 +5065,11 @@ function copyResultsLink(sid){
   });
 }
 
+function fxGradeSave(sid){
+  const s=APP.submissions.find(ss=>ss.id===sid);if(!s)return;
+  s.graded=true;s.gradedAt=new Date().toISOString();
+  recalcAndSave(sid);toast('Saved — marked as graded. The student can now view their results.','success');renderGrading();closeModal();
+}
 function recalcAndSave(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
@@ -7675,6 +7726,8 @@ function loadStudentResults(sid){
   if(!s){sw.innerHTML=`<div style="text-align:center;padding:80px;font-family:var(--f-body)"><h2 style="font-family:var(--f-display);font-size:32px">Results not found</h2></div>`;return;}
   const t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t){sw.innerHTML=`<div style="text-align:center;padding:80px;font-family:var(--f-body)"><h2 style="font-family:var(--f-display);font-size:32px">Test not found</h2></div>`;return;}
+  {const _a=(APP.assignments||[]).find(x=>x.id===s.assignmentId);
+   if(s.status==='submitted'&&_a&&_a.releaseScores===false&&!s.graded){sw.innerHTML=`<div class="ea-done"><div class="ea-done-card"><h2 class="ea-done-h" style="font-size:34px"><u>Not released yet.</u></h2><p class="ea-done-p">Your teacher will release your results after grading.</p>${typeof fxBackBtn==='function'?fxBackBtn():''}</div></div>`;return;}}
   if(s.status!=='submitted'){sw.innerHTML=`<div style="text-align:center;padding:80px;font-family:var(--f-body)"><h2 style="font-family:var(--f-display);font-size:32px">Results not yet available</h2><p style="margin-top:12px;color:var(--ink-soft);font-family:var(--f-body);font-size:18px">Your instructor has not released results yet.</p></div>`;return;}
   const totalPts=calcTotalPoints(t,s);
   const pct=totalPts>0?Math.round((s.score||0)/totalPts*100):0;
@@ -11254,22 +11307,24 @@ function fxPrivacyOpen(){
   const d=document.createElement('div');d.id='fx-pv';
   d.innerHTML=`<div class="pv-bar"><button class="pv-back" onclick="fxPrivacyClose()">← Back</button><span>EdAssess</span></div>
   <div class="pv-wrap"><nav class="pv-toc"><div class="pv-toc-h">Contents</div><a href="#pv0" onclick="fxPvGo(event,0)">1. Overview</a><a href="#pv1" onclick="fxPvGo(event,1)">2. What we collect</a><a href="#pv2" onclick="fxPvGo(event,2)">3. How we use it</a><a href="#pv3" onclick="fxPvGo(event,3)">4. Who can see what</a><a href="#pv4" onclick="fxPvGo(event,4)">5. Storage & third parties</a><a href="#pv5" onclick="fxPvGo(event,5)">6. Retention</a><a href="#pv6" onclick="fxPvGo(event,6)">7. Security</a><a href="#pv7" onclick="fxPvGo(event,7)">8. Your rights</a><a href="#pv8" onclick="fxPvGo(event,8)">9. Children & schools</a><a href="#pv9" onclick="fxPvGo(event,9)">10. Changes & contact</a></nav>
-  <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Privacy <u>policy</u></h1><div class="pv-date">Last updated November 3, 2026</div><section id="pv0"><h2><i>1</i>Overview</h2><p class="lead">EdAssess collects only what it needs to run classroom assessments: a student's name and answers, and a teacher's account details. We do not sell data, show ads, or track people across other sites.</p>
+  <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Privacy <u>policy</u></h1><div class="pv-date">Last updated November 6, 2026</div><section id="pv0"><h2><i>1</i>Overview</h2><p class="lead">EdAssess collects only what it needs to run classroom assessments: a student's name and answers, and a teacher's account details. We do not sell data, show ads, or track people across other sites.</p>
 <h3>Who this covers</h3>
-<p>This policy applies to everyone who uses EdAssess, operated by <mark>[Operator name]</mark> (“we”, “us”):</p>
+<p>This policy applies to everyone who uses EdAssess, operated by <b>Dean H</b> at <b>edassess.netlify.app</b> (“we”, “us”):</p>
 <ul><li><b>Students</b> join an assessment with a link or short join code. Students can take many assessments without an account. Students may also create an optional account (first name and last initial, plus a password stored only as a salted hash) to join classes and see their assignments and grades. Teachers can see the names, class membership and results of students in their own classes; an administrator can list student accounts and reset a password but can never see it.</li><li><b>Teachers</b> create accounts to build tests, assign them, monitor sessions and grade work. Teachers can share tests and co-teach assignments with other teachers.</li></ul>
 <p>EdAssess is run on behalf of teachers and schools. For student work, the teacher or school that assigned it decides what is collected and how long it is kept; we store and process it for them.</p>
 <h3>The short version</h3>
 <table><tr><th>Question</th><th>Answer</th></tr>
-<tr><td>Do students need an account or email?</td><td>No. A student enters a name and the assignment code.</td></tr>
-<tr><td>What do we store about students?</td><td>Name, answers, timing, scores, feedback, messages to the teacher, and photos they upload.</td></tr>
+<tr><td>Do students need an account or email?</td><td>Not for most assessments: a student enters a name and the assignment code. An optional student account (first name, last initial and a password; no email) lets a student join classes and see grades. A teacher can require one for a specific assignment.</td></tr>
+<tr><td>What do we store about students?</td><td>Name, answers, timing, scores, feedback, messages to the teacher, and photos they upload. With an account: a password hash, the classes joined, invitations and sign-in times.</td></tr>
 <tr><td>What do we store about teachers?</td><td>Username, display name, a password hash, and the tests, assignments and grades they create.</td></tr>
 <tr><td>Who sees student work?</td><td>The teacher who assigned it and any co-teachers on that assignment.</td></tr>
 <tr><td>Ads, tracking cookies or analytics?</td><td>None.</td></tr>
 <tr><td>Where is it stored?</td><td>With our hosting provider, Netlify.</td></tr></table></section><section id="pv1"><h2><i>2</i>What we collect</h2><h3>Students</h3>
-<ul><li><b>Name.</b> What the student types when joining. We suggest first name and last initial; students should not enter anything more identifying than their teacher asks for.</li>
+<ul><li><b>Student account (optional).</b> A name in the form first name + last initial, and a password. Passwords are never stored in readable form; only a salted scrypt hash is kept. We also keep the classes the student has joined or been invited to, when they joined, and their last sign-in. Work done while signed in is linked to the account so it appears in the student’s Grades. A student who is signed in stays signed in on that browser for up to 30 days unless they sign out.</li>
+<li><b>Name.</b> What the student types when joining. We suggest first name and last initial; students should not enter anything more identifying than their teacher asks for.</li>
 <li><b>Responses.</b> Answers, written responses, crossed-out choices, flags, highlights and notes, and when each question was answered or the exam started and ended.</li>
 <li><b>Scores and feedback.</b> Automatic scores, grades a teacher enters, rubric marks and teacher comments.</li>
+<li><b>Classes.</b> Teachers create classes, invite students by name or share a class code, and post announcements that class members can see. A class roster is visible to the teachers of that class.</li>
 <li><b>Messages.</b> Questions a student sends to the teacher during a test, and the teacher’s replies.</li>
 <li><b>Uploaded work.</b> Photos or PDFs of handwritten work, including files sent from a phone by scanning a QR code.</li>
 <li><b>Test-security events.</b> If a teacher turns on lockdown settings, we record events such as leaving the test window and the number of warnings that resulted.</li>
@@ -11288,11 +11343,11 @@ function fxPrivacyOpen(){
 <li><b>Data kept in your browser.</b> The app saves a local copy of your work (tests, assignments, drafts and submissions you can access) so it loads quickly and unsaved work is not lost if your connection drops. It also remembers preferences such as text size. This is browser storage, not advertising cookies. Signing out clears the saved copies.</li></ul></section><section id="pv2"><h2><i>3</i>How we use it</h2><p>We use information only to run the service:</p>
 <ul><li>to deliver assessments and let students submit work;</li><li>to score and grade work, show results and give feedback;</li><li>to let teachers monitor live sessions, receive student messages and review analytics;</li><li>to run accounts: signing in, password changes, sharing and co-teaching;</li><li>to keep data safe, prevent abuse and fix problems; and</li><li>to meet legal obligations.</li></ul>
 <p>We do not use student or teacher data for advertising, to build marketing profiles, or to sell to anyone.</p></section><section id="pv3"><h2><i>4</i>Who can see what</h2><table><tr><th>Person</th><th>What they can see</th></tr>
-<tr><td><b>Student</b></td><td>Their own answers, results and feedback, and the names of the teachers who assigned the work, graded it, commented on it or replied to their messages. In peer review, the responses they are assigned to review.</td></tr>
-<tr><td><b>Teacher (owner)</b></td><td>Their own tests, assignments, student submissions, messages, grades and analytics.</td></tr>
+<tr><td><b>Student</b></td><td>Their own answers, results and feedback (once the teacher releases or grades them), their classes, the class announcements and assignments, the names of other teachers of their classes, and the names of the teachers who assigned the work, graded it, commented on it or replied to their messages. In peer review, the responses they are assigned to review.</td></tr>
+<tr><td><b>Teacher (owner)</b></td><td>Their own tests, assignments, student submissions, messages, grades and analytics, and the roster, announcements and gradebook of their classes.</td></tr>
 <tr><td><b>Co-teacher</b></td><td>The assignments they were added to, including submissions, live monitor, messages and grading. They cannot delete the assignment or change its co-teachers.</td></tr>
 <tr><td><b>Teacher with a shared test</b></td><td>The test itself: “Can view” is read-only, “Can edit” allows changes. Only the owner can share or delete it. Sharing a test does not share student submissions.</td></tr>
-<tr><td><b>Administrator</b></td><td>The list of teacher accounts (name, username, role, status), and can reset a password or disable an account. The administrator does not see other teachers’ tests or student work through the app.</td></tr>
+<tr><td><b>Administrator</b></td><td>The list of teacher accounts (name, username, role, status) and student accounts (name, classes and teacher names, last sign-in, number of submissions, status), and can reset a password or disable an account. The administrator can never see any password. The administrator does not see other teachers’ tests or student work through the app.</td></tr>
 <tr><td><b>Us, as operator</b></td><td>We can technically reach stored data to run, secure and repair the service, and access student work only when needed for support, security or legal reasons.</td></tr></table>
 <div class="note"><b>Join links and codes.</b> Anyone who has an assessment’s link or join code can open that assessment. Treat them like a classroom door key: share them only with your students. A results link shows one student’s results, so students should not share it.</div>
 <div class="note"><b>Names shown to students.</b> Teachers choose the name students see. Use a name your students and school would expect (for example “Ms. Rivera”), not private contact details.</div></section><section id="pv4"><h2><i>5</i>Storage & third parties</h2><p>EdAssess is hosted on <b>Netlify</b>, which runs the website and server functions and stores records (tests, assignments, submissions, accounts and uploaded files). Netlify processes this data only to provide hosting to us.</p>
@@ -11301,13 +11356,14 @@ function fxPrivacyOpen(){
 <li><b>Deleted tests and assignments</b> go to a recoverable trash before removal, so a mistaken delete can be undone. Deleting something does not instantly remove every copy.</li>
 <li><b>Version history.</b> Each test keeps up to 60 automatic earlier versions.</li>
 <li><b>Uploaded images and PDFs</b> are stored as separate files. Deleting a submission removes the record, but the file may remain in storage until we purge it.</li>
-<li><b>Teacher accounts</b> stay until we remove them. A disabled account cannot sign in.</li>
+<li><b>Teacher and student accounts</b> stay until we remove them. A disabled account cannot sign in. A student who leaves a class keeps their past work and grades on their account.</li>
 <li><b>Backups and logs</b> held by our hosting provider follow that provider’s retention schedules.</li></ul>
-<p>Teachers can delete their own tests, assignments and submissions. To have anything else removed, including a student’s data, contact us or the teacher or school that assigned the work.</p></section><section id="pv6"><h2><i>7</i>Security</h2><ul><li>Connections to EdAssess use HTTPS.</li><li>Passwords are stored only as salted scrypt hashes. Five wrong sign-in attempts lock that account for one minute.</li><li>Sign-in sessions use signed tokens that expire after 30 days.</li><li>The server checks on every request whether a teacher may see or change a record, so teachers reach only their own work and what has been shared with them.</li><li>Student pages never send a teacher’s sign-in token, even in the same browser.</li><li>Signing out clears locally saved copies of tests, assignments, submissions and drafts.</li></ul>
+<p>Teachers can delete their own tests, assignments and submissions. To have anything else removed, including a student’s data, contact us or the teacher or school that assigned the work.</p></section><section id="pv6"><h2><i>7</i>Security</h2><ul><li>Connections to EdAssess use HTTPS.</li><li>Passwords (teacher and student) are stored only as salted scrypt hashes. Five wrong sign-in attempts lock that account for one minute. When an administrator resets a student password, the student must choose a new one at the next sign-in.</li><li>Sign-in sessions use signed tokens that expire after 30 days.</li><li>The server checks on every request whether a teacher may see or change a record, so teachers reach only their own work and what has been shared with them.</li><li>Student pages never send a teacher’s sign-in token, and a browser is signed in as a teacher or a student, never both. Students can only read their own work and the classes they belong to.</li><li>Signing out clears locally saved copies of tests, assignments, submissions and drafts.</li></ul>
 <p>No online service can promise perfect security. Sign out on shared computers, choose a strong unique password, and keep assessment links and codes private. If you think an account has been compromised, change the password and tell us.</p></section><section id="pv7"><h2><i>8</i>Your rights</h2><p><b>Teachers</b> can edit their name, change their password, delete their content and stop sharing at any time in the app. You can ask us to delete your account.</p>
-<p><b>Students and parents or guardians.</b> Requests to see, correct or delete a student’s data should go first to the teacher or school that assigned the work. We will respond to requests from a school or teacher, and to verified requests from a student or parent or guardian where the law gives that right. Depending on where you live, this may include rights to access, correct, delete or restrict the use of personal data, and to complain to a data protection authority.</p></section><section id="pv8"><h2><i>9</i>Children & schools</h2><p>Students are identified only by the name they type, with no email or account. EdAssess is intended for use under the direction of a teacher or school. We do not knowingly collect personal information from a child under 13 directly for any purpose other than the school’s educational use. Schools and teachers are responsible for having any permission they need to use the service with their students, including parental consent where it applies (for example under COPPA in the United States), and for handling student education records under laws such as FERPA.</p>
+<p><b>Students with an account</b> can change their password and leave a class at any time. A student who forgets their password asks the administrator to reset it. A student can ask us (or their teacher) to delete their account.</p>
+<p><b>Students and parents or guardians.</b> Requests to see, correct or delete a student’s data should go first to the teacher or school that assigned the work. We will respond to requests from a school or teacher, and to verified requests from a student or parent or guardian where the law gives that right. Depending on where you live, this may include rights to access, correct, delete or restrict the use of personal data, and to complain to a data protection authority.</p></section><section id="pv8"><h2><i>9</i>Children & schools</h2><p>Students are identified only by the name they type or, if they choose to make an account, by first name and last initial; we never ask for an email address. EdAssess is intended for use under the direction of a teacher or school. We do not knowingly collect personal information from a child under 13 directly for any purpose other than the school’s educational use. Schools and teachers are responsible for having any permission they need to use the service with their students, including parental consent where it applies (for example under COPPA in the United States), and for handling student education records under laws such as FERPA.</p>
 <p>Teacher accounts are for adults. If you believe a child has created a teacher account, contact us and we will remove it.</p></section><section id="pv9"><h2><i>10</i>Changes & contact</h2><p>We may update this policy as the service changes. We will change the “Last updated” date and, for material changes, tell signed-in teachers in the app. Using EdAssess after an update means you accept the updated policy.</p>
-<p><b><mark>[Operator name]</mark></b><br><mark>[Mailing address]</mark><br><mark>[Privacy contact email]</mark><br>Governing jurisdiction: <mark>[State/Country]</mark></p></section></main></div>`;
+<p><b>Dean H</b><br>edassess.netlify.app<br><a href="mailto:deanh.tutoring@gmail.com">deanh.tutoring@gmail.com</a></p></section></main></div>`;
   document.body.appendChild(d);document.body.classList.add('pv-open');d.scrollTop=0;
 }
 function fxPrivacyClose(){const d=document.getElementById('fx-pv');if(d)d.remove();document.body.classList.remove('pv-open');
@@ -11400,7 +11456,7 @@ async function fxStuEnter(){
   const s=stuLoad();if(!s||!s.token)return;
   document.getElementById('login-page').classList.add('hidden');
   const app=document.getElementById('stu-app');app.classList.remove('hidden');
-  STU.page=(location.hash.replace('#/','')||'home');if(!['home','assignments','grades'].includes(STU.page))STU.page='home';
+  stuRoute();
   document.body.classList.add('stu-mode');
   stuPaint();await stuRefresh();
   try{const code=localStorage.getItem('ea_pending_join');if(code){localStorage.removeItem('ea_pending_join');await fxStuJoinCode(code);}}catch(e){}
@@ -11706,6 +11762,175 @@ function fxStuFilter(q){
 async function fxStuReset(key,name){const p=prompt('Temporary password for '+name+' (6+ characters). They choose a new one at next sign-in.');if(!p)return;const r=await apiPost({action:'adminResetStudentPassword',key,newPassword:p});toast(r&&r.ok?'Password reset. Give '+name+' the temporary password.':((r&&r.error)||'Failed'),r&&r.ok?'success':'error');}
 async function fxStuDisable(key,v){await apiPost({action:'adminSetStudentDisabled',key,disabled:v});fxStudentsModal();}
 {const o=window.fxAccountModal;window.fxAccountModal=function(f){o(f);const me=fxMe();if(me&&me.role==='admin'&&!f){const b=document.querySelector('#modal-container .modal-body > div:last-child');if(b)b.insertAdjacentHTML('beforeend','<button class="btn btn-secondary" onclick="fxStudentsModal()">Manage students</button>');}};}
+</script>
+
+<script id="ea-lms">
+/* ═══ LMS LAYER: student Home/Class pages, teacher class Stream/Assignments/Grades/People, back buttons ═══ */
+const LMS_COL=['#2F6F5E','#3B5BDB','#B4532A','#7C3AED','#0E7490','#BE185D','#4D7C0F','#9A3412'];
+function lmsCol(id){let h=0;String(id).split('').forEach(c=>{h=(h*31+c.charCodeAt(0))>>>0;});return LMS_COL[h%LMS_COL.length];}
+const lmsAgo=iso=>{if(!iso)return '';const d=new Date(iso),s=(Date.now()-d)/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' hr ago';if(s<604800)return Math.floor(s/86400)+' d ago';return d.toLocaleDateString([],{month:'short',day:'numeric'});};
+/* ── routing ── */
+function stuRoute(){
+  const h=location.hash.replace('#/','');const m=h.match(/^class\/(.+)$/);
+  if(m){STU.page='class';STU.cid=m[1];}else STU.page=['home','assignments','grades'].includes(h)?h:'home';
+}
+window.stuGo=function(p){const m=String(p).match(/^class\/(.+)$/);if(m){STU.page='class';STU.cid=m[1];STU.ctab='stream';}else STU.page=p;location.hash='#/'+p;stuPaint();window.scrollTo(0,0);};
+const stuReleased=(a,s)=>!!(s&&s.status==='submitted'&&(a.releaseScores||s.graded));
+/* ── assignment row (plain text status, no pills) ── */
+window.stuRow=function(a,opts){
+  opts=opts||{};const sub=stuSubFor(a.id),st=stuState(a,sub),rel=stuReleased(a,sub),pct=rel?stuPct(a,sub):null;
+  const late=a.dueAt&&st!=='done'&&new Date(a.dueAt)<new Date();
+  let status='',act='';
+  if(st==='done'){status=rel?(pct!=null?`<b>${pct}%</b>`:'Graded'):'Submitted';act=rel?`<a class="lms-link" href="?results=${E(sub.id)}">Results</a>`:'';}
+  else if(st==='closed')status='<span class="lms-red">Missing</span>';
+  else if(st==='scheduled')status='Opens '+E(new Date(a.opensAt).toLocaleDateString([],{month:'short',day:'numeric'}));
+  else if(st==='progress'){status='In progress';act=`<a class="lms-go" href="?exam=${E(a.id)}">Resume</a>`;}
+  else act=`<a class="lms-go" href="?exam=${E(a.id)}">Start</a>`;
+  const meta=[opts.noClass?'':stuClassName(a),a.dueAt&&st!=='done'?`<span class="${late?'lms-red':''}">${E(stuWhen(a.dueAt))}</span>`:(a.dueAt?'':'No due date'),a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' min':''].filter(Boolean).map((x,i)=>i===0&&!opts.noClass?E(x):x).join(' · ');
+  const ico=st==='done'?'✓':st==='closed'?'!':'';
+  return `<div class="lms-row"><div class="lms-ico" style="background:${st==='done'?'#2F6F5E':lmsCol(a.classIds&&a.classIds[0]||a.id)}">${ico||'✎'}</div><div class="lms-row-main"><div class="lms-row-t">${E(a.title)}</div><div class="lms-row-m">${meta}</div></div><div class="lms-row-r"><span class="lms-st">${status}</span>${act}</div></div>`;
+};
+/* ── HOME ── */
+window.stuHome=function(){
+  const d=STU.data,first=d.student.name.split(' ')[0],as=d.assignments;
+  const open=as.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).sort((x,y)=>new Date(x.dueAt||x.closesAt||'2999')-new Date(y.dueAt||y.closesAt||'2999'));
+  const recent=as.filter(a=>stuReleased(a,stuSubFor(a.id))).sort((x,y)=>new Date(stuSubFor(y.id).submittedAt||0)-new Date(stuSubFor(x.id).submittedAt||0)).slice(0,4);
+  const seen=stuSeen();
+  const cards=(d.classes||[]).map(c=>{
+    const mine=open.filter(a=>(a.classIds||[]).includes(c.id)),nx=mine[0];
+    return `<div class="lms-card" onclick="stuGo('class/${E(c.id)}')"><div class="lms-banner" style="background:${lmsCol(c.id)}"><div class="lms-card-n">${E(c.name)}</div><div class="lms-card-t">${E(stuTeachers(c))}${c.period?' · '+E(c.period):''}</div></div>
+     <div class="lms-card-b">${nx?`<div class="lms-due-l">${E(stuWhen(nx.dueAt)||'Assigned')}</div><div class="lms-due-t">${E(nx.title)}</div>${mine.length>1?`<div class="lms-more">+${mine.length-1} more</div>`:''}`:'<div class="lms-none">Nothing due</div>'}</div></div>`;}).join('');
+  return `<div class="lms-hello"><h1>Hi, ${E(first)}</h1><button class="lms-btn" onclick="stuJoinModal()">+ Join a class</button></div>
+  ${(d.invites||[]).map(i=>`<div class="lms-invite"><span><b>${E(tN(i.ownerId))}</b> invited you to join <b>${E(i.name)}</b></span><span><button class="lms-btn sm" onclick="stuInvite('${E(i.id)}',true)">Accept</button><button class="lms-btn sm ghost" onclick="stuInvite('${E(i.id)}',false)">Decline</button></span></div>`).join('')}
+  <div class="lms-cols"><div><div class="lms-h">My classes</div>${cards?`<div class="lms-grid">${cards}</div>`:'<div class="lms-panel lms-empty">You haven’t joined a class yet. Use a class code from your teacher, or wait for an invitation.<br><button class="lms-btn" style="margin-top:12px" onclick="stuJoinModal()">Join a class</button></div>'}</div>
+  <aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">To-do</div>${open.length?open.slice(0,7).map(a=>stuRow(a)).join(''):'<div class="lms-empty-s">You’re all caught up.</div>'}${open.length>7?`<a class="lms-more-l" onclick="stuGo('assignments')">See all ${open.length} →</a>`:''}</div>
+  ${recent.length?`<div class="lms-panel"><div class="lms-h" style="margin-top:0">Recent grades</div>${recent.map(a=>{const s=stuSubFor(a.id),p=stuPct(a,s);return `<a class="lms-grade" href="?results=${E(s.id)}"><span>${E(a.title)}${seen.includes(s.id)?'':' <i class="lms-dot"></i>'}<small>${E(stuClassName(a))}</small></span><b>${p==null?'—':p+'%'}</b></a>`;}).join('')}<a class="lms-more-l" onclick="stuGo('grades')">All grades →</a></div>`:''}</aside></div>`;
+};
+/* ── ASSIGNMENTS ── */
+window.stuAssignments=function(){
+  const d=STU.data,tab=STU.tab==='todo'||STU.tab==='done'||STU.tab==='missing'?STU.tab:'todo';
+  const stOf=a=>stuState(a,stuSubFor(a.id));
+  const L={todo:d.assignments.filter(a=>['todo','progress','scheduled'].includes(stOf(a))),missing:d.assignments.filter(a=>stOf(a)==='closed'),done:d.assignments.filter(a=>stOf(a)==='done')};
+  let list=L[tab];if(STU.cls!=='all')list=list.filter(a=>(a.classIds||[]).includes(STU.cls));
+  list=list.slice().sort((x,y)=>tab==='done'?new Date(stuSubFor(y.id).submittedAt||0)-new Date(stuSubFor(x.id).submittedAt||0):new Date(x.dueAt||'2999')-new Date(y.dueAt||'2999'));
+  return `<div class="lms-hello"><h1>Assignments</h1><select class="lms-sel" onchange="STU.cls=this.value;stuPaint()"><option value="all">All classes</option>${(d.classes||[]).map(c=>`<option value="${E(c.id)}" ${STU.cls===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select></div>
+  <div class="lms-tabs">${[['todo','Assigned'],['missing','Missing'],['done','Done']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="STU.tab='${k}';stuPaint()">${l}<span>${L[k].length}</span></button>`).join('')}</div>
+  <div class="lms-panel">${list.length?list.map(a=>stuRow(a)).join(''):`<div class="lms-empty-s">${tab==='todo'?'Nothing assigned right now.':tab==='missing'?'Nothing missing. Nice.':'Nothing submitted yet.'}</div>`}</div>`;
+};
+/* ── GRADES ── */
+function lmsGradeRows(rows){return rows.map(({a,s})=>{const rel=stuReleased(a,s),p=rel?stuPct(a,s):null;return `<tr><td><b>${E(a.title)}</b><small>${E(s.submittedAt?'Submitted '+new Date(s.submittedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}${s.gradedBy&&rel?' · graded by '+E(tN(s.gradedBy)):''}</small></td><td class="r">${rel&&p!=null?`<b>${s.score}/${a.maxPoints}</b> <span class="lms-pct">${p}%</span>`:'<span class="lms-muted">Not released</span>'}</td><td class="r">${rel?`<a class="lms-link" href="?results=${E(s.id)}">Review</a>`:''}</td></tr>`;}).join('');}
+window.stuGrades=function(){
+  const d=STU.data;stuMarkSeenLater();
+  const all=d.assignments.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted');
+  const avgOf=r=>{const v=r.filter(x=>stuReleased(x.a,x.s)).map(x=>stuPct(x.a,x.s)).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;};
+  const secs=(d.classes||[]).map(c=>{const r=all.filter(x=>(x.a.classIds||[]).includes(c.id)).sort((x,y)=>new Date(y.s.submittedAt||0)-new Date(x.s.submittedAt||0));return {c,r,avg:avgOf(r)};});
+  const other=all.filter(x=>!(x.a.classIds||[]).some(id=>(d.classes||[]).some(c=>c.id===id)));
+  return `<div class="lms-hello"><h1>Grades</h1></div>
+  ${secs.map(({c,r,avg})=>`<div class="lms-panel"><div class="lms-gh"><div><div class="lms-gh-n"><i style="background:${lmsCol(c.id)}"></i>${E(c.name)}</div><div class="lms-row-m">${E(stuTeachers(c))}</div></div><div class="lms-gh-a">${avg==null?'—':avg+'%'}</div></div>${r.length?`<table class="lms-tbl"><tbody>${lmsGradeRows(r)}</tbody></table>`:'<div class="lms-empty-s">No submitted work yet.</div>'}</div>`).join('')}
+  ${other.length?`<div class="lms-panel"><div class="lms-gh"><div><div class="lms-gh-n"><i style="background:#999"></i>Other assignments</div><div class="lms-row-m">Done with your account outside a class</div></div><div class="lms-gh-a">${avgOf(other)==null?'—':avgOf(other)+'%'}</div></div><table class="lms-tbl"><tbody>${lmsGradeRows(other)}</tbody></table></div>`:''}
+  ${!secs.length&&!other.length?'<div class="lms-panel lms-empty">Join a class to start seeing grades here.</div>':''}`;
+};
+/* ── CLASS (student) ── */
+function lmsStream(c,asg,isT){
+  const items=[...(c.announcements||[]).map(x=>({k:'ann',at:x.at,by:x.by,text:x.text,id:x.id})),...asg.map(a=>({k:'asg',at:a.createdAt,by:a.ownerId,a}))].sort((x,y)=>new Date(y.at||0)-new Date(x.at||0));
+  return items.map(it=>it.k==='ann'
+   ?`<div class="lms-post"><div class="lms-av" style="background:${lmsCol(it.by)}">${E((tN(it.by)||'?')[0])}</div><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(it.by))}</b><span>${E(lmsAgo(it.at))}</span>${isT?`<a class="fxc-x" style="margin-left:auto" onclick="fxClassUnpost('${E(c.id)}','${E(it.id)}')">Delete</a>`:''}</div><div class="lms-post-t">${E(it.text)}</div></div></div>`
+   :(()=>{const a=it.a;return isT
+     ?`<div class="lms-post asg"><div class="lms-av sq" style="background:${lmsCol(c.id)}">✎</div><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(a.ownerId))}</b> posted an assignment<span>${E(lmsAgo(a.createdAt))}</span></div><div class="lms-post-t"><b>${E(a.title||'Assessment')}</b><div class="lms-row-m">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'}</div></div></div></div>`
+     :`<div class="lms-post asg"><div class="lms-av sq" style="background:${lmsCol(c.id)}">✎</div><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(a.ownerId))}</b> posted a new assignment<span>${E(lmsAgo(a.createdAt))}</span></div>${stuRow(a,{noClass:true})}</div></div>`;})()
+  ).join('')||'<div class="lms-panel lms-empty">Nothing posted yet.</div>';
+}
+function lmsClassView(){
+  const c=(STU.data.classes||[]).find(x=>x.id===STU.cid);
+  if(!c)return `<div class="lms-panel lms-empty">That class isn’t available. <a class="lms-link" onclick="stuGo('home')">Back to home</a></div>`;
+  const tab=STU.ctab||'stream',asg=STU.data.assignments.filter(a=>(a.classIds||[]).includes(c.id));
+  let body='';
+  if(tab==='stream'){
+    const open=asg.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).sort((x,y)=>new Date(x.dueAt||'2999')-new Date(y.dueAt||'2999'));
+    body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${open.length?open.slice(0,4).map(a=>`<a class="lms-up" href="?exam=${E(a.id)}"><small>${E(stuWhen(a.dueAt)||'No due date')}</small>${E(a.title)}</a>`).join(''):'<div class="lms-empty-s">Woohoo, no work due soon!</div>'}</div></aside><div>${lmsStream(c,asg,false)}</div></div>`;
+  }else if(tab==='classwork'){
+    const g=[['Assigned',asg.filter(a=>['todo','progress','scheduled'].includes(stuState(a,stuSubFor(a.id))))],['Missing',asg.filter(a=>stuState(a,stuSubFor(a.id))==='closed')],['Done',asg.filter(a=>stuState(a,stuSubFor(a.id))==='done')]];
+    body=g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('')||'<div class="lms-panel lms-empty">No assignments yet.</div>';
+  }else{
+    const r=asg.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted');
+    const v=r.filter(x=>stuReleased(x.a,x.s)).map(x=>stuPct(x.a,x.s)).filter(x=>x!=null),avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;
+    body=`<div class="lms-panel"><div class="lms-gh"><div class="lms-gh-n">Your grade</div><div class="lms-gh-a">${avg==null?'—':avg+'%'}</div></div>${r.length?`<table class="lms-tbl"><tbody>${lmsGradeRows(r)}</tbody></table>`:'<div class="lms-empty-s">No submitted work yet.</div>'}</div>`;
+  }
+  return `<a class="lms-crumb" onclick="stuGo('home')">← My classes</a>
+  <div class="lms-hero" style="background:${lmsCol(c.id)}"><div><h1>${E(c.name)}</h1><div>${E(stuTeachers(c))}${c.period?' · '+E(c.period):''}${c.subject?' · '+E(c.subject):''}</div></div><button class="lms-hero-b" onclick="stuLeave('${E(c.id)}')">Leave class</button></div>
+  <div class="lms-tabs">${[['stream','Stream'],['classwork','Classwork'],['grades','Grades']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="STU.ctab='${k}';stuPaint()">${l}</button>`).join('')}</div>${body}`;
+}
+window.stuPaint=function(){
+  const app=document.getElementById('stu-app');if(!app||app.classList.contains('hidden'))return;
+  const s=(stuLoad()||{}).student||{name:''};
+  const nav=[['home','Home'],['assignments','Assignments'],['grades','Grades']];
+  const cur=STU.page==='class'?'home':STU.page;
+  let body='';
+  if(!STU.data)body=STU.error?`<div class="lms-panel lms-empty">${E(STU.error)}</div>`:'<div class="lms-panel lms-empty">Loading…</div>';
+  else body=STU.page==='class'?lmsClassView():STU.page==='assignments'?stuAssignments():STU.page==='grades'?stuGrades():stuHome();
+  const n=STU.data?STU.data.assignments.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).length:0;
+  app.innerHTML=`<header class="stu-top"><div class="stu-brand" onclick="stuGo('home')" style="cursor:pointer">EdAssess</div><nav>${nav.map(([k,l])=>`<a class="${cur===k?'on':''}" onclick="stuGo('${k}')">${l}${k==='assignments'&&n?`<i>${n}</i>`:''}</a>`).join('')}</nav><button class="stu-me" onclick="stuMenu(event)"><span>${E((s.name||'?')[0])}</span>${E(s.name)}</button></header><main class="stu-main">${body}</main>`;
+};
+/* join: class code OR an assignment code */
+window.stuJoinModal=function(){
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Join a class</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="margin-bottom:12px;font-size:14px;color:#666">Ask your teacher for the class code, then enter it here. An assignment code works too.</p><input id="stu-code" class="form-control" style="font-family:monospace;letter-spacing:.2em;font-size:22px;text-align:center;text-transform:uppercase" maxlength="10" placeholder="CODE" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" onkeydown="if(event.key==='Enter')fxStuJoinCode()"><div style="margin-top:14px;text-align:right"><button class="lms-btn" onclick="fxStuJoinCode()">Join</button></div></div>`,'400px');
+  setTimeout(()=>{const i=document.getElementById('stu-code');if(i)i.focus();},50);
+};
+window.fxStuJoinCode=async function(code){
+  code=(typeof code==='string'&&code)||(document.getElementById('stu-code')||{}).value||'';code=code.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<4){toast('Enter the code from your teacher.','error');return;}
+  const r=await apiPost({action:'joinClass',code});
+  if(r&&r.ok){closeModal();toast('Joined '+r.name+'.','success');await stuRefresh();return;}
+  if(r&&r.status===404){const g=await eaGet({code},10000);if(g&&g.id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(g.id);return;}}
+  toast((r&&r.error)||'That code was not found.','error');
+};
+window.stuLeave=async function(id){if(!confirm('Leave this class? Your past work stays on your account.'))return;const r=await apiPost({action:'leaveClass',classId:id});if(r&&r.ok){closeModal();await stuRefresh();stuGo('home');}};
+/* ── back to dashboard (exam, submitted, results, gate) ── */
+function fxBackBtn(){return stuToken()?`<a class="ea-btn-line fx-back-l" href="${location.href.split('?')[0].split('#')[0]}">← Back to my dashboard</a>`:'';}
+function fxBackBar(){return stuToken()?`<a class="fx-back" href="${location.href.split('?')[0].split('#')[0]}">← Dashboard</a>`:'';}
+{const o=window.renderNameEntry;window.renderNameEntry=function(a,t){return fxBackBar()+o(a,t);};}
+{const o=window.renderSubmittedScreen;window.renderSubmittedScreen=function(sub,a,t){o(sub,a,t);const c=document.querySelector('#student-wrapper .ea-done-card');if(c&&stuToken()){const f=c.querySelector('.ea-done-foot');if(f)f.outerHTML=fxBackBtn();else c.insertAdjacentHTML('beforeend',fxBackBtn());}
+  if(c&&stuToken()&&a.releaseScores===false&&!sub.graded){const p=c.querySelector('.ea-done-score');if(p)p.innerHTML='Your teacher will release your results after grading.';}};}
+{const o=window.loadStudentResults;window.loadStudentResults=function(sid){o(sid);const w=document.getElementById('student-wrapper');if(w&&stuToken()&&!w.querySelector('.fx-back'))w.insertAdjacentHTML('afterbegin',fxBackBar());};}
+{const o=window.fxExamGate;window.fxExamGate=function(k){o(k);const w=document.getElementById('student-wrapper');if(k==='class'&&w){w.querySelector('.ea-btn-line')&&0;}};}
+/* ── TEACHER class page ── */
+window.fxClassDetail=function(c){
+  const me=fxMe().username.toLowerCase(),owner=c.ownerId===me;
+  let tab=FXC.tab;if(tab==='roster'||!['stream','assignments','grades','people'].includes(tab))tab=FXC.tab=(tab==='roster'?'people':'stream');
+  const asg=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
+  const asgView=asg.map(a=>({...a,ownerId:a.ownerId||me,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'}));
+  let body='';
+  if(tab==='stream'){
+    body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Class code</div><div class="fxc-bigcode" style="font-size:26px">${E(c.joinCode)}</div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
+     <div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${asg.filter(a=>a.dueAt&&new Date(a.dueAt)>new Date()).sort((x,y)=>new Date(x.dueAt)-new Date(y.dueAt)).slice(0,4).map(a=>`<div class="lms-up"><small>${E(stuWhen(a.dueAt))}</small>${E(a.title||'Assessment')}</div>`).join('')||'<div class="lms-empty-s">Nothing due soon.</div>'}</div></aside>
+     <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">+ Assign a test</button><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
+  }else if(tab==='assignments'){
+    body=`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0">Assignments</div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">+ Assign a test</button></div>
+     ${asg.map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted');const need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length;
+      return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span><b>${subs.length}</b>/${c.students.length} turned in${need?` · <span class="lms-red">${need} to grade</span>`:''}</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('grading')">Grade</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;
+  }else if(tab==='grades'){
+    const cols=asg.map(a=>({...a,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'})).sort((x,y)=>new Date(x.createdAt||0)-new Date(y.createdAt||0));
+    const pctOf=(s)=>{const t=APP.tests.find(t=>t.id===s.testId);if(!t||s.score==null)return null;const tot=calcTotalPoints(t,s);return tot>0?Math.round(s.score/tot*100):null;};
+    const cell=(st,a)=>{const s=(APP.submissions||[]).filter(x=>x.studentKey===st.key&&x.assignmentId===a.id).sort((x,y)=>(y.status==='submitted')-(x.status==='submitted'))[0];
+      if(!s)return {h:'<span class="lms-muted">—</span>',v:null};
+      if(s.status!=='submitted')return {h:'<span class="lms-muted">working</span>',v:null};
+      const t=APP.tests.find(x=>x.id===s.testId),need=!s.graded&&typeof needsGrading==='function'&&needsGrading(s,t),p=pctOf(s);
+      return {h:`<a class="lms-cell ${need?'need':''}" onclick="openGradingStudent('${s.id}')">${p==null?'✓':p+'%'}${need?'<i title="Needs grading"></i>':''}</a>`,v:p};};
+    const rows=c.students.map(st=>{const cs=cols.map(a=>cell(st,a));const vs=cs.map(x=>x.v).filter(v=>v!=null);return {st,cs,avg:vs.length?Math.round(vs.reduce((a,b)=>a+b,0)/vs.length):null};});
+    const colAvg=cols.map((a,i)=>{const v=rows.map(r=>r.cs[i].v).filter(v=>v!=null);return v.length?Math.round(v.reduce((x,y)=>x+y,0)/v.length)+'%':'—';});
+    body=`<div class="lms-panel" style="overflow-x:auto;padding:0">${cols.length&&rows.length?`<table class="lms-gb"><thead><tr><th class="s">Student</th>${cols.map(a=>`<th title="${E(a.title)}">${E((a.title||'Assessment').slice(0,18))}</th>`).join('')}<th>Average</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="s">${E(r.st.name)}</td>${r.cs.map(x=>`<td>${x.h}</td>`).join('')}<td><b>${r.avg==null?'—':r.avg+'%'}</b></td></tr>`).join('')}<tr class="avg"><td class="s">Class average</td>${colAvg.map(v=>`<td>${v}</td>`).join('')}<td></td></tr></tbody></table>`:'<div class="fxc-none" style="padding:24px">Add students and assign a test to see the gradebook.</div>'}</div><div class="lms-row-m" style="margin-top:8px">Click a score to open and grade that student’s work. An orange dot means it still needs grading.</div>`;
+  }else{
+    const st=fxClassStats(c);
+    body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
+     ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the class code.</td></tr>'}</tbody></table></div>
+     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
+      ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
+  }
+  return `<div class="lms-t-top"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← All classes</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
+  <div class="page-body" style="padding-top:0"><div class="lms-hero" style="background:${lmsCol(c.id)}"><div><h1>${E(c.name)}</h1><div>${E([c.subject,c.period,c.students.length+(c.students.length===1?' student':' students')].filter(Boolean).join(' · '))}</div></div></div>
+  <div class="lms-tabs">${[['stream','Stream'],['assignments','Assignments'],['grades','Grades'],['people','People']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
+};
+{const o=window.fxClassPost;window.fxClassPost=async function(id){await o(id);};}
 </script>
 
 </body>
