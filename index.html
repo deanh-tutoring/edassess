@@ -1068,6 +1068,13 @@ aside>.lms-row{background:none;border-top:1px solid var(--rule)}
 .fxs-off{opacity:.55}
 
 
+
+.lms-mat{padding:10px 0;border-top:1px solid var(--rule)}.lms-post .lms-mat{border-top:0;padding:4px 0 0}
+.lms-mat-t{font-weight:700;font-size:16px}.lms-mat-t small,.lms-topic{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-left:6px}
+.lms-topic{margin:18px 0 2px;padding-top:6px;color:var(--ink);margin-left:0}
+.lms-links{margin-top:8px;border-top:1px solid var(--rule)}.lms-links a{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--rule);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px}.lms-links a:hover span{background:linear-gradient(transparent 62%,var(--accent) 62%)}.lms-links small{color:var(--muted);font-weight:400;font-size:13px;white-space:nowrap}
+.lms-mat-a{margin-top:8px;display:flex;gap:14px}
+.fm-link{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -11639,7 +11646,7 @@ function fxRenderClasses(){
   const cs=APP.classes||[];
   if(FXC.open){const c=cs.find(x=>x.id===FXC.open);if(c){pg.innerHTML=fxClassDetail(c);return;}FXC.open=null;}
   pg.innerHTML=`<div class="topbar"><h1 class="page-title">Classes</h1><button class="btn btn-primary" onclick="fxClassNew()">+ New class</button></div>
-  <div class="page-body">${cs.length?`<div class="fxc-grid">${cs.map(c=>`<div class="fxc-card ${c.archived?'arch':''}" onclick="FXC.open='${c.id}';FXC.tab='roster';fxRenderClasses()">
+  <div class="page-body">${cs.length?`<div class="fxc-grid">${cs.map(c=>`<div class="fxc-card ${c.archived?'arch':''}" onclick="FXC.open='${c.id}';FXC.tab='stream';fxRenderClasses()">
      <div class="fxc-name">${E(c.name)}</div><div class="fxc-sub">${E([c.subject,c.period].filter(Boolean).join(' · '))||'&nbsp;'}</div>
      <div class="fxc-meta"><span><b>${c.students.length}</b> students</span>${c.invites.length?`<span><b>${c.invites.length}</b> invited</span>`:''}${c.archived?'<span>archived</span>':''}</div>
      <div class="fxc-code">${E(c.joinCode)}</div></div>`).join('')}</div>`
@@ -11674,7 +11681,7 @@ function fxClassNew(){openModal(`<div class="modal-header"><h2 class="serif" sty
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="form-group"><label class="form-label">Subject</label><input id="cn-sub" class="form-control"></div><div class="form-group"><label class="form-label">Period</label><input id="cn-per" class="form-control"></div></div>
   <button class="btn btn-primary" onclick="fxClassCreate()">Create class</button></div>`,'440px');}
 async function fxClassCreate(){const r=await apiPost({action:'createClass',name:document.getElementById('cn-name').value,subject:document.getElementById('cn-sub').value,period:document.getElementById('cn-per').value});
-  if(r&&r.class){closeModal();await fxClsReload();FXC.open=r.class.id;FXC.tab='roster';fxRenderClasses();}else toast((r&&r.error)||'Failed','error');}
+  if(r&&r.class){closeModal();await fxClsReload();FXC.open=r.class.id;FXC.tab='stream';fxRenderClasses();}else toast((r&&r.error)||'Failed','error');}
 function fxClassEdit(id){const c=APP.classes.find(x=>x.id===id);openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">Edit class</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">
   <div class="form-group"><label class="form-label">Class name</label><input id="cn-name" class="form-control" value="${E(c.name)}"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="form-group"><label class="form-label">Subject</label><input id="cn-sub" class="form-control" value="${E(c.subject)}"></div><div class="form-group"><label class="form-label">Period</label><input id="cn-per" class="form-control" value="${E(c.period)}"></div></div>
@@ -11799,8 +11806,8 @@ window.stuGrades=function(){
 };
 /* ── CLASS (student) ── */
 function lmsStream(c,asg,isT){
-  const items=[...(c.announcements||[]).map(x=>({k:'ann',at:x.at,by:x.by,text:x.text,id:x.id})),...asg.map(a=>({k:'asg',at:a.createdAt,by:a.ownerId,a}))].sort((x,y)=>new Date(y.at||0)-new Date(x.at||0));
-  return items.map(it=>it.k==='ann'
+  const items=[...(c.materials||[]).map(m=>({k:'mat',at:m.at,by:m.by,m})),...(c.announcements||[]).map(x=>({k:'ann',at:x.at,by:x.by,text:x.text,id:x.id})),...asg.map(a=>({k:'asg',at:a.createdAt,by:a.ownerId,a}))].sort((x,y)=>new Date(y.at||0)-new Date(x.at||0));
+  return items.map(it=>it.k==='mat'?`<div class="lms-post"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(it.by))}</b> posted material<span>${E(lmsAgo(it.at))}</span></div>${lmsMat(it.m,isT,c.id)}</div></div>`:it.k==='ann'
    ?`<div class="lms-post"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(it.by))}</b><span>${E(lmsAgo(it.at))}</span>${isT?`<a class="fxc-x" style="margin-left:auto" onclick="fxClassUnpost('${E(c.id)}','${E(it.id)}')">Delete</a>`:''}</div><div class="lms-post-t">${E(it.text)}</div></div></div>`
    :(()=>{const a=it.a;return isT
      ?`<div class="lms-post asg"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(a.ownerId))}</b> posted an assignment<span>${E(lmsAgo(a.createdAt))}</span></div><div class="lms-post-t"><b>${E(a.title||'Assessment')}</b><div class="lms-row-m">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'}</div></div></div></div>`
@@ -11817,7 +11824,7 @@ function lmsClassView(){
     body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${open.length?open.slice(0,4).map(a=>`<a class="lms-up" href="?exam=${E(a.id)}"><small>${E(stuWhen(a.dueAt)||'No due date')}</small>${E(a.title)}</a>`).join(''):'<p class="lms-empty">Nothing due soon.</p>'}</div></aside><div>${lmsStream(c,asg,false)}</div></div>`;
   }else if(tab==='classwork'){
     const g=[['Assigned',asg.filter(a=>['todo','progress','scheduled'].includes(stuState(a,stuSubFor(a.id))))],['Missing',asg.filter(a=>stuState(a,stuSubFor(a.id))==='closed')],['Done',asg.filter(a=>stuState(a,stuSubFor(a.id))==='done')]];
-    body=g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('')||'<div class="lms-panel lms-empty">No assignments yet.</div>';
+    body=lmsMatGroups(c,false)+g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('')||(!(c.materials||[]).length?'<div class="lms-panel lms-empty">Nothing posted yet.</div>':'');
   }else{
     const r=asg.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted');
     const v=r.filter(x=>stuReleased(x.a,x.s)).map(x=>stuPct(x.a,x.s)).filter(x=>x!=null),avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;
@@ -11860,19 +11867,77 @@ function fxBackBar(){return stuToken()?`<a class="fx-back" href="${location.href
   if(c&&stuToken()&&a.releaseScores===false&&!sub.graded){const p=c.querySelector('.ea-done-score');if(p)p.innerHTML='Your teacher will release your results after grading.';}};}
 {const o=window.loadStudentResults;window.loadStudentResults=function(sid){o(sid);const w=document.getElementById('student-wrapper');if(w&&stuToken()&&!w.querySelector('.fx-back'))w.insertAdjacentHTML('afterbegin',fxBackBar());};}
 {const o=window.fxExamGate;window.fxExamGate=function(k){o(k);const w=document.getElementById('student-wrapper');if(k==='class'&&w){w.querySelector('.ea-btn-line')&&0;}};}
+
+/* ── materials ── */
+const lmsHost=u=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}};
+function lmsMat(m,isT,cid){
+  return `<div class="lms-mat"><div class="lms-mat-t">${E(m.title)}${m.topic?` <small>${E(m.topic)}</small>`:''}</div>${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}
+  ${(m.links||[]).length?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}
+  ${isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatModal('${E(cid)}','${E(m.id)}')">Edit</a> <a class="fxc-x" onclick="fxMatDelete('${E(cid)}','${E(m.id)}')">Delete</a></div>`:''}</div>`;
+}
+function lmsMatGroups(c,isT){
+  const ms=(c.materials||[]).slice();if(!ms.length)return isT?`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Materials</div><button class="btn btn-primary btn-sm" onclick="fxMatModal('${E(c.id)}')">Post material</button></div><p class="lms-empty">Post links, readings or notes for this class.</p></div>`:'';
+  const topics=[...new Set(ms.map(m=>m.topic||''))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b));
+  return `<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Materials</div>${isT?`<button class="btn btn-primary btn-sm" onclick="fxMatModal('${E(c.id)}')">Post material</button>`:''}</div>${topics.map(t=>`${t?`<div class="lms-topic">${E(t)}</div>`:''}${ms.filter(m=>(m.topic||'')===t).map(m=>lmsMat(m,isT,c.id)).join('')}`).join('')}</div>`;
+}
+let fxMatState={cid:null,id:null};
+function fxMatLinkRow(l){return `<div class="fm-link"><input class="form-control fm-url" placeholder="https://…" value="${E((l&&l.url)||'')}"><input class="form-control fm-lab" placeholder="Label (optional)" value="${E((l&&l.label)||'')}"></div>`;}
+window.fxMatModal=function(cid,id){
+  const c=(APP.classes||[]).find(x=>x.id===cid);const m=id&&c?(c.materials||[]).find(x=>x.id===id):null;
+  fxMatState={cid,id:id||null};
+  const topics=[...new Set(((c&&c.materials)||[]).map(x=>x.topic).filter(Boolean))];
+  openModal(`<div class="modal-header"><h2 style="font-size:22px">${m?'Edit material':'Post material'}</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body">
+  <div class="form-group"><label class="form-label">Title</label><input id="fm-title" class="form-control" maxlength="120" placeholder="Unit 3 reading guide" value="${E((m&&m.title)||'')}"></div>
+  <div class="form-group"><label class="form-label">Description (optional)</label><textarea id="fm-body" class="form-control" rows="3" placeholder="What students should do with this">${E((m&&m.body)||'')}</textarea></div>
+  <div class="form-group"><label class="form-label">Topic (optional)</label><input id="fm-topic" class="form-control" maxlength="40" list="fm-topics" placeholder="Unit 3" value="${E((m&&m.topic)||'')}"><datalist id="fm-topics">${topics.map(t=>`<option value="${E(t)}">`).join('')}</datalist></div>
+  <div class="form-group"><label class="form-label">Links</label><div id="fm-links">${((m&&m.links)||[]).concat([null]).slice(0,10).map(fxMatLinkRow).join('')}</div><a class="lms-link" onclick="document.getElementById('fm-links').insertAdjacentHTML('beforeend',fxMatLinkRow())">Add another link</a></div>
+  <div id="fm-err" class="hidden fx-autherr"></div><div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxMatSave()">${m?'Save changes':'Post to class'}</button></div></div>`,'560px');
+  setTimeout(()=>{const i=document.getElementById('fm-title');if(i)i.focus();},50);
+};
+window.fxMatSave=async function(){
+  const links=[...document.querySelectorAll('#fm-links .fm-link')].map(r=>({url:r.querySelector('.fm-url').value.trim(),label:r.querySelector('.fm-lab').value.trim()})).filter(l=>l.url);
+  const err=document.getElementById('fm-err');
+  for(const l of links){let u=l.url;if(!/^https?:\/\//i.test(u))u='https://'+u;try{const x=new URL(u);if(!x.hostname.includes('.'))throw 0;}catch(e){err.textContent='“'+l.url+'” isn’t a valid link.';err.classList.remove('hidden');return;}}
+  const r=await apiPost({action:'postMaterial',classId:fxMatState.cid,matId:fxMatState.id,title:document.getElementById('fm-title').value,body:document.getElementById('fm-body').value,topic:document.getElementById('fm-topic').value,links});
+  if(r&&r.ok){closeModal();toast(fxMatState.id?'Material updated.':'Material posted.','success');fxClsReload();}else{err.textContent=(r&&r.error)||'Could not post.';err.classList.remove('hidden');}
+};
+window.fxMatDelete=async function(cid,id){if(!confirm('Delete this material? Students will no longer see it.'))return;await apiPost({action:'deleteMaterial',classId:cid,matId:id});fxClsReload();};
+/* ── routing: every teacher page and class tab has its own address; back/forward and refresh work ── */
+const FX_BOOT_HASH=location.hash;window.__fxRouted=false;
+function fxTRoute(hash){
+  if(eaStudentPage()||document.getElementById('app').classList.contains('hidden'))return;
+  const p=(typeof hash==='string'?hash:location.hash).replace(/^#\/?/,'').split('/').filter(Boolean);if(!p.length)return;
+  window.__fxRouting=true;
+  try{
+    if(p[0]==='class'||p[0]==='classes'){FXC.open=p[1]||null;FXC.tab=p[2]||'stream';showPage('classes');}
+    else if(document.getElementById('page-'+p[0])&&APP.currentPage!==p[0])showPage(p[0]);
+  }finally{window.__fxRouting=false;}
+}
+function fxTHash(){
+  if(!window.__fxRouted||eaStudentPage()||document.getElementById('app').classList.contains('hidden'))return;
+  let h='#/'+(APP.currentPage||'dashboard');
+  if(APP.currentPage==='classes'&&FXC.open)h='#/classes/'+FXC.open+'/'+(FXC.tab==='roster'?'people':FXC.tab||'stream');
+  if(location.hash!==h){try{history.pushState(null,'',h);}catch(e){location.hash=h;}}
+}
+{const o=window.showPage;window.showPage=function(p){const r=o.apply(this,arguments);if(!window.__fxRouting){APP.currentPage=p;fxTHash();}return r;};}
+{const o=window.fxRenderClasses;window.fxRenderClasses=function(){const r=o.apply(this,arguments);if(APP.currentPage==='classes'&&!window.__fxRouting)fxTHash();return r;};}
+window.addEventListener('hashchange',()=>{if(!eaStudentPage()&&window.__fxRouted)fxTRoute();});
+window.addEventListener('hashchange',()=>{const sa=document.getElementById('stu-app');if(sa&&!sa.classList.contains('hidden')){stuRoute();stuPaint();}});
+window.addEventListener('popstate',()=>{if(!eaStudentPage()&&window.__fxRouted)fxTRoute();});
+{const o=window.fxEnterApp;if(typeof o==='function')window.fxEnterApp=function(){const r=o.apply(this,arguments);setTimeout(()=>{fxTRoute(FX_BOOT_HASH);window.__fxRouted=true;fxTHash();},500);return r;};}
 /* ── TEACHER class page ── */
 window.fxClassDetail=function(c){
   const me=fxMe().username.toLowerCase(),owner=c.ownerId===me;
-  let tab=FXC.tab;if(tab==='roster'||!['stream','assignments','grades','people'].includes(tab))tab=FXC.tab=(tab==='roster'?'people':'stream');
+  let tab=FXC.tab;if(tab==='roster'||tab==='assignments'||!['stream','classwork','grades','people'].includes(tab))tab=FXC.tab=(tab==='roster'?'people':tab==='assignments'?'classwork':'stream');
   const asg=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
   const asgView=asg.map(a=>({...a,ownerId:a.ownerId||me,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'}));
   let body='';
   if(tab==='stream'){
     body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Class code</div><div class="fxc-bigcode" style="font-size:26px">${E(c.joinCode)}</div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
      <div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${asg.filter(a=>a.dueAt&&new Date(a.dueAt)>new Date()).sort((x,y)=>new Date(x.dueAt)-new Date(y.dueAt)).slice(0,4).map(a=>`<div class="lms-up"><small>${E(stuWhen(a.dueAt))}</small>${E(a.title||'Assessment')}</div>`).join('')||'<p class="lms-empty">Nothing due soon.</p>'}</div></aside>
-     <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">+ Assign a test</button><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
-  }else if(tab==='assignments'){
-    body=`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0">Assignments</div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">+ Assign a test</button></div>
+     <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><span style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${c.id}')">Post material</button><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></span><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
+  }else if(tab==='classwork'){
+    body=lmsMatGroups(c,true)+`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Assignments</div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></div>
      ${asg.map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted');const need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length;
       return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span><b>${subs.length}</b>/${c.students.length} turned in${need?` · <span class="lms-late">${need} to grade</span>`:''}</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('grading')">Grade</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;
   }else if(tab==='grades'){
@@ -11894,8 +11959,8 @@ window.fxClassDetail=function(c){
       ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
   }
   return `<div class="lms-t-top"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← All classes</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
-  <div class="page-body" style="padding:8px 32px 64px;max-width:1104px"><header class="lms-head"><div><h1>${E(c.name)}</h1><p class="lms-sub">${E([c.subject,c.period,c.students.length+(c.students.length===1?' student':' students')].filter(Boolean).join(' · '))}</p></div></header>
-  <div class="lms-tabs">${[['stream','Stream'],['assignments','Assignments'],['grades','Grades'],['people','People']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
+  <div class="page-body" style="padding-top:8px;max-width:1040px"><header class="lms-head"><div><h1>${E(c.name)}</h1><p class="lms-sub">${E([c.subject,c.period,c.students.length+(c.students.length===1?' student':' students')].filter(Boolean).join(' · '))}</p></div></header>
+  <div class="lms-tabs">${[['stream','Stream'],['classwork','Classwork'],['grades','Grades'],['people','People']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
 };
 {const o=window.fxClassPost;window.fxClassPost=async function(id){await o(id);};}
 /* ── scores: stamp the real maximum on every submission so students and teachers see the same percentage ── */
