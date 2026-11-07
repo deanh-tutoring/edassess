@@ -301,6 +301,7 @@ async function upsertSubmission(sub, user, student) {
   const key = P.sub + aid + '/' + sub.id;
   const prev = await getJ(key);
   delete clean.gradedBy; delete clean.commentBy; delete clean.studentKey;
+  if (!user) { delete clean.graded; delete clean.gradedAt; if (prev && prev.graded) { clean.graded = true; clean.gradedAt = prev.gradedAt || null; } }
   if (!user) {
     const asg0 = okId(clean.assignmentId) ? await getJ(P.asg + clean.assignmentId) : null;
     const deny = await accessCheckAssignment(asg0, student);
@@ -644,7 +645,7 @@ async function studentHome(s) {
     const t = tcache[a.testId];
     assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
   }
-  const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, curved: x.curvedScore == null ? null : x.curvedScore }));
+  const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, graded: !!x.graded, curved: x.curvedScore == null ? null : x.curvedScore }));
   const set = new Set();
   for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); }
   assignments.forEach((a) => set.add(a.ownerId));
