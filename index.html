@@ -1122,6 +1122,45 @@ details[open]>*:not(summary){animation:fxRowIn .26s var(--ease) both}
 .lms-mat.item:hover{border-color:var(--ink)}
 .lms-pgin{animation:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* sleek — softer easing, rectangular tags instead of pills, a gloss sweep on highlighted areas */
+:root{--ease:cubic-bezier(.22,1,.36,1);--glide:.38s}
+html{scroll-behavior:smooth}
+.btn,.nav-item,.fx-tab,.fxa-tab,.fxa-row,.test-row,.fxc-card,.lms-tabs button,.stu-top nav a,.lms-class,.lms-go,.lms-btn,.lms-link,.lms-links a,.lms-cell,.fxa-sel,.form-control,.lms-mat.item,.lms-tg{transition:background-color .28s var(--ease),color .28s var(--ease),border-color .28s var(--ease),transform .28s var(--ease),opacity .28s var(--ease),background-position .9s var(--ease)}
+.btn:active,.lms-btn:active,.lms-go:active{transform:translateY(1px) scale(.99);transition-duration:.08s}
+.fxa-row:hover,.test-row:hover,.fxc-card:hover{transform:translateX(2px)}
+@keyframes fxRowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(-n+12),.fx-fresh>:nth-child(-n+12),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(-n+10),.lms-pgin>*{animation-duration:.5s}
+.modal-backdrop{animation-duration:.3s}.modal{animation:fxPop .42s var(--ease) both}
+@keyframes fxPop{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+.modal-backdrop.closing{animation:fxFadeOut .2s ease forwards}.modal-backdrop.closing .modal{animation:fxPopOut .2s ease forwards}
+.toast{animation-duration:.4s}
+/* rectangular tags, not pills */
+.badge,.type-chip,.skill-chip,.sx-chip,.sx-pill,.fx-pill,.fx-badge,.fx-chipbtn,.fx-qchip,.fx-dotb,.fx-navbadge,.fx-tab,.fxc-tabs button,.fxr-tot{border-radius:3px!important}
+.badge,.type-chip,.fx-pill,.fx-badge,.sx-pill,.sx-chip{background:transparent!important;border:1px solid currentColor;font-weight:600!important;letter-spacing:.04em}
+/* gloss sweep: a soft light band glides across highlighted areas on hover */
+.nav-item.active,.fx-tab.on,.fxa-tab.on,.lms-tabs button.on,.stu-joinnote,.lms-go,.fxr-tot,.btn-primary,.fx-dotb,.fx-navbadge{
+  background-image:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%)!important;background-size:260% 100%!important;background-repeat:no-repeat!important;background-position:130% 0!important}
+.btn-primary{background-image:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.22) 50%,transparent 62%)!important}
+.nav-item.active:hover,.fx-tab.on:hover,.fxa-tab.on:hover,.lms-tabs button.on:hover,.stu-joinnote:hover,.lms-go:hover,.fxr-tot:hover,.btn-primary:hover{background-position:-30% 0!important}
+.page-title{background-image:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.75) 50%,transparent 62%),linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 90%,transparent 90%)!important;background-size:260% 32%,100% 100%!important;background-position:130% 85%,0 0!important;background-repeat:no-repeat!important;transition:background-position 1s var(--ease)}
+.page-title:hover{background-position:-30% 85%,0 0!important}
+@keyframes fxMark{from{background-size:260% 32%,0 100%}to{background-size:260% 32%,100% 100%}}
+.page-view.animate-in .page-title{animation:fxMark .7s var(--ease) both}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.page-title,.btn-primary,.nav-item{transition:none!important}}
+/* materials fold like Classroom: header always visible, body unfolds on click */
+.lms-mat.item{padding:0}
+.lms-mat-h{display:flex;align-items:baseline;gap:10px;padding:14px 0;cursor:pointer;user-select:none}
+.lms-mat-h .lms-mat-t{flex:1;min-width:0}
+.lms-mat-m{font-size:12px;color:var(--muted);white-space:nowrap}
+.lms-caret{width:8px;height:8px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg) translateY(-2px);transition:transform .45s var(--ease);flex:none;align-self:center}
+.lms-mat.open .lms-caret{transform:rotate(225deg) translateY(-2px)}
+.lms-mat-h:hover .lms-mat-t{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:3px}
+.lms-mat-fold{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .5s var(--ease),visibility 0s .5s}
+.lms-mat.open>.lms-mat-fold{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .5s var(--ease),visibility 0s}
+.lms-mat-in{min-height:0;overflow:hidden;opacity:0;transform:translateY(-4px);transition:opacity .3s var(--ease),transform .45s var(--ease)}
+.lms-mat.open .lms-mat-in{opacity:1;transform:none;transition-delay:.06s}
+.lms-mat-in>:last-child{margin-bottom:14px}
+@media(prefers-reduced-motion:reduce){.lms-mat-fold,.lms-mat-in,.lms-caret{transition:none!important}}
 </style>
 </head>
 <body>
@@ -1678,6 +1717,12 @@ async function eaPushDelete(kind,id){
     const res=await apiPost({action:kind==='tests'?'deleteTest':'deleteAssignment',id},{timeout:20000});
     if(res&&!res.__httpError){delete _lastSynced[kind][id];delete EA_META[kind][id];eaDraftDrop(kind,id);return {ok:true};}
     if(res&&res.__httpError&&res.status===400&&/Unknown action/i.test(res.error||'')){_legacyServer=true;delete _lastSynced[kind][id];return {ok:true};}
+    if(res&&res.__httpError&&res.status>=400&&res.status<500&&res.status!==408&&res.status!==429){
+      // the server understood and refused (not owner, etc.): stop retrying, put the record back, say why
+      delete _lastSynced[kind][id];delete EA_META[kind][id];
+      setTimeout(()=>{try{toast(res.error||'The server would not delete this.','error');refreshFromServer(true);}catch(e){}},0);
+      return {ok:true};
+    }
     return {ok:false,retry:true,error:(res&&res.error)||'No connection'};
   }finally{if(EA_META[kind][id])EA_META[kind][id].inflight=false;}
 }
@@ -1770,6 +1815,8 @@ async function eaVerify(kind,id){
     const local=APP.tests.find(t=>t.id===id);
     if(!local) return {ok:true};
     if(eaStable(eaStripRev(local))!==eaStable(eaStripRev(r.test))){
+      // the server acknowledged exactly this revision: it has what we sent
+      const mm=eaMeta(kind,id);if(mm.rev!==undefined&&r.test.rev!==undefined&&r.test.rev===mm.rev&&eaSyncStr('tests',local)===_lastSynced.tests[id])return {ok:true};
       // the user kept typing during the save — that's fine, those edits are still pending
       if(eaSyncStr('tests',local)!==_lastSynced.tests[id])return {ok:true};
       // otherwise the server may have normalised something harmless (images, ids…): the save is confirmed when the shape matches
@@ -8583,7 +8630,7 @@ function sxUpdateSavePill(){
 }
 
 /* ── verified save: POST, then independently read it back ───────── */
-function sxSubForCompare(s){const c=JSON.parse(JSON.stringify(s));delete c.instructorOps;return JSON.stringify(c);}
+function sxSubForCompare(s){const c=JSON.parse(JSON.stringify(s));['instructorOps','studentKey','gradedBy','commentBy','graded','gradedAt','serverTime'].forEach(k=>delete c[k]);return eaStable(c);}   // server-owned fields and moved images are not differences
 async function sxReliableSaveSubmission(sub,maxAttempts=5){
   try{cacheLocally();}catch(e){}
   for(let attempt=1;attempt<=maxAttempts;attempt++){
@@ -8592,7 +8639,7 @@ async function sxReliableSaveSubmission(sub,maxAttempts=5){
       // read it back (one small request) — "saved" must mean the server really has it
       const d=await eaGet({sub:sub.id},15000);
       const remote=d&&(d.submission||(Array.isArray(d.submissions)?d.submissions.find(x=>x.id===sub.id):null));   // (old server returns everything)
-      if(remote&&sxSubForCompare(remote)===sxSubForCompare(sub)){
+      if(remote&&(sxSubForCompare(remote)===sxSubForCompare(sub)||(Number.isFinite(remote._v)&&Number.isFinite(sub._v)&&remote._v>=sub._v))){
         _onSyncOk();return {ok:true};
       }
     }
@@ -12007,11 +12054,18 @@ window.fxDropSec=function(e,t){
   if(d.k==='mat'){const [si,ii]=fxCwFind(secs,d.id);const [m]=secs[si].items.splice(ii,1);secs.find(s=>s.t===t).items.push(m);fxCwApply(c,secs);}
   else{if(!t||d.t===t)return;const fi=secs.findIndex(s=>s.t===d.t);const [x]=secs.splice(fi,1);let ti=secs.findIndex(s=>s.t===t);if(side==='after')ti++;secs.splice(Math.max(1,ti),0,x);fxCwApply(c,secs);}
 };
+window.FX_MATOPEN=window.FX_MATOPEN||new Set();
+window.fxMatToggle=function(h){const it=h.closest('.lms-mat');if(!it)return;const id=it.getAttribute('data-mid');const on=!it.classList.contains('open');it.classList.toggle('open',on);h.setAttribute('aria-expanded',on?'true':'false');if(on)FX_MATOPEN.add(id);else FX_MATOPEN.delete(id);};
 function lmsCwMat(m,c,isT,secIdx,n){
-  const grip=isT?`<span class="lms-grip" title="Drag to reorder">≡</span>`:'';
+  const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">≡</span>`:'';
   const acts=isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Up</a><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Down</a><a class="lms-link" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</a><a class="fxc-x" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</a></div>`:'';
-  const inner=`<div class="lms-mat-t">${grip}${E(m.title)}</div>${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${(m.links||[]).length?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}${acts}`;
-  return isT?`<div class="lms-mat item" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${inner}</div>`:`<div class="lms-mat item">${inner}</div>`;
+  const nl=(m.links||[]).length;
+  const meta=nl?`${nl} link${nl!==1?'s':''}`:(m.body?'Note':'');
+  const open=FX_MATOPEN.has(m.id);
+  const head=`<div class="lms-mat-h" role="button" tabindex="0" aria-expanded="${open}" onclick="fxMatToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();fxMatToggle(this)}">${grip}<span class="lms-mat-t">${E(m.title)}</span><span class="lms-mat-m">${E(meta)}</span><i class="lms-caret"></i></div>`;
+  const body=`<div class="lms-mat-fold"><div class="lms-mat-in">${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}${acts}</div></div>`;
+  const cls='lms-mat item'+(open?' open':'');
+  return isT?`<div class="${cls}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-mid="${E(m.id)}">${head}${body}</div>`;
 }
 window.lmsMatGroups=function(c,isT){
   const secs=fxCwSecs(c);const total=(c.materials||[]).length;

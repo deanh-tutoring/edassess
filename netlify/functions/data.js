@@ -216,10 +216,11 @@ async function deleteEntity(kind, id, user) {
   const key = (kind === 'test' ? P.test : P.asg) + id;
   const cur = await getJ(key);
   if (!cur) return null;
-  if (ownerOf(kind === 'test' ? cur.data : cur) !== lc(user.username)) return bad('Only the owner can delete this.', 403);
+  const own = ownerOf(kind === 'test' ? cur.data : cur);
+  if (own !== lc(user.username) && lc(user.username) !== ADMIN_USER) return bad('Only the owner can delete this.', 403);
   dropAsgCache();
   await putJ(`${P.trash}${kind}/${id}`, { deletedAt: new Date().toISOString(), rec: cur });
-  if (kind === 'test') await snapshot(id, cur);
+  if (kind === 'test') { try { await snapshot(id, cur); } catch (e) { /* trash copy already written */ } }
   await delK(key);
   return null;
 }
