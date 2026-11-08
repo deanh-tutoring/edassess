@@ -1075,6 +1075,53 @@ aside>.lms-row{background:none;border-top:1px solid var(--rule)}
 .lms-links{margin-top:8px;border-top:1px solid var(--rule)}.lms-links a{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--rule);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px}.lms-links a:hover span{background:linear-gradient(transparent 62%,var(--accent) 62%)}.lms-links small{color:var(--muted);font-weight:400;font-size:13px;white-space:nowrap}
 .lms-mat-a{margin-top:8px;display:flex;gap:14px}
 .fm-link{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:8px}
+
+.lms-cw{margin-bottom:28px}
+#page-classes>.page-body:not([style]){padding:24px 32px;max-width:1104px}.lms-cw-h{display:flex;gap:8px;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--ink)}
+.lms-tg{margin-bottom:26px;padding-top:2px}.lms-tg.dragging{opacity:.4}.lms-tg.drop-before{border-top:4px solid var(--accent)}.lms-tg.drop-after{border-bottom:4px solid var(--accent)}.lms-tg.drop-in .lms-tg-b{outline:2px dashed var(--ink);outline-offset:2px}
+.lms-tg-h{display:flex;align-items:baseline;gap:10px;padding:6px 0 8px;border-bottom:2px solid var(--ink);margin-bottom:10px}
+.lms-tg-h h3{font-size:22px;font-weight:700;letter-spacing:-.025em;margin:0;font-family:'Hanken Grotesk',sans-serif}.lms-tg-h.plain h3{color:var(--muted)}
+.lms-count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.lms-tg-a{margin-left:auto;display:flex;gap:14px;align-items:baseline}.lms-tg-a .lms-link{margin:0}
+.lms-grip{cursor:grab;color:var(--muted);font-weight:700;margin-right:8px;user-select:none}.lms-grip:active{cursor:grabbing}
+.lms-tg .lms-mat.item,.lms-post .lms-mat.item{background:var(--surface);border:1px solid var(--ink);border-radius:4px;padding:12px 14px;margin:0 0 8px}
+.lms-mat.item.dragging{opacity:.4}.lms-mat.item.drop-before{border-top:5px solid var(--accent)}.lms-mat.item.drop-after{border-bottom:5px solid var(--accent)}
+.lms-dropnote{border:1px dashed var(--rule);border-radius:4px;padding:12px;text-align:center}.lms-dropnote:empty{display:none}
+.lms-mat-a .lms-link{margin:0}.lms-mat-a{align-items:baseline}
+
+/* organization controls */
+.fxa-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:0 0 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft,#6b7280)}
+.fxa-ctl label{display:flex;align-items:center;gap:8px}
+.fxa-sel{border:1px solid var(--border,#d9d5ca);border-radius:8px;padding:6px 10px;background:#fff;font:600 13px/1.2 var(--f-body);text-transform:none;letter-spacing:0;color:var(--ink,#16181D);cursor:pointer;height:auto;width:auto}
+.fxa-grp{display:flex;align-items:baseline;gap:8px;padding:14px 20px 6px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink,#16181D);border-bottom:2px solid var(--ink,#16181D);background:#fff;position:sticky;top:0;z-index:1}
+.fxa-grp b{color:var(--ink-soft,#6b7280);font-weight:600}
+.fxa-more{display:flex;gap:12px;align-items:center;justify-content:center;padding:16px;font-size:13px;color:var(--ink-soft,#6b7280)}
+/* motion — every animation marks a state change; all of it stops under reduced-motion */
+:root{--ease:cubic-bezier(.2,.7,.2,1)}
+.btn,.nav-item,.fx-tab,.fxa-tab,.fxa-row,.test-row,.fxc-card,.lms-tabs button,.stu-top nav a,.lms-class,.lms-go,.lms-btn,.lms-link,.lms-links a,.lms-cell,.fxa-sel,.form-control{transition:background-color .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease),transform .12s var(--ease),opacity .16s var(--ease)}
+.btn:active,.lms-btn:active,.lms-go:active{transform:translateY(1px) scale(.985)}
+.fxa-row:hover,.test-row:hover{background:var(--paper-warm,#f7f5ef)}
+.modal-backdrop{animation:fxFade .18s var(--ease) both}
+.modal{animation:fxPop .24s var(--ease) both}
+.modal-backdrop.closing{animation:fxFadeOut .14s ease forwards}.modal-backdrop.closing .modal{animation:fxPopOut .14s ease forwards}
+@keyframes fxFade{from{opacity:0}to{opacity:1}}@keyframes fxFadeOut{to{opacity:0}}
+@keyframes fxPop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}@keyframes fxPopOut{to{opacity:0;transform:translateY(6px) scale(.99)}}
+@keyframes fxRowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(-n+12),.fx-fresh>:nth-child(-n+12),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(-n+10),.lms-pgin>*{animation:fxRowIn .32s var(--ease) both}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(2),.fx-fresh>:nth-child(2),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(2),.lms-pgin>:nth-child(2){animation-delay:.03s}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(3),.fx-fresh>:nth-child(3),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(3),.lms-pgin>:nth-child(3){animation-delay:.06s}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(4),.fx-fresh>:nth-child(4),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(4),.lms-pgin>:nth-child(4){animation-delay:.09s}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(5),.fx-fresh>:nth-child(5),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(5),.lms-pgin>:nth-child(5){animation-delay:.12s}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(n+6),.fx-fresh>:nth-child(n+6),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(n+6),.lms-pgin>:nth-child(n+6){animation-delay:.15s}
+.stu-main.enter{animation:fxRowIn .28s var(--ease) both}
+#stu-menu{animation:fxPop .16s var(--ease) both;transform-origin:top right}
+details[open]>*:not(summary){animation:fxRowIn .26s var(--ease) both}
+.lms-tabs button,.fxa-tab,.fx-tab{position:relative}
+.toast{animation:toastIn .28s var(--ease) both}
+.fx-ann,.fx-notif{animation:fxPop .24s var(--ease) both}
+.lms-tg,.lms-mat.item{transition:opacity .14s,border-color .14s,background-color .14s}
+.lms-mat.item:hover{border-color:var(--ink)}
+.lms-pgin{animation:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -1346,10 +1393,11 @@ function eaSyncStr(kind,o){
   return JSON.stringify(o);
 }
 function eaStable(o){
-  const norm=v=>Array.isArray(v)?v.map(norm):(v&&typeof v==='object')?Object.keys(v).sort().reduce((a,k)=>{a[k]=norm(v[k]);return a;},{}):v;
+  const IMG=/data:(?:image\/[\w+.-]+|application\/pdf);base64,[A-Za-z0-9+\/=]+|\/\.netlify\/functions\/data\?img=[0-9a-f]+/g;   // the server moves big embedded images out to ?img=<hash> links — same picture, different string
+  const norm=v=>Array.isArray(v)?v.map(norm):(v&&typeof v==='object')?Object.keys(v).sort().reduce((a,k)=>{a[k]=norm(v[k]);return a;},{}):(typeof v==='string'&&(v.indexOf('data:')>=0||v.indexOf('?img=')>=0))?v.replace(IMG,'[img]'):v;
   return JSON.stringify(norm(JSON.parse(JSON.stringify(o))));
 }
-function eaStripRev(t){const c=JSON.parse(JSON.stringify(t));['rev','ownerId','sharedWith','coTeachers','editedBy','lastEditedBy'].forEach(k=>delete c[k]);return c;}
+function eaStripRev(t){const c=JSON.parse(JSON.stringify(t));['rev','ownerId','ownerName','sharedWith','coTeachers','editedBy','lastEditedBy'].forEach(k=>delete c[k]);return c;}
 // replace an object's contents but keep its identity (the builder holds references to APP.currentTest etc.)
 function eaReplaceInPlace(target,src){
   Object.keys(target).forEach(k=>delete target[k]);
@@ -1723,7 +1771,11 @@ async function eaVerify(kind,id){
     if(!local) return {ok:true};
     if(eaStable(eaStripRev(local))!==eaStable(eaStripRev(r.test))){
       // the user kept typing during the save — that's fine, those edits are still pending
-      return {ok:eaSyncStr('tests',local)!==_lastSynced.tests[id]};
+      if(eaSyncStr('tests',local)!==_lastSynced.tests[id])return {ok:true};
+      // otherwise the server may have normalised something harmless (images, ids…): the save is confirmed when the shape matches
+      const L=local,S=r.test,cnt=x=>(x&&x.questions||[]).length,sc=x=>(x&&x.sections||[]).length;
+      if(L.title===S.title&&cnt(L)===cnt(S)&&sc(L)===sc(S))return {ok:true};
+      return {ok:false,error:'The saved copy on the server differs from what is on screen.'};
     }
     return {ok:true};
   }
@@ -2504,12 +2556,15 @@ function renderTests(){
     </div>`:
     `<div class="card">
       <div class="card-header">
-        <span class="text-muted text-sm">${APP.tests.length} test${APP.tests.length!==1?'s':''}</span>
-        <div class="flex gap-2">
-          <input type="text" class="form-control" style="width:220px" placeholder="Search tests..." oninput="filterTests(this.value)">
+        <span class="text-muted text-sm" id="tests-count">${APP.tests.length} test${APP.tests.length!==1?'s':''}</span>
+        <div class="flex gap-2" style="flex-wrap:wrap;justify-content:flex-end">
+          <input type="text" class="form-control" style="width:200px" placeholder="Search tests..." value="${sxA(fxTs.q)}" oninput="filterTests(this.value)">
+          <select class="form-control fxa-sel" onchange="fxTestOpt('s',this.value)">${[['upd','Recently edited'],['new','Newest'],['old','Oldest'],['az','A to Z'],['qs','Most questions']].map(([v,l])=>`<option value="${v}" ${fxTs.s===v?'selected':''}>${l}</option>`).join('')}</select>
+          <select class="form-control fxa-sel" onchange="fxTestOpt('t',this.value)">${[['all','All types'],['std','Standard'],['sec','Sectioned / SAT']].map(([v,l])=>`<option value="${v}" ${fxTs.t===v?'selected':''}>${l}</option>`).join('')}</select>
+          <select class="form-control fxa-sel" onchange="fxTestOpt('st',this.value)">${[['all','Published + drafts'],['pub','Published'],['draft','Drafts']].map(([v,l])=>`<option value="${v}" ${fxTs.st===v?'selected':''}>${l}</option>`).join('')}</select>
         </div>
       </div>
-      <div id="tests-list">${renderTestsList(APP.tests)}</div>
+      <div id="tests-list">${renderTestsList(fxTestsView().slice(0,fxTs.n))}${fxTestsView().length>fxTs.n?`<div class="fxa-more"><button class="btn btn-secondary btn-sm" onclick="fxTs.n+=30;filterTests()">Show more</button><span>${fxTs.n} of ${fxTestsView().length}</span></div>`:''}</div>
     </div>`}
   </div>`;
 }
@@ -2538,10 +2593,24 @@ function renderTestsList(tests){
   </div>`).join('');
 }
 
-function filterTests(q){
-  const filtered=q?APP.tests.filter(t=>t.title.toLowerCase().includes(q.toLowerCase())):APP.tests;
-  document.getElementById('tests-list').innerHTML=renderTestsList(filtered);
+const fxTs={q:'',s:'upd',t:'all',st:'all',n:30};
+function fxTestsView(){
+  let l=APP.tests.slice();const q=fxTs.q.trim().toLowerCase();
+  if(q)l=l.filter(t=>(t.title||'').toLowerCase().includes(q));
+  if(fxTs.t==='sec')l=l.filter(t=>sxOn(t));if(fxTs.t==='std')l=l.filter(t=>!sxOn(t));
+  if(fxTs.st==='pub')l=l.filter(t=>t.published);if(fxTs.st==='draft')l=l.filter(t=>!t.published);
+  const when=t=>new Date(t.updatedAt||t.createdAt||0),qn=t=>(t.questions||[]).length;
+  const S={upd:(x,y)=>when(y)-when(x),new:(x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0),old:(x,y)=>new Date(x.createdAt||0)-new Date(y.createdAt||0),az:(x,y)=>(x.title||'').localeCompare(y.title||''),qs:(x,y)=>qn(y)-qn(x)};
+  l.sort(S[fxTs.s]||S.upd);return l;
 }
+function filterTests(q){
+  if(typeof q==='string')fxTs.q=q;
+  const all=fxTestsView(),shown=all.slice(0,fxTs.n);
+  const box=document.getElementById('tests-list');if(!box)return;
+  box.innerHTML=renderTestsList(shown)+(all.length>shown.length?`<div class="fxa-more"><button class="btn btn-secondary btn-sm" onclick="fxTs.n+=30;filterTests()">Show ${Math.min(30,all.length-shown.length)} more</button><span>${shown.length} of ${all.length}</span></div>`:'');
+  const c=document.getElementById('tests-count');if(c)c.textContent=all.length===APP.tests.length?`${all.length} test${all.length!==1?'s':''}`:`${all.length} of ${APP.tests.length} tests`;
+}
+function fxTestOpt(k,v){fxTs[k]=v;fxTs.n=30;filterTests();fxFresh('#tests-list');}
 
 function deleteTest(id){
   if(!confirm('Delete this test? This cannot be undone.')) return;
@@ -10723,7 +10792,8 @@ document.addEventListener('click',e=>{
 },true);
 
 /* ───────────── ASSIGNMENT TABLE (Live Monitor · Grade Center · Analytics) ───────────── */
-const fxAsgUi={live:{f:'all',q:''},grade:{f:'all',q:''},an:{f:'all',q:''}};
+const fxAsgUi={live:{f:'all',q:'',s:'new',c:'all',g:'none',n:25},grade:{f:'grade',q:'',s:'grade',c:'all',g:'none',n:25},an:{f:'all',q:'',s:'new',c:'all',g:'none',n:25}};
+fxAsgUi.grade.f='all';
 const fxGr={open:null},fxAn={open:null};
 const FXA_ST={notopen:['Not open','#6B7389'],progress:['In progress','#2A52D9'],grading:['In grading','#C98A00'],done:['Done','#10885F']};
 const FXA_COL=['#141A2E','#D7263D','#2A52D9','#10885F','#C98A00','#B4236B','#0F7C8F','#6A3FD1'];
@@ -10750,12 +10820,17 @@ function fxAsgRowsHtml(mode){
   let infos=APP.assignments.filter(a=>!a.preview).map(fxAsgInfo);
   if(mode==='grade')infos=infos.filter(i=>i.sub.length);
   if(mode==='an')infos=infos.filter(i=>i.sub.length);
-  infos.sort((x,y)=>new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0));
+  const SORTS={new:(x,y)=>new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0),old:(x,y)=>new Date(x.a.createdAt||0)-new Date(y.a.createdAt||0),az:(x,y)=>x.title.localeCompare(y.title),
+    grade:(x,y)=>(y.pend-x.pend)||(new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0)),subs:(x,y)=>(y.sub.length-x.sub.length)||(new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0)),
+    active:(x,y)=>(y.prog.length-x.prog.length)||(new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0)),due:(x,y)=>new Date(x.a.dueAt||x.a.closesAt||'2999')-new Date(y.a.dueAt||y.a.closesAt||'2999'),
+    avg:(x,y)=>((y.avg==null?-1:y.avg)-(x.avg==null?-1:x.avg))};
+  infos.sort(SORTS[U.s]||SORTS.new);
   const counts={all:infos.length,notopen:0,progress:0,grading:0,done:0};infos.forEach(i=>counts[i.k]++);
   const q=(U.q||'').trim().toLowerCase();
-  const list=infos.filter(i=>(U.f==='all'||i.k===U.f)&&(!q||i.title.toLowerCase().includes(q)||(i.a.name||'').toLowerCase().includes(q)));
+  const clsName=id=>((APP.classes||[]).find(c=>c.id===id)||{}).name||'';
+  const list=infos.filter(i=>(U.f==='all'||i.k===U.f)&&(!q||i.title.toLowerCase().includes(q)||(i.a.name||'').toLowerCase().includes(q))&&(U.c==='all'||(U.c==='none'?!(i.a.classIds||[]).length:(i.a.classIds||[]).includes(U.c))));
   const open={live:'fxLiveOpen',grade:'fxGradeOpen',an:'fxAnOpen'}[mode],btn={live:'Monitor',grade:'Grade',an:'Analyze'}[mode];
-  const rows=list.map(i=>{
+  const rowFn=i=>{
     const st=FXA_ST[i.k];const nSub=i.sub.length,nAll=i.subs.length;
     const extra=mode==='live'?(i.prog.length?`<span class="fxa-live"><i></i>${i.prog.length} active</span>`:'<span class="text-muted">—</span>')
       :mode==='grade'?(i.pend?`<b style="color:var(--gold)">${i.pend} to grade</b>`:'<span style="color:var(--sage);font-weight:700">All graded</span>')
@@ -10764,7 +10839,13 @@ function fxAsgRowsHtml(mode){
       <div class="fxa-c"><span class="fxa-pill" style="background:${st[1]}">${st[0]}</span></div>
       <div class="fxa-c">${nSub} of ${nAll}</div><div class="fxa-c">${nSub-i.pend}</div><div class="fxa-c">${extra}</div><div class="fxa-c fxa-date">${mode==='live'&&i.a.code?`<span class="fx-codechip" onclick="event.stopPropagation();fxCopyCode('${i.a.code}')" title="Copy code">${i.a.code}</span>`:fxAsgShort(i.a.createdAt)}</div>
       <div class="fxa-c" style="justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();${open}('${sxA(i.a.id)}')">${btn}</button></div></div>`;
-  }).join('');
+  };
+  const shown=list.slice(0,U.n||25);let rows='',lastG=null;
+  const gKey=i=>U.g==='class'?(clsName((i.a.classIds||[])[0])||'No class'):U.g==='status'?FXA_ST[i.k][0]:'';
+  const gCount={};if(U.g!=='none')list.forEach(i=>{const k=gKey(i);gCount[k]=(gCount[k]||0)+1;});
+  if(U.g==='class'||U.g==='status'){const order=U.g==='status'?['In progress','In grading','Not open','Done']:null;if(order)shown.sort((x,y)=>order.indexOf(gKey(x))-order.indexOf(gKey(y)));else shown.sort((x,y)=>{const a=gKey(x),b=gKey(y);return a==='No class'?1:b==='No class'?-1:a.localeCompare(b);});}
+  shown.forEach(i=>{if(U.g!=='none'){const k=gKey(i);if(k!==lastG){rows+=`<div class="fxa-grp"><span>${sxE(k)}</span><b>${gCount[k]}</b></div>`;lastG=k;}}rows+=rowFn(i);});
+  if(list.length>shown.length)rows+=`<div class="fxa-more"><button class="btn btn-secondary btn-sm" onclick="fxAsgMore('${mode}')">Show ${Math.min(25,list.length-shown.length)} more</button><span>${shown.length} of ${list.length}</span></div>`;
   return{counts,html:rows||`<div class="fxa-empty">${counts.all?'No assignments match.':mode==='live'?'No assignments yet. Assign a test from My Tests to start.':'Nothing here yet.'}</div>`};
 }
 function fxAsgPaint(mode){
@@ -10772,8 +10853,17 @@ function fxAsgPaint(mode){
   const r=fxAsgRowsHtml(mode);box.innerHTML=r.html;
   document.querySelectorAll(`#asg-${mode} .fxa-tab`).forEach(t=>{const k=t.dataset.k;t.querySelector('b').textContent=r.counts[k];t.classList.toggle('on',fxAsgUi[mode].f===k);});
 }
-function fxAsgSet(mode,f){fxAsgUi[mode].f=f;fxAsgPaint(mode);}
-function fxAsgSearch(mode,v){fxAsgUi[mode].q=v;fxAsgPaint(mode);}
+function fxFresh(sel){const n=document.querySelector(sel);if(!n)return;n.classList.remove('fx-fresh');void n.offsetWidth;n.classList.add('fx-fresh');}
+function fxAsgSet(mode,f){fxAsgUi[mode].f=f;fxAsgUi[mode].n=25;fxAsgPaint(mode);fxFresh('#asg-body-'+mode);}
+function fxAsgSearch(mode,v){fxAsgUi[mode].q=v;fxAsgUi[mode].n=25;fxAsgPaint(mode);}
+function fxAsgOpt(mode,k,v){fxAsgUi[mode][k]=v;fxAsgUi[mode].n=25;fxAsgPaint(mode);fxFresh('#asg-body-'+mode);}
+function fxAsgMore(mode){fxAsgUi[mode].n=(fxAsgUi[mode].n||25)+25;fxAsgPaint(mode);}
+function fxAsgCtl(mode){
+  const U=fxAsgUi[mode];const cls=(APP.classes||[]).filter(c=>!c.archived);
+  const sorts={live:[['new','Newest'],['active','Most active now'],['subs','Most submitted'],['old','Oldest'],['az','A to Z'],['due','Due soonest']],grade:[['grade','Most to grade'],['new','Newest'],['subs','Most submitted'],['old','Oldest'],['az','A to Z']],an:[['new','Newest'],['avg','Highest average'],['subs','Most submitted'],['old','Oldest'],['az','A to Z']]}[mode];
+  const sel=(k,opts)=>`<select class="fxa-sel" onchange="fxAsgOpt('${mode}','${k}',this.value)">${opts.map(([v,l])=>`<option value="${sxA(v)}" ${U[k]===v?'selected':''}>${sxE(l)}</option>`).join('')}</select>`;
+  return `<div class="fxa-ctl"><label>Sort ${sel('s',sorts)}</label>${cls.length?`<label>Class ${sel('c',[['all','All classes'],...cls.map(c=>[c.id,c.name]),['none','No class']])}</label>`:''}<label>Group ${sel('g',[['none','None'],...(cls.length?[['class','By class']]:[]),['status','By status']])}</label></div>`;
+}
 function fxAsgLanding(mode,pageId,title){
   const el=document.getElementById(pageId);const r=fxAsgRowsHtml(mode);
   const tabs=[['all','All'],['notopen','Not open'],['progress','In progress'],['grading','In grading'],['done','Done']];
@@ -10782,7 +10872,7 @@ function fxAsgLanding(mode,pageId,title){
   <div class="page-content" id="asg-${mode}">
     <div class="fxa-tools"><label class="fxa-search"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search assignments" value="${sxA(fxAsgUi[mode].q)}" oninput="fxAsgSearch('${mode}',this.value)"></label>
       <div class="fxa-tabs">${tabs.map(([k,l])=>`<button class="fxa-tab ${fxAsgUi[mode].f===k?'on':''}" data-k="${k}" onclick="fxAsgSet('${mode}','${k}')">${l}<b>${r.counts[k]}</b></button>`).join('')}</div></div>
-    <div class="fxa-table"><div class="fxa-head">${head[mode].map(h=>`<div class="fxa-c">${h}</div>`).join('')}</div><div id="asg-body-${mode}">${r.html}</div></div></div>`;
+    ${fxAsgCtl(mode)}<div class="fxa-table"><div class="fxa-head">${head[mode].map(h=>`<div class="fxa-c">${h}</div>`).join('')}</div><div id="asg-body-${mode}">${r.html}</div></div></div>`;
 }
 /* Live Monitor */
 fxLive.open=false;fxLive.keep=false;
@@ -11875,11 +11965,67 @@ function lmsMat(m,isT,cid){
   ${(m.links||[]).length?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}
   ${isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatModal('${E(cid)}','${E(m.id)}')">Edit</a> <a class="fxc-x" onclick="fxMatDelete('${E(cid)}','${E(m.id)}')">Delete</a></div>`:''}</div>`;
 }
-function lmsMatGroups(c,isT){
-  const ms=(c.materials||[]).slice();if(!ms.length)return isT?`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Materials</div><button class="btn btn-primary btn-sm" onclick="fxMatModal('${E(c.id)}')">Post material</button></div><p class="lms-empty">Post links, readings or notes for this class.</p></div>`:'';
-  const topics=[...new Set(ms.map(m=>m.topic||''))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b));
-  return `<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Materials</div>${isT?`<button class="btn btn-primary btn-sm" onclick="fxMatModal('${E(c.id)}')">Post material</button>`:''}</div>${topics.map(t=>`${t?`<div class="lms-topic">${E(t)}</div>`:''}${ms.filter(m=>(m.topic||'')===t).map(m=>lmsMat(m,isT,c.id)).join('')}`).join('')}</div>`;
+function fxCwTopicList(c){const t=(c.topics||[]).slice();(c.materials||[]).forEach(m=>{if(m.topic&&!t.includes(m.topic))t.push(m.topic);});return t;}
+function fxCwSecs(c){const ms=c.materials||[];return [{t:'',items:ms.filter(m=>!m.topic)},...fxCwTopicList(c).map(t=>({t,items:ms.filter(m=>m.topic===t)}))];}
+function fxCwApply(c,secs){c.materials=secs.flatMap(s=>s.items.map(m=>{m.topic=s.t;return m;}));c.topics=secs.filter(s=>s.t).map(s=>s.t);fxCwSave(c);}
+function fxCwSave(c){
+  fxRenderClasses();
+  apiPost({action:'setClasswork',classId:c.id,topics:c.topics,materials:c.materials.map(m=>({id:m.id,topic:m.topic||''}))}).then(r=>{if(!r||!r.ok){toast((r&&r.error)||'Could not save the new order.','error');fxClsReload();}});
 }
+const fxCwCls=cid=>(APP.classes||[]).find(x=>x.id===cid);
+function fxCwFind(secs,id){for(let si=0;si<secs.length;si++){const ii=secs[si].items.findIndex(m=>m.id===id);if(ii>=0)return [si,ii];}return [-1,-1];}
+window.fxMatMove=function(cid,id,dir){
+  const c=fxCwCls(cid);if(!c)return;const secs=fxCwSecs(c);const [si,ii]=fxCwFind(secs,id);if(si<0)return;
+  const it=secs[si].items[ii];
+  if(dir<0){if(ii>0){secs[si].items.splice(ii,1);secs[si].items.splice(ii-1,0,it);}else if(si>0){secs[si].items.splice(ii,1);secs[si-1].items.push(it);}else return;}
+  else{if(ii<secs[si].items.length-1){secs[si].items.splice(ii,1);secs[si].items.splice(ii+1,0,it);}else if(si<secs.length-1){secs[si].items.splice(ii,1);secs[si+1].items.unshift(it);}else return;}
+  fxCwApply(c,secs);
+};
+window.fxTopicMove=function(cid,t,dir){
+  const c=fxCwCls(cid);if(!c)return;const secs=fxCwSecs(c);const i=secs.findIndex(s=>s.t===t);const j=i+dir;if(i<1||j<1||j>=secs.length)return;
+  const [x]=secs.splice(i,1);secs.splice(j,0,x);fxCwApply(c,secs);
+};
+window.fxTopicAdd=function(cid){const n=(prompt('Topic name (for example, Unit 3)')||'').trim().slice(0,40);if(!n)return;const c=fxCwCls(cid);if(fxCwTopicList(c).includes(n)){toast('That topic already exists.','error');return;}const secs=fxCwSecs(c);secs.push({t:n,items:[]});fxCwApply(c,secs);};
+window.fxTopicRename=function(cid,t){const n=(prompt('Rename topic',t)||'').trim().slice(0,40);if(!n||n===t)return;const c=fxCwCls(cid);if(fxCwTopicList(c).includes(n)){toast('That topic already exists.','error');return;}const secs=fxCwSecs(c);secs.find(s=>s.t===t).t=n;fxCwApply(c,secs);};
+window.fxTopicDelete=function(cid,t){const c=fxCwCls(cid);const secs=fxCwSecs(c);const i=secs.findIndex(s=>s.t===t);if(i<1)return;if(secs[i].items.length&&!confirm('Delete the topic “'+t+'”? Its '+secs[i].items.length+' item(s) move to No topic.'))return;secs[0].items.push(...secs[i].items);secs.splice(i,1);fxCwApply(c,secs);};
+/* drag and drop */
+let fxDnd=null;
+const fxHalf=e=>{const r=e.currentTarget.getBoundingClientRect();return (e.clientY-r.top)<r.height/2?'before':'after';};
+function fxDndClear(){document.querySelectorAll('.drop-before,.drop-after,.drop-in,.dragging').forEach(n=>n.classList.remove('drop-before','drop-after','drop-in','dragging'));}
+window.fxDragMat=function(e,cid,id){fxDnd={k:'mat',cid,id};e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',id);}catch(x){}e.currentTarget.classList.add('dragging');e.stopPropagation();};
+window.fxDragTopic=function(e,cid,t){fxDnd={k:'topic',cid,t};e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',t);const sec=e.currentTarget.closest('.lms-tg');if(sec)e.dataTransfer.setDragImage(sec,10,10);}catch(x){}e.currentTarget.closest('.lms-tg').classList.add('dragging');};
+window.fxDragEnd=function(){fxDnd=null;fxDndClear();};
+window.fxOverMat=function(e){if(!fxDnd||fxDnd.k!=='mat')return;e.preventDefault();e.stopPropagation();fxDndClear();e.currentTarget.classList.add(fxHalf(e)==='before'?'drop-before':'drop-after');};
+window.fxDropMat=function(e,targetId){
+  if(!fxDnd||fxDnd.k!=='mat'){return;}e.preventDefault();e.stopPropagation();const side=fxHalf(e),d=fxDnd;fxDndClear();fxDnd=null;
+  if(d.id===targetId)return;const c=fxCwCls(d.cid);const secs=fxCwSecs(c);const [si,ii]=fxCwFind(secs,d.id);const [m]=secs[si].items.splice(ii,1);
+  const [ts,ti]=fxCwFind(secs,targetId);secs[ts].items.splice(side==='before'?ti:ti+1,0,m);fxCwApply(c,secs);
+};
+window.fxOverSec=function(e){if(!fxDnd)return;e.preventDefault();if(fxDnd.k==='topic'){fxDndClear();e.currentTarget.classList.add(fxHalf(e)==='before'?'drop-before':'drop-after');}else{e.currentTarget.classList.add('drop-in');}};
+window.fxDropSec=function(e,t){
+  if(!fxDnd)return;e.preventDefault();const d=fxDnd,side=fxHalf(e);fxDndClear();fxDnd=null;const c=fxCwCls(d.cid);const secs=fxCwSecs(c);
+  if(d.k==='mat'){const [si,ii]=fxCwFind(secs,d.id);const [m]=secs[si].items.splice(ii,1);secs.find(s=>s.t===t).items.push(m);fxCwApply(c,secs);}
+  else{if(!t||d.t===t)return;const fi=secs.findIndex(s=>s.t===d.t);const [x]=secs.splice(fi,1);let ti=secs.findIndex(s=>s.t===t);if(side==='after')ti++;secs.splice(Math.max(1,ti),0,x);fxCwApply(c,secs);}
+};
+function lmsCwMat(m,c,isT,secIdx,n){
+  const grip=isT?`<span class="lms-grip" title="Drag to reorder">≡</span>`:'';
+  const acts=isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Up</a><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Down</a><a class="lms-link" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</a><a class="fxc-x" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</a></div>`:'';
+  const inner=`<div class="lms-mat-t">${grip}${E(m.title)}</div>${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${(m.links||[]).length?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}${acts}`;
+  return isT?`<div class="lms-mat item" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${inner}</div>`:`<div class="lms-mat item">${inner}</div>`;
+}
+window.lmsMatGroups=function(c,isT){
+  const secs=fxCwSecs(c);const total=(c.materials||[]).length;
+  if(!isT&&!total)return '';
+  const head=`<div class="lms-cw-h"><h2 class="lms-h" style="flex:1;margin:0;border:0;padding:0">Materials</h2>${isT?`<button class="btn btn-secondary btn-sm" onclick="fxTopicAdd('${E(c.id)}')">Add topic</button><button class="btn btn-primary btn-sm" onclick="fxMatModal('${E(c.id)}')">Post material</button>`:''}</div>`;
+  const body=secs.map((s,i)=>{
+    if(!isT&&!s.items.length)return '';
+    if(i===0&&!s.items.length&&!isT)return '';
+    const h=s.t?`<div class="lms-tg-h">${isT?`<span class="lms-grip" draggable="true" title="Drag to reorder topic" ondragstart="fxDragTopic(event,'${E(c.id)}','${E(s.t)}')" ondragend="fxDragEnd()">≡</span>`:''}<h3>${E(s.t)}</h3><span class="lms-count">${s.items.length}</span>${isT?`<span class="lms-tg-a"><a class="lms-link" onclick="fxTopicMove('${E(c.id)}','${E(s.t)}',-1)">Up</a><a class="lms-link" onclick="fxTopicMove('${E(c.id)}','${E(s.t)}',1)">Down</a><a class="lms-link" onclick="fxTopicRename('${E(c.id)}','${E(s.t)}')">Rename</a><a class="fxc-x" onclick="fxTopicDelete('${E(c.id)}','${E(s.t)}')">Delete</a></span>`:''}</div>`:(isT?`<div class="lms-tg-h plain"><h3>No topic</h3><span class="lms-count">${s.items.length}</span></div>`:'');
+    const items=s.items.map(m=>lmsCwMat(m,c,isT)).join('')||`<p class="lms-empty lms-dropnote">${isT?'Drag materials here':''}</p>`;
+    return `<section class="lms-tg"${isT?` ondragover="fxOverSec(event)" ondrop="fxDropSec(event,'${E(s.t)}')"`:''}>${h}<div class="lms-tg-b">${items}</div></section>`;
+  }).join('');
+  return `<div class="lms-cw">${head}${body||'<p class="lms-empty">Post links, readings or notes for this class.</p>'}</div>`;
+};
 let fxMatState={cid:null,id:null};
 function fxMatLinkRow(l){return `<div class="fm-link"><input class="form-control fm-url" placeholder="https://…" value="${E((l&&l.url)||'')}"><input class="form-control fm-lab" placeholder="Label (optional)" value="${E((l&&l.label)||'')}"></div>`;}
 window.fxMatModal=function(cid,id){
@@ -11924,7 +12070,8 @@ function fxTHash(){
 window.addEventListener('hashchange',()=>{if(!eaStudentPage()&&window.__fxRouted)fxTRoute();});
 window.addEventListener('hashchange',()=>{const sa=document.getElementById('stu-app');if(sa&&!sa.classList.contains('hidden')){stuRoute();stuPaint();}});
 window.addEventListener('popstate',()=>{if(!eaStudentPage()&&window.__fxRouted)fxTRoute();});
-{const o=window.fxEnterApp;if(typeof o==='function')window.fxEnterApp=function(){const r=o.apply(this,arguments);setTimeout(()=>{fxTRoute(FX_BOOT_HASH);window.__fxRouted=true;fxTHash();},500);return r;};}
+{const o=window.fxEnterApp;if(typeof o==='function')window.fxEnterApp=function(){const r=o.apply(this,arguments);let tries=0;const iv=setInterval(()=>{tries++;const app=document.getElementById('app');const need=/^#\/?class/.test(FX_BOOT_HASH);const ready=app&&!app.classList.contains('hidden')&&(!need||Array.isArray(APP.classes)||tries>40);
+    if(ready||tries>80){clearInterval(iv);fxTRoute(FX_BOOT_HASH);window.__fxRouted=true;fxTHash();}},100);return r;};}
 /* ── TEACHER class page ── */
 window.fxClassDetail=function(c){
   const me=fxMe().username.toLowerCase(),owner=c.ownerId===me;
@@ -11974,5 +12121,26 @@ async function fxBackfillMax(){
 {const o=window.fxRenderClasses;window.fxRenderClasses=function(){fxBackfillMax();return o.apply(this,arguments);};}
 </script>
 
+<script id="ea-motion">
+/* motion helpers: closing animation for modals, enter animations only on navigation (never on background refreshes) */
+(function(){
+  const reduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const oc=window.closeModal;
+  window.closeModal=function(){
+    const c=document.getElementById('modal-container');const b=c&&c.firstElementChild;
+    if(!b||reduce()||!b.classList||!b.classList.contains('modal-backdrop')){return oc.apply(this,arguments);}
+    b.classList.add('closing');
+    setTimeout(()=>{if(c.firstElementChild===b)c.innerHTML='';},150);
+  };
+  const op=window.openModal;
+  window.openModal=function(){const c=document.getElementById('modal-container');const old=c&&c.firstElementChild;if(old&&old.classList&&old.classList.contains('closing')){c.innerHTML='';}return op.apply(this,arguments);};
+  /* student + class pages: animate only when the user navigated (click on a nav/tab/class), not on the 45 s refresh */
+  document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.stu-top nav a,.lms-tabs button,.lms-class,.lms-crumb,.stu-brand,.lms-link,.lms-go'))window.__navAnim=true;},true);
+  const sp=window.stuPaint;
+  if(typeof sp==='function')window.stuPaint=function(){const go=window.__navAnim;window.__navAnim=false;sp.apply(this,arguments);if(go&&!reduce()){const m=document.querySelector('#stu-app .stu-main');if(m){m.classList.add('enter');}}};
+  const fr=window.fxRenderClasses;
+  if(typeof fr==='function')window.fxRenderClasses=function(){const go=window.__navAnim;window.__navAnim=false;const r=fr.apply(this,arguments);if(go&&!reduce()){const p=document.getElementById('page-classes');if(p){p.classList.remove('animate-in');void p.offsetWidth;p.classList.add('animate-in');}}return r;};
+})();
+</script>
 </body>
 </html>

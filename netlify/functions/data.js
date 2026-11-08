@@ -614,7 +614,7 @@ function classRole(c, user) {
   if (ownerOf(c) === me) return 'owner';
   return (c.coTeachers || []).map(lc).includes(me) ? 'edit' : null;
 }
-const clsClean = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [] });
+const clsClean = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [], topics: c.topics || [] });
 async function classesForTeacher(user) {
   const mine = (await allClasses()).filter((c) => classRole(c, user));
   const out = [];
@@ -650,7 +650,7 @@ async function studentHome(s) {
   for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); }
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
-  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).slice(-100).reverse(), joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
+  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: c.materials || [], topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
   return { student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
 async function studentAction(body, student) {
@@ -714,7 +714,7 @@ async function studentAction(body, student) {
 }
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled'];
+  const CA = ['createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -799,7 +799,22 @@ async function classAction(body, user) {
     const base = { title, body: String(body.body || '').trim().slice(0, 4000), topic: String(body.topic || '').trim().slice(0, 40), links };
     const old = body.matId ? c.materials.find((m) => m.id === body.matId) : null;
     if (old) Object.assign(old, base, { editedAt: new Date().toISOString() });
-    else { c.materials.push({ id: crypto.randomBytes(6).toString('hex'), ...base, by: lc(user.username), at: new Date().toISOString() }); c.materials = c.materials.slice(-100); }
+    else { if (base.topic) { c.topics = c.topics || []; if (!c.topics.includes(base.topic)) c.topics.push(base.topic); } c.materials.push({ id: crypto.randomBytes(6).toString('hex'), ...base, by: lc(user.username), at: new Date().toISOString() }); c.materials = c.materials.slice(-100); }
+    await saveClass(c); return reply(200, { ok: true });
+  }
+  if (a === 'setClasswork') {
+    const names = [];
+    for (const t of (Array.isArray(body.topics) ? body.topics : []).slice(0, 30)) { const n = String(t || '').trim().slice(0, 40); if (n && !names.includes(n)) names.push(n); }
+    const byId = new Map((c.materials || []).map((m) => [m.id, m]));
+    const next = [];
+    for (const it of (Array.isArray(body.materials) ? body.materials : []).slice(0, 200)) {
+      const m = it && byId.get(it.id); if (!m) continue; byId.delete(it.id);
+      const t = String((it && it.topic) || '').trim().slice(0, 40); m.topic = t;
+      if (t && !names.includes(t) && names.length < 30) names.push(t);
+      next.push(m);
+    }
+    for (const m of byId.values()) next.push(m);
+    c.materials = next; c.topics = names;
     await saveClass(c); return reply(200, { ok: true });
   }
   if (a === 'deleteMaterial') { c.materials = (c.materials || []).filter((x) => x.id !== body.matId); await saveClass(c); return reply(200, { ok: true }); }
