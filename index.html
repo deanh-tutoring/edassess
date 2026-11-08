@@ -641,7 +641,7 @@ body.fx-ui-dark #app img,body.fx-ui-dark #app canvas,body.fx-ui-dark #modal-cont
   --slate-blue:#2A52D9;--slate-pale:#E1E8FF;
   --burgundy:#B4236B;--burgundy-pale:#FBE1EE;
   --gold:#C98A00;--gold-pale:#FFF1BF;
-  --hl:#FFD84A;--hl-soft:#FFF0A8;
+  --hl:#2F5BEA;--hl-soft:#E3EAFF;
   --border:#DCE0EB;--border-dark:#B5BDD0;
   --shadow-sm:0 1px 2px rgba(20,26,46,.06);
   --shadow:0 1px 2px rgba(20,26,46,.06),0 12px 28px -16px rgba(20,26,46,.28);
@@ -985,7 +985,7 @@ body.pv-open{overflow:hidden}
 #fx-hold [style*="rgba(255,255,255"]{opacity:.8}
 
 /* DESIGN tokens */
-:root{--accent:#FFD84A;--ink:#16181D;--text-2:#4B5563;--muted:#6B7280;--rule:#D1D5DB;--bg:#F9FAFB;--surface:#fff;--hl:#FFD84A}
+:root{--accent:#2F5BEA;--ink:#16181D;--text-2:#4B5563;--muted:#6B7280;--rule:#D1D5DB;--bg:#F9FAFB;--surface:#fff;--hl:#2F5BEA}
 .stu-joinnote{background:var(--accent);border:1px solid var(--ink);border-radius:4px;padding:10px 12px;font-size:13px;margin-bottom:12px}
 .stu-hint{font-size:12px;color:#6B7280;margin-bottom:12px;line-height:1.5}
 body.stu-mode{background:var(--bg)}
@@ -1161,6 +1161,60 @@ html{scroll-behavior:smooth}
 .lms-mat.open .lms-mat-in{opacity:1;transform:none;transition-delay:.06s}
 .lms-mat-in>:last-child{margin-bottom:14px}
 @media(prefers-reduced-motion:reduce){.lms-mat-fold,.lms-mat-in,.lms-caret{transition:none!important}}
+/* ── blue: one accent (cobalt), white type on solid fills, pale tint for hovers and markers ── */
+:root{--accent:#2F5BEA;--hl:#2F5BEA;--hl-soft:#E3EAFF;--mark:#CBD9FF;--accent-deep:#2346C4;--accent-ink:#fff;--ease:cubic-bezier(.25,.8,.25,1);--glide:.6s}
+::selection{background:#BFD0FF;color:var(--ink)}
+.sidebar-logotype::first-letter{color:#8FA9FF}
+.nav-item.active{background:var(--hl);color:#fff}
+.sidebar-avatar{background:var(--hl);color:#fff}
+.btn-primary{background:var(--hl);border-color:var(--hl);color:#fff;box-shadow:none}
+.btn-primary:hover{background:var(--accent-deep);border-color:var(--accent-deep);box-shadow:0 10px 24px -10px rgba(47,91,234,.7);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(1px);box-shadow:none}
+.ea-btn-line{box-shadow:none;background:var(--hl)}
+.ea-btn-line:hover{background:var(--accent-deep)}
+.fx-curved,.fxr-tot,.fx-codechip,.lms-btn,.lms-go,.stu-joinnote,.lms-grade mark,mark,.ea-done-mark,#fx-pv .pv-back,#fx-pv h2 i{color:#fff}
+.lms-btn,.lms-go,.stu-joinnote{border-color:var(--hl)}
+.lms-btn:hover,.lms-go:hover{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
+.lms-cell:hover,.lms-cell.need,.fxc-card:hover,#stu-menu a:hover{background:var(--hl-soft)}
+.lms-class:hover .lms-class-n{background:linear-gradient(transparent 62%,var(--mark) 62%)}
+.page-title,.ea-done-h u,#student-wrapper div[style*="font-size:22px;font-weight:300"]{background-image:linear-gradient(transparent 58%,var(--mark) 58%,var(--mark) 90%,transparent 90%)}
+#fx-pv h1 u{background:linear-gradient(transparent 58%,var(--mark) 58%,var(--mark) 92%,transparent 92%)}
+#fx-pv .pv-toc a:hover{background:linear-gradient(90deg,rgba(47,91,234,.14),transparent)}
+#fx-pv .note{background:rgba(47,91,234,.08)}
+.login-art-bg{background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px)!important}
+.login-art div[style*="72px"]::first-line{color:#fff!important}
+.fx-phone-btn[style*="#2563EB"]{box-shadow:none}
+.student-nav-btn.next{box-shadow:none}
+.fx-ribbon{border-bottom-color:var(--hl)}
+.page-title{background-image:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%),linear-gradient(transparent 58%,var(--mark) 58%,var(--mark) 90%,transparent 90%)!important}
+/* gloss on blue reads best as a wide, soft band */
+.nav-item.active,.fx-tab.on,.fxa-tab.on,.lms-tabs button.on,.stu-joinnote,.lms-go,.fxr-tot,.btn-primary,.fx-dotb,.fx-navbadge,.lms-btn{
+  background-image:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%)!important;background-size:280% 100%!important;background-repeat:no-repeat!important;background-position:140% 0!important}
+.lms-tabs button.on{background-image:none!important}
+.nav-item.active:hover,.fx-tab.on:hover,.fxa-tab.on:hover,.stu-joinnote:hover,.lms-go:hover,.fxr-tot:hover,.btn-primary:hover,.lms-btn:hover{background-position:-40% 0!important}
+/* tempo: everything eases slower and longer, with no snapping */
+.btn,.nav-item,.fx-tab,.fxa-tab,.fxa-row,.test-row,.fxc-card,.lms-tabs button,.stu-top nav a,.lms-class,.lms-go,.lms-btn,.lms-link,.lms-links a,.lms-cell,.fxa-sel,.form-control,.lms-mat.item,.lms-tg,.fx-qchip,.answer-btn,.fx-srow{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .5s var(--ease),transform .5s var(--ease),opacity .45s var(--ease),background-position 1.3s var(--ease)}
+.page-title{transition:background-position 1.4s var(--ease)}
+@keyframes fxRowIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fxPop{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+.modal{animation-duration:.65s}.modal-backdrop{animation-duration:.5s}
+.modal-backdrop.closing{animation-duration:.3s}.modal-backdrop.closing .modal{animation-duration:.3s}
+.page-view.animate-in :is(.fxa-row,.test-row,.fxc-card,.fxa-grp):nth-child(-n+12),.fx-fresh>:nth-child(-n+12),.stu-main.enter :is(.lms-class,.lms-row,.lms-post,.lms-mat.item,.lms-grade,.lms-panel,.lms-tg):nth-child(-n+10),.lms-pgin>*{animation-duration:.75s}
+.lms-caret{transition:transform .7s var(--ease)}
+.lms-mat-fold{transition:grid-template-rows .7s var(--ease),visibility 0s .7s}
+.lms-mat.open>.lms-mat-fold{transition:grid-template-rows .7s var(--ease),visibility 0s}
+.lms-mat-in{transition:opacity .5s var(--ease),transform .7s var(--ease)}
+.lms-mat.open .lms-mat-in{transition-delay:.1s}
+.page-view.animate-in .page-title{animation-duration:1s}
+.toast{animation-duration:.6s}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.lms-peer{margin-bottom:28px}.lms-note{background:var(--hl-soft);border-radius:4px;padding:12px 14px;font-size:14px;line-height:1.55;margin:0 0 22px}
+.lms-rv{border:1px solid var(--rule);border-radius:4px;padding:20px;margin-bottom:20px;background:var(--surface)}.lms-rv-q{font-size:17px;line-height:1.5;margin-bottom:14px}
+.lms-rv-a{background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:14px;margin-bottom:16px;line-height:1.7;white-space:normal}.lms-rv-t{min-width:48px;text-align:right;font-weight:700;font-size:14px}
+.lms-rv-l{display:block;font-weight:700;font-size:13px;margin:16px 0 6px}.lms-rv-bar{display:flex;align-items:center;gap:14px;margin:8px 0 60px}
+.fxp{border:1px solid var(--border-dark);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;background:var(--cream)}.fxp-t{font:700 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}.fxp-r{border-top:1px solid var(--border);padding:10px 0}.fxp-r:first-of-type{border-top:0}.fxp-h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:4px}.fxp-b{margin:8px 0 0}
+.rubric-pt-btn.selected{background:var(--hl);border-color:var(--hl);color:#fff}
+.login-art div[style*="72px"]{color:#fff!important}
 </style>
 </head>
 <body>
@@ -4181,7 +4235,7 @@ async function createAssignment(testId){
     return;
   }
   closeModal();
-  const link=`${location.href.split('?')[0]}?exam=${a.id}`;
+  const link=`${(location.origin+location.pathname)}?exam=${a.id}`;
   openModal(`
   <div class="modal-header">
     <h2 class="serif" style="font-size:22px">Assignment Created!</h2>
@@ -4269,7 +4323,7 @@ function renderLive(){
       <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;font-family:var(--f-body)">Select Assignment</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="live-assignment-btn ${!activeAssignmentFilter?'active':''}" onclick="setLiveFilter(null)">All Assignments</button>
-        ${APP.assignments.map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);const link=location.href.split('?')[0]+'?exam='+a.id;return`
+        ${APP.assignments.map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);const link=(location.origin+location.pathname)+'?exam='+a.id;return`
         <div style="display:flex;gap:4px;align-items:center">
           <button class="live-assignment-btn ${activeAssignmentFilter===a.id?'active':''}" onclick="setLiveFilter('${a.id}')">${t?t.title:'Unknown'} <span style="opacity:.6;font-size:9px;margin-left:4px">${formatDate(a.createdAt)}</span></button>
           <button class="btn btn-ghost btn-sm btn-icon" onclick="copyToClipboard('${link}')" title="Copy student link" style="padding:6px">
@@ -4422,7 +4476,7 @@ function openStudentControl(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
   const a=APP.assignments.find(aa=>aa.id===s.assignmentId)||{};
-  const link=location.href.split('?')[0]+'?exam='+s.assignmentId;
+  const link=(location.origin+location.pathname)+'?exam='+s.assignmentId;
   openModal(`
   <div class="modal-header">
     <h2 class="serif" style="font-size:22px">Control: ${s.studentName}</h2>
@@ -4640,7 +4694,7 @@ function renderPeerSessionCard(ps){
     <div style="background:var(--paper-warm);border-radius:999px;height:8px;overflow:hidden;margin-bottom:6px">
       <div style="background:var(--slate-blue);height:100%;width:${pct}%;transition:width .3s"></div>
     </div>
-    <div class="text-xs text-muted mb-4">${done} of ${total} reviews completed (${pct}%)</div>
+    <div class="text-xs text-muted mb-4">${done} of ${total} reviews completed (${pct}%) · Students with accounts see their reviews on their Home page. The link is only for students without one.</div>
     <div class="flex gap-2" style="flex-wrap:wrap">
       <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${peerSessionLink(ps.id)}')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
@@ -4986,6 +5040,26 @@ function renderUltraLockdownReview(s){
   </div>`;
 }
 
+/* peer feedback this student received — shown to the grader, with a per-review "hide from student" switch */
+function fxPeerForGrader(s,t){
+  const rows=[];
+  (APP.peerSessions||[]).forEach(ps=>(ps.pairs||[]).forEach(p=>{if(p.revieweeSubId===s.id)rows.push({ps,p});}));
+  if(!rows.length)return '';
+  const fqs=flatQuestions(t);
+  const done=rows.filter(r=>r.p.status==='completed');
+  const body=rows.map(({ps,p},i)=>{
+    if(p.status!=='completed')return `<div class="fxp-r"><div class="fxp-h"><b>${escapeHtml(p.reviewerName||'Reviewer')}</b><span class="text-xs text-muted">Not finished yet</span></div></div>`;
+    const blocks=(ps.essayKeys||[]).map(key=>{
+      const it=fqs.find(f=>f.key===key);if(!it)return '';
+      const sc=(p.rubricScores&&p.rubricScores[key])||{};const tot=Object.values(sc).reduce((a,v)=>a+v,0);
+      const mx=it.q.rubric?it.q.rubric.reduce((a,r)=>a+(r.maxPoints||0),0):0;const fb=p.feedback&&p.feedback[key];
+      if(!mx&&!fb)return '';
+      return `<div class="fxp-b"><div class="text-xs text-muted">${escapeHtml(stripHtml(it.q.stem).slice(0,90))}</div>${mx?`<div style="font-weight:700;font-size:14px">${tot}/${mx} pts</div>`:''}${fb?`<div style="font-size:13.5px;line-height:1.55;margin-top:4px">${escapeHtml(fb)}</div>`:''}</div>`;
+    }).join('');
+    return `<div class="fxp-r"><div class="fxp-h"><b>${escapeHtml(p.reviewerName||'Reviewer')}</b><label class="text-xs" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" ${p.hiddenFromStudent?'checked':''} onchange="togglePeerReviewHidden('${ps.id}','${p.id}',this.checked)"> Hide from student</label></div>${blocks||'<div class="text-sm text-muted">No score or comment recorded.</div>'}</div>`;
+  }).join('');
+  return `<section class="fxp"><div class="fxp-t">Peer feedback · ${done.length} of ${rows.length} received</div>${body}<div class="text-xs text-muted" style="margin-top:8px">Students see completed reviews with their results unless you hide them. Reviewer names are never shown to the student.</div></section>`;
+}
 function openGradingStudent(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s){toast('Submission not found','error');return;}
@@ -5005,6 +5079,7 @@ function openGradingStudent(sid){
   <div class="modal-body">
     ${s.ultraLockdown?renderUltraLockdownReview(s):''}
     ${sxGradeSummary(s,t,'grader')}
+    ${fxPeerForGrader(s,t)}
     ${sxGradeRows(s,t,fqs,(item,idx)=>{
       const q=item.q;
       const qKey=item.passageIdx!==undefined?`p${item.passageIdx}_s${item.subIdx}`:String(item.idx);
@@ -5149,7 +5224,7 @@ function setManualScore(sid,qKey,val,max){
 }
 
 function copyResultsLink(sid){
-  const link=`${location.href.split('?')[0]}?results=${sid}`;
+  const link=`${(location.origin+location.pathname)}?results=${sid}`;
   navigator.clipboard.writeText(link).then(()=>toast('Results link copied!','success')).catch(()=>{
     openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Share Results</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body"><label class="form-label">Student Results Link</label><div class="flex gap-2"><input type="text" class="form-control" value="${link}" readonly style="font-size:11px;font-family:var(--f-mono)"><button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${link}');toast('Copied!','success')">Copy</button></div></div>`,'500px');
   });
@@ -7295,7 +7370,7 @@ function renderSubmittedScreen(sub,a,t){
         <div class="ea-done-big">${sub.score}<span> / ${totalPts}</span></div>
         <div class="ea-done-pct" style="color:${scoreColor(totalPts>0?sub.score/totalPts:0)}">${pct}%</div>
         ${sxSubmittedExtras(sub,t)}
-        <a class="ea-btn-line" href="${location.href.split('?')[0]}?results=${sub.id}">View full results →</a>
+        <a class="ea-btn-line" href="${(location.origin+location.pathname)}?results=${sub.id}">View full results →</a>
       </div>`:`<div class="ea-done-score" style="font-size:16px">Your instructor will release your results when available.</div>`}
     <p class="ea-done-foot">You may close this window.</p>
   </div></div>`;
@@ -7597,7 +7672,7 @@ function deletePeerSessionRemote(id){
 }
 
 function peerSessionLink(sessionId){
-  return `${location.href.split('?')[0]}?peerreview=${sessionId}`;
+  return `${(location.origin+location.pathname)}?peerreview=${sessionId}`;
 }
 
 function calcTotalPoints(t,s){
@@ -7912,7 +7987,7 @@ function loadStudentResults(sid){
       ${t.satSubject?`
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Practice Recommendations</div>
-        <a href="${location.href.split('?')[0]}?portal=${encodeURIComponent(s.studentName)}" style="font-size:12px;color:var(--slate-blue);font-weight:600;text-decoration:none">View combined portal across all your SAT tests →</a>
+        <a href="${(location.origin+location.pathname)}?portal=${encodeURIComponent(s.studentName)}" style="font-size:12px;color:var(--slate-blue);font-weight:600;text-decoration:none">View combined portal across all your SAT tests →</a>
       </div>
       ${renderSkillPanel('results-'+s.id,t.satSubject,computeSkillStats([s],t.satSubject),1)}
       `:''}
@@ -8934,7 +9009,7 @@ async function sxSaveAndExit(){
 }
 function sxRenderSavedScreen(){
   const {t,a,sub}=APP.currentStudentExam;const st=sub.sectionState;
-  const link=`${location.href.split('?')[0]}?exam=${a.id}`;
+  const link=`${(location.origin+location.pathname)}?exam=${a.id}`;
   const where=st&&sxOn(t)?`You’re in <strong>${escapeHtml((sxById(t,st.current)||{}).title||'')}</strong>${st.phase==='active'&&sub.ui?`, question ${(sub.ui.currentQ||0)+1}`:''}.`:'';
   const clock=sub.pauseClock?'Your timer is paused.':'Your timer is still running while you’re away.';
   const anyTimer=(sxOn(t)&&st&&st.phase==='active'&&sxLimitSecs(t,a,sxById(t,st.current),st.status[st.current])!==null)||(!sxOn(t)&&a.timed);
@@ -9914,7 +9989,7 @@ function fxQrListHtml(key){const l=fxUpList(APP.currentStudentExam.sub,key);retu
 function fxUpOpenQr(key){
   const ex=APP.currentStudentExam;const sub=ex.sub;fxUpOpen=true;
   const n=examItems().findIndex(f=>f.key===key)+1;
-  const link=location.href.split('?')[0]+'?upload='+encodeURIComponent(sub.id)+'&k='+encodeURIComponent(key)+'&n='+n;
+  const link=(location.origin+location.pathname)+'?upload='+encodeURIComponent(sub.id)+'&k='+encodeURIComponent(key)+'&n='+n;
   let img='<div style="padding:20px;font-size:12px;word-break:break-all">'+sxE(link)+'</div>';
   try{if(window.qrcode){const qr=qrcode(0,'M');qr.addData(link);qr.make();img=`<img class="fx-qr" src="${qr.createDataURL(6,2)}" alt="QR code">`;}}catch(e){}
   const el=document.createElement('div');el.className='fx-qr-back';el.id='fx-qr';
@@ -10327,7 +10402,7 @@ function renderLive(){
   if(!APP.assignments.length&&!APP.submissions.length){el.innerHTML=top+`<div class="page-content"><div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">No active sessions</h2><p style="color:var(--ink-soft);font-size:18px">Assign a test to start monitoring students</p></div></div>`;return;}
   el.innerHTML=top+`<div class="page-content" id="live-root">
     <div class="fx-lv-bar"><button class="btn btn-ghost btn-sm fxa-back" onclick="fxLiveBack()">← All assignments</button><span class="fxa-ttl">${sxE((fxAsgInfo(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{})).title)}</span>${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code?`<span class="fx-codechip big" onclick="fxCopyCode('${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}')" title="Students join with this code">${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}</span>`:''}
-      ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard(location.href.split('?')[0]+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
+      ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard((location.origin+location.pathname)+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
     <div id="live-control"></div>
     <div class="grid-4 mb-6" id="live-stats"></div>
     <div class="card"><div class="card-header" style="flex-wrap:wrap;gap:10px"><div class="fx-tabs" id="live-tabs"></div><div id="live-tools" class="flex gap-2 items-center"></div></div><div id="live-list"></div></div></div>`;
@@ -11127,7 +11202,7 @@ async function fxJoin(){
   btn.disabled=true;btn.textContent='Joining…';
   let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0;
   if(!id){const r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
-  if(id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(id);return;}
+  if(id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(id);return;}
   btn.disabled=false;btn.textContent='Join';
   err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';
   inp.select();
@@ -11529,7 +11604,7 @@ async function fxStuAuth(){
   const prev=stuLoad();if(prev&&prev.student&&prev.student.key!==r.student.key)await fxWipeCaches();
   stuSave({token:r.token,student:r.student});
   const ret=new URLSearchParams(location.search).get('return');
-  if(ret&&/^[A-Za-z0-9_-]{4,40}$/.test(ret)){location.href=location.href.split('?')[0]+'?exam='+ret;return;}
+  if(ret&&/^[A-Za-z0-9_-]{4,40}$/.test(ret)){location.href=(location.origin+location.pathname)+'?exam='+ret;return;}
   location.reload();
 }
 function fxClassCodeFound(code,r){
@@ -11546,7 +11621,7 @@ window.fxJoin=async function(){
   let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0,r=null;
   if(!id){r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
   btn.disabled=false;btn.textContent='Join';
-  if(id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(id);return;}
+  if(id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(id);return;}
   if(r&&r.classCode){if(stuToken()){fxStuEnter().then(()=>fxStuJoinCode(code));}else fxClassCodeFound(code,r);return;}
   err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';inp.select();
 };
@@ -11561,7 +11636,7 @@ window.fxJoin=async function(){
 const STU={page:'home',data:null,tab:'all',cls:'all',loading:false};
 function fxStuLogout(silent){
   try{localStorage.setItem(EA_STU_KEY,JSON.stringify({token:'',student:null}));}catch(e){}
-  fxWipeCaches();location.href=location.href.split('?')[0].split('#')[0];
+  fxWipeCaches();location.href=(location.origin+location.pathname);
 }
 async function fxStuEnter(){
   const s=stuLoad();if(!s||!s.token)return;
@@ -11578,7 +11653,7 @@ async function stuRefresh(quiet){
   const r=await apiPost({action:'studentMe'});
   if(r&&!r.__httpError&&r.student){STU.data=r;Object.assign(fxTeachers,r.teachers||{});}
   else if(!quiet&&!STU.data)STU.error=(r&&r.error)||'Could not load your classes.';
-  stuPaint();
+  if(!(quiet&&STU.page==='review'))stuPaint();
 }
 function stuGo(p){STU.page=p;location.hash='#/'+p;stuPaint();window.scrollTo(0,0);}
 const tN=u=>fxTName(u);
@@ -11735,7 +11810,7 @@ async function stuPwSave(){const r=await apiPost({action:'studentChangePassword'
   return o.apply(this,arguments);};}
 function fxExamGate(kind){
   const id=new URLSearchParams(location.search).get('exam');
-  const home=location.href.split('?')[0];
+  const home=(location.origin+location.pathname);
   document.getElementById('login-page').classList.add('hidden');document.getElementById('app').classList.add('hidden');const w=document.getElementById('student-wrapper');w.classList.remove('hidden');
   w.innerHTML=kind==='class'
    ?`<div class="ea-done"><div class="ea-done-card"><h2 class="ea-done-h" style="font-size:36px"><u>Not your class.</u></h2><p class="ea-done-p">This assessment is assigned to a class you haven’t joined. Ask your teacher for the class code, then join from your home page.</p><a class="ea-btn-line" href="${home}">Go to my home →</a></div></div>`
@@ -11882,10 +11957,10 @@ function lmsCol(id){let h=0;String(id).split('').forEach(c=>{h=(h*31+c.charCodeA
 const lmsAgo=iso=>{if(!iso)return '';const d=new Date(iso),s=(Date.now()-d)/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' hr ago';if(s<604800)return Math.floor(s/86400)+' d ago';return d.toLocaleDateString([],{month:'short',day:'numeric'});};
 /* ── routing ── */
 function stuRoute(){
-  const h=location.hash.replace('#/','');const m=h.match(/^class\/(.+)$/);
-  if(m){STU.page='class';STU.cid=m[1];}else STU.page=['home','assignments','grades'].includes(h)?h:'home';
+  const h=location.hash.replace('#/','');const m=h.match(/^class\/(.+)$/),rv=h.match(/^review\/(.+)$/);
+  if(rv){STU.page='review';STU.rid=rv[1];}else if(m){STU.page='class';STU.cid=m[1];}else STU.page=['home','assignments','grades'].includes(h)?h:'home';
 }
-window.stuGo=function(p){const m=String(p).match(/^class\/(.+)$/);if(m){STU.page='class';STU.cid=m[1];STU.ctab='stream';}else STU.page=p;location.hash='#/'+p;stuPaint();window.scrollTo(0,0);};
+window.stuGo=function(p){const m=String(p).match(/^class\/(.+)$/),rv=String(p).match(/^review\/(.+)$/);if(rv){STU.page='review';STU.rid=rv[1];STU.rev=null;}else if(m){STU.page='class';STU.cid=m[1];STU.ctab='stream';}else STU.page=p;location.hash='#/'+p;stuPaint();window.scrollTo(0,0);};
 const stuMax=(a,s)=>(s&&s.maxScore>0)?s.maxScore:((a.maxPoints>0&&s&&s.score!=null&&s.score<=a.maxPoints)?a.maxPoints:0);
 window.stuPct=function(a,s){const m=stuMax(a,s);if(!s||s.score==null||!m)return null;return Math.round(s.score/m*100);};
 const stuReleased=(a,s)=>!!(s&&s.status==='submitted'&&(a.releaseScores||s.graded));
@@ -11894,7 +11969,7 @@ window.stuRow=function(a,opts){
   opts=opts||{};const sub=stuSubFor(a.id),st=stuState(a,sub),rel=stuReleased(a,sub),pct=rel?stuPct(a,sub):null;
   const late=a.dueAt&&st!=='done'&&new Date(a.dueAt)<new Date();
   let status='',act='';
-  if(st==='done'){status=rel?(pct!=null?`<b>${pct}%</b>`:'Graded'):'Submitted, awaiting grade';act=rel?`<a class="lms-link" href="?results=${E(sub.id)}">Review</a>`:'';}
+  if(st==='done'){status=rel?(pct!=null?`<b>${pct}%</b>`:'Graded'):'Submitted, awaiting grade';{const pf=((STU.data.peer||{}).feedback||{})[sub&&sub.id];if(rel&&pf)status+=` · ${pf} peer comment${pf!==1?'s':''}`;}act=rel?`<a class="lms-link" href="?results=${E(sub.id)}">Review</a>`:'';}
   else if(st==='closed')status='<b>Missing</b>';
   else if(st==='scheduled')status='Opens '+E(new Date(a.opensAt).toLocaleDateString([],{month:'short',day:'numeric'}));
   else if(st==='progress'){status='In progress';act=`<a class="lms-go" href="?exam=${E(a.id)}">Resume</a>`;}
@@ -11914,7 +11989,7 @@ window.stuHome=function(){
   return `<header class="lms-head"><h1>${E(first)}’s work</h1><button class="lms-btn" onclick="stuJoinModal()">Join a class with a code</button></header>
   ${(d.invites||[]).map(i=>`<div class="lms-invite"><span><b>${E(tN(i.ownerId))}</b> invited you to <b>${E(i.name)}</b></span><span><button class="lms-btn" onclick="stuInvite('${E(i.id)}',true)">Accept</button> <button class="lms-btn ghost" onclick="stuInvite('${E(i.id)}',false)">Decline</button></span></div>`).join('')}
   <div class="lms-cols"><section><h2 class="lms-h">Classes</h2>${classes?`<div class="lms-classes">${classes}</div>`:'<p class="lms-empty">No classes yet. Enter a class code from your teacher, or wait for an invitation.</p>'}</section>
-  <aside><h2 class="lms-h">To do${open.length?` (${open.length})`:''}</h2>${open.length?open.slice(0,6).map(a=>stuRow(a)).join(''):'<p class="lms-empty">Nothing to do.</p>'}${open.length>6?`<a class="lms-link" onclick="stuGo('assignments')">All ${open.length} assignments</a>`:''}
+  <aside>${stuPeerSection()}<h2 class="lms-h">To do${open.length?` (${open.length})`:''}</h2>${open.length?open.slice(0,6).map(a=>stuRow(a)).join(''):'<p class="lms-empty">Nothing to do.</p>'}${open.length>6?`<a class="lms-link" onclick="stuGo('assignments')">All ${open.length} assignments</a>`:''}
   ${recent.length?`<h2 class="lms-h" style="margin-top:32px">Graded</h2>${recent.map(a=>{const s=stuSubFor(a.id),p=stuPct(a,s);return `<a class="lms-grade" href="?results=${E(s.id)}"><span>${E(a.title)}${seen.includes(s.id)?'':' <mark>New</mark>'}<small>${E(stuClassName(a))}</small></span><b>${p==null?'—':p+'%'}</b></a>`;}).join('')}<a class="lms-link" onclick="stuGo('grades')">All grades</a>`:''}</aside></div>`;
 };
 /* ── ASSIGNMENTS ── */
@@ -11924,7 +11999,7 @@ window.stuAssignments=function(){
   const L={todo:d.assignments.filter(a=>['todo','progress','scheduled'].includes(stOf(a))),missing:d.assignments.filter(a=>stOf(a)==='closed'),done:d.assignments.filter(a=>stOf(a)==='done')};
   let list=L[tab];if(STU.cls!=='all')list=list.filter(a=>(a.classIds||[]).includes(STU.cls));
   list=list.slice().sort((x,y)=>tab==='done'?new Date(stuSubFor(y.id).submittedAt||0)-new Date(stuSubFor(x.id).submittedAt||0):new Date(x.dueAt||'2999')-new Date(y.dueAt||'2999'));
-  return `<header class="lms-head"><h1>Assignments</h1><select class="lms-sel" onchange="STU.cls=this.value;stuPaint()"><option value="all">All classes</option>${(d.classes||[]).map(c=>`<option value="${E(c.id)}" ${STU.cls===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select></header>
+  return `${stuPeerSection()}<header class="lms-head"><h1>Assignments</h1><select class="lms-sel" onchange="STU.cls=this.value;stuPaint()"><option value="all">All classes</option>${(d.classes||[]).map(c=>`<option value="${E(c.id)}" ${STU.cls===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select></header>
   <div class="lms-tabs">${[['todo','Assigned'],['missing','Missing'],['done','Done']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="STU.tab='${k}';stuPaint()">${l}<span> ${L[k].length}</span></button>`).join('')}</div>
   <div class="lms-list">${list.length?list.map(a=>stuRow(a)).join(''):`<p class="lms-empty">${tab==='todo'?'Nothing assigned right now.':tab==='missing'?'Nothing missing. Nice.':'Nothing submitted yet.'}</p>`}</div>`;
 };
@@ -11975,11 +12050,11 @@ window.stuPaint=function(){
   const app=document.getElementById('stu-app');if(!app||app.classList.contains('hidden'))return;
   const s=(stuLoad()||{}).student||{name:''};
   const nav=[['home','Home'],['assignments','Assignments'],['grades','Grades']];
-  const cur=STU.page==='class'?'home':STU.page;
+  const cur=STU.page==='class'?'home':STU.page==='review'?'assignments':STU.page;
   let body='';
   if(!STU.data)body=STU.error?`<div class="lms-panel lms-empty">${E(STU.error)}</div>`:'<div class="lms-panel lms-empty">Loading…</div>';
-  else body=STU.page==='class'?lmsClassView():STU.page==='assignments'?stuAssignments():STU.page==='grades'?stuGrades():stuHome();
-  const n=STU.data?STU.data.assignments.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).length:0;
+  else body=STU.page==='review'?stuReviewView():STU.page==='class'?lmsClassView():STU.page==='assignments'?stuAssignments():STU.page==='grades'?stuGrades():stuHome();
+  const n=STU.data?STU.data.assignments.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).length+stuPeerOpen().length:0;
   app.innerHTML=`<header class="stu-top"><div class="stu-brand" onclick="stuGo('home')" style="cursor:pointer">EdAssess</div><nav>${nav.map(([k,l])=>`<a class="${cur===k?'on':''}" onclick="stuGo('${k}')">${l}${k==='assignments'&&n?` (${n})`:''}</a>`).join('')}</nav><button class="stu-me" onclick="stuMenu(event)">${E(s.name)} ▾</button></header><main class="stu-main">${body}</main>`;
 };
 /* join: class code OR an assignment code */
@@ -11992,13 +12067,13 @@ window.fxStuJoinCode=async function(code){
   if(code.length<4){toast('Enter the code from your teacher.','error');return;}
   const r=await apiPost({action:'joinClass',code});
   if(r&&r.ok){closeModal();toast('Joined '+r.name+'.','success');await stuRefresh();return;}
-  if(r&&r.status===404){const g=await eaGet({code},10000);if(g&&g.id){location.href=location.href.split('?')[0].split('#')[0]+'?exam='+encodeURIComponent(g.id);return;}}
+  if(r&&r.status===404){const g=await eaGet({code},10000);if(g&&g.id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(g.id);return;}}
   toast((r&&r.error)||'That code was not found.','error');
 };
 window.stuLeave=async function(id){if(!confirm('Leave this class? Your past work stays on your account.'))return;const r=await apiPost({action:'leaveClass',classId:id});if(r&&r.ok){closeModal();await stuRefresh();stuGo('home');}};
 /* ── back to dashboard (exam, submitted, results, gate) ── */
-function fxBackBtn(){return stuToken()?`<a class="ea-btn-line fx-back-l" href="${location.href.split('?')[0].split('#')[0]}">← Back to my dashboard</a>`:'';}
-function fxBackBar(){return stuToken()?`<a class="fx-back" href="${location.href.split('?')[0].split('#')[0]}">← Dashboard</a>`:'';}
+function fxBackBtn(){return stuToken()?`<a class="ea-btn-line fx-back-l" href="${(location.origin+location.pathname)}">← Back to my dashboard</a>`:'';}
+function fxBackBar(){return stuToken()?`<a class="fx-back" href="${(location.origin+location.pathname)}">← Dashboard</a>`:'';}
 {const o=window.renderNameEntry;window.renderNameEntry=function(a,t){return fxBackBar()+o(a,t);};}
 {const o=window.renderSubmittedScreen;window.renderSubmittedScreen=function(sub,a,t){o(sub,a,t);const c=document.querySelector('#student-wrapper .ea-done-card');if(c&&stuToken()){const f=c.querySelector('.ea-done-foot');if(f)f.outerHTML=fxBackBtn();else c.insertAdjacentHTML('beforeend',fxBackBtn());}
   if(c&&stuToken()&&a.releaseScores===false&&!sub.graded){const p=c.querySelector('.ea-done-score');if(p)p.innerHTML='Your teacher will release your results after grading.';}};}
@@ -12173,6 +12248,66 @@ async function fxBackfillMax(){
   window.__fxBF=false;
 }
 {const o=window.fxRenderClasses;window.fxRenderClasses=function(){fxBackfillMax();return o.apply(this,arguments);};}
+
+/* ── peer review inside the student account (no link needed) ── */
+window.stuPeerOpen=function(){return ((STU.data&&STU.data.peer&&STU.data.peer.tasks)||[]).filter(t=>t.status==='active'&&t.done<t.total);};
+window.stuPeerSection=function(){
+  const L=stuPeerOpen();if(!L.length)return '';
+  return `<section class="lms-peer"><h2 class="lms-h">Peer reviews${L.length>1?` (${L.length})`:''}</h2>${L.map(t=>`<div class="lms-row"><div class="lms-row-main"><div class="lms-row-t">${E(t.title)}</div><div class="lms-row-m">Anonymous · ${t.done} of ${t.total} done</div></div><div class="lms-row-r"><a class="lms-go" onclick="stuGo('review/${E(t.sessionId)}')">${t.done?'Continue':'Start'}</a></div></div>`).join('')}</section>`;
+};
+window.stuReviewLoad=async function(){
+  const sid=STU.rid;STU.rev={sid,loading:true};stuPaint();
+  const r=await apiPost({action:'studentPeerTask',sessionId:sid});
+  if(STU.rid!==sid)return;
+  if(!r||!r.ok){STU.rev={sid,error:(r&&r.error)||'Could not load this review. Check your connection and try again.'};stuPaint();return;}
+  STU.rev={sid,data:r,scores:JSON.parse(JSON.stringify((r.pair&&r.pair.rubricScores)||{})),fb:JSON.parse(JSON.stringify((r.pair&&r.pair.feedback)||{})),pairId:r.pair&&r.pair.id};
+  stuPaint();
+};
+function stuRevItems(R){
+  const t=R.data.test;if(!t)return [];const fqs=flatQuestions(t);
+  return (R.data.session.essayKeys||[]).map(k=>fqs.find(f=>f.key===k)).filter(Boolean);
+}
+window.stuReviewView=function(){
+  const back=`<a class="lms-link" onclick="stuGo('assignments')">← Assignments</a>`;
+  if(!STU.rev||STU.rev.sid!==STU.rid){setTimeout(stuReviewLoad,0);return `${back}<p class="lms-empty">Loading…</p>`;}
+  const R=STU.rev;
+  if(R.loading)return `${back}<p class="lms-empty">Loading…</p>`;
+  if(R.error)return `${back}<p class="lms-empty">${E(R.error)}</p><button class="lms-btn" onclick="stuReviewLoad()">Try again</button>`;
+  const d=R.data,title=d.test?d.test.title:'Peer review';
+  if(!d.pair){
+    const closed=d.session.status!=='active'&&d.done<d.total;
+    return `${back}<header class="lms-head"><h1>${closed?'This review is closed':'All done.'}</h1></header><p class="lms-empty">${closed?'Your teacher closed this peer review before you finished.':`You finished all ${d.total} review${d.total!==1?'s':''} for ${E(title)}. Thank you — your teacher can see your feedback.`}</p><button class="lms-btn" onclick="stuGo('home')">Back to home</button>`;
+  }
+  const items=stuRevItems(R);
+  return `${back}<header class="lms-head"><div><h1>${E(title)}</h1><p class="lms-row-m">Peer review ${d.done+1} of ${d.total} · anonymous both ways</p></div></header>
+  <p class="lms-note">You won’t see whose work this is, and they won’t see who reviewed them. Score each criterion the way your teacher would, then add feedback that helps.</p>
+  ${items.map(it=>{const k=it.key,q=it.q,ans=d.answers[k],sc=R.scores[k]||{};
+    return `<section class="lms-rv"><div class="lms-rv-q">${renderStem(q.stem)||'(No question text)'}</div>
+    <div class="lms-rv-a">${ans&&String(ans).trim()?E(String(ans)).replace(/\n/g,'<br>'):'<i>No response.</i>'}</div>
+    ${(q.rubric&&q.rubric.length)?q.rubric.map((row,ri)=>{const pts=[];for(let p=0;p<=row.maxPoints;p+=q.rubricHalf?.5:1)pts.push(Math.round(p*2)/2);
+      return `<div class="rubric-row"><div style="flex:1"><div style="font-weight:700;font-size:14px">${E(row.criterion)}</div>${row.description?`<div class="lms-row-m">${E(row.description)}</div>`:''}</div><div class="rubric-pts-btns">${pts.map(p=>`<button type="button" class="rubric-pt-btn ${sc[ri]===p?'selected':''}" onclick="stuRevScore('${E(k)}',${ri},${p})">${p}</button>`).join('')}</div><div class="lms-rv-t">${sc[ri]!==undefined?sc[ri]:'—'}/${row.maxPoints}</div></div>`;}).join(''):'<p class="lms-row-m">No rubric for this question. Leave written feedback below.</p>'}
+    <label class="lms-rv-l">Feedback <span class="lms-row-m">(optional)</span></label><textarea class="form-control" rows="3" placeholder="What worked? What would make it stronger?" oninput="stuRevFb('${E(k)}',this.value)">${E(R.fb[k]||'')}</textarea></section>`;}).join('')}
+  <div class="lms-rv-bar"><button class="lms-btn" id="stu-rv-go" onclick="stuRevSubmit()">Submit review</button><span class="lms-row-m" id="stu-rv-st"></span></div>`;
+};
+let _revT=null;
+function stuRevSave(complete){
+  const R=STU.rev;if(!R||!R.pairId)return Promise.resolve(null);
+  return apiPost({action:'studentPeerSave',sessionId:R.sid,pairId:R.pairId,rubricScores:R.scores,feedback:R.fb,complete:!!complete});
+}
+function stuRevQueue(){clearTimeout(_revT);const el=document.getElementById('stu-rv-st');if(el)el.textContent='Saving…';_revT=setTimeout(async()=>{const r=await stuRevSave(false);const e=document.getElementById('stu-rv-st');if(e)e.textContent=r&&r.ok?'Draft saved':'Not saved yet — will retry';},900);}
+window.stuRevScore=function(k,ri,v){const R=STU.rev;R.scores[k]=R.scores[k]||{};if(R.scores[k][ri]===v)delete R.scores[k][ri];else R.scores[k][ri]=v;const y=window.scrollY;stuPaint();window.scrollTo(0,y);stuRevQueue();};
+window.stuRevFb=function(k,v){STU.rev.fb[k]=v;stuRevQueue();};
+window.stuRevSubmit=async function(){
+  const R=STU.rev;
+  for(const it of stuRevItems(R)){const rb=it.q.rubric;if(!rb||!rb.length)continue;const sc=R.scores[it.key]||{};if(!rb.every((_,i)=>sc[i]!==undefined)){toast('Score every criterion before submitting.','error');return;}}
+  const b=document.getElementById('stu-rv-go');if(b){b.disabled=true;b.textContent='Submitting…';}
+  clearTimeout(_revT);
+  const r=await stuRevSave(true);
+  if(!r||!r.ok){if(b){b.disabled=false;b.textContent='Submit review';}toast((r&&r.error)||'Could not submit. Try again.','error');return;}
+  toast('Review submitted. Thank you.','success');
+  try{await stuRefresh();}catch(e){}
+  window.scrollTo(0,0);stuReviewLoad();
+};
 </script>
 
 <script id="ea-motion">

@@ -626,6 +626,72 @@ async function classesForTeacher(user) {
   }
   return out;
 }
+/* ── peer review for student accounts ── */
+function peerSafeSession(ps, subId) {
+  // what a reviewee may see: their own completed, un-hidden reviews — never who wrote them
+  const pairs = (ps.pairs || []).filter((p) => p.revieweeSubId === subId && p.status === 'completed' && !p.hiddenFromStudent)
+    .map((p) => ({ id: p.id, revieweeSubId: p.revieweeSubId, status: 'completed', rubricScores: p.rubricScores || {}, feedback: p.feedback || {}, hiddenFromStudent: false, completedAt: p.completedAt || null }));
+  return pairs.length ? { id: ps.id, testId: ps.testId, essayKeys: ps.essayKeys || [], status: ps.status, pairs } : null;
+}
+async function peerSummary(s, subs) {
+  const ids = new Set(subs.map((x) => x.id));
+  const sessions = (await readAll(P.peer)).vals.filter(Boolean);
+  const tasks = [], feedback = {};
+  for (const ps of sessions) {
+    const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId));
+    if (mine.length) {
+      const done = mine.filter((p) => p.status === 'completed').length;
+      if (ps.status === 'active' || done === mine.length) {
+        const r = okId(ps.testId) ? await getJ(P.test + ps.testId) : null;
+        tasks.push({ sessionId: ps.id, testId: ps.testId, title: (r && r.data && r.data.title) || 'Peer review', status: ps.status, total: mine.length, done, createdAt: ps.createdAt || null });
+      }
+    }
+    for (const p of ps.pairs || []) if (ids.has(p.revieweeSubId) && p.status === 'completed' && !p.hiddenFromStudent) feedback[p.revieweeSubId] = (feedback[p.revieweeSubId] || 0) + 1;
+  }
+  return { tasks, feedback };
+}
+async function mySubIds(s) {
+  const keys = await listKeys(SS_PREFIX + s.key + '/');
+  return new Set((await mapLimit(keys, 12, getJ)).filter(Boolean).map((i) => i.id));
+}
+async function studentPeerTask(body, s) {
+  const ps = okId(body.sessionId) ? await getJ(P.peer + body.sessionId) : null;
+  if (!ps) return bad('That peer review no longer exists.', 404);
+  const ids = await mySubIds(s);
+  const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId));
+  if (!mine.length) return bad('You are not part of this peer review.', 403);
+  const pending = mine.filter((p) => p.status !== 'completed');
+  const pair = pending.find((p) => p.id === body.pairId) || pending[0] || null;
+  const r = okId(ps.testId) ? await getJ(P.test + ps.testId) : null;
+  const out = { ok: true, session: { id: ps.id, status: ps.status, essayKeys: ps.essayKeys || [] }, total: mine.length, done: mine.length - pending.length, test: r ? unwrapTest(r) : null, pair: null, answers: {} };
+  if (pair && ps.status === 'active') {
+    out.pair = { id: pair.id, rubricScores: pair.rubricScores || {}, feedback: pair.feedback || {} };
+    const sub = await findSub(pair.revieweeSubId);
+    for (const k of ps.essayKeys || []) if (sub && sub.answers && sub.answers[k] !== undefined) out.answers[k] = sub.answers[k];
+  }
+  return reply(200, out);
+}
+async function studentPeerSave(body, s) {
+  const key = P.peer + String(body.sessionId || '');
+  const ps = okId(body.sessionId) ? await getJ(key) : null;
+  if (!ps) return bad('That peer review no longer exists.', 404);
+  if (ps.status !== 'active') return bad('This peer review is closed.', 409);
+  const ids = await mySubIds(s);
+  const pair = (ps.pairs || []).find((p) => p.id === body.pairId && ids.has(p.reviewerSubId));
+  if (!pair) return bad('That review is not assigned to you.', 403);
+  if (pair.status === 'completed') return reply(200, { ok: true, already: true });
+  const sc = body.rubricScores && typeof body.rubricScores === 'object' ? body.rubricScores : {};
+  const fb = body.feedback && typeof body.feedback === 'object' ? body.feedback : {};
+  const cs = {}, cf = {};
+  for (const k of Object.keys(sc).slice(0, 50)) { cs[k] = {}; for (const ri of Object.keys(sc[k] || {}).slice(0, 30)) { const v = Number(sc[k][ri]); if (Number.isFinite(v) && v >= 0 && v <= 1000) cs[k][ri] = v; } }
+  for (const k of Object.keys(fb).slice(0, 50)) cf[k] = String(fb[k] || '').slice(0, 4000);
+  pair.rubricScores = cs; pair.feedback = cf;
+  if (!pair.startedAt) pair.startedAt = new Date().toISOString();
+  if (body.complete) { pair.status = 'completed'; pair.completedAt = new Date().toISOString(); }
+  await putJ(key, ps);
+  const mine = ps.pairs.filter((p) => ids.has(p.reviewerSubId));
+  return reply(200, { ok: true, total: mine.length, done: mine.filter((p) => p.status === 'completed').length });
+}
 const testMax = (t) => ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
 async function studentHome(s) {
   const classes = (await allClasses()).filter((c) => !c.archived || (c.students || []).some((x) => x.key === s.key));
@@ -652,7 +718,8 @@ async function studentHome(s) {
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
   const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: c.materials || [], topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
-  return { student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
+  const peer = await peerSummary(s, subs);
+  return { peer, student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
 async function studentAction(body, student) {
   const a = body.action;
@@ -681,10 +748,12 @@ async function studentAction(body, student) {
     await putJ(S_PREFIX + s.key, s);
     return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s) });
   }
-  const SA = ['studentMe', 'studentChangePassword', 'joinClass', 'respondInvite', 'leaveClass'];
+  const SA = ['studentPeerTask', 'studentPeerSave', 'studentMe', 'studentChangePassword', 'joinClass', 'respondInvite', 'leaveClass'];
   if (!SA.includes(a)) return null;
   if (!student) return STU_ERR();
   if (a === 'studentMe') return reply(200, await studentHome(student));
+  if (a === 'studentPeerTask') return studentPeerTask(body, student);
+  if (a === 'studentPeerSave') return studentPeerSave(body, student);
   if (a === 'studentChangePassword') {
     if (String(body.newPassword || '').length < 6) return bad('Choose a password with at least 6 characters.');
     if (!sameStr(hashPw(body.oldPassword || '', student.salt), student.hash)) return bad('Current password is wrong.', 403);
@@ -907,7 +976,8 @@ async function handleGet(q, user, student) {
     const asg = okId(sub.assignmentId) ? await getJ(P.asg + sub.assignmentId) : null;
     const tid = asg ? asg.testId : sub.testId;
     const test = okId(tid) ? await getJ(P.test + tid) : null;
-    return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: asg ? [asg] : [], submissions: [sub], peerSessions: [], teachers: await teachersForStudent(asg, test, [sub]), scoped: 'results' });
+    const peers = (await readAll(P.peer)).vals.filter(Boolean).map((ps) => peerSafeSession(ps, sub.id)).filter(Boolean);
+    return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: asg ? [asg] : [], submissions: [sub], peerSessions: peers, teachers: await teachersForStudent(asg, test, [sub]), scoped: 'results' });
   }
   if (q.part === 'core') return reply(200, { ...(await readCore(user)), serverTime: new Date().toISOString() });
   if (q.part === 'subs') {
