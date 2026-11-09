@@ -1338,6 +1338,12 @@ button:disabled,.btn:disabled,.btn[disabled]{opacity:.55;color:var(--ink-soft)}
 /* night mode: status colours become light, so type sitting on them goes dark */
 body.fx-ui-dark :is([style*="background:var(--rust)"],[style*="background:var(--sage)"],[style*="background:var(--ochre)"],[style*="background:var(--slate-blue)"],[style*="background:var(--burgundy)"],[style*="background:var(--gold)"]){color:#0A1517!important}
 body.fx-ui-dark :is([style*="background:var(--rust)"],[style*="background:var(--sage)"],[style*="background:var(--ochre)"],[style*="background:var(--slate-blue)"],[style*="background:var(--burgundy)"],[style*="background:var(--gold)"]) *{color:inherit!important}
+/* toasts: always a solid, high-contrast plate in either mode */
+.toast,.toast-info{background:#0F2D33!important;color:#F2F6F5!important;border:1px solid #2B5560!important;border-left:5px solid #4C78FF!important}
+.toast-success{background:#0F2D33!important;color:#F2F6F5!important;border-left:5px solid #5FBF8F!important}
+.toast-error{background:#3A1410!important;color:#FFE3DD!important;border-left:5px solid #FF7A66!important}
+.toast *{color:inherit!important}
+#ea-boot,#ea-boot *{color:#F2F6F5!important}
 </style>
 </head>
 <body>
