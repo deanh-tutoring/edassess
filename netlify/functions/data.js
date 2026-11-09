@@ -960,6 +960,13 @@ async function handleGet(q, user, student) {
     }
     return reply(200, out);
   }
+  if (q.asg) {
+    // lightweight read of just the assignment record (used to confirm a save without downloading every submission)
+    if (!user) return AUTH_ERR();
+    if (!okId(q.asg)) return bad('Bad id.');
+    const one = await getJ(P.asg + q.asg);
+    return reply(200, { assignments: one ? [one] : [] });
+  }
   if (q.exam) {
     if (!okId(q.exam)) return bad('Bad id.');
     const asg = await getJ(P.asg + q.exam);

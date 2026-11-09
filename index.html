@@ -124,7 +124,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 /* ── TOAST ── */
 #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .toast{padding:12px 18px;border-radius:var(--r);font-size:12px;letter-spacing:.05em;font-weight:600;text-transform:uppercase;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;min-width:240px;animation:toastIn .25s ease;max-width:340px;border:1px solid;font-family:var(--f-body)}
-.toast-success{background:var(--fill);color:var(--paper);border-color:var(--line-strong)}
+.toast-success{background:var(--fill);color:var(--on-fill);border-color:var(--line-strong)}
 .toast-error{background:var(--rust-pale);color:var(--rust);border-color:var(--rust)}
 .toast-info{background:var(--slate-pale);color:var(--slate-blue);border-color:var(--slate-blue)}
 @keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
@@ -161,7 +161,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 .save-status-badge.error .save-status-dot{background:#E5637F;animation:pulse .8s infinite}
 .save-status-badge:hover{filter:brightness(1.15)}
 .sidebar-logo{display:flex;flex-direction:column;gap:2px}
-.sidebar-logotype{font-family:var(--f-body);font-size:24px;color:var(--paper);letter-spacing:-.02em;font-weight:300;line-height:1}
+.sidebar-logotype{font-family:var(--f-body);font-size:24px;color:var(--on-fill);letter-spacing:-.02em;font-weight:300;line-height:1}
 .sidebar-logomark{font-family:var(--f-body);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:2px}
 .sidebar-nav{flex:1;padding:16px 10px;overflow-y:auto}
 .nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28);padding:4px 8px 8px;margin-top:14px}
@@ -208,7 +208,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 .question-card:hover{border-color:var(--border-dark)}
 .question-card.active{border-color:var(--rust);box-shadow:0 0 0 3px rgba(220,38,38,.08)}
 .question-card-header{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
-.question-number{width:24px;height:24px;border-radius:var(--r);background:var(--fill);color:var(--paper);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--f-body)}
+.question-number{width:24px;height:24px;border-radius:var(--r);background:var(--fill);color:var(--on-fill);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--f-body)}
 .question-card-body{padding:0 14px 14px}
 .type-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;background:var(--paper-aged);color:var(--ink-soft);border:1px solid var(--border);font-family:var(--f-body)}
 .skill-chip{cursor:pointer;user-select:none;padding:6px 12px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:var(--paper);color:var(--ink-soft);transition:all .15s;font-family:var(--f-body)}
@@ -432,7 +432,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 .status-not-started{background:var(--paper-aged);color:var(--ink-soft);border:1px solid var(--border)}
 
 /* ── LOCK OVERLAY ── */
-#lock-overlay{position:fixed;inset:0;background:var(--fill);color:var(--paper);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+#lock-overlay{position:fixed;inset:0;background:var(--fill);color:var(--on-fill);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
 #lock-overlay.hidden{display:none!important}
 
 /* ── DECORATIVE RULE ── */
@@ -441,7 +441,7 @@ textarea.form-control{resize:vertical;min-height:80px}
 /* ── LIVE MONITOR ASSIGNMENT TABS ── */
 .live-assignment-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--cream);transition:all .15s;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:var(--f-body);color:var(--ink)}
 .live-assignment-btn:hover{border-color:var(--rust);background:var(--rust-pale);color:var(--rust)}
-.live-assignment-btn.active{border-color:var(--rust);background:var(--rust);color:var(--paper)}
+.live-assignment-btn.active{border-color:var(--rust);background:var(--rust);color:var(--on-pop)}
 
 @media print{#sidebar,#topbar,.topbar,#toast-container{display:none!important}#main{overflow:visible}}
 
@@ -452,7 +452,7 @@ textarea.form-control{resize:vertical;min-height:80px}
    scrollable stack. Everything below only kicks in at or under
    the given breakpoint — desktop layout is untouched.
 ══════════════════════════════════════════════════════════ */
-#mobile-menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:1002;width:38px;height:38px;border-radius:6px;background:var(--fill);color:var(--paper);align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:var(--shadow)}
+#mobile-menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:1002;width:38px;height:38px;border-radius:6px;background:var(--fill);color:var(--on-fill);align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:var(--shadow)}
 #sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(22,24,29,.5);z-index:1000}
 #sidebar-backdrop.show{display:block}
 
@@ -647,7 +647,7 @@ textarea.form-control{resize:vertical;min-height:80px}
   --r:6px;--r-lg:10px;--r-xl:14px;
 }
 body{font-family:var(--f-body);font-size:14.5px;letter-spacing:0;color:var(--ink);
-  background-color:var(--paper);
+  background-color:var(--on-fill);
   background-image:linear-gradient(rgba(20,26,46,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(20,26,46,.045) 1px,transparent 1px);
   background-size:28px 28px;background-attachment:fixed}
 h1,h2,h3,h4,h5,.serif{font-family:var(--f-display);font-weight:400;letter-spacing:-.005em}
@@ -1239,7 +1239,7 @@ html{scroll-behavior:smooth}
   --shadow-sm:none;--shadow:0 0 0 1px rgba(12,36,40,.04);--shadow-lg:0 24px 60px -24px rgba(7,26,29,.35);
   --plate:rgba(255,255,255,.82);--plate-hi:#FFFFFF;--modal-bg:#FFFFFF;--in-bg:#FFFFFF;--hover-bg:rgba(12,36,40,.05);--row-hover:rgba(47,91,234,.06);
   --topbar-bg:linear-gradient(180deg,rgba(255,255,255,.92),rgba(242,246,245,.7));--ph:#8AA0A4;
-  --scroll-track:#E4EDEC;--scroll-thumb:#B7CBCB;--backdrop:rgba(7,26,29,.5);--lantern-op:.45;
+  --on-fill:#F2F6F5;--on-pop:#fff;--glass:rgba(255,255,255,.92);--scroll-track:#E4EDEC;--scroll-thumb:#B7CBCB;--backdrop:rgba(7,26,29,.5);--lantern-op:.45;
   --page-bg:radial-gradient(120% 60% at 50% -12%,#FFFFFF 0%,#EDF4F3 46%,#E1EBEA 100%);
   --ease:cubic-bezier(.19,.86,.22,1);--spring:cubic-bezier(.34,1.32,.52,1)
 }
@@ -1257,7 +1257,7 @@ body.fx-ui-dark{
   --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7);
   --plate:rgba(7,26,29,.78);--plate-hi:rgba(12,36,40,.9);--modal-bg:#0B2125;--in-bg:rgba(242,246,245,.04);--hover-bg:rgba(242,246,245,.07);--row-hover:rgba(76,120,255,.07);
   --topbar-bg:linear-gradient(180deg,rgba(7,26,29,.9),rgba(7,26,29,.5));--ph:#6F878C;
-  --scroll-track:#0A2024;--scroll-thumb:#24474D;--backdrop:rgba(3,10,12,.72);--lantern-op:.7;
+  --on-fill:#F2F6F5;--on-pop:#0A1517;--glass:rgba(7,26,29,.92);--scroll-track:#0A2024;--scroll-thumb:#24474D;--backdrop:rgba(3,10,12,.72);--lantern-op:.7;
   --page-bg:radial-gradient(120% 70% at 50% -10%,#14383F 0%,#0A2227 42%,#061418 100%)
 }
 /* the test-taking screen stays a light page: paper is the right surface for reading under time pressure */
@@ -1333,6 +1333,11 @@ button:disabled,.btn:disabled,.btn[disabled]{opacity:.55;color:var(--ink-soft)}
 .btn-primary:disabled,.btn-primary[disabled]{background:#1B3F45;border-color:#1B3F45;color:#86A0A5;box-shadow:none;transform:none}
 [style*="Assigned by"],.fx-assigned{color:#fff}
 #student-wrapper [style*="position:absolute"][style*="bottom"]{color:#fff}
+#fx-credit,#fx-credit *{color:#fff!important}
+#fx-me-role{color:rgba(255,255,255,.64)!important}
+/* night mode: status colours become light, so type sitting on them goes dark */
+body.fx-ui-dark :is([style*="background:var(--rust)"],[style*="background:var(--sage)"],[style*="background:var(--ochre)"],[style*="background:var(--slate-blue)"],[style*="background:var(--burgundy)"],[style*="background:var(--gold)"]){color:#0A1517!important}
+body.fx-ui-dark :is([style*="background:var(--rust)"],[style*="background:var(--sage)"],[style*="background:var(--ochre)"],[style*="background:var(--slate-blue)"],[style*="background:var(--burgundy)"],[style*="background:var(--gold)"]) *{color:inherit!important}
 </style>
 </head>
 <body>
@@ -1346,7 +1351,7 @@ button:disabled,.btn:disabled,.btn[disabled]{opacity:.55;color:var(--ink-soft)}
     <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 20px;display:block">
       <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
     </svg>
-    <h2 style="font-family:var(--f-display);font-size:36px;margin-bottom:10px;color:var(--paper);font-weight:300">Secure Assessment Mode</h2>
+    <h2 style="font-family:var(--f-display);font-size:36px;margin-bottom:10px;color:var(--on-fill);font-weight:300">Secure Assessment Mode</h2>
     <div style="width:60px;height:1px;background:rgba(255,255,255,.2);margin:16px auto"></div>
     <p id="lock-message" style="color:rgba(255,255,255,.6);max-width:420px;font-size:14px;margin:16px auto 28px;line-height:1.7;font-family:var(--f-body);font-size:17px">This assessment is locked. You must remain in full-screen mode. Click below to return.</p>
     <div id="lock-strikes" style="display:none;background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.4);border-radius:4px;padding:12px 20px;margin-bottom:20px;font-size:12px;color:#FCA5A5;letter-spacing:.06em"></div>
@@ -1999,7 +2004,8 @@ async function eaVerify(kind,id){
     return {ok:true};
   }
   if(kind==='assignments'){
-    const r=await eaGet({exam:id},15000);
+    let r=await eaGet({asg:id},15000);
+    if(!r||!r.assignments||!r.assignments.length){await new Promise(z=>setTimeout(z,700));r=await eaGet({asg:id},15000);}   // one retry for a slow read
     if(!r||!r.assignments||!r.assignments.length) return {ok:false,error:'The server did not return the assignment after saving.'};
     return {ok:true};
   }
@@ -4961,7 +4967,7 @@ function renderPeerReviewNameEntry(ps,t){
       <div class="form-hint" style="margin-top:6px">Example: Dean H</div>
       <div id="peer-name-error" class="hidden" style="margin-top:8px;background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--rust);letter-spacing:.04em"></div>
     </div>
-    <button style="width:100%;padding:13px;background:var(--fill);color:var(--paper);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body);transition:background .15s" onclick="submitPeerReviewName('${ps.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
+    <button style="width:100%;padding:13px;background:var(--fill);color:var(--on-fill);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body);transition:background .15s" onclick="submitPeerReviewName('${ps.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
       Continue →
     </button>
   </div>
@@ -5027,7 +5033,7 @@ function renderPeerReviewCard(ps,pair,doneCount,totalCount){
   const essayItems=ps.essayKeys.map(key=>fqs.find(f=>f.key===key)).filter(Boolean);
   const pct=totalCount?Math.round(doneCount/totalCount*100):0;
   return `<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
-    <div style="background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5">
+    <div style="background:var(--glass);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5">
       <div style="font-family:var(--f-body);font-size:20px;font-weight:300">${t?t.title:'Peer Review'}</div>
       <div style="font-size:11px;opacity:.6;letter-spacing:.08em;text-transform:uppercase">Review ${doneCount+1} of ${totalCount}</div>
     </div>
@@ -5682,7 +5688,7 @@ function renderNameEntry(a,t){
     ${a.locked?`<div style="background:var(--ochre-pale);border:1px solid var(--ochre);border-radius:var(--r);padding:12px;font-size:12px;color:var(--ochre);margin-bottom:16px;letter-spacing:.04em">
       <strong>⚠ Secure Mode:</strong> This exam will enter fullscreen. ${a.maxStrikes===0?'Exiting fullscreen will show a warning but will not auto-submit your exam.':`Exiting fullscreen ${a.maxStrikes||2} time${(a.maxStrikes||2)!==1?'s':''} will auto-submit your exam.`}
     </div>`:''}
-    <button style="width:100%;padding:13px;background:var(--fill);color:var(--paper);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body);transition:background .15s" onclick="startExam('${a.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
+    <button style="width:100%;padding:13px;background:var(--fill);color:var(--on-fill);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body);transition:background .15s" onclick="startExam('${a.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
       Begin Exam →
     </button>
   </div>
@@ -6163,7 +6169,7 @@ function ensureDesmosPanel(){
   panel.style.cssText=`position:fixed;top:70px;left:calc(50% - 220px);width:440px;height:520px;min-width:300px;min-height:260px;max-width:96vw;max-height:90vh;background:var(--cream);border:1px solid var(--border-dark);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);z-index:5000;display:none;flex-direction:column;overflow:hidden;resize:both;`;
   panel.dataset.open='false';
   panel.innerHTML=`
-    <div id="desmos-handle" style="background:var(--fill);color:var(--paper);padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:move;flex-shrink:0;user-select:none">
+    <div id="desmos-handle" style="background:var(--fill);color:var(--on-fill);padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:move;flex-shrink:0;user-select:none">
       <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M4 4h16v16H4zM9 9l6 6M15 9l-6 6"/></svg>
         Desmos Graphing Calculator
@@ -6345,7 +6351,7 @@ function ensureReferencePanel(){
     bodyHtml=`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-family:var(--f-body);font-style:italic">No reference material provided</div>`;
   }
   panel.innerHTML=`
-    <div id="reference-handle" style="background:var(--fill);color:var(--paper);padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:move;flex-shrink:0;user-select:none">
+    <div id="reference-handle" style="background:var(--fill);color:var(--on-fill);padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:move;flex-shrink:0;user-select:none">
       <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13" style="flex-shrink:0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
         Reference Material${rm&&rm.name?' — '+rm.name:''}
@@ -6576,7 +6582,7 @@ function renderStudentExam(){
       </div>
       <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:11px;color:var(--ink-soft);letter-spacing:.04em">${answeredCount}/${fqs.length} answered${sxContinueLater(t,a).allowed&&(!SX||sxContinueLater(t,a).when==='anytime')?` · <a href="#" onclick="event.preventDefault();sxSaveAndExit()" style="color:var(--accent,#2A52D9);font-weight:700">Save &amp; exit</a>`:''}</span>
-        <button onclick="showCheckWork()" style="background:var(--fill);color:var(--paper);border:none;border-radius:var(--r);padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body)">${SX?sxFinishLabel(SX):'Submit Exam'}</button>
+        <button onclick="showCheckWork()" style="background:var(--fill);color:var(--on-fill);border:none;border-radius:var(--r);padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body)">${SX?sxFinishLabel(SX):'Submit Exam'}</button>
       </div>
     </div>
   </div>`;
@@ -8084,7 +8090,7 @@ function loadStudentResults(sid){
     </div>`;
   });
   sw.innerHTML=`<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
-    <div style="background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between">
+    <div style="background:var(--glass);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between">
       <div style="font-family:var(--f-body);font-size:22px;font-weight:300">${t.title}</div>
       <div style="font-size:11px;opacity:.5;letter-spacing:.08em;text-transform:uppercase">Score Report — ${s.studentName}</div>
     </div>
@@ -8092,7 +8098,7 @@ function loadStudentResults(sid){
       ${t.satSubject?renderQBankBanner():''}
       <div style="background:var(--cream);border-radius:var(--r-lg);padding:32px;margin-bottom:28px;display:flex;gap:28px;align-items:center;border:1px solid var(--border)">
         <div style="width:100px;height:100px;border-radius:var(--r);background:${scoreColor(totalPts>0?(s.score||0)/totalPts:0)};display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0">
-          <div style="font-size:32px;font-weight:300;color:var(--ink);line-height:1;font-family:var(--f-body)">${pct}%</div>
+          <div style="font-size:32px;font-weight:300;color:#fff;line-height:1;font-family:var(--f-body)">${pct}%</div>
         </div>
         <div>
           <div style="font-size:11px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase">${s.studentName} · ${t.title}</div>
@@ -8131,7 +8137,7 @@ function loadPracticePortal(name){
   const mathMap=computeSkillStats(mathSubs,'sat-math');
   const rwMap=computeSkillStats(rwSubs,'sat-rw');
   sw.innerHTML=`<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
-    <div style="background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between">
+    <div style="background:var(--glass);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between">
       <div style="font-family:var(--f-body);font-size:22px;font-weight:300">SAT Practice Portal</div>
       <div style="font-size:11px;opacity:.5;letter-spacing:.08em;text-transform:uppercase">${name}</div>
     </div>
@@ -9807,14 +9813,14 @@ function sxGradeRows(s,t,fqs,rowFn){
 }
 function sxResultSectionHeader(s,t,sid){
   const G=sxGrading(t);const r=(sxComputeGrade(t,s).sections.find(x=>x.id===sid))||{};
-  return `<div style="margin:26px 0 12px;padding:10px 16px;border-radius:10px;background:var(--fill);color:var(--paper);display:flex;justify-content:space-between;font-size:13px;font-weight:700;letter-spacing:.04em"><span>${sxE(r.title||'Section')}</span>${G.showSectionScores?`<span style="font-weight:500">${r.points}/${r.max} pts · ${r.percent}%</span>`:''}</div>`;
+  return `<div style="margin:26px 0 12px;padding:10px 16px;border-radius:10px;background:var(--fill);color:var(--on-fill);display:flex;justify-content:space-between;font-size:13px;font-weight:700;letter-spacing:.04em"><span>${sxE(r.title||'Section')}</span>${G.showSectionScores?`<span style="font-weight:500">${r.points}/${r.max} pts · ${r.percent}%</span>`:''}</div>`;
 }
 // small block for the dark "Submitted." screen
 function sxSubmittedExtras(sub,t){
   if(!sxUsesEngine(t)) return '';
   const G=sxGrading(t);const g=sxComputeGrade(t,sub);const out=[];
-  if(g.letter&&G.showLetter) out.push(`<span style="font-size:22px;color:var(--paper);margin-right:14px">Grade ${sxE(g.letter)}</span>`);
-  if(g.scaled!==null&&G.showScaled) out.push(`<span style="font-size:22px;color:var(--paper);margin-right:14px">Scaled ${g.scaled}</span>`);
+  if(g.letter&&G.showLetter) out.push(`<span style="font-size:22px;color:var(--on-fill);margin-right:14px">Grade ${sxE(g.letter)}</span>`);
+  if(g.scaled!==null&&G.showScaled) out.push(`<span style="font-size:22px;color:var(--on-fill);margin-right:14px">Scaled ${g.scaled}</span>`);
   if(g.passed!==null&&G.showPassFail) out.push(`<span style="font-size:15px;color:${g.passed?'#86EFAC':'#FCA5A5'}">${g.passed?'✓ Passing':'✗ Not passing'}</span>`);
   let secs='';
   if(sxOn(t)&&G.showSectionScores) secs=`<div style="margin-top:14px;text-align:left;font-size:13px;color:rgba(255,255,255,.65)">${g.sections.map(r=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid rgba(255,255,255,.08)"><span>${sxE(r.title)}</span><span>${r.points}/${r.max}</span></div>`).join('')}</div>`;
@@ -11035,7 +11041,7 @@ document.addEventListener('click',e=>{
 const fxAsgUi={live:{f:'all',q:'',s:'new',c:'all',g:'none',n:25},grade:{f:'grade',q:'',s:'grade',c:'all',g:'none',n:25},an:{f:'all',q:'',s:'new',c:'all',g:'none',n:25}};
 fxAsgUi.grade.f='all';
 const fxGr={open:null},fxAn={open:null};
-const FXA_ST={notopen:['Not open','#6B7389'],progress:['In progress','#2A52D9'],grading:['In grading','#C98A00'],done:['Done','#10885F']};
+const FXA_ST={notopen:['Not open','#6B7389'],progress:['In progress','#2A52D9'],grading:['In grading','#9A6700'],done:['Done','#10885F']};
 const FXA_COL=['#141A2E','#D7263D','#2A52D9','#10885F','#C98A00','#B4236B','#0F7C8F','#6A3FD1'];
 function fxAsgInfo(a){
   const t=APP.tests.find(x=>x.id===a.testId)||{title:a.name||'Untitled',questions:[]};
