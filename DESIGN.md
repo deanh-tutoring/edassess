@@ -23,7 +23,8 @@ Source: the app's existing tokens (`--ink`, `--paper`, `--hl`, Hanken Grotesk). 
 ## Accent update
 Accent is now cobalt `#2F5BEA` (hover `#2346C4`), with `#E3EAFF` as the only tint for hovers/notes and `#CBD9FF` for title markers. Solid accent fills carry white type. Status tags are square-cornered outlines, never pills. Motion: ease `cubic-bezier(.25,.8,.25,1)`, 0.45–0.7s, transform/opacity only; highlighted areas get a slow white sheen on hover; disabled under prefers-reduced-motion.
 
-## Lantern River theme (supersedes the light theme above)
-Inspired by the Lantern River template: a night river with floating lanterns. Surfaces are night-teal (`#071A1D` → `#0D272C` plates, hairline `rgba(242,246,245,.11)` borders); text is pearl `#F2F6F5`. One accent only: lantern-glow cobalt `#4C78FF` (hover `#3A5FE0`, tint `rgba(76,120,255,.16)`). Swap `--accent`/`--hl` in the final `:root` block to re-colour everything (the original template used amber).
+## Lantern River theme
+Inspired by the Lantern River template: a night river with floating lanterns. **Light is the default** — moonlit pearl paper (`#F2F6F5`), white plates, night-teal ink (`#0C2428`), hairline borders. The sidebar and the login/name-entry art stay night-teal in both modes. Night mode (Appearance → Dark mode, or "Night mode" in the student menu) swaps the tokens under `body.fx-ui-dark`.
+One accent only: lantern-glow cobalt (`#2F5BEA` light / `#4C78FF` night). Swap `--accent`/`--hl` in the first `:root` block to re-colour everything (the template used amber).
 Type: Cormorant Garamond for display headings and numerals (lining figures), Albert Sans for UI; both embedded as woff2.
-Signature motion: a nav glow that glides between links on a spring, slow lanterns drifting up behind the app (canvas, off under prefers-reduced-motion and when the tab is hidden), a "Lighting the lanterns" boot screen, a small lamp beside the wordmark. The test-taking screen (`#student-page`) deliberately stays a light paper page.
+Signature motion: a nav glow that glides between links on a spring, slow lanterns drifting behind the app (canvas; off under prefers-reduced-motion and when the tab is hidden), a "Lighting the lanterns" boot screen, a small lamp beside the wordmark.
