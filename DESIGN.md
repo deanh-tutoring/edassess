@@ -29,5 +29,5 @@ One accent only: lantern-glow cobalt (`#2F5BEA` light / `#4C78FF` night). Swap `
 Type: Cormorant Garamond for display headings and numerals (lining figures), Albert Sans for UI; both embedded as woff2.
 Signature motion: a nav glow that glides between links on a spring, slow lanterns drifting behind the app (canvas; off under prefers-reduced-motion and when the tab is hidden), a "Lighting the lanterns" boot screen, a small lamp beside the wordmark.
 
-## Calm layer
-Minimal by default: no decorative motion or lanterns, flat surfaces with hairline borders, light sidebar, status shown as plain text (not pills), tabs as underlines, explanatory helper copy removed. Add nothing that is not needed to act.
+## Restraint
+Keep the Lantern River look (glow, gradients, soft motion). Remove only what does not help: helper copy, redundant pills and labels.
