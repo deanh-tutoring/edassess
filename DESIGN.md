@@ -31,3 +31,6 @@ Signature motion: a nav glow that glides between links on a spring, slow lantern
 
 ## Restraint
 Keep the Lantern River look (glow, gradients, soft motion). Remove only what does not help: helper copy, redundant pills and labels.
+
+## Exam shell (AP Classroom style)
+Navy top bar with red rule; timer + Hide live only inside the bar and toggle in place. Tools: Highlights & Notes, Line Reader (spotlight strip: drag, resize, Alt+arrows, dim, follow-mouse), Notepad (per-question + whole test, private, saved on device), Text size. Shortcuts: arrows navigate, A-D select, N notepad, Esc closes line reader.
