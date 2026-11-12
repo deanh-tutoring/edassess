@@ -1,141 +1,165 @@
-# EdAssess — Deployment Notes
+<div align="center">
 
-EdAssess is a single static page (`index.html`) plus one serverless
-function (`netlify/functions/data.js`) that gives it a **shared cloud
-database** using [Netlify Blobs](https://docs.netlify.com/blobs/overview/).
+# EdAssess
 
-## Why this matters
+**Calm, capable assessments and classrooms — from first quiz to final grade.**
 
-Previously all data (tests, assignments, student submissions) lived only
-in `localStorage`, which is private to one browser on one device. That
-meant a test created on the teacher's laptop was invisible to students
-opening the exam link on their own phones/laptops, and student answers
-never made it back to the teacher. This version fixes that: every
-read/write goes through `/.netlify/functions/data`, backed by Netlify
-Blobs, so the teacher dashboard and every student's device share the
-exact same data — fully functional across the internet, not just on
-one machine.
+Build tests, run them live, grade with confidence, and keep every class in one place.<br>
+Students get a focused, AP-style exam room. Teachers get a quiet workspace that gets out of the way.
 
-## Deploying
+[**Open EdAssess →**](https://edassess.netlify.app)
 
-1. Push this folder (or drag-and-drop it) to a new Netlify site.
-2. Netlify auto-detects `netlify.toml`, installs `@netlify/blobs` from
-   `package.json`, and deploys `netlify/functions/data.js` as a
-   serverless function. No environment variables or manual database
-   setup are required — Netlify Blobs provisions automatically per site.
-3. Once deployed, the exam links (`yoursite.netlify.app/?exam=...`) and
-   results links (`yoursite.netlify.app/?results=...`) will work from
-   any device, anywhere — they all hit the same shared backend.
+<br>
 
-## Login
+<img src="docs/01-dashboard.png" alt="The EdAssess teacher dashboard" width="880">
 
-The instructor login is `admin` / `deanh` (unchanged from the original
-app). This is a simple client-side gate, not real authentication —
-suitable for a classroom tool, not for protecting sensitive data.
-
-## What changed in this update
-
-- **Delete student responses**: trash-can buttons were added to the
-  Live Monitor, Grade Center list, the grading modal, the dashboard's
-  recent submissions, and the student control panel. There's also a
-  "delete all responses for this assignment" option in Live Monitor.
-  Deleting asks for confirmation and removes the response from the
-  shared cloud store (not just the local view).
-- **Cloud-backed storage**: `tests`, `assignments`, and `submissions`
-  are now persisted via Netlify Blobs through `data.js`, with
-  `localStorage` kept only as an instant-paint cache / offline fallback.
-  The Live Monitor polls the server every 3 seconds so the teacher sees
-  real submissions from real students on other devices.
-- **Ultra-Lockdown recordings now upload to Google Drive.** See the
-  setup section below — this requires a one-time authorization step.
-
-## Setting up Ultra-Lockdown video uploads to Google Drive
-
-Ultra-Lockdown mode records a heavily compressed webcam/mic feed
-(roughly 1-2MB per minute — low resolution, low frame rate, mono
-audio) and uploads it directly from the student's browser to your
-personal Google Drive, authorized through a Netlify Function that
-keeps your credentials private. If this isn't set up, students are
-instead offered a local download of the recording so nothing is lost.
-
-### 1. Create a Google Cloud project + enable the Drive API
-1. Go to [console.cloud.google.com](https://console.cloud.google.com/), create a project (or reuse one).
-2. Go to **APIs & Services → Library**, search "Google Drive API", click **Enable**.
-
-### 2. Configure the OAuth consent screen
-1. Go to **APIs & Services → OAuth consent screen**.
-2. Choose **External**, fill in the required fields (app name, your email).
-3. Under **Scopes**, you don't need to add anything manually — `drive.file` is requested at authorization time.
-4. Add your own Google account under **Test users**.
-5. Once saved, click **Publish App** to move it from "Testing" to "In production." (This is important — apps left in "Testing" get refresh tokens that expire after 7 days. Production status, even unverified, does not expire this way. You'll just see an "unverified app" warning when you authorize it yourself in the next step — click **Advanced → Go to [app name] (unsafe)**, which is expected and fine since it's your own app and only you're using it.)
-
-### 3. Create an OAuth Client ID
-1. Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**.
-2. Application type: **Desktop app**.
-3. Save the **Client ID** and **Client Secret** it gives you.
-
-### 4. Get a refresh token (run once, on your own computer)
-This repo includes `drive-setup/get-refresh-token.js` — a script that runs
-entirely on your machine. It never sends your credentials anywhere
-except directly to Google.
-
-```
-node drive-setup/get-refresh-token.js
-```
-
-Requires Node.js 18+. It will ask for your Client ID/Secret, print a
-URL to open in your browser, and after you approve access, print out
-three values.
-
-### 5. Set the three values in Netlify
-Go to **Site settings → Environment variables** on your Netlify site and add:
-
-| Key | Value |
-|---|---|
-| `GOOGLE_CLIENT_ID` | from step 3 |
-| `GOOGLE_CLIENT_SECRET` | from step 3 |
-| `GOOGLE_REFRESH_TOKEN` | printed by the script in step 4 |
-
-Redeploy the site (or trigger a redeploy) after adding these. Recordings will then upload into a folder named **"EdAssess Exam Recordings"** in your Drive automatically (created on first use), and a link to each recording appears in the Grade Center next to that student's desk-check/noise-flag review.
-
-If these variables aren't set, Ultra-Lockdown still works — recordings just fall back to a local download for the student instead of uploading.
+</div>
 
 ---
 
-## Multi-section tests, adaptive routing, custom grading, save & continue later
+## What is EdAssess?
 
-Open any test in the builder → **Sections & Grading**. (Or tick *Multiple sections* when creating a test.)
-Turning sections on puts your existing questions in "Section 1" — nothing is renumbered, and existing submissions keep working.
+EdAssess is a complete home for classroom assessment. A teacher writes a test, hands students a short code (or posts it to a class), watches the room fill in real time, grades the results, and shares scores back — without juggling separate tools for quizzes, rosters, materials and grades.
 
-### Sections tab
-Each section has its own **directions** (Markdown), **time limit**, **navigation** (free, or forward-only), **calculator** (inherit / always / never), **reference sheet** on/off, **shuffle** overrides, an optional timed **break** afterwards, and a **branch-only** flag (a module that is skipped unless routing sends a student there). Questions live in a section; use the picker in the question editor to move one (this never changes answer keys).
+It runs in the browser, needs no installation for students, and keeps working through shaky Wi-Fi: answers are saved as you go, and if the connection drops your work stays safe on the device until it can sync.
 
-### Adaptive routing tab
-After a student finishes a section, its rules are checked top-to-bottom; the first match decides the next section, otherwise "otherwise" is used. A rule reads *this section*, *overall so far*, or any earlier section's **% correct / points / questions correct**, and sends the student to a section, the next section, or the end. The tab includes a flow map, validation, and a **path simulator** (drag a score, see where a student lands).
-- Routing scores count **auto-graded** questions only (MC, multi-select, short answer) — essays can't be graded in time.
-- A student never takes a section twice; a route back to a taken section ends the test. Finished sections are locked so routing can't be gamed.
+**It's designed around three ideas**
 
-### Grading tab
-- **Total points** (sum of sections taken) or **Weighted by section** (each section's % × its weight, normalized over the sections the student actually took, reported out of a total you choose).
-- Per-section: counts toward grade (off = practice/ungraded), weight, **credit range** (e.g. easy module 0–70%, hard module 40–100%), **minimum % to pass**.
-- Passing score, letter-grade scale, scaled score (e.g. 200–800), what students see, and a **what-if calculator** that uses the same math as real grading.
-- Saving offers to **re-score existing submissions**; manual essay grades are never overwritten.
-- Sections a student was never routed to are excluded everywhere (grader, results, analytics, skill stats). If a test ends early (force-submit, violations) unreached *core* sections count as zero (switchable).
+| | |
+|---|---|
+| 🌙 **Calm by default** | Soft lantern-lit light and night themes, gentle motion, nothing shouting for attention. |
+| 🧭 **Everything in one place** | Tests, classes, materials, live monitoring, grading, peer review and analytics share one workspace. |
+| 🎯 **Built for real exams** | A focused exam room modeled on AP Classroom, with the tools students actually need. |
 
-### Save & resume tab
-Students get a **Save & continue later** button (between sections only, or any time). The timer can **pause** or **keep running** while they're away. Saved state includes every answer, the exact section/question, flags, highlights and notes, and works on **any device** with the same link + name. "Saved" is only shown after the server confirms it by reading the data back; if the connection fails the student is told and stays in the exam. Students also see a live *Progress saved / Saving… / Not saved — retrying* indicator. If a timed section expires while a student is away, it is auto-submitted (with routing) when they return.
+---
 
-### Assigning
-The assign dialog adds per-section **time overrides**, a **time multiplier** (extended-time accommodations — make a separate link), and a switch to disable save-&-continue for that assignment. In the Live Monitor, open a student's **···** menu to add 5/10/15 minutes or end their current section.
+## For teachers
 
-### ⚠️ Deploying
-1. Replace **both** `index.html` **and** `netlify/functions/data.js`. The only server change is additive (a new `instructorOp` action, and `upsertSubmission` keeps server-owned `instructorOps`). If you've customised `data.js`, merge just those two blocks. Everything else — including Save & continue — works without it; only the Live Monitor's +time / end-section buttons need it.
-2. No new dependencies, nothing changes in `package.json`.
+### Your dashboard
+See what matters at a glance — tests, what's live, what's waiting to be graded, and the latest submissions.
 
-### Also fixed along the way
-- **Shuffle questions scored wrong.** Answers were keyed by shuffled position but graded by original position, so a perfect paper could score ~1/12. Order is now stored separately and keys are always canonical.
-- **Hot retry loop when offline.** A failed background save re-called itself with no delay; it now waits for the existing 8-second timer.
-- Unsaved-work warning on tab close now also covers student submissions; the exam-flag button now persists.
+### Build tests that look like the real thing
+<img src="docs/03-builder.png" alt="The test builder" width="880">
 
-### Tests
-`cd tests && npm install && npm test` — ~260 browser-free checks (jsdom) that run the real `index.html` against the real `data.js` on an in-memory store, including resume-on-another-device, offline saves, timeouts, adaptive paths, grading math, and a snapshot proving non-sectioned tests score exactly as before. (They don't check visual layout.)
+- **Question types:** multiple choice, multi-select, short answer, essay / long form, passage + sub-questions, and upload-your-work.
+- **Rubrics** for essays, with per-criterion points.
+- **Stimulus passages** and documents, with images, for reading and source-based questions.
+- **Sections & grading** controls, including **SAT-style sectioned adaptive tests** with scaled scoring.
+- **Import questions** from other tests, set per-test text size, instructions and settings, then **Preview** exactly as a student sees it.
+- **Autosave** that tells you plainly when everything is saved.
+
+### Keep every test organised
+<img src="docs/02-tests.png" alt="My Tests list with search, sort and filters" width="880">
+
+Search, sort by recently edited, filter by type or status, and publish when you're ready.
+
+### Run it live
+<img src="docs/04-live.png" alt="Live Monitor" width="880">
+
+Hand out a **join code** or post the test to a class. The **Live Monitor** shows each assignment moving from *Not open → In progress → In grading → Done*, with sorting, class filters and grouping so a busy week stays readable. Copy a student link in one click.
+
+### Classes that feel like a classroom
+<img src="docs/05-class-stream.png" alt="Class stream with announcements and materials" width="880">
+
+Every class has a **Stream**, **Classwork**, **Grades** and **People** tab.
+
+- Post announcements and materials; assign a test to the class in a click.
+- Invite students by name — they accept from their own account.
+- Share a class code, or regenerate it whenever you like.
+
+### Classwork, folded and sorted
+<img src="docs/06-classwork.png" alt="Classwork organised into topics" width="880">
+
+Group materials into **topics**, drag to reorder, and keep things tidy: each item is **folded until opened**, then unfolds smoothly — just like the classroom tools students already know. Attach links and notes to any material.
+
+### Grades in one grid
+<img src="docs/07-grades.png" alt="Class grade grid" width="880">
+
+A gradebook for the whole class. Click any score to open that student's work. Averages are calculated for you, and anything still needing a look is flagged.
+
+### Grade with the whole picture
+<img src="docs/09-grading.png" alt="Grading a submission with peer feedback" width="880">
+
+- Auto-grading for objective questions; manual scoring for essays, with rubric buttons.
+- **Override scores**, add **comments** the student can read, or apply a **curve**.
+- **Peer feedback appears right alongside your grading**, and a single switch hides it from the student if you'd rather.
+- Release scores when you're ready.
+
+### Peer review, built in
+Pair students up for anonymous, rubric-based feedback on essays. Reviews show up in each student's own account the moment they're assigned — no links to pass around — and finished feedback reaches the student automatically unless you've hidden it.
+
+### And more
+- **Grade Center** and **Analytics** for results across assignments.
+- **Backup & History** so a careless delete is never permanent.
+- **Co-teachers** can share a class.
+
+---
+
+## For students
+
+### A home that's just theirs
+<img src="docs/10-student-home.png" alt="Student home" width="880">
+
+Students sign in with a first name and last initial. Everything is on one page: their classes, what's due, their grades, and any peer reviews waiting for them.
+
+### Peer review, in their own account
+<img src="docs/11-peer-review.png" alt="Student peer review" width="880">
+
+When a review is assigned, it simply appears. Students read a classmate's response (anonymously, both ways), score the rubric and leave feedback.
+
+### An exam room that stays out of the way
+<img src="docs/12-exam.png" alt="The exam screen" width="880">
+
+A calm navy-and-white exam screen in the spirit of **AP Classroom**:
+
+- **Timer in the top bar** with a Hide button — never in the way.
+- **Question navigator**, **Mark for Review**, and an **answer eliminator**.
+- **Directions**, a **Reference** sheet and a built-in **Calculator** where the teacher allows them.
+- Passages beside questions, with a draggable divider.
+- Autosave on every answer, with a clear "All changes saved".
+
+### Tools that help, not distract
+
+<table>
+<tr>
+<td width="50%"><img src="docs/13-line-reader.png" alt="Line Reader"></td>
+<td width="50%"><img src="docs/14-notepad.png" alt="Notepad"></td>
+</tr>
+<tr>
+<td><b>Line Reader</b> — a spotlight strip that dims everything else. Drag it, resize it, nudge it line by line with <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>, change the dimness, or let it follow the mouse. <kbd>Esc</kbd> closes it.</td>
+<td><b>Notepad</b> — private scratch space, one page per question plus a whole-test page. Drag it, resize it, minimise it. Saved on the student's device.</td>
+</tr>
+</table>
+
+Also in the toolbar: **Highlights & Notes** to mark up passages, and **Text size** to enlarge the reading area.<br>
+**Shortcuts:** <kbd>←</kbd> <kbd>→</kbd> change question · <kbd>A</kbd>–<kbd>D</kbd> pick an answer · <kbd>N</kbd> opens the Notepad.
+
+---
+
+## Made to be comfortable
+
+<img src="docs/15-night.png" alt="Night theme" width="880">
+
+- **Light by default, night on request** — switch from *Appearance* in the sidebar.
+- **Readable everywhere** — text is checked against contrast guidelines in both themes, including hover and selected states.
+- **Adjustable text size** and gentle motion that respects *reduce motion* settings.
+- **Resilient** — if the connection drops, work is kept on the device and retried automatically.
+
+---
+
+## Getting started
+
+1. **Teachers:** open the app, create an account and press **New Test**.
+2. Add questions, hit **Assign**, and share the code or post it to a class.
+3. **Students:** open the link or enter the code, add a first name and last initial, and begin.
+4. Watch the **Live Monitor**, grade, and release scores.
+
+### Hosting your own
+
+EdAssess is a single page (`index.html`) plus one serverless function (`netlify/functions/data.js`). Deploy the folder to Netlify as-is — data is stored with Netlify Blobs, so there's no database to set up. In your Netlify site settings, add two variables: `EA_AUTH_SECRET` (any long random phrase) and `EA_TEACHER_KEYWORD` (the secret word teachers type to create an account).
+
+---
+
+<div align="center">
+<sub>Made with care for classrooms. Questions or ideas? Open an issue.</sub>
+</div>
