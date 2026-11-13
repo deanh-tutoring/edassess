@@ -34,3 +34,6 @@ Keep the Lantern River look (glow, gradients, soft motion). Remove only what doe
 
 ## Exam shell (AP Classroom style)
 Navy top bar with red rule; timer + Hide live only inside the bar and toggle in place. Tools: Highlights & Notes, Line Reader (spotlight strip: drag, resize, Alt+arrows, dim, follow-mouse), Notepad (per-question + whole test, private, saved on device), Text size. Shortcuts: arrows navigate, A-D select, N notepad, Esc closes line reader.
+
+## Front door
+Signed-out visitors land on a lantern-river homepage: join-code field in the centre, a Students lantern (round, pale blue) and a Staff lantern (tall, deep teal with a red seal) either side. Routes: #/welcome, #/signin|signup/student|staff. Sign-in forms are the existing ones, shown one at a time.

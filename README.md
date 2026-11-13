@@ -11,7 +11,7 @@ Students get a focused, AP-style exam room. Teachers get a quiet workspace that 
 
 <br>
 
-<img src="docs/01-dashboard.png" alt="The EdAssess teacher dashboard" width="880">
+<img src="docs/00-home.png" alt="The EdAssess front door" width="880">
 
 </div>
 
@@ -35,7 +35,12 @@ It runs in the browser, needs no installation for students, and keeps working th
 
 ## For teachers
 
+### The front door
+Open EdAssess and you land on a quiet river of floating lanterns. Type a code to **join an assessment** or class straight away, or step through the **Students** or **Staff** lantern to sign in or create an account. Light by default, with a one-tap night mode.
+
 ### Your dashboard
+<img src="docs/01-dashboard.png" alt="The EdAssess teacher dashboard" width="880">
+
 See what matters at a glance — tests, what's live, what's waiting to be graded, and the latest submissions.
 
 ### Build tests that look like the real thing

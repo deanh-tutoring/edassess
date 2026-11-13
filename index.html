@@ -1426,6 +1426,96 @@ body:has(#student-page) #ea-lanterns,body:has(#student-page) .nav-glow{display:n
 .ea-notepad.min{resize:none;height:auto!important;min-height:0}
 .ea-notepad.min .np-tabs,.ea-notepad.min textarea,.ea-notepad.min .np-foot{display:none}
 @media(max-width:700px){#student-page .student-timer-center{position:static;transform:none}.ea-notepad{width:calc(100vw - 20px)!important;left:10px!important}}
+
+/* ===== HOMEPAGE: Lantern River front door ===== */
+body.hp-on #ea-lanterns{display:none!important}
+#home-page{--hp-ink:#0C2428;--hp-soft:#3E5B60;--hp-card:rgba(255,255,255,.72);--hp-line:rgba(12,36,40,.16);--hp-s1:#FFFFFF;--hp-s2:#D3E1FF;--hp-sstroke:#2F5BEA;--hp-t1:#1B4A53;--hp-t2:#0F2E34;--hp-glow:rgba(47,91,234,.30);
+ --hp-sky1:#F3F7F6;--hp-sky2:#DCE9E8;--hp-wv1:#B7D0D1;--hp-wv2:#98BBBE;--hp-wv3:#7CA6AB;--hp-orb:rgba(255,255,255,.9);
+ position:relative;min-height:100vh;overflow:hidden;color:var(--hp-ink);font-family:'Albert Sans',var(--f-body),sans-serif}
+body.fx-ui-dark #home-page{--hp-ink:#F2F6F5;--hp-soft:#A9C0C4;--hp-card:rgba(8,28,32,.6);--hp-line:rgba(242,246,245,.2);--hp-s1:#F4F8FF;--hp-s2:#9DB8FF;--hp-t1:#1D5360;--hp-t2:#0B2A30;--hp-glow:rgba(110,150,255,.55);
+ --hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;--hp-wv2:#0B2F36;--hp-wv3:#07232A;--hp-orb:rgba(120,160,255,.22)}
+#home-page.hidden{display:none}
+.hp-sky{position:absolute;inset:0;background:linear-gradient(180deg,var(--hp-sky1),var(--hp-sky2) 70%)}
+.hp-orb{position:absolute;left:50%;top:-18vh;width:90vmin;height:90vmin;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,var(--hp-orb),transparent 64%);pointer-events:none}
+.hp-top{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:22px clamp(18px,4vw,44px)}
+.hp-mark{display:flex;align-items:center;gap:10px;color:var(--hp-ink);text-decoration:none;font:500 26px 'Cormorant Garamond',serif;letter-spacing:.01em}
+.hp-mark i{width:12px;height:12px;border-radius:50%;background:#2F5BEA;box-shadow:0 0 18px 4px var(--hp-glow)!important}
+.hp-top-r{display:flex;align-items:center;gap:22px}
+.hp-link{color:var(--hp-soft);text-decoration:none;font-size:14px;font-weight:500;padding:6px 2px;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.hp-link:hover{color:var(--hp-ink);border-bottom-color:currentColor}
+.hp-theme{background:var(--hp-card);color:var(--hp-ink);border:1px solid var(--hp-line);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(6px);transition:transform .3s}
+.hp-theme:hover{transform:rotate(18deg)}
+.hp-sun{display:none}body.fx-ui-dark .hp-sun{display:inline}body.fx-ui-dark .hp-moon{display:none}
+.hp-stage{position:relative;z-index:3;display:grid;grid-template-columns:1fr minmax(300px,520px) 1fr;gap:clamp(16px,3vw,48px);padding:0 clamp(14px,3vw,40px);min-height:calc(100vh - 140px);align-items:start;--lean:0}
+.hp-centre{text-align:center;padding-top:clamp(28px,8vh,84px)}
+.hp-hello{margin:0 0 10px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--hp-soft);font-weight:600}
+#home-page h1{font:400 clamp(54px,8vw,104px)/.95 'Cormorant Garamond',serif;margin:0 0 18px;letter-spacing:-.01em;color:var(--hp-ink)}
+.hp-sub{margin:0 auto 26px;max-width:40ch;color:var(--hp-soft);font-size:16px;line-height:1.6}
+.hp-join{display:flex;align-items:center;gap:6px;background:var(--hp-card);border:1px solid var(--hp-line);border-radius:999px;padding:7px 7px 7px 26px;backdrop-filter:blur(10px);transition:border-color .2s,box-shadow .3s}
+.hp-join:focus-within{border-color:#2F5BEA;box-shadow:0 0 0 4px var(--hp-glow)!important}
+.hp-join input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--hp-ink);font:600 24px 'Albert Sans',sans-serif;letter-spacing:.32em;text-transform:uppercase;padding:10px 0}
+.hp-join input::placeholder{color:var(--hp-soft);opacity:.7;letter-spacing:.32em}
+.hp-join button{display:flex;align-items:center;gap:8px;border:0;border-radius:999px;background:#2F5BEA;color:#fff;font:600 15px 'Albert Sans',sans-serif;padding:13px 22px;cursor:pointer;transition:background .2s,transform .2s}
+.hp-join button:hover{background:#2348C7}.hp-join button:active{transform:scale(.97)}.hp-join button.busy{opacity:.7}
+.hp-err{min-height:22px;margin-top:10px;font-size:14px;color:#B3261E}
+body.fx-ui-dark .hp-err{color:#FF9B8E}
+.hp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* hanging lanterns */
+.hp-lantern{display:flex;flex-direction:column;align-items:center;min-width:0}
+.hp-stu{justify-self:end;margin-top:-6px}.hp-staff{justify-self:start;margin-top:34px}
+.hp-swing{display:flex;flex-direction:column;align-items:center;transform-origin:50% 0;animation:hpSwing 7s ease-in-out infinite alternate;transform:rotate(calc(var(--lean,0)*1.6deg))}
+.hp-staff .hp-swing{animation-duration:8.5s;animation-delay:-3s}
+@keyframes hpSwing{from{rotate:-1.7deg}to{rotate:1.7deg}}
+.hp-string{display:block;width:1px;height:clamp(30px,9vh,92px);background:var(--hp-line)}
+.hp-staff .hp-string{height:clamp(40px,13vh,130px)}
+.hp-lamp{position:relative;width:clamp(190px,17vw,250px);transition:filter .4s,transform .4s;filter:drop-shadow(0 0 22px var(--hp-glow))}
+.hp-lantern:hover .hp-lamp,.hp-lantern:focus-within .hp-lamp{filter:drop-shadow(0 0 40px var(--hp-glow));transform:scale(1.025)}
+.hp-shape{display:block;width:100%;height:auto;overflow:visible}
+.hp-cap{fill:#16363C}body.fx-ui-dark .hp-cap{fill:#2A5560}
+.hp-stu .hp-body{stroke:var(--hp-sstroke);stroke-width:1.5}.hp-staff .hp-body{stroke:#6FA3AA;stroke-width:1.5}
+.hp-stu .hp-ribs path{fill:none;stroke:#2F5BEA;stroke-opacity:.16;stroke-width:1.4}
+.hp-staff .hp-ribs path{fill:none;stroke:#8FC0C6;stroke-opacity:.45;stroke-width:1.4}
+.hp-face{position:absolute;inset:16% 16% 14%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.hp-face h2{font:500 clamp(24px,2.2vw,32px)/1 'Cormorant Garamond',serif;margin:2px 0 0;letter-spacing:.01em}
+.hp-face p{margin:0;font-size:12.5px;line-height:1.45}
+.hp-stu .hp-face{color:#0C2428}.hp-stu .hp-face p{color:#2E4A50}.hp-stu .hp-ico{color:#2F5BEA}
+.hp-staff .hp-face{color:#F2F6F5}.hp-staff .hp-face p{color:#C8DADD}.hp-staff .hp-ico{color:#9DB4FF}
+.hp-seal{position:absolute;right:11%;bottom:14%;width:30px;height:30px;border-radius:5px;background:#C23A2B;color:#fff;font:600 13px/30px 'Cormorant Garamond',serif;text-align:center;font-style:normal;transform:rotate(-6deg)}
+.hp-tassel{display:flex;flex-direction:column;align-items:center}.hp-tassel i{width:2px;height:22px;background:#2F5BEA;opacity:.55;border-radius:2px}
+.hp-staff .hp-tassel i{background:#C23A2B}
+.hp-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+.hp-btn{display:inline-block;text-decoration:none;font:600 14px 'Albert Sans',sans-serif;padding:10px 18px;border-radius:999px;color:var(--hp-ink);background:var(--hp-card);border:1px solid var(--hp-line);backdrop-filter:blur(8px);transition:background .2s,transform .2s,border-color .2s}
+.hp-btn:hover{border-color:var(--hp-ink);transform:translateY(-2px)}
+.hp-btn.hp-pri{background:#2F5BEA;border-color:#2F5BEA;color:#fff}.hp-btn.hp-pri:hover{background:#2348C7;border-color:#2348C7}
+.hp-staff .hp-btn.hp-pri{background:#16363C;border-color:#16363C}.hp-staff .hp-btn.hp-pri:hover{background:#0F2A30}
+body.fx-ui-dark .hp-staff .hp-btn.hp-pri{background:#2A5560;border-color:#2A5560}
+.hp-btn:focus-visible,.hp-link:focus-visible,.hp-theme:focus-visible,.hp-mark:focus-visible,.hp-join button:focus-visible{outline:3px solid #2F5BEA;outline-offset:3px}
+/* river */
+.hp-river{position:absolute;left:0;right:0;bottom:0;height:34vh;min-height:200px;z-index:2;pointer-events:none}
+.hp-w{position:absolute;left:0;bottom:0;width:200%;height:100%}
+.hp-w3{fill:var(--hp-wv3);animation:hpDrift 46s linear infinite;opacity:.75;height:78%}
+.hp-w2{fill:var(--hp-wv2);animation:hpDrift 34s linear infinite reverse;opacity:.9;height:60%}
+.hp-w1{fill:var(--hp-wv1);animation:hpDrift 26s linear infinite;height:40%}
+@keyframes hpDrift{to{transform:translateX(-50%)}}
+.hp-floats{position:absolute;inset:0;overflow:hidden}
+.hp-fl{position:absolute;left:0;bottom:var(--y);color:var(--c);transform:scale(var(--s));animation:hpTravel var(--d) linear var(--dl) infinite;filter:drop-shadow(0 0 10px var(--c))}
+.hp-fl svg{display:block;animation:hpBob var(--b) ease-in-out infinite alternate}
+@keyframes hpTravel{from{left:-6%}to{left:106%}}
+@keyframes hpBob{from{transform:translateY(-3px)}to{transform:translateY(4px)}}
+.hp-foot{position:absolute;z-index:4;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:10px;font-size:12.5px;color:var(--hp-soft)}
+body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}.hp-foot a:hover{border-bottom-color:currentColor}
+@media(prefers-reduced-motion:reduce){.hp-swing,.hp-w,.hp-fl,.hp-fl svg{animation:none!important}}
+@media(max-width:900px){
+ .hp-stage{grid-template-columns:1fr 1fr;grid-template-areas:"c c" "s t";gap:10px 8px;padding-bottom:230px}
+ .hp-centre{grid-area:c;padding-top:20px}.hp-stu{grid-area:s;justify-self:center;margin:0}.hp-staff{grid-area:t;justify-self:center;margin:0}
+ .hp-lamp{width:min(42vw,200px)}.hp-face p{display:none}.hp-top-r .hp-link{display:none}
+ #home-page h1{font-size:56px}.hp-string{height:26px}.hp-staff .hp-string{height:26px}
+}
+/* sign-in forms reached from the homepage: one clean form, nothing else */
+.hp-back{display:inline-block;margin-bottom:18px;font-size:13px;color:var(--ink-soft);text-decoration:none;cursor:pointer}
+.hp-back:hover{color:var(--ink)}
+.login-box.hp-only-stu #inst-details,.login-box.hp-only-staff #stu-details,.login-box.hp-only-stu .join-wrap,.login-box.hp-only-staff .join-wrap{display:none!important}
+.login-box.hp-only-stu #stu-details>summary,.login-box.hp-only-staff #inst-details>summary{display:none}
 </style>
 </head>
 <body>
@@ -1455,6 +1545,54 @@ body:has(#student-page) #ea-lanterns,body:has(#student-page) .nav-glow{display:n
 
 
 <!-- ═══════════ LOGIN PAGE ═══════════ -->
+<div id="home-page" class="hidden" aria-label="EdAssess home">
+  <div class="hp-sky"></div><div class="hp-orb"></div>
+  <header class="hp-top">
+    <a class="hp-mark" href="#/welcome" aria-label="EdAssess home"><i></i><span>EdAssess</span></a>
+    <div class="hp-top-r"><a class="hp-link" href="#/signin/student">Student sign in</a><a class="hp-link" href="#/signin/staff">Staff sign in</a>
+      <button class="hp-theme" id="hp-theme" type="button" aria-label="Switch between light and night"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path class="hp-moon" d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/><g class="hp-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></g></svg></button></div>
+  </header>
+  <main class="hp-stage">
+    <section class="hp-lantern hp-stu" aria-labelledby="hp-s-h">
+      <div class="hp-swing"><i class="hp-string"></i>
+        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 280" aria-hidden="true"><defs><radialGradient id="hpg1" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="var(--hp-s1)"/><stop offset="1" stop-color="var(--hp-s2)"/></radialGradient></defs>
+          <rect x="88" y="6" width="64" height="16" rx="5" class="hp-cap"/><ellipse cx="120" cy="140" rx="104" ry="116" fill="url(#hpg1)" class="hp-body"/>
+          <g class="hp-ribs"><path d="M120 24v232M120 24C70 60 70 220 120 256M120 24c50 36 50 196 0 232M120 24C42 70 42 210 120 256M120 24c78 46 78 186 0 232"/></g>
+          <rect x="88" y="258" width="64" height="16" rx="5" class="hp-cap"/></svg>
+          <div class="hp-face"><svg class="hp-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5"/></svg><h2 id="hp-s-h">Students</h2><p>Take a test, check your grades, review a classmate.</p></div></div>
+        <div class="hp-tassel"><i></i></div>
+      </div>
+      <div class="hp-actions"><a class="hp-btn hp-pri" href="#/signin/student">Sign in</a><a class="hp-btn" href="#/signup/student">Create account</a></div>
+    </section>
+    <section class="hp-centre" aria-labelledby="hp-h">
+      <p class="hp-hello" id="hp-hello">Hello</p>
+      <h1 id="hp-h">Welcome in.</h1>
+      <p class="hp-sub">Have a code from your teacher? Enter it below to join. Otherwise, choose the door that’s yours.</p>
+      <form class="hp-join" id="hp-join" autocomplete="off"><label class="hp-sr" for="hp-code">Assessment or class code</label>
+        <input id="hp-code" maxlength="10" placeholder="CODE" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text">
+        <button type="submit" id="hp-go" aria-label="Join with this code"><span>Join</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
+      <div class="hp-err" id="hp-err" role="alert"></div>
+    </section>
+    <section class="hp-lantern hp-staff" aria-labelledby="hp-t-h">
+      <div class="hp-swing"><i class="hp-string"></i>
+        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 300" aria-hidden="true"><defs><linearGradient id="hpg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hp-t1)"/><stop offset="1" stop-color="var(--hp-t2)"/></linearGradient></defs>
+          <rect x="80" y="6" width="80" height="16" rx="4" class="hp-cap"/><rect x="26" y="22" width="188" height="250" rx="18" fill="url(#hpg2)" class="hp-body"/>
+          <g class="hp-ribs"><path d="M26 74h188M26 220h188M82 22v250M158 22v250"/></g><rect x="80" y="272" width="80" height="16" rx="4" class="hp-cap"/></svg>
+          <div class="hp-face"><svg class="hp-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><h2 id="hp-t-h">Staff</h2><p>Build tests, run them live, grade and manage classes.</p></div><i class="hp-seal" aria-hidden="true">EA</i></div>
+        <div class="hp-tassel"><i></i></div>
+      </div>
+      <div class="hp-actions"><a class="hp-btn hp-pri" href="#/signin/staff">Sign in</a><a class="hp-btn" href="#/signup/staff">Create account</a></div>
+    </section>
+  </main>
+  <div class="hp-river" aria-hidden="true">
+    <svg class="hp-w hp-w3" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="M0 60c120-30 240-30 360 0s240 30 360 0 240-30 360 0 240 30 360 0V200H0z"/></svg>
+    <svg class="hp-w hp-w2" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="M0 80c90 24 180 24 270 0s180-24 270 0 180 24 270 0 180-24 270 0 180 24 270 0V200H0z"/></svg>
+    <svg class="hp-w hp-w1" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="M0 100c150-34 300-34 450 0s300 34 450 0 300-34 450 0V200H0z"/></svg>
+    <div class="hp-floats"></div>
+  </div>
+  <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a><span>·</span><span>Made for classrooms</span></footer>
+</div>
+
 <div id="login-page" class="hidden">
   <!-- Art panel -->
   <div class="login-art">
@@ -1475,6 +1613,7 @@ body:has(#student-page) #ea-lanterns,body:has(#student-page) .nav-glow{display:n
   </div>
   <!-- Login form -->
   <div class="login-box animate-in">
+    <a class="hp-back" href="#/welcome">← Home</a>
     <div class="login-eyebrow">Students</div>
     <h1 class="login-title" style="font-size:44px">Join an<br>assessment.</h1>
     <div class="join-wrap">
@@ -1492,20 +1631,20 @@ body:has(#student-page) #ea-lanterns,body:has(#student-page) .nav-glow{display:n
     <button class="btn btn-primary btn-lg login-btn" id="stu-go" onclick="fxStuAuth()">Sign in</button>
     <a class="fx-authlink" id="stu-swap" onclick="fxStuMode(stuMode==='in'?'up':'in')">First time here? <b>Create my account</b></a>
     </details>
-    <details class="inst-details" id="inst-details"><summary>Teacher sign in</summary>
+    <details class="inst-details" id="inst-details"><summary>Staff sign in</summary>
     <div id="auth-signin">
       <div class="form-group"><label class="form-label">Username</label><input type="text" id="login-username" class="form-control" autocomplete="username"></div>
       <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-control" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="login-error" class="hidden fx-autherr"></div>
       <button class="btn btn-primary btn-lg login-btn" onclick="doLogin()">Sign In</button>
-      <a class="fx-authlink" onclick="fxAuthMode('up')">Create a teacher account</a>
+      <a class="fx-authlink" onclick="fxAuthMode('up')">Create a staff account</a>
     </div>
     <div id="auth-signup" class="hidden">
       <div class="form-group"><label class="form-label">Name students will see</label><input id="su-name" class="form-control" maxlength="60" placeholder="e.g. Ms. Rivera"></div>
       <div class="form-group"><label class="form-label">Username</label><input id="su-user" class="form-control" autocomplete="username" autocapitalize="off"></div>
       <div class="form-group"><label class="form-label">Password</label><input id="su-pass" type="password" class="form-control" autocomplete="new-password"></div>
       <div class="form-group"><label class="form-label">Confirm password</label><input id="su-pass2" type="password" class="form-control" autocomplete="new-password"></div>
-      <div class="form-group"><label class="form-label">Teacher keyword</label><input id="su-key" class="form-control" autocomplete="off" autocapitalize="off" onkeydown="if(event.key==='Enter')fxSignup()"></div>
+      <div class="form-group"><label class="form-label">Staff keyword</label><input id="su-key" class="form-control" autocomplete="off" autocapitalize="off" onkeydown="if(event.key==='Enter')fxSignup()"></div>
       <div id="signup-error" class="hidden fx-autherr"></div>
       <button class="btn btn-primary btn-lg login-btn" onclick="fxSignup()">Create account</button>
       <a class="fx-authlink" onclick="fxAuthMode('in')">Back to sign in</a>
@@ -12174,6 +12313,55 @@ async function fxStuDisable(key,v){await apiPost({action:'adminSetStudentDisable
 {const o=window.fxAccountModal;window.fxAccountModal=function(f){o(f);const me=fxMe();if(me&&me.role==='admin'&&!f){const b=document.querySelector('#modal-container .modal-body > div:last-child');if(b)b.insertAdjacentHTML('beforeend','<button class="btn btn-secondary" onclick="fxStudentsModal()">Manage students</button>');}};}
 </script>
 
+<script id="ea-home">
+/* ===== EdAssess homepage (logged-out front door) ===== */
+(function(){
+const $=id=>document.getElementById(id);const HP={active:false};
+const loggedOut=()=>{const a=$('app'),s=$('stu-app');return (!a||a.classList.contains('hidden'))&&(!s||s.classList.contains('hidden'));};
+function hello(){const h=new Date().getHours();return h<5?'Still up?':h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
+function floats(){const w=document.querySelector('.hp-floats');if(!w||w.children.length)return;
+  const cols=['#7FA0FF','#F2F6F5','#E58A7B','#9DB4FF','#F7C9BE','#C9D8FF'];
+  for(let i=0;i<9;i++){const e=document.createElement('i');e.className='hp-fl';const s=.55+Math.random()*.7;
+    e.style.cssText=`--s:${s};--d:${70+Math.random()*70}s;--dl:${-Math.random()*120}s;--b:${3+Math.random()*3}s;--y:${4+Math.random()*34}%;--c:${cols[i%cols.length]}`;
+    e.innerHTML='<svg viewBox="0 0 24 30" width="24" height="30"><rect x="8" y="1" width="8" height="3" rx="1.5" fill="currentColor" opacity=".7"/><ellipse cx="12" cy="15" rx="9" ry="10.5" fill="currentColor"/><rect x="8" y="26" width="8" height="3" rx="1.5" fill="currentColor" opacity=".7"/></svg>';w.appendChild(e);}}
+function showHome(){$('login-page').classList.add('hidden');$('home-page').classList.remove('hidden');document.body.classList.add('hp-on');$('hp-hello').textContent=hello();floats();document.title='EdAssess';}
+function hideHome(){$('home-page').classList.add('hidden');document.body.classList.remove('hp-on');}
+function showLogin(kind,mode){
+  hideHome();const lp=$('login-page');lp.classList.remove('hidden');
+  const box=lp.querySelector('.login-box');box.classList.remove('hp-only-stu','hp-only-staff');box.classList.add('hp-only-'+(kind==='student'?'stu':'staff'));
+  const eb=box.querySelector('.login-eyebrow'),ti=box.querySelector('.login-title');
+  const up=mode==='up';
+  if(kind==='student'){const d=$('stu-details');d.open=true;try{fxStuMode(up?'up':'in');}catch(e){}if(eb)eb.textContent='Students';if(ti)ti.innerHTML=up?'Create your<br>account.':'Welcome<br>back.';setTimeout(()=>$('stu-name').focus(),60);}
+  else{const d=$('inst-details');d.open=true;try{fxAuthMode(up?'up':'in');}catch(e){}if(eb)eb.textContent='Staff';if(ti)ti.innerHTML=up?'Create a<br>staff account.':'Staff<br>sign in.';setTimeout(()=>{const f=$(up?'su-name':'login-username');f&&f.focus();},60);}
+  window.scrollTo(0,0);
+}
+function route(){
+  if(!HP.active||!loggedOut())return;
+  if(new URLSearchParams(location.search).get('join')){showLogin('student','in');return;}
+  const m=/^#\/(signin|signup)\/(student|staff)$/.exec(location.hash||'');
+  if(m)showLogin(m[2],m[1]==='signup'?'up':'in');else showHome();
+}
+addEventListener('hashchange',route);
+/* boot: the original decides whether anyone is signed in; we only take over the signed-out view */
+const ob=window.fxBoot;window.fxBoot=function(){const r=ob.apply(this,arguments);
+  const lp=$('login-page');if(lp&&!lp.classList.contains('hidden')&&loggedOut()){HP.active=true;route();}return r;};
+/* join a code (assessments and classes) through the existing, tested join logic */
+async function join(e){e&&e.preventDefault();const v=($('hp-code').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');const er=$('hp-err'),b=$('hp-go');
+  er.textContent='';if(v.length<4){er.textContent='Enter the code from your teacher.';$('hp-code').focus();return;}
+  $('join-code').value=v;$('join-err').textContent='';b.disabled=true;b.classList.add('busy');
+  try{await window.fxJoin();}catch(x){}
+  b.disabled=false;b.classList.remove('busy');const t=$('join-err').textContent;if(t)er.textContent=t;}
+const ocf=window.fxClassCodeFound;window.fxClassCodeFound=function(c,r){if(HP.active)showLogin('student','in');return ocf.apply(this,arguments);};
+document.addEventListener('DOMContentLoaded',()=>{
+  const f=$('hp-join');if(f)f.addEventListener('submit',join);
+  const i=$('hp-code');if(i)i.addEventListener('input',()=>{i.value=i.value.toUpperCase().replace(/[^A-Z0-9]/g,'');$('hp-err').textContent='';});
+  const t=$('hp-theme');if(t)t.addEventListener('click',()=>{fxUi.dark=!fxUi.dark;fxUiSave();});
+  /* lanterns lean gently toward the pointer */
+  const st=document.querySelector('.hp-stage');if(st&&matchMedia('(prefers-reduced-motion: no-preference)').matches)addEventListener('pointermove',e=>{if(!document.body.classList.contains('hp-on'))return;const x=(e.clientX/innerWidth-.5)*2;st.style.setProperty('--lean',x.toFixed(3));},{passive:true});
+});
+})();
+
+</script>
 <script id="ea-ap">
 /* ===== EdAssess exam tools: in-bar timer, Line Reader 2, Notepad, text size, shortcuts ===== */
 (function(){
