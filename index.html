@@ -1516,6 +1516,28 @@ body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:
 .hp-back:hover{color:var(--ink)}
 .login-box.hp-only-stu #inst-details,.login-box.hp-only-staff #stu-details,.login-box.hp-only-stu .join-wrap,.login-box.hp-only-staff .join-wrap{display:none!important}
 .login-box.hp-only-stu #stu-details>summary,.login-box.hp-only-staff #inst-details>summary{display:none}
+
+/* ===== compact classwork ===== */
+.lms-cw{margin:14px 0 0}.lms-cw-h{margin-bottom:8px!important;padding-bottom:6px!important}
+.lms-cw-h .lms-h,.fxc-asgpanel>div:first-child .lms-h{font-size:17px!important}
+.lms-tg{margin-bottom:12px!important}
+.lms-tg-h{padding:2px 0 5px!important;margin-bottom:6px!important}
+.lms-tg-h h3{font-size:16px!important}.lms-count{font-size:12px!important}
+.lms-tg .lms-mat.item,.lms-post .lms-mat.item{margin:0 0 5px!important;border-radius:6px!important;padding:0 12px!important}
+.lms-mat-h{padding:8px 0!important;gap:8px!important}
+.lms-mat-t{font-size:14px!important;font-weight:600!important}
+.lms-mat-m{font-size:11.5px!important}
+.lms-mat-in>:last-child{margin-bottom:10px!important}
+.lms-links a{padding:6px 0!important;font-size:13.5px!important}
+.lms-post-t{font-size:13.5px!important;margin-top:2px!important}
+.lms-mat-a{margin-top:4px!important;font-size:12.5px!important}
+.fxc-asgpanel{padding:12px 16px!important}
+.fxc-asg{padding:7px 0!important;gap:8px!important}
+.fxc-asg b{font-size:14px}.fxc-sub{font-size:12px!important}
+.fxc-asg-r{gap:6px!important;font-size:12px!important}
+.fxc-asg-r .btn{padding:3px 10px!important;font-size:12px!important;min-height:0!important;height:auto!important}
+.lms-row{padding:9px 0!important}.lms-row-t{font-size:14px!important}.lms-row-m{font-size:12px!important}
+.lms-h{font-size:12px!important;margin:14px 0 6px!important}
 </style>
 </head>
 <body>
@@ -12520,7 +12542,7 @@ window.stuRow=function(a,opts){
   else if(st==='scheduled')status='Opens '+E(new Date(a.opensAt).toLocaleDateString([],{month:'short',day:'numeric'}));
   else if(st==='progress'){status='In progress';act=`<a class="lms-go" href="?exam=${E(a.id)}">Resume</a>`;}
   else act=`<a class="lms-go" href="?exam=${E(a.id)}">Start</a>`;
-  const bits=[opts.noClass?'':E(stuClassName(a)),a.dueAt&&st!=='done'?`<span class="${late?'lms-late':''}">${E(stuWhen(a.dueAt))}</span>`:(a.dueAt?'':'No due date'),a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' min':''].filter(Boolean);
+  const bits=[opts.noClass?'':E(stuClassName(a)),a.dueAt&&st!=='done'?`<span class="${late?'lms-late':''}">${E(stuWhen(a.dueAt))}</span>`:(a.dueAt?'':'No due date'),a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' min':'',opts.noClass&&a.createdAt?'Posted '+E(fxPosted(a.createdAt)):''].filter(Boolean);
   return `<div class="lms-row"><div class="lms-row-main"><div class="lms-row-t">${E(a.title)}</div><div class="lms-row-m">${bits.join(' · ')}</div></div><div class="lms-row-r"><span>${status}</span>${act}</div></div>`;
 };
 /* ── HOME ── */
@@ -12582,7 +12604,7 @@ function lmsClassView(){
     body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${open.length?open.slice(0,4).map(a=>`<a class="lms-up" href="?exam=${E(a.id)}"><small>${E(stuWhen(a.dueAt)||'No due date')}</small>${E(a.title)}</a>`).join(''):'<p class="lms-empty">Nothing due soon.</p>'}</div></aside><div>${lmsStream(c,asg,false)}</div></div>`;
   }else if(tab==='classwork'){
     const g=[['Assigned',asg.filter(a=>['todo','progress','scheduled'].includes(stuState(a,stuSubFor(a.id))))],['Missing',asg.filter(a=>stuState(a,stuSubFor(a.id))==='closed')],['Done',asg.filter(a=>stuState(a,stuSubFor(a.id))==='done')]];
-    body=lmsMatGroups(c,false)+g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('')||(!(c.materials||[]).length?'<div class="lms-panel lms-empty">Nothing posted yet.</div>':'');
+    const _as=g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('');body=_as+lmsMatGroups(c,false);if(!body)body='<div class="lms-panel lms-empty">Nothing posted yet.</div>';
   }else{
     const r=asg.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted');
     const v=r.filter(x=>stuReleased(x.a,x.s)).map(x=>stuPct(x.a,x.s)).filter(x=>x!=null),avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;
@@ -12677,11 +12699,12 @@ window.fxDropSec=function(e,t){
 };
 window.FX_MATOPEN=window.FX_MATOPEN||new Set();
 window.fxMatToggle=function(h){const it=h.closest('.lms-mat');if(!it)return;const id=it.getAttribute('data-mid');const on=!it.classList.contains('open');it.classList.toggle('open',on);h.setAttribute('aria-expanded',on?'true':'false');if(on)FX_MATOPEN.add(id);else FX_MATOPEN.delete(id);};
+window.fxPosted=function(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return '';const y=d.getFullYear()!==new Date().getFullYear();return d.toLocaleString([],{month:'short',day:'numeric',...(y?{year:'numeric'}:{}),hour:'numeric',minute:'2-digit'});};
 function lmsCwMat(m,c,isT,secIdx,n){
   const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">≡</span>`:'';
   const acts=isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Up</a><a class="lms-link" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Down</a><a class="lms-link" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</a><a class="fxc-x" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</a></div>`:'';
   const nl=(m.links||[]).length;
-  const meta=nl?`${nl} link${nl!==1?'s':''}`:(m.body?'Note':'');
+  const meta=[fxPosted(m.at),nl?`${nl} link${nl!==1?'s':''}`:(m.body?'Note':'')].filter(Boolean).join(' · ');
   const open=FX_MATOPEN.has(m.id);
   const head=`<div class="lms-mat-h" role="button" tabindex="0" aria-expanded="${open}" onclick="fxMatToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();fxMatToggle(this)}">${grip}<span class="lms-mat-t">${E(m.title)}</span><span class="lms-mat-m">${E(meta)}</span><i class="lms-caret"></i></div>`;
   const body=`<div class="lms-mat-fold"><div class="lms-mat-in">${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}${acts}</div></div>`;
@@ -12759,9 +12782,9 @@ window.fxClassDetail=function(c){
      <div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${asg.filter(a=>a.dueAt&&new Date(a.dueAt)>new Date()).sort((x,y)=>new Date(x.dueAt)-new Date(y.dueAt)).slice(0,4).map(a=>`<div class="lms-up"><small>${E(stuWhen(a.dueAt))}</small>${E(a.title||'Assessment')}</div>`).join('')||'<p class="lms-empty">Nothing due soon.</p>'}</div></aside>
      <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><span style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${c.id}')">Post material</button><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></span><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
   }else if(tab==='classwork'){
-    body=lmsMatGroups(c,true)+`<div class="lms-panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Assignments</div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></div>
-     ${asg.map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted');const need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length;
-      return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span><b>${subs.length}</b>/${c.students.length} turned in${need?` · <span class="lms-late">${need} to grade</span>`:''}</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('grading')">Grade</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;
+    const _asg=`<div class="lms-panel fxc-asgpanel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Assignments <span class="lms-count">${asg.length}</span></div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></div>
+     ${asg.slice().sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0)).map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted');const need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length;
+      return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.createdAt?'Posted '+E(fxPosted(a.createdAt))+' · ':''}${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span><b>${subs.length}</b>/${c.students.length} turned in${need?` · <span class="lms-late">${need} to grade</span>`:''}</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('grading')">Grade</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;body=_asg+lmsMatGroups(c,true);
   }else if(tab==='grades'){
     const cols=asg.map(a=>({...a,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'})).sort((x,y)=>new Date(x.createdAt||0)-new Date(y.createdAt||0));
     const pctOf=(s)=>{const t=APP.tests.find(t=>t.id===s.testId);if(!t||s.score==null)return null;const tot=calcTotalPoints(t,s);return tot>0?Math.round(s.score/tot*100):null;};
