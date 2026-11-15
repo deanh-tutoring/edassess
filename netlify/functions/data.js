@@ -1021,14 +1021,37 @@ async function handleGet(q, user, student) {
 
 
 /* ══ Live Room: a teacher-driven screen shared with students (slides, polls, typed answers, check-ins) ══ */
-const L = { room: 'v2/live/', resp: 'v2/liver/', part: 'v2/livep/' };
+const L = { room: 'v2/live/', resp: 'v2/liver/', part: 'v2/livep/', msg: 'v2/livem/' };
 const LIVE_CODE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const LIVE_TYPES = ['slide', 'mcq', 'poll', 'text'];
+const LIVE_TYPES = ['slide', 'mcq', 'poll', 'text', 'embed', 'links', 'deck'];
+const HTTPS = /^https:\/\/[^\s"'<>]{4,600}$/;
+const HEX = /^#[0-9a-fA-F]{6}$/;
+const num = (v, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(+v) ? Math.round(+v * 10) / 10 : 0));
+const IMGURL = /^(\/\.netlify\/functions\/data\?img=[a-f0-9]{40}|https:\/\/[^\s"'<>]{1,500})$/;
+function cleanDeck(d) {
+  d = d || {};
+  const items = (Array.isArray(d.items) ? d.items : []).slice(0, 120).map((it) => {
+    const o = { k: ['t', 'i', 'r', 'tbl'].includes(it && it.k) ? it.k : 'r', x: num(it.x, -50, 150), y: num(it.y, -50, 150), w: num(it.w, 0, 200), h: num(it.h, 0, 200) };
+    if (HEX.test(it.fill || '')) o.fill = it.fill;
+    if (it.geom === 'ellipse') o.geom = 'ellipse';
+    if (o.k === 'i') { if (typeof it.img === 'string' && IMGURL.test(it.img)) o.img = it.img; else return null; }
+    if (o.k === 't') {
+      if (['t', 'ctr', 'b'].includes(it.va)) o.va = it.va;
+      o.paras = (Array.isArray(it.paras) ? it.paras : []).slice(0, 40).map((p) => ({ al: ['l', 'ctr', 'r'].includes(p.al) ? p.al : 'l', bu: !!p.bu, runs: (Array.isArray(p.runs) ? p.runs : []).slice(0, 12).map((r) => ({ t: clip(r.t, 600), sz: num(r.sz, 4, 200), b: !!r.b, i: !!r.i, ...(HEX.test(r.c || '') ? { c: r.c } : {}) })) }));
+    }
+    if (o.k === 'tbl') o.rows = (Array.isArray(it.rows) ? it.rows : []).slice(0, 20).map((r) => (Array.isArray(r) ? r : []).slice(0, 10).map((c) => clip(c, 200)));
+    return o;
+  }).filter(Boolean);
+  return { W: num(d.W, 100, 2000) || 960, H: num(d.H, 100, 2000) || 540, bg: HEX.test(d.bg || '') ? d.bg : '#ffffff', items, notes: clip(d.notes, 3000) };
+}
 const clip = (s, n) => String(s == null ? '' : s).slice(0, n);
 function cleanSlide(s, i) {
   const t = LIVE_TYPES.includes(s && s.type) ? s.type : 'slide';
   const o = { id: okId(s && s.id) ? s.id : 's' + Date.now().toString(36) + i, type: t, title: clip(s && s.title, 200), body: clip(s && s.body, 2000) };
   if (s && typeof s.img === 'string' && /^(\/\.netlify\/functions\/data\?img=[a-f0-9]{40}|https:\/\/[^\s"'<>]{1,500})$/.test(s.img)) o.img = s.img;
+  if (t === 'embed') { o.url = HTTPS.test(s && s.url) ? s.url : ''; }
+  if (t === 'links') o.links = (Array.isArray(s.links) ? s.links : []).slice(0, 12).filter((l) => l && HTTPS.test(l.url || '')).map((l) => ({ title: clip(l.title, 80) || clip(l.url, 60), url: l.url }));
+  if (t === 'deck') { const d = cleanDeck(s.deck); o.deck = d; }
   if (t === 'mcq' || t === 'poll') {
     o.options = (Array.isArray(s.options) ? s.options : []).slice(0, 8).map((x) => clip(x, 200)).filter((x) => x.trim());
     if (o.options.length < 2) o.options = ['A', 'B'];
@@ -1043,6 +1066,8 @@ const cleanWidgets = (w) => {
   if (['red', 'yellow', 'green'].includes(w.light)) o.light = w.light;
   if (typeof w.note === 'string' && w.note.trim()) o.note = clip(w.note, 300);
   if (['silent', 'whisper', 'talk'].includes(w.mode)) o.mode = w.mode;
+  if (Array.isArray(w.links)) o.links = w.links.slice(0, 8).filter((l) => l && HTTPS.test(l.url || '')).map((l) => ({ title: clip(l.title, 80) || clip(l.url, 60), url: l.url }));
+  if (Array.isArray(w.agenda)) o.agenda = w.agenda.slice(0, 10).map((a) => ({ t: clip(a && a.t, 100), done: !!(a && a.done) })).filter((a) => a.t.trim());
   return o;
 };
 async function newLiveCode() {
@@ -1058,6 +1083,7 @@ function liveView(r, mine) {          // what students see: no answers key unles
     if (i !== r.idx) return null;
     const c = { ...s };
     if (s.type === 'mcq' && !r.reveal) delete c.correct;
+    if (c.deck) c.deck = { ...c.deck, notes: undefined };
     return c;
   });
   return { code: r.id, title: r.title, status: r.status, idx: r.idx, count: r.slides.length, open: !!r.open, reveal: !!r.reveal, slide: slides[r.idx] || null, widgets: r.widgets || {}, rev: r.rev, mine: mine || null, className: r.className || '' };
@@ -1085,10 +1111,25 @@ async function liveAction(body, user) {
       const ex = await getJ(L.part + code + '/' + pid);
       if (ex && Date.now() - (ex.seen || 0) > 8000) { ex.seen = Date.now(); await putJ(L.part + code + '/' + pid, ex); }
     }
-    let mine = null;
+    let mine = null, hand = false;
+    if (pid) { const pp = await getJ(L.part + code + '/' + pid); hand = !!(pp && pp.hand); }
     const cur = r.slides[r.idx];
     if (pid && cur) { const m = await getJ(`${L.resp}${code}/${cur.id}/${pid}`); if (m) mine = m.answer; }
-    return reply(200, { ok: true, room: liveView(r, mine) });
+    return reply(200, { ok: true, room: { ...liveView(r, mine), hand } });
+  }
+  if (a === 'liveHand' || a === 'liveMsg') {
+    const r0 = await getJ(L.room + code);
+    if (!r0 || r0.status !== 'live') return bad('This room is not live.');
+    if (!okId(body.pid)) return bad('Join first.');
+    const pp = await getJ(L.part + code + '/' + body.pid);
+    if (!pp) return bad('Join first.', 403);
+    if (a === 'liveHand') { pp.hand = !!body.on; pp.handAt = Date.now(); await putJ(L.part + code + '/' + body.pid, pp); return reply(200, { ok: true }); }
+    const text = clip(body.text, 300).trim();
+    if (!text) return bad('Type a message.');
+    const mine = await listKeys(`${L.msg}${code}/`);
+    if (mine.length > 200) return bad('Too many messages.');
+    await putJ(`${L.msg}${code}/${String(Date.now()).padStart(14, '0')}-${body.pid}`, { pid: body.pid, name: pp.name, text, at: new Date().toISOString() });
+    return reply(200, { ok: true });
   }
   if (a === 'liveRespond') {
     const r = await getJ(L.room + code);
@@ -1123,7 +1164,7 @@ async function liveAction(body, user) {
     }
     const id = await newLiveCode();
     const slides = (Array.isArray(body.slides) ? body.slides : []).slice(0, 80).map(cleanSlide);
-    const r = { id, owner: lc(user.username), classId, className, title: clip(body.title, 120) || 'Live room', slides, idx: 0, open: !!(slides[0] && slides[0].type !== 'slide'), reveal: false, status: 'live', widgets: {}, createdAt: new Date().toISOString(), rev: 1 };
+    const r = { id, owner: lc(user.username), classId, className, title: clip(body.title, 120) || 'Live room', slides, idx: 0, open: !!(slides[0] && ['mcq', 'poll', 'text'].includes(slides[0].type)), reveal: false, status: 'live', widgets: {}, createdAt: new Date().toISOString(), rev: 1 };
     await putJ(L.room + id, r);
     return reply(200, { ok: true, room: r });
   }
@@ -1132,7 +1173,7 @@ async function liveAction(body, user) {
   if (!liveOwns(r, user)) return bad('No access.', 403);
   if (a === 'liveGet') {
     const [resp, parts] = await Promise.all([liveResponses(code, body.slideId && okId(body.slideId) ? body.slideId : null), mapLimit(await listKeys(L.part + code + '/'), 16, getJ)]);
-    return reply(200, { ok: true, room: r, responses: resp.map((x) => ({ pid: x.pid, name: x.name, slideId: x.slideId, answer: x.answer, at: x.at })), participants: parts.filter(Boolean).map((p) => ({ pid: p.pid, name: p.name, seen: p.seen || 0 })) });
+    return reply(200, { ok: true, room: r, responses: resp.map((x) => ({ pid: x.pid, name: x.name, slideId: x.slideId, answer: x.answer, at: x.at })), participants: parts.filter(Boolean).map((p) => ({ pid: p.pid, name: p.name, seen: p.seen || 0, hand: !!p.hand, handAt: p.handAt || 0 })), msgs: (await mapLimit(await listKeys(`${L.msg}${code}/`), 16, async (k) => { const m = await getJ(k); return m && { ...m, key: k.slice(L.msg.length + code.length + 1) }; })).filter(Boolean) });
   }
   if (a === 'liveSave') {
     if (Array.isArray(body.slides)) r.slides = body.slides.slice(0, 80).map(cleanSlide);
@@ -1150,16 +1191,18 @@ async function liveAction(body, user) {
     if (body.widgets) r.widgets = cleanWidgets(body.widgets);
     if (body.addSlide) {       // ask-now: insert a question right after the current slide and jump to it
       const s = cleanSlide(body.addSlide, r.slides.length);
-      r.slides.splice(r.idx + 1, 0, s); r.idx++; r.reveal = false; r.open = s.type !== 'slide';
+      r.slides.splice(r.idx + 1, 0, s); r.idx++; r.reveal = false; r.open = ['mcq', 'poll', 'text'].includes(s.type);
     }
     if (body.status === 'ended') { r.status = 'ended'; r.open = false; r.endedAt = new Date().toISOString(); }
     if (body.status === 'live' && r.status === 'ended') { r.status = 'live'; r.endedAt = null; }
+    if (typeof body.dismissMsg === 'string' && /^[0-9]{14}-[A-Za-z0-9_-]{1,80}$/.test(body.dismissMsg)) await delK(`${L.msg}${code}/${body.dismissMsg}`);
+    if (okId(body.lowerHand)) { const pp = await getJ(L.part + code + '/' + body.lowerHand); if (pp) { pp.hand = false; await putJ(L.part + code + '/' + body.lowerHand, pp); } }
     if (body.clearSlide && okId(body.clearSlide)) await mapLimit(await listKeys(`${L.resp}${code}/${body.clearSlide}/`), 16, delK);
     r.rev++; await putJ(L.room + code, r);
     return reply(200, { ok: true, room: r });
   }
   if (a === 'liveDelete') {
-    await mapLimit([...(await listKeys(`${L.resp}${code}/`)), ...(await listKeys(`${L.part}${code}/`))], 16, delK);
+    await mapLimit([...(await listKeys(`${L.resp}${code}/`)), ...(await listKeys(`${L.part}${code}/`)), ...(await listKeys(`${L.msg}${code}/`))], 16, delK);
     await delK(L.room + code);
     return reply(200, { ok: true });
   }

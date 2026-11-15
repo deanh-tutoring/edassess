@@ -67,11 +67,13 @@ Hand out a **join code** or post the test to a class. The **Live Monitor** shows
 
 Open **Live Room** from the sidebar (or **Live room** inside any class) to put a screen in front of your group, standalone or tied to a class.
 
-- **Slides:** type them, add images, or import a PDF or a stack of images as slides.
+- **Slides:** type them, add images, import a **PowerPoint (.pptx)** (text, pictures, tables and speaker notes come across; animations and charts do not), or import a PDF or images.
+- **Websites and links:** embed a YouTube/Vimeo video, Google Doc/Slides, Desmos and similar on everyone's screen (with an "Open in a new tab" fallback), or push links to students' screens at any time.
+- **Hands and questions:** students can raise a hand or message you; you see them in one inbox.
 - **Ask anything:** multiple choice, polls, typed answers, and one-tap check-ins (Got it → Lost). Use **Ask now** to drop a question in mid-session without preparing it.
 - **See answers arrive:** live bars, typed replies (or a word cloud), who has not answered yet, and a one-click **Reveal answer**.
 - **Join in seconds:** students enter the 5-letter code on the front page, or scan the QR.
-- **Classroom widgets:** timer, noise level, stop/wait/go signal, a message to show, a name picker, group maker, dice and clock. The timer, signal and message also appear on student screens.
+- **Classroom widgets:** timer, stopwatch, noise level, stop/wait/go signal, a message to show, a shared agenda checklist, scoreboard, name picker, group maker, dice and clock. The timer, signal and message also appear on student screens.
 - **What to do next:** when you end the room, results flag questions to reteach, list students to check in with, and export to CSV.
 
 ### Classes that feel like a classroom

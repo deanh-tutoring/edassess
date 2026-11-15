@@ -1643,6 +1643,28 @@ body.lv-open{overflow:hidden}
 #lv-ov .btn-primary{color:var(--on-pop)}
 #page-liveroom>.page-body{padding:24px 32px;max-width:1104px}#page-liveroom .lv-sel{max-width:100%}
 .lv-ltr,.lv-code,.lv-cloud{color:var(--ochre)}.lv-nav:not(:disabled):hover{color:var(--ochre)}
+/* live room: decks, embeds, links, inbox */
+.lv-deck{position:relative;container-type:inline-size;width:100%;margin:0 auto;overflow:hidden;border:1px solid var(--border-dark);border-radius:6px;color:#111;box-shadow:var(--shadow-lg)}
+.lv-deck p{margin:0;line-height:1.2}.lv-dx{position:absolute;display:flex;flex-direction:column;word-break:break-word}.lv-dx.va-ctr{justify-content:center}.lv-dx.va-b{justify-content:flex-end}
+.lv-dr{position:absolute}.lv-dr.el{border-radius:50%}.lv-di{position:absolute;object-fit:contain}
+.lv-dt{position:absolute;border-collapse:collapse;color:#111;background:#fff}.lv-dt td,.lv-dt th{border:1px solid #bbb;padding:.3em .5em;text-align:left}.lv-dt th{background:#e9eef7}
+.lv-slide.lv-full{padding-top:6px;justify-content:flex-start;align-items:center;gap:8px;overflow:auto}
+.lv-join.min{padding:5px 10px;top:8px;right:10px;gap:8px}.lv-join.min .lv-join-k,.lv-join.min .lv-join-u,.lv-join.min .lv-qr{display:none}.lv-join.min .lv-code{font-size:22px}
+.lv-notes{width:100%;max-width:900px;border:1px solid var(--border-dark);border-radius:10px;background:var(--plate-hi);padding:8px 12px;color:var(--ink);font-size:14px}.lv-notes summary{cursor:pointer;color:var(--ink-mid)}.lv-notes div{margin-top:6px;line-height:1.5}
+.lv-embed{width:100%;display:flex;flex-direction:column;gap:6px;flex:1;min-height:60vh}.lv-embed iframe{flex:1;width:100%;min-height:56vh;border:1px solid var(--border-dark);border-radius:10px;background:#fff}
+.lv-embed.mob iframe{min-height:68vh}.lv-embed-f{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-soft)}.lv-embed-f a{color:var(--ochre);font-weight:600}
+.lv-embed-t{font-family:var(--f-display);font-size:26px;color:var(--ink);align-self:flex-start}
+.lv-links{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:14px;width:100%}
+.lv-lk{display:flex;flex-direction:column;gap:2px;padding:12px 16px;border:1.5px solid var(--border-dark);border-radius:12px;background:var(--plate-hi);color:var(--ink);text-decoration:none}.lv-lk:hover{border-color:var(--accent)}.lv-lk b{font-size:17px}.lv-lk span{font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-hands.alert{border-color:var(--gold);color:var(--gold);font-weight:700}
+.lv-inbox,.lv-w .lv-ib{display:flex;flex-direction:column;gap:4px;max-height:130px;overflow:auto}.lv-ib{display:flex!important;flex-direction:row!important;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;color:var(--ink)}
+.lv-ag{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink)}.lv-ag span{flex:1}.lv-ag.done span{text-decoration:line-through;color:var(--ink-soft)}.lv-ag input{accent-color:var(--accent);width:16px;height:16px}
+.lv-score{display:flex;flex-direction:column;gap:5px}.lv-sc{display:flex;align-items:center;gap:6px}.lv-sc .lv-in{min-width:0!important;flex:1}.lv-sc b{min-width:28px;text-align:center;font-size:22px;font-family:var(--f-display)}
+.lv-askf{display:flex;gap:6px;padding:6px}.lv-askf .lv-in{padding:7px 9px;font-size:13px}
+.lv-st-act{display:flex;gap:8px;padding:8px 0 0}.lv-st-act .btn.on{background:var(--gold-pale);border-color:var(--gold);color:var(--ink)}
+.lv-st-msg{gap:8px;padding:8px 0}
+.lv-sw.lnk{color:var(--ochre);text-decoration:none}.lv-sw.ag{display:flex;flex-direction:column;gap:2px;border-radius:12px;font-weight:500;font-size:13px}.lv-sw.ag .d{text-decoration:line-through;color:var(--ink-soft)}
+.lv-w .lv-in{min-width:0}
 </style>
 </head>
 <body>
@@ -13001,7 +13023,9 @@ const clock=()=>new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit
 const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 const joinUrl=c=>location.origin+location.pathname+'?live='+c;
 let LV={rooms:null,draft:null,sel:0,pres:null,poll:null,tick:null,sum:null};
-const T={slide:'Slide',mcq:'Multiple choice',poll:'Poll',text:'Typed answer'};
+const T={slide:'Slide',mcq:'Multiple choice',poll:'Poll',text:'Typed answer',embed:'Embedded site',links:'Links',deck:'Imported slide'};
+const isQ=s=>s&&['mcq','poll','text'].includes(s.type);
+const BASE=['slide','mcq','poll','text'];
 
 /* ───────────── teacher: list page ───────────── */
 function pg(){return $('page-liveroom');}
@@ -13038,10 +13062,13 @@ function renderBuilder(){
   <div class="page-body"><div class="lv-b-top"><input id="lv-title" class="lv-in" placeholder="Room title" value="${E(d.title)}" oninput="LV_.draft.title=this.value">
    ${d.code?'':`<select class="lv-in lv-sel" onchange="LV_.draft.classId=this.value"><option value="">Standalone (anyone with the code)</option>${classes.map(c=>`<option value="${E(c.id)}" ${d.classId===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select>`}</div>
   <div class="lv-b"><div class="lv-rail">${d.slides.map((x,i)=>`<div class="lv-th ${i===LV.sel?'on':''}" onclick="lvSel(${i})"><span class="lv-th-n">${i+1}</span><span class="lv-th-t">${E(x.title||'Untitled')}</span><span class="lv-th-k">${T[x.type]}${x.checkin?' · check-in':''}</span></div>`).join('')}
-   <div class="lv-add"><button class="btn btn-secondary btn-sm" onclick="lvAdd('slide')">+ Slide</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('mcq')">+ Multiple choice</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('poll')">+ Poll</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('text')">+ Typed answer</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('checkin')">+ Check-in</button><label class="btn btn-secondary btn-sm" style="cursor:pointer">+ Images / PDF<input type="file" accept="image/*,application/pdf" multiple hidden onchange="lvImport(this.files)"></label></div></div>
+   <div class="lv-add"><button class="btn btn-secondary btn-sm" onclick="lvAdd('slide')">+ Slide</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('mcq')">+ Multiple choice</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('poll')">+ Poll</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('text')">+ Typed answer</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('checkin')">+ Check-in</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('embed')">+ Embed site</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('links')">+ Links</button><label class="btn btn-primary btn-sm" style="cursor:pointer">Import PowerPoint<input type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden onchange="lvPptx(this.files)"></label><label class="btn btn-secondary btn-sm" style="cursor:pointer">+ Images / PDF<input type="file" accept="image/*,application/pdf" multiple hidden onchange="lvImport(this.files)"></label></div></div>
   <div class="lv-ed" id="lv-ed">${edHtml(s)}</div></div></div>`;
 }
 function edHtml(s){
+  if(s.type==='deck')return `<div class="lv-ed-h"><span class="lv-chip">Imported slide</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="lvMove(-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="lvMove(1)">↓</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvRm()">Remove</button></div>${deckHtml(s.deck)}<div class="lv-lbl">Speaker notes (only you see these)</div><textarea class="lv-in" rows="3" oninput="LV_.sl().deck.notes=this.value">${E(s.deck.notes||'')}</textarea>`;
+  if(s.type==='embed')return `<div class="lv-ed-h"><span class="lv-chip">Embedded site</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="lvMove(-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="lvMove(1)">↓</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvRm()">Remove</button></div><div class="lv-lbl">Link</div><input class="lv-in lv-big" value="${E(s.url||'')}" oninput="LV_.sl().url=this.value" placeholder="https://… (YouTube, Vimeo, Google Docs/Slides, Desmos, GeoGebra…)"><div class="lv-lbl">Caption (optional)</div><input class="lv-in" value="${E(s.title||'')}" oninput="LV_.sl().title=this.value;lvRail()"><p class="lv-dim" style="margin-top:10px">Everyone sees the same page. Some sites refuse to be embedded; students always get an "Open in a new tab" link.</p>`;
+  if(s.type==='links')return `<div class="lv-ed-h"><span class="lv-chip">Links</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="lvMove(-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="lvMove(1)">↓</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvRm()">Remove</button></div><div class="lv-lbl">Heading</div><input class="lv-in lv-big" value="${E(s.title)}" oninput="LV_.sl().title=this.value;lvRail()" placeholder="Today's resources"><div class="lv-lbl">Links students can tap</div>${(s.links||[]).map((l,i)=>`<div class="lv-opt"><input class="lv-in" style="flex:1" value="${E(l.title)}" oninput="LV_.sl().links[${i}].title=this.value" placeholder="Label"><input class="lv-in" style="flex:2" value="${E(l.url)}" oninput="LV_.sl().links[${i}].url=this.value" placeholder="https://…"><button class="btn btn-ghost btn-sm" onclick="LV_.sl().links.splice(${i},1);lvEd()">✕</button></div>`).join('')}<button class="btn btn-ghost btn-sm" onclick="LV_.sl().links.push({title:'',url:''});lvEd()">+ Add link</button>`;
   const opt=(s.type==='mcq'||s.type==='poll')?`<div class="lv-lbl">Choices${s.type==='mcq'?' — pick the correct one':''}</div>${s.options.map((o,i)=>`<div class="lv-opt">${s.type==='mcq'?`<input type="radio" name="lvc" ${s.correct===i?'checked':''} onchange="LV_.sl().correct=${i}" title="Correct answer">`:`<span class="lv-ltr">${LET[i]}</span>`}<input class="lv-in" value="${E(o)}" oninput="LV_.sl().options[${i}]=this.value" placeholder="Choice ${LET[i]}">${s.options.length>2?`<button class="btn btn-ghost btn-sm" onclick="lvOptDel(${i})">✕</button>`:''}</div>`).join('')}${s.options.length<8?'<button class="btn btn-ghost btn-sm" onclick="lvOptAdd()">+ Add choice</button>':''}`:'';
   return `<div class="lv-ed-h"><select class="lv-in lv-sel" onchange="lvType(this.value)">${Object.keys(T).map(k=>`<option value="${k}" ${s.type===k?'selected':''}>${T[k]}</option>`).join('')}</select><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="lvMove(-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="lvMove(1)">↓</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvRm()">Remove</button></div>
   <div class="lv-lbl">${s.type==='slide'?'Title':'Question'}</div><input class="lv-in lv-big" value="${E(s.title)}" oninput="LV_.sl().title=this.value;lvRail()" placeholder="${s.type==='slide'?'Slide title':'Ask something…'}">
@@ -13054,7 +13081,7 @@ window.lvEd=()=>{const e=$('lv-ed');if(e)e.innerHTML=edHtml(sl());};
 window.lvRail=()=>{const t=document.querySelectorAll('.lv-th')[LV.sel];if(t)t.querySelector('.lv-th-t').textContent=sl().title||'Untitled';};
 window.lvSel=i=>{LV.sel=i;renderBuilder();};
 window.lvCancel=()=>{LV.draft=null;render();};
-window.lvAdd=t=>{const s={id:rid(),type:t==='checkin'?'poll':t,title:t==='checkin'?'How are you feeling about this so far?':'',body:''};
+window.lvAdd=t=>{const s={id:rid(),type:t==='checkin'?'poll':t,url:'',links:t==='links'?[{title:'',url:''}]:undefined,title:t==='checkin'?'How are you feeling about this so far?':'',body:''};
   if(t==='mcq'||t==='poll'||t==='checkin'){s.options=t==='checkin'?CHECKIN.slice():['','','',''];if(t==='checkin')s.checkin=true;if(t==='mcq')s.correct=0;}
   LV.draft.slides.push(s);LV.sel=LV.draft.slides.length-1;renderBuilder();};
 window.lvType=t=>{const s=sl();s.type=t;if((t==='mcq'||t==='poll')&&!s.options)s.options=['','','',''];if(t==='mcq'&&s.correct==null)s.correct=0;if(t!=='mcq')delete s.correct;renderBuilder();};
@@ -13080,7 +13107,7 @@ window.lvImport=async function(files){
 };
 window.lvSaveStart=async function(){
   const d=LV.draft,b=$('lv-go');
-  const slides=d.slides.map(s=>({...s,title:s.title||(s.type==='slide'?'':'Question'),options:s.options&&s.options.filter(o=>String(o).trim()).length>=2?s.options:s.options}));
+  const slides=d.slides.map(s=>({...s,url:s.type==='embed'?normUrl(s.url):s.url,links:s.type==='links'?(s.links||[]).map(l=>({title:l.title,url:normUrl(l.url)})).filter(l=>l.url):s.links,title:s.title||(s.type==='slide'||!['mcq','poll','text'].includes(s.type)?'':'Question'),options:s.options&&s.options.filter(o=>String(o).trim()).length>=2?s.options:s.options}));
   if(!slides.length)return;b.disabled=true;
   const title=(d.title||'').trim()||slides[0].title||'Live room';
   let r;
@@ -13091,6 +13118,112 @@ window.lvSaveStart=async function(){
   if(d.code){toast('Saved.');loadRooms();}else lvOpen(code);
 };
 
+/* ───────────── PowerPoint import (reads the .pptx in the browser; nothing is uploaded except its pictures) ───────────── */
+async function loadJSZip(){if(window.JSZip)return;await new Promise((ok,no)=>{const x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';x.onload=ok;x.onerror=()=>no(new Error('PowerPoint tools could not load. Check your connection.'));document.head.appendChild(x);});}
+const X={ch:(n,t)=>n?[...n.children].filter(c=>c.tagName===t):[],one:(n,t)=>X.ch(n,t)[0],all:(n,t)=>n?[...n.getElementsByTagName(t)]:[],path:(n,...ts)=>{for(const t of ts){n=n&&X.one(n,t);}return n;}};
+const EMU=12700;
+function resolve(base,target){if(/^\//.test(target))return target.slice(1);const p=base.split('/');p.pop();for(const s of target.split('/')){if(s==='..')p.pop();else if(s&&s!=='.')p.push(s);}return p.join('/');}
+async function parseXml(z,path){const f=z.file(path);return f?new DOMParser().parseFromString(await f.async('string'),'application/xml'):null;}
+async function relsOf(z,path){const dir=path.split('/'),name=dir.pop(),d=await parseXml(z,dir.join('/')+'/_rels/'+name+'.rels'),m={};if(d)X.all(d,'Relationship').forEach(r=>m[r.getAttribute('Id')]={type:r.getAttribute('Type'),target:resolve(path,r.getAttribute('Target')),ext:r.getAttribute('TargetMode')==='External'});return m;}
+function themeColors(doc){const m={},cs=doc&&X.all(doc,'a:clrScheme')[0];if(!cs)return {dk1:'#111111',lt1:'#ffffff'};[...cs.children].forEach(c=>{const k=c.tagName.slice(2),v=c.firstElementChild;if(!v)return;m[k]=v.tagName==='a:sysClr'?'#'+(v.getAttribute('lastClr')||'000000'):'#'+v.getAttribute('val');});m.tx1=m.dk1;m.bg1=m.lt1;m.tx2=m.dk2;m.bg2=m.lt2;return m;}
+function colorOf(fillNode,th){if(!fillNode)return null;const sf=X.one(fillNode,'a:solidFill');if(!sf)return null;const c=sf.firstElementChild;if(!c)return null;if(c.tagName==='a:srgbClr')return '#'+c.getAttribute('val');if(c.tagName==='a:schemeClr')return th[c.getAttribute('val')]||null;if(c.tagName==='a:sysClr')return '#'+(c.getAttribute('lastClr')||'000000');return null;}
+const lum=h=>{const n=parseInt((h||'#ffffff').slice(1),16);return (0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255;};
+function xfrmOf(sp){const x=X.path(sp,'p:spPr','a:xfrm')||X.one(sp,'p:xfrm')||X.path(sp,'p:grpSpPr','a:xfrm');if(!x)return null;const o=X.one(x,'a:off'),e=X.one(x,'a:ext');if(!o||!e)return null;const co=X.one(x,'a:chOff'),ce=X.one(x,'a:chExt');return {x:+o.getAttribute('x'),y:+o.getAttribute('y'),w:+e.getAttribute('cx'),h:+e.getAttribute('cy'),cx:co?+co.getAttribute('x'):0,cy:co?+co.getAttribute('y'):0,cw:ce?+ce.getAttribute('cx'):0,ch:ce?+ce.getAttribute('cy'):0};}
+function phOf(sp){const ph=X.path(sp,'p:nvSpPr','p:nvPr','p:ph');return ph?{type:ph.getAttribute('type')||'body',idx:ph.getAttribute('idx')}:null;}
+function phMap(doc){const m={};if(!doc)return m;X.all(doc,'p:sp').forEach(sp=>{const ph=phOf(sp);if(!ph)return;const rec={x:xfrmOf(sp),sz:null,body:X.path(sp,'p:txBody','a:bodyPr')};const l1=X.path(sp,'p:txBody','a:lstStyle','a:lvl1pPr','a:defRPr');if(l1&&l1.getAttribute('sz'))rec.sz=+l1.getAttribute('sz')/100;if(ph.idx)m['i'+ph.idx]=rec;m['t'+ph.type]=m['t'+ph.type]||rec;});return m;}
+function defSz(master,type){const st=X.path(master&&master.documentElement,'p:txStyles',/title/i.test(type)?'p:titleStyle':'p:bodyStyle','a:lvl1pPr','a:defRPr');return st&&st.getAttribute('sz')?+st.getAttribute('sz')/100:(/title/i.test(type)?40:20);}
+function textItem(sp,T,ctx){
+  const tx=X.one(sp,'p:txBody');const ph=phOf(sp);let xf=xfrmOf(sp),inh=null;
+  if(ph){const c=[ph.idx&&ctx.lay['i'+ph.idx],ctx.lay['t'+ph.type],ph.idx&&ctx.mas['i'+ph.idx],ctx.mas['t'+ph.type]].filter(Boolean);inh={x:(c.find(r=>r.x)||{}).x||null,sz:(c.find(r=>r.sz)||{}).sz||null,body:(c.find(r=>r.body)||{}).body||null};if(!xf)xf=inh.x;}
+  if(!xf)return null;
+  const paras=[];const bp=tx&&X.one(tx,'a:bodyPr'),na=bp&&X.one(bp,'a:normAutofit'),scale=na&&na.getAttribute('fontScale')?+na.getAttribute('fontScale')/100000:1;
+  const bodyish=ph&&!/title|ctrTitle|subTitle|dt|ftr|sldNum/i.test(ph.type);
+  if(tx)X.ch(tx,'a:p').forEach(p=>{const pr=X.one(p,'a:pPr'),al=pr&&pr.getAttribute('algn');const bu=!!(pr&&X.one(pr,'a:buChar'))||(bodyish&&!(pr&&X.one(pr,'a:buNone')));
+    const runs=[];X.ch(p,'a:r').concat(X.ch(p,'a:fld')).forEach(r=>{const t=(X.one(r,'a:t')||{}).textContent||'';if(!t)return;const rp=X.one(r,'a:rPr');
+      let sz=rp&&rp.getAttribute('sz')?+rp.getAttribute('sz')/100:(inh&&inh.sz)||(ph?defSz(ctx.mas.doc,ph.type):18);
+      runs.push({t,sz:Math.max(6,sz*scale),b:!!(rp&&rp.getAttribute('b')==='1'),i:!!(rp&&rp.getAttribute('i')==='1'),c:colorOf(rp,ctx.th)||undefined});});
+    X.ch(p,'a:br').length&&runs.length&&runs.push({t:' ',sz:12});
+    if(runs.length)paras.push({al:al==='ctr'?'ctr':al==='r'?'r':'l',bu,runs});});
+  const fill=colorOf(X.one(sp,'p:spPr'),ctx.th),geom=(X.path(sp,'p:spPr','a:prstGeom')||{getAttribute:()=>''}).getAttribute('prst');
+  if(!paras.length&&!fill)return null;
+  const anc=(bp&&bp.getAttribute('anchor'))||(inh&&inh.body&&inh.body.getAttribute('anchor'))||'t';
+  const dark=lum(fill||ctx.bg)<.45;paras.forEach(p=>p.runs.forEach(r=>{if(!r.c)r.c=dark?'#ffffff':ctx.th.dk1||'#111111';}));
+  const X0=T.tx+xf.x*T.sx,Y0=T.ty+xf.y*T.sy;
+  return {k:paras.length?'t':'r',x:X0/ctx.W*100,y:Y0/ctx.H*100,w:xf.w*T.sx/ctx.W*100,h:xf.h*T.sy/ctx.H*100,fill:fill||undefined,geom:geom==='ellipse'?'ellipse':undefined,va:anc==='ctr'?'ctr':anc==='b'?'b':'t',paras};
+}
+async function walkTree(node,T,ctx,out){
+  for(const el of [...node.children]){
+    if(el.tagName==='p:sp'){const it=textItem(el,T,ctx);if(it)out.push(it);}
+    else if(el.tagName==='p:pic'){const xf=xfrmOf(el),bl=X.all(el,'a:blip')[0],id=bl&&bl.getAttribute('r:embed'),rel=id&&ctx.rels[id];if(xf&&rel){const url=await ctx.img(rel.target);if(url)out.push({k:'i',x:(T.tx+xf.x*T.sx)/ctx.W*100,y:(T.ty+xf.y*T.sy)/ctx.H*100,w:xf.w*T.sx/ctx.W*100,h:xf.h*T.sy/ctx.H*100,img:url});}}
+    else if(el.tagName==='p:grpSp'){const xf=xfrmOf(el);let T2=T;if(xf&&xf.cw&&xf.ch){const sx=xf.w/xf.cw,sy=xf.h/xf.ch;T2={sx:T.sx*sx,sy:T.sy*sy,tx:T.tx+T.sx*(xf.x-xf.cx*sx),ty:T.ty+T.sy*(xf.y-xf.cy*sy)};}await walkTree(el,T2,ctx,out);}
+    else if(el.tagName==='p:graphicFrame'){const tbl=X.all(el,'a:tbl')[0],xf=xfrmOf(el);if(tbl&&xf){const rows=X.ch(tbl,'a:tr').map(tr=>X.ch(tr,'a:tc').map(tc=>X.all(tc,'a:t').map(t=>t.textContent).join(' ')));out.push({k:'tbl',x:(T.tx+xf.x*T.sx)/ctx.W*100,y:(T.ty+xf.y*T.sy)/ctx.H*100,w:xf.w*T.sx/ctx.W*100,h:xf.h*T.sy/ctx.H*100,rows});}}
+  }
+}
+async function readPptx(file,onProgress){
+  await loadJSZip();const z=await JSZip.loadAsync(file);
+  const pres=await parseXml(z,'ppt/presentation.xml');if(!pres)throw new Error('That does not look like a .pptx file.');
+  const sz=X.all(pres,'p:sldSz')[0],SW=+sz.getAttribute('cx'),SH=+sz.getAttribute('cy');
+  const prel=await relsOf(z,'ppt/presentation.xml');
+  const th=themeColors(await parseXml(z,Object.values(prel).find(r=>/theme$/.test(r.type))?.target||'ppt/theme/theme1.xml'));
+  const ids=X.all(pres,'p:sldId').map(n=>prel[n.getAttribute('r:id')]).filter(Boolean).map(r=>r.target);
+  const cache={};const upload=async media=>{if(media in cache)return cache[media];const f=z.file(media);let url=null;
+    const ext=(media.split('.').pop()||'').toLowerCase();if(f&&['png','jpg','jpeg','gif','webp'].includes(ext)){const mime={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp'}[ext];
+      let blob=new Blob([await f.async('uint8array')],{type:mime});
+      if(blob.size>1500000&&ext!=='gif'){try{blob=await new Promise(ok=>{const im=new Image(),u=URL.createObjectURL(blob);im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(b=>ok(b),'image/jpeg',.82);};im.onerror=()=>ok(null);im.src=u;});}catch(e){blob=null;}}
+      if(blob&&blob.size<3500000){const dataUrl=await new Promise(ok=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.readAsDataURL(blob);});try{url=await upImg(dataUrl);}catch(e){url=null;}}}
+    return cache[media]=url;};
+  const slides=[];let n=0;
+  for(const sp of ids){
+    n++;onProgress&&onProgress(n,ids.length);
+    const doc=await parseXml(z,sp);if(!doc)continue;const rels=await relsOf(z,sp);
+    const layP=Object.values(rels).find(r=>/slideLayout$/.test(r.type))?.target,lay=layP?await parseXml(z,layP):null;
+    const lrels=layP?await relsOf(z,layP):{},masP=Object.values(lrels).find(r=>/slideMaster$/.test(r.type))?.target,mas=masP?await parseXml(z,masP):null;
+    const bgOf=d=>colorOf(X.path(d&&d.documentElement,'p:cSld','p:bg','p:bgPr'),th);
+    const bg=bgOf(doc)||bgOf(lay)||bgOf(mas)||th.lt1||'#ffffff';
+    const lm=phMap(lay),mm=phMap(mas);mm.doc=mas;
+    const ctx={W:SW,H:SH,th,bg,rels,lay:lm,mas:mm,img:async t=>{const u=await upload(t);return u;}};
+    const out=[];
+    // layout/master pictures (logos) are not carried over; shapes on the slide itself are.
+    const tree=X.path(doc.documentElement,'p:cSld','p:spTree');if(tree)await walkTree(tree,{sx:1,sy:1,tx:0,ty:0},ctx,out);
+    let notes='';const nr=Object.values(rels).find(r=>/notesSlide$/.test(r.type));
+    if(nr){const nd=await parseXml(z,nr.target);if(nd)notes=X.all(nd,'p:sp').filter(sp=>{const p=phOf(sp);return p&&p.type==='body';}).map(sp=>X.all(sp,'a:p').map(p=>X.all(p,'a:t').map(t=>t.textContent).join('')).join('\n')).join('\n').trim();}
+    const first=out.find(i=>i.k==='t');const title=first?first.paras[0].runs.map(r=>r.t).join('').slice(0,80):'Slide '+n;
+    slides.push({id:rid(),type:'deck',title,body:'',deck:{W:SW/EMU,H:SH/EMU,bg,items:out,notes}});
+  }
+  return slides;
+}
+window.lvPptx=async function(files){
+  const f=files&&files[0];if(!f)return;
+  const room=80-LV.draft.slides.length;if(room<1)return toast('A room holds up to 80 slides.','info');
+  toast('Reading '+f.name+'…','info');
+  try{let sl=await readPptx(f,(i,n)=>{if(n>6&&i%5===0)toast('Slide '+i+' of '+n+'…','info');});
+    if(sl.length>room){sl=sl.slice(0,room);toast('Only the first '+room+' slides fit in one room.','info');}
+    const d=LV.draft;if(d.slides.length===1&&sl.length&&!d.slides[0].title&&!d.slides[0].body&&!d.slides[0].img)d.slides=[];
+    d.slides.push(...sl);if(!d.title)d.title=f.name.replace(/\.pptx$/i,'');LV.sel=Math.max(0,d.slides.length-sl.length);renderBuilder();toast(sl.length+' slide'+(sl.length!==1?'s':'')+' imported.');
+  }catch(e){toast(e.message||'Could not read that file.','error');}
+};
+
+/* ───────────── shared slide renderers ───────────── */
+function embedUrl(u){try{const x=new URL(u),h=x.hostname.replace(/^www\./,'');
+  if(h==='youtu.be')return 'https://www.youtube.com/embed/'+x.pathname.slice(1);
+  if(/youtube\.com$/.test(h)&&x.searchParams.get('v'))return 'https://www.youtube.com/embed/'+x.searchParams.get('v');
+  if(h==='vimeo.com'&&/^\/\d+/.test(x.pathname))return 'https://player.vimeo.com/video/'+x.pathname.slice(1).split('/')[0];
+  if(h==='docs.google.com'){const m=/^\/(document|spreadsheets|presentation)\/d\/([^/]+)/.exec(x.pathname);if(m)return `https://docs.google.com/${m[1]}/d/${m[2]}/${m[1]==='presentation'?'embed?start=false&loop=false':'preview'}`;}
+  if(/loom\.com$/.test(h))return u.replace('/share/','/embed/');
+  return u;}catch(e){return u;}}
+function deckHtml(d){const W=d.W||960,H=d.H||540;
+  const para=p=>`<p style="text-align:${p.al==='ctr'?'center':p.al==='r'?'right':'left'}">${p.bu?`<span style="font-size:${((p.runs[0]||{sz:18}).sz/W*100).toFixed(2)}cqw">•&nbsp;</span>`:''}${p.runs.map(r=>`<span style="font-size:${(r.sz/W*100).toFixed(2)}cqw;${r.b?'font-weight:700;':''}${r.i?'font-style:italic;':''}${r.c?'color:'+r.c:''}">${E(r.t)}</span>`).join('')}</p>`;
+  return `<div class="lv-deck" style="aspect-ratio:${W}/${H};max-width:calc((100vh - 140px)*${(W/H).toFixed(3)});background:${E(d.bg||'#fff')}">${(d.items||[]).map(it=>{
+    const pos=`left:${it.x}%;top:${it.y}%;width:${it.w}%;height:${it.h}%`;
+    if(it.k==='i')return `<img class="lv-di" style="${pos}" src="${E(it.img)}" alt="">`;
+    if(it.k==='r')return `<div class="lv-dr ${it.geom==='ellipse'?'el':''}" style="${pos};background:${it.fill||'transparent'}"></div>`;
+    if(it.k==='tbl')return `<table class="lv-dt" style="${pos};font-size:${(15/W*100).toFixed(2)}cqw">${(it.rows||[]).map((r,i)=>`<tr>${r.map(c=>`<${i?'td':'th'}>${E(c)}</${i?'td':'th'}>`).join('')}</tr>`).join('')}</table>`;
+    return `<div class="lv-dx va-${it.va||'t'}" style="${pos};${it.fill?'background:'+it.fill:''}">${(it.paras||[]).map(para).join('')}</div>`;}).join('')}</div>`;}
+function embedHtml(s,mob){if(!s.url)return '<div class="lv-dim">No link set for this slide.</div>';const u=embedUrl(s.url);
+  return `<div class="lv-embed ${mob?'mob':''}"><iframe src="${E(u)}" title="${E(s.title||'Embedded site')}" loading="lazy" allow="fullscreen; autoplay; clipboard-write; encrypted-media; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"></iframe><div class="lv-embed-f"><span>Blank? Some sites don't allow embedding.</span><a href="${E(s.url)}" target="_blank" rel="noopener noreferrer">Open in a new tab ↗</a></div></div>`;}
+function linksHtml(s){return `<div class="lv-links">${(s.links||[]).map(l=>`<a class="lv-lk" href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><b>${E(l.title)}</b><span>${E(l.url.replace(/^https:\/\//,'').slice(0,60))}</span></a>`).join('')||'<div class="lv-dim">No links yet.</div>'}</div>`;}
+function normUrl(u){u=String(u||'').trim();if(!u)return '';if(!/^[a-z]+:\/\//i.test(u))u='https://'+u;return /^https:\/\/[^\s]{4,}$/.test(u)?u:'';}
+
 /* ───────────── presenter ───────────── */
 const ov=()=>$('lv-ov');
 function mount(html,cls){let o=ov();if(!o){o=document.createElement('div');o.id='lv-ov';document.body.appendChild(o);}o.className=cls||'';o.innerHTML=html;document.body.classList.add('lv-open');return o;}
@@ -13098,29 +13231,35 @@ function unmount(){const o=ov();if(o)o.remove();document.body.classList.remove('
 window.lvOpen=async function(code){
   const r=await apiPost({action:'liveGet',code});if(!(r&&r.room))return toast((r&&r.error)||'Could not open it.','error');
   if(r.room.status==='ended'){await apiPost({action:'liveCtl',code,status:'live'});r.room.status='live';}
-  LV.pres={room:r.room,resp:r.responses||[],parts:r.participants||[],tray:false,wg:{},cloud:false,sig:''};
+  LV.pres={room:r.room,resp:r.responses||[],parts:r.participants||[],msgs:r.msgs||[],tray:false,wg:{},cloud:false,sig:''};
   LV.pres.wg=r.room.widgets||{};LS.set('ea_live_t',code);
   drawPres();startPoll();
 };
 function startPoll(){clearInterval(LV.poll);clearInterval(LV.tick);
-  LV.poll=setInterval(async()=>{const P=LV.pres;if(!P)return;const s=P.room.slides[P.room.idx];const r=await apiPost({action:'liveGet',code:P.room.id,slideId:s&&s.id});if(!r||!r.room||!LV.pres)return;P.parts=r.participants||[];P.resp=r.responses||[];paintResults();paintTop();},1800);
+  LV.poll=setInterval(async()=>{const P=LV.pres;if(!P)return;const s=P.room.slides[P.room.idx];const r=await apiPost({action:'liveGet',code:P.room.id,slideId:s&&s.id});if(!r||!r.room||!LV.pres)return;P.parts=r.participants||[];P.resp=r.responses||[];P.msgs=r.msgs||[];paintResults();paintTop();paintInbox();},1800);
   LV.tick=setInterval(tickWidgets,500);}
 function cur(){const P=LV.pres;return P.room.slides[P.room.idx];}
 function qr(url){try{if(!window.qrcode)return '';const q=qrcode(0,'M');q.addData(url);q.make();return q.createSvgTag({cellSize:4,margin:0,scalable:true});}catch(e){return '';}}
 async function ctl(o){const P=LV.pres;const r=await apiPost({action:'liveCtl',code:P.room.id,...o});if(r&&r.room){P.room=r.room;P.wg=r.room.widgets||{};P.resp=[];drawPres();}else toast((r&&r.error)||'Not saved.','error');}
 function drawPres(){
   const P=LV.pres,R=P.room,s=cur();if(!s)return;P.sig='';
-  const q=s.type!=='slide',url=joinUrl(R.id);
+  const q=isQ(s),url=joinUrl(R.id),full=s.type==='deck'||s.type==='embed';
   mount(`<div class="lv-pr">
    <div class="lv-bar"><div class="lv-bar-l"><button class="lv-x" onclick="lvExit()" title="Leave the screen (room stays live)">✕</button><b class="lv-bar-t">${E(R.title)}</b></div>
     <div class="lv-bar-c"><button class="lv-nav" onclick="lvGo(-1)" ${R.idx<1?'disabled':''} aria-label="Previous">‹</button><span class="lv-pos">${R.idx+1} / ${R.slides.length}</span><button class="lv-nav" onclick="lvGo(1)" ${R.idx>=R.slides.length-1?'disabled':''} aria-label="Next">›</button></div>
-    <div class="lv-bar-r"><span class="lv-who" id="lv-who"></span><button class="btn btn-secondary btn-sm" onclick="lvAsk()">Ask now</button><button class="btn btn-secondary btn-sm" onclick="lvTray()">${P.tray?'Hide widgets':'Widgets'}</button><button class="btn btn-primary btn-sm" onclick="lvEnd()">End</button></div></div>
-   <div class="lv-wrap"><div class="lv-stage"><div class="lv-join"><div><div class="lv-join-k">Join at</div><div class="lv-join-u">${E(location.host+location.pathname.replace(/\/$/,''))}</div><div class="lv-join-k">code</div><div class="lv-code">${E(R.id)}</div></div><div class="lv-qr">${qr(url)}</div></div>
-    <div class="lv-slide ${s.img?'has-img':''}">${s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:''}${s.title||s.body||!s.img?`<div class="lv-stext">${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}${q&&s.type!=='text'?`<div class="lv-opts">${s.options.map((o,i)=>`<div class="lv-o ${R.reveal&&s.correct===i?'ok':''}"><span class="lv-ltr">${LET[i]}</span>${E(o)}</div>`).join('')}</div>`:''}</div>`:''}</div></div>
+    <div class="lv-bar-r"><span class="lv-who" id="lv-who"></span><button class="btn btn-secondary btn-sm lv-hands" id="lv-hands" onclick="lvInbox()" style="display:none"></button><button class="btn btn-secondary btn-sm" onclick="lvAsk()">Ask now</button><button class="btn btn-secondary btn-sm" onclick="lvTray()">${P.tray?'Hide widgets':'Widgets'}</button><button class="btn btn-primary btn-sm" onclick="lvEnd()">End</button></div></div>
+   <div class="lv-wrap"><div class="lv-stage"><div class="lv-join ${full?'min':''}"><div><div class="lv-join-k">Join at</div><div class="lv-join-u">${E(location.host+location.pathname.replace(/\/$/,''))}</div><div class="lv-join-k">code</div><div class="lv-code">${E(R.id)}</div></div><div class="lv-qr">${qr(url)}</div></div>
+    <div class="lv-slide ${s.img?'has-img':''} ${full?'lv-full':''}">${stageHtml(s,R,q)}</div></div>
    ${q?`<aside class="lv-res"><div class="lv-res-h"><b>Responses</b><span class="lv-pill ${R.open?'on':''}">${R.open?'Open':'Closed'}</span></div><div id="lv-res-b"></div>
      <div class="lv-res-a"><button class="btn btn-secondary btn-sm" onclick="lvOpenClose()">${R.open?'Close responses':'Reopen responses'}</button>${s.type==='mcq'?`<button class="btn btn-secondary btn-sm" onclick="lvReveal()">${R.reveal?'Hide answer':'Reveal answer'}</button>`:''}${s.type==='text'?`<button class="btn btn-ghost btn-sm" onclick="lvCloud()">${P.cloud?'List view':'Word cloud'}</button>`:''}<button class="btn btn-ghost btn-sm" onclick="lvClear()">Clear</button></div></aside>`:''}</div>
    <div class="lv-tray ${P.tray?'on':''}" id="lv-tray">${trayHtml()}</div></div>`);
-  paintResults();paintTop();tickWidgets();
+  paintResults();paintTop();paintInbox();tickWidgets();
+}
+function stageHtml(s,R,q){
+  if(s.type==='deck')return deckHtml(s.deck)+(s.deck.notes?`<details class="lv-notes"><summary>Speaker notes (only you see these)</summary><div>${E(s.deck.notes).replace(/\n/g,'<br>')}</div></details>`:'');
+  if(s.type==='embed')return (s.title?`<div class="lv-embed-t">${E(s.title)}</div>`:'')+embedHtml(s);
+  if(s.type==='links')return `<div class="lv-stext">${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body)}</p>`:''}</div>`+linksHtml(s);
+  return (s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:'')+(s.title||s.body||!s.img?`<div class="lv-stext">${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}${q&&s.type!=='text'?`<div class="lv-opts">${s.options.map((o,i)=>`<div class="lv-o ${R.reveal&&s.correct===i?'ok':''}"><span class="lv-ltr">${LET[i]}</span>${E(o)}</div>`).join('')}</div>`:''}</div>`:'');
 }
 function paintTop(){const P=LV.pres;if(!P)return;const w=$('lv-who');if(!w)return;const on=P.parts.filter(p=>Date.now()-p.seen<15000).length;w.textContent=on+' here'+(P.parts.length>on?' · '+P.parts.length+' joined':'');}
 function paintResults(){
@@ -13153,40 +13292,65 @@ window.lvEnd=async()=>{if(!confirm('End this room for everyone? You can still se
 window.lvAsk=function(){
   const P=LV.pres;if($('lv-ask'))return $('lv-ask').remove();
   const d=document.createElement('div');d.id='lv-ask';d.className='lv-ask';
-  const items=[['mcq','Multiple choice A–D','Students pick one'],['poll','Poll','Opinions, no right answer'],['text','Typed answer','Short written reply'],['checkin','Check-in','Got it → Lost']];
+  const items=[['mcq','Multiple choice A–D','Students pick one'],['poll','Poll','Opinions, no right answer'],['text','Typed answer','Short written reply'],['checkin','Check-in','Got it → Lost'],['embed','Show a website or video','Embed a link on everyone\'s screen']];
   d.innerHTML=items.map(([k,a,b])=>`<button onclick="lvAskGo('${k}')"><b>${a}</b><span>${b}</span></button>`).join('');
   ov().querySelector('.lv-bar-r').appendChild(d);
 };
+window.lvEmbedNow=async function(e){e.preventDefault();const u=normUrl($('lv-eu').value);if(!u)return toast('Paste a full https link.','info');$('lv-ask').remove();LV.pres.sig='';await ctl({addSlide:{id:rid(),type:'embed',title:'',url:u}});return false;};
 window.lvAskGo=async function(k){
+  if(k==='embed'){const d=$('lv-ask');d.innerHTML='<form class="lv-askf" onsubmit="return lvEmbedNow(event)"><input class="lv-in" id="lv-eu" placeholder="Paste a link (YouTube, Google Doc, Desmos…)" autofocus><button class="btn btn-primary btn-sm">Show</button></form>';setTimeout(()=>$('lv-eu')&&$('lv-eu').focus(),30);return;}
   $('lv-ask')&&$('lv-ask').remove();
   const s=k==='mcq'?{type:'mcq',title:'Quick question',options:['A','B','C','D']}:k==='poll'?{type:'poll',title:'Quick poll',options:['Yes','No']}:k==='text'?{type:'text',title:'Type your answer'}:{type:'poll',checkin:true,title:'How are you feeling about this?',options:CHECKIN.slice()};
   LV.pres.sig='';await ctl({addSlide:{...s,id:rid()}});
 };
 
+/* hands + questions from students */
+function paintInbox(){const P=LV.pres;if(!P)return;
+  const hands=P.parts.filter(p=>p.hand).sort((a,b)=>a.handAt-b.handAt),msgs=P.msgs||[];
+  const hb=$('lv-hands');if(hb){const n=hands.length+msgs.length;hb.style.display=n?'':'none';hb.textContent='✋ '+n;hb.classList.toggle('alert',n>0);}
+  const b=$('lv-inbox-b');if(!b)return;
+  const h=(hands.map(p=>`<div class="lv-ib"><span>✋ <b>${E(p.name)}</b></span><button class="btn btn-ghost btn-sm" onclick="lvLower('${p.pid}')">Lower</button></div>`).join('')+msgs.map(m=>`<div class="lv-ib"><span><b>${E(m.name)}</b> ${E(m.text)}</span><button class="btn btn-ghost btn-sm" onclick="lvDismiss('${m.key}')">Done</button></div>`).join(''))||'<div class="lv-dim">No raised hands or questions.</div>';
+  if(b.dataset.h!==h){b.dataset.h=h;b.innerHTML=h;}}
+window.lvInbox=()=>{const P=LV.pres;if(!P.tray){P.tray=true;drawPres();}const t=$('lv-tray');if(t)t.scrollLeft=0;};
+window.lvLower=async pid=>{await apiPost({action:'liveCtl',code:LV.pres.room.id,lowerHand:pid});const p=LV.pres.parts.find(x=>x.pid===pid);if(p)p.hand=false;paintInbox();};
+window.lvDismiss=async k=>{await apiPost({action:'liveCtl',code:LV.pres.room.id,dismissMsg:k});LV.pres.msgs=LV.pres.msgs.filter(m=>m.key!==k);paintInbox();};
 /* widgets */
 function trayHtml(){
   const P=LV.pres,w=P.wg||{};
-  return `<div class="lv-w"><div class="lv-w-h">Timer</div><div class="lv-w-big" id="lv-tm">${w.timer&&w.timer.endsAt>Date.now()?mmss((w.timer.endsAt-Date.now())/1000):'0:00'}</div><div class="lv-w-r">${[1,3,5,10].map(m=>`<button class="btn btn-secondary btn-sm" onclick="lvTimer(${m*60})">${m}m</button>`).join('')}<button class="btn btn-ghost btn-sm" onclick="lvTimer(0)">Stop</button></div></div>
+  const lk=(w.links||[]),ag=(w.agenda||[]);
+  return `<div class="lv-w lv-w-wide"><div class="lv-w-h">Hands &amp; questions</div><div id="lv-inbox-b" class="lv-inbox"></div></div>
+  <div class="lv-w lv-w-wide"><div class="lv-w-h">Share links with students</div>${lk.map((l,i)=>`<div class="lv-ib"><span><b>${E(l.title)}</b></span><button class="btn btn-ghost btn-sm" onclick="lvLinkDel(${i})">Remove</button></div>`).join('')}<div class="lv-w-r"><input class="lv-in" id="lv-lk-u" placeholder="Paste a link" onkeydown="if(event.key==='Enter')lvLinkAdd()"><input class="lv-in" id="lv-lk-t" placeholder="Label (optional)" style="min-width:110px" onkeydown="if(event.key==='Enter')lvLinkAdd()"><button class="btn btn-secondary btn-sm" onclick="lvLinkAdd()">Send</button></div></div>
+  <div class="lv-w lv-w-wide"><div class="lv-w-h">Agenda</div>${ag.map((a,i)=>`<label class="lv-ag ${a.done?'done':''}"><input type="checkbox" ${a.done?'checked':''} onchange="lvAgTog(${i})"><span>${E(a.t)}</span><button class="btn btn-ghost btn-sm" onclick="event.preventDefault();lvAgDel(${i})" aria-label="Remove">✕</button></label>`).join('')}<div class="lv-w-r"><input class="lv-in" id="lv-ag-t" placeholder="Add a step" onkeydown="if(event.key==='Enter')lvAgAdd()"><button class="btn btn-secondary btn-sm" onclick="lvAgAdd()">Add</button></div></div>
+  <div class="lv-w"><div class="lv-w-h">Timer</div><div class="lv-w-big" id="lv-tm">${w.timer&&w.timer.endsAt>Date.now()?mmss((w.timer.endsAt-Date.now())/1000):'0:00'}</div><div class="lv-w-r">${[1,3,5,10].map(m=>`<button class="btn btn-secondary btn-sm" onclick="lvTimer(${m*60})">${m}m</button>`).join('')}<button class="btn btn-ghost btn-sm" onclick="lvTimer(0)">Stop</button></div></div>
   <div class="lv-w"><div class="lv-w-h">Noise level</div><div class="lv-w-r lv-mode">${[['silent','Silent'],['whisper','Whisper'],['talk','Talk']].map(([k,n])=>`<button class="btn ${w.mode===k?'btn-primary':'btn-secondary'} btn-sm" onclick="lvWg({mode:'${k}'})">${n}</button>`).join('')}</div></div>
   <div class="lv-w"><div class="lv-w-h">Signal</div><div class="lv-w-r">${[['red','Stop'],['yellow','Wait'],['green','Go']].map(([k,n])=>`<button class="lv-lt ${k} ${w.light===k?'on':''}" onclick="lvWg({light:'${k}'})" aria-label="${n}" title="${n}"></button>`).join('')}<button class="btn btn-ghost btn-sm" onclick="lvWg({light:'',mode:''})">Clear</button></div></div>
   <div class="lv-w"><div class="lv-w-h">Message</div><div class="lv-w-r"><input class="lv-in" id="lv-note" maxlength="300" placeholder="Show students a note" value="${E(w.note||'')}" onkeydown="if(event.key==='Enter')lvNote()"><button class="btn btn-secondary btn-sm" onclick="lvNote()">Show</button></div></div>
   <div class="lv-w"><div class="lv-w-h">Pick a name</div><div class="lv-w-big" id="lv-pick">—</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvPick()">Pick one</button></div></div>
   <div class="lv-w lv-w-wide"><div class="lv-w-h">Groups</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvGroups(2)">Pairs</button><button class="btn btn-secondary btn-sm" onclick="lvGroups(3)">Threes</button><button class="btn btn-secondary btn-sm" onclick="lvGroups(4)">Fours</button></div><div id="lv-groups" class="lv-groups"></div></div>
+  <div class="lv-w"><div class="lv-w-h">Stopwatch</div><div class="lv-w-big" id="lv-sw">0:00</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvSw()">Start / stop</button><button class="btn btn-ghost btn-sm" onclick="lvSwReset()">Reset</button></div></div>
+  <div class="lv-w lv-w-wide"><div class="lv-w-h">Scoreboard</div><div class="lv-score">${(P.score||[['Team 1',0],['Team 2',0]]).map((t,i)=>`<div class="lv-sc"><input class="lv-in" value="${E(t[0])}" oninput="LV.pres.score[${i}][0]=this.value" aria-label="Team name"><button class="btn btn-secondary btn-sm" onclick="lvScore(${i},-1)" aria-label="Minus one">−</button><b>${t[1]}</b><button class="btn btn-secondary btn-sm" onclick="lvScore(${i},1)" aria-label="Plus one">+</button></div>`).join('')}</div></div>
   <div class="lv-w"><div class="lv-w-h">Dice</div><div class="lv-w-big" id="lv-dice">⚀</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvDice()">Roll</button></div></div>
   <div class="lv-w"><div class="lv-w-h">Clock</div><div class="lv-w-big" id="lv-clk">${clock()}</div></div>`;
 }
-window.lvWg=async function(p){const P=LV.pres,w={...P.wg,...p};if(p.light==='')delete w.light;if(p.mode==='')delete w.mode;const r=await apiPost({action:'liveCtl',code:P.room.id,widgets:w});if(r&&r.room){P.wg=r.room.widgets||{};P.room.widgets=P.wg;const t=$('lv-tray');if(t&&!document.activeElement.matches('#lv-note')){const sc=t.scrollTop;t.innerHTML=trayHtml();t.scrollTop=sc;}}};
+window.lvWg=async function(p){const P=LV.pres,w={...P.wg,...p};if(p.light==='')delete w.light;if(p.mode==='')delete w.mode;const r=await apiPost({action:'liveCtl',code:P.room.id,widgets:w});if(r&&r.room){P.wg=r.room.widgets||{};P.room.widgets=P.wg;const t=$('lv-tray');if(t){const sc=t.scrollLeft;t.innerHTML=trayHtml();t.scrollLeft=sc;paintInbox();}}};
 window.lvTimer=function(secs){lvWg({timer:secs?{endsAt:Date.now()+secs*1000,secs}:undefined});};
+window.lvLinkAdd=function(){const u=normUrl($('lv-lk-u').value);if(!u)return toast('Paste a full https link.','info');const w=LV.pres.wg.links||[];if(w.length>=8)return toast('Up to 8 links at a time.','info');lvWg({links:[...w,{title:$('lv-lk-t').value.trim()||u.replace(/^https:\/\/(www\.)?/,'').slice(0,40),url:u}]});};
+window.lvLinkDel=i=>lvWg({links:(LV.pres.wg.links||[]).filter((_,k)=>k!==i)});
+window.lvAgAdd=function(){const t=$('lv-ag-t').value.trim();if(!t)return;lvWg({agenda:[...(LV.pres.wg.agenda||[]),{t,done:false}]});};
+window.lvAgTog=i=>lvWg({agenda:(LV.pres.wg.agenda||[]).map((a,k)=>k===i?{...a,done:!a.done}:a)});
+window.lvAgDel=i=>lvWg({agenda:(LV.pres.wg.agenda||[]).filter((_,k)=>k!==i)});
+let SW={t:0,on:0};window.lvSw=()=>{if(SW.on){SW.t+=Date.now()-SW.on;SW.on=0;}else SW.on=Date.now();};window.lvSwReset=()=>{SW={t:0,on:SW.on?Date.now():0};};
+window.lvScore=(i,d)=>{const P=LV.pres;P.score=P.score||[['Team 1',0],['Team 2',0]];P.score[i][1]+=d;const t=$('lv-tray'),sc=t.scrollLeft;t.innerHTML=trayHtml();t.scrollLeft=sc;paintInbox();};
 window.lvNote=()=>lvWg({note:$('lv-note').value.trim()});
 window.lvPick=function(){const ps=LV.pres.parts.filter(p=>Date.now()-p.seen<60000);if(!ps.length)return toast('No students have joined yet.','info');const el=$('lv-pick');let n=0;const t=setInterval(()=>{el.textContent=ps[Math.floor(Math.random()*ps.length)].name;if(++n>14){clearInterval(t);const w=ps[Math.floor(Math.random()*ps.length)];el.textContent=w.name;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),600);}},70);};
 window.lvGroups=function(n){const ps=LV.pres.parts.filter(p=>Date.now()-p.seen<60000).map(p=>p.name);if(ps.length<2)return toast('Need at least two students here.','info');for(let i=ps.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ps[i],ps[j]]=[ps[j],ps[i]];}const k=Math.max(1,Math.round(ps.length/n)),g=Array.from({length:k},()=>[]);ps.forEach((x,i)=>g[i%k].push(x));$('lv-groups').innerHTML=g.map((m,i)=>`<div class="lv-g"><b>${i+1}</b>${m.map(E).join(', ')}</div>`).join('');};
 window.lvDice=function(){const f='⚀⚁⚂⚃⚄⚅',el=$('lv-dice');let n=0;const t=setInterval(()=>{el.textContent=f[Math.floor(Math.random()*6)];if(++n>9)clearInterval(t);},60);};
-function tickWidgets(){const P=LV.pres;if(!P)return;const c=$('lv-clk');if(c)c.textContent=clock();const t=$('lv-tm');if(t){const e=P.wg.timer;const left=e?(e.endsAt-Date.now())/1000:0;t.textContent=mmss(left);t.classList.toggle('done',e&&left<=0);}}
+function tickWidgets(){const P=LV.pres;if(!P)return;const sw=$('lv-sw');if(sw)sw.textContent=mmss((SW.t+(SW.on?Date.now()-SW.on:0))/1000);const c=$('lv-clk');if(c)c.textContent=clock();const t=$('lv-tm');if(t){const e=P.wg.timer;const left=e?(e.endsAt-Date.now())/1000:0;t.textContent=mmss(left);t.classList.toggle('done',e&&left<=0);}}
 
 /* ───────────── summary + "what next" ───────────── */
 window.lvSummary=async function(code){
   const r=await apiPost({action:'liveGet',code});if(!(r&&r.room))return toast((r&&r.error)||'Could not load results.','error');
-  const R=r.room,rs=r.responses,parts=r.participants,qs=R.slides.filter(s=>s.type!=='slide');
+  const R=r.room,rs=r.responses,parts=r.participants,qs=R.slides.filter(isQ);
   const by=s=>rs.filter(x=>x.slideId===s.id);
   const follow={};const note=(n,why)=>{(follow[n]=follow[n]||[]).push(why);};
   const cards=qs.map(s=>{
@@ -13213,7 +13377,7 @@ window.lvSummary=async function(code){
 };
 window.lvClose=()=>{unmount();LV.rooms=null;if(APP.currentPage==='liveroom')loadRooms();};
 window.lvCsv=function(){
-  const {R,rs,parts}=LV.sum,qs=R.slides.filter(s=>s.type!=='slide');
+  const {R,rs,parts}=LV.sum,qs=R.slides.filter(isQ);
   const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   const lab=(s,x)=>!x?'':(s.type==='text'?x.answer:(s.options[x.answer]||''));
   const rows=[['Name',...qs.map(s=>s.title||'Question')].map(q).join(',')];
@@ -13248,7 +13412,7 @@ async function joinNow(name,quiet){
   ST.poll=setInterval(stPoll,1500);ST.tick=setInterval(stTick,500);
 }
 async function stPoll(){const r=await apiPost({action:'liveState',code:ST.code,pid:ST.pid});if(!r||!r.ok)return;const o=ST.room;ST.room=r.room;
-  const sig=[r.room.slide&&r.room.slide.id,r.room.open,r.room.reveal,r.room.status,r.room.rev].join('|');
+  const sig=[r.room.slide&&r.room.slide.id,r.room.open,r.room.reveal,r.room.status].join('|');
   if(sig!==ST.sig){const sameQ=o&&o.slide&&r.room.slide&&o.slide.id===r.room.slide.id;ST.sig=sig;
     if(sameQ&&r.room.status==='live'&&r.room.slide.type==='text'&&document.activeElement&&document.activeElement.id==='lv-ta'){stWidgets();stStatus();return;}   // never disturb typing
     stDraw();}
@@ -13256,10 +13420,11 @@ async function stPoll(){const r=await apiPost({action:'liveState',code:ST.code,p
 function stDraw(){
   const R=ST.room,s=R.slide;
   if(R.status==='ended'){clearInterval(ST.poll);clearInterval(ST.tick);mount(`<div class="lv-st"><div class="lv-st-card"><h2>That's a wrap</h2><p class="lv-dim">${E(R.title)} has ended. Thanks for joining, ${E(ST.name)}.</p><button class="btn btn-primary" onclick="lvStLeave()">Done</button></div></div>`,'lv-st-ov');return;}
-  const q=s&&s.type!=='slide';
+  const q=isQ(s);
   mount(`<div class="lv-st"><div class="lv-st-bar"><b>${E(R.title)}</b><span>${E(ST.name)}</span><button class="lv-x" onclick="lvStLeave()" aria-label="Leave">✕</button></div><div class="lv-st-w" id="lv-stw"></div>
-   <div class="lv-st-main">${s?`${s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:''}${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}
-   ${q?stInput(s,R):''}`:'<p class="lv-dim">Waiting for your teacher…</p>'}</div></div>`,'lv-st-ov');
+   <div class="lv-st-act"><button class="btn btn-secondary btn-sm ${R.hand?'on':''}" id="lv-hand" onclick="lvStHand()">✋ ${R.hand?'Hand raised':'Raise hand'}</button><button class="btn btn-secondary btn-sm" onclick="lvStMsgToggle()">Message tutor</button></div><form class="lv-st-msg" id="lv-msgf" style="display:none" onsubmit="return lvStMsg(event)"><input class="lv-in" id="lv-msg" maxlength="300" placeholder="Ask a question or say what's wrong"><button class="btn btn-primary btn-sm">Send</button></form>
+   <div class="lv-st-main">${s?(s.type==='deck'?deckHtml(s.deck):s.type==='embed'?(s.title?`<h2>${E(s.title)}</h2>`:'')+embedHtml(s,true):s.type==='links'?`${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body)}</p>`:''}${linksHtml(s)}`:`${s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:''}${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}
+   ${q?stInput(s,R):''}`):'<p class="lv-dim">Waiting for your teacher…</p>'}</div></div>`,'lv-st-ov');
   stWidgets();stStatus();
 }
 function stInput(s,R){
@@ -13268,6 +13433,9 @@ function stInput(s,R){
   return `<div class="lv-st-opts">${s.options.map((o,i)=>`<button class="lv-so ${mine===i?'sel':''} ${R.reveal&&s.correct===i?'ok':''} ${R.reveal&&mine===i&&s.correct!==i?'no':''}" onclick="lvStPick(${i})" ${R.open?'':'disabled'}><span class="lv-ltr">${LET[i]}</span>${E(o)}</button>`).join('')}</div><div class="lv-st-row"><span class="lv-ok" id="lv-st">${mine!=null?'Answer sent ✓':''}</span></div>${R.open?'':`<div class="lv-dim">${R.reveal&&s.correct!=null?(mine===s.correct?'Correct!':'The correct answer is highlighted.'):'Responses are closed.'}</div>`}`;
 }
 function stStatus(){}
+window.lvStHand=async function(){const R=ST.room;R.hand=!R.hand;const b=$('lv-hand');if(b){b.classList.toggle('on',R.hand);b.textContent='✋ '+(R.hand?'Hand raised':'Raise hand');}await apiPost({action:'liveHand',code:ST.code,pid:ST.pid,on:R.hand});};
+window.lvStMsgToggle=()=>{const f=$('lv-msgf');f.style.display=f.style.display==='none'?'flex':'none';if(f.style.display==='flex')$('lv-msg').focus();};
+window.lvStMsg=async function(e){e.preventDefault();const i=$('lv-msg'),v=i.value.trim();if(!v)return false;i.disabled=true;const r=await apiPost({action:'liveMsg',code:ST.code,pid:ST.pid,text:v});i.disabled=false;if(r&&r.ok){i.value='';i.placeholder='Sent ✓ — send another?';}else i.placeholder=(r&&r.error)||'Not sent';return false;};
 window.lvStPick=async function(i){const R=ST.room,s=R.slide;if(!s||!R.open)return;
   document.querySelectorAll('.lv-so').forEach((b,k)=>b.classList.toggle('sel',k===i));   // in-place, no re-render
   const r=await apiPost({action:'liveRespond',code:ST.code,pid:ST.pid,slideId:s.id,answer:i});const st=$('lv-st');
@@ -13282,6 +13450,8 @@ function stWidgets(){const w=(ST.room&&ST.room.widgets)||{},el=$('lv-stw');if(!e
   if(w.light)parts.push(`<span class="lv-sw light ${w.light}">${{red:'Stop',yellow:'Wait',green:'Go'}[w.light]}</span>`);
   if(w.mode)parts.push(`<span class="lv-sw">${{silent:'Silent',whisper:'Whisper voices',talk:'Talk freely'}[w.mode]}</span>`);
   if(w.note)parts.push(`<span class="lv-sw note">${E(w.note)}</span>`);
+  (w.links||[]).forEach(l=>parts.push(`<a class="lv-sw lnk" href="${E(l.url)}" target="_blank" rel="noopener noreferrer">${E(l.title)} ↗</a>`));
+  if((w.agenda||[]).length)parts.push(`<span class="lv-sw ag">${w.agenda.map(a=>`<span class="${a.done?'d':''}">${a.done?'✓':'○'} ${E(a.t)}</span>`).join('')}</span>`);
   const h=parts.join('');if(el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h;el.style.display=h?'flex':'none';}}
 function stTick(){const w=ST.room&&ST.room.widgets,t=$('lv-sw-tm');if(t&&w&&w.timer){const l=(w.timer.endsAt-Date.now())/1000;t.textContent=mmss(l);t.classList.toggle('done',l<=0);}}
 
