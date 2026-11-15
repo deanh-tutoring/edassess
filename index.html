@@ -1538,6 +1538,15 @@ body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:
 .fxc-asg-r .btn{padding:3px 10px!important;font-size:12px!important;min-height:0!important;height:auto!important}
 .lms-row{padding:9px 0!important}.lms-row-t{font-size:14px!important}.lms-row-m{font-size:12px!important}
 .lms-h{font-size:12px!important;margin:14px 0 6px!important}
+
+/* ===== Google Drive links ===== */
+.fm-link{grid-template-columns:1.4fr 1fr auto!important;align-items:center}
+.fm-emb{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--ink-mid);white-space:nowrap}.fm-emb input,.fm-gs input{accent-color:var(--accent)}
+.fm-gs{font-size:12.5px;color:var(--ink-mid);display:inline-flex;gap:6px;align-items:center}
+.lms-gl{margin:0}.lms-gl-r{display:flex;gap:8px;align-items:stretch}.lms-gl-r>a{flex:1;min-width:0}.lms-gl-r .btn{align-self:center;flex:none}
+.lms-gdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:8px;vertical-align:1px}
+.lms-gframe{display:none;margin-top:6px}.lms-gframe.open{display:block}
+.lms-gframe iframe{width:100%;height:min(70vh,560px);border:1px solid var(--border-dark);border-radius:10px;background:#fff}
 </style>
 </head>
 <body>
@@ -12650,9 +12659,22 @@ function fxBackBar(){return stuToken()?`<a class="fx-back" href="${(location.ori
 
 /* ── materials ── */
 const lmsHost=u=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}};
+/* Google Drive: recognise links, build preview URLs, and render a link row (students need no Google sign-in to click or preview a shared file) */
+window.gInfo=function(u){try{const x=new URL(u),h=x.hostname;let m;
+  if(h==='docs.google.com'){m=/^\/(document|spreadsheets|presentation|forms)\/d\/(?:e\/)?([\w-]{10,120})/.exec(x.pathname);if(m)return {kind:m[1],id:m[2]};}
+  if(h==='drive.google.com'){m=/^\/file\/d\/([\w-]{10,120})/.exec(x.pathname);if(m)return {kind:'file',id:m[1]};m=/^\/drive\/(?:u\/\d+\/)?folders\/([\w-]{10,120})/.exec(x.pathname);if(m)return {kind:'folder',id:m[1]};}
+  }catch(e){}return null;};
+const G_NAME={document:'Google Doc',spreadsheets:'Google Sheet',presentation:'Google Slides',forms:'Google Form',file:'Drive file',folder:'Drive folder'};
+const G_COL={document:'#2A6BF2',spreadsheets:'#17803D',presentation:'#B8791A',forms:'#6B4FC8',file:'#5B6770',folder:'#5B6770'};
+window.gEmbedUrl=function(g){const d='https://docs.google.com/';return {document:d+'document/d/'+g.id+'/preview',spreadsheets:d+'spreadsheets/d/'+g.id+'/preview',presentation:d+'presentation/d/'+g.id+'/embed?start=false&loop=false',forms:d+'forms/d/e/'+g.id+'/viewform?embedded=true',file:'https://drive.google.com/file/d/'+g.id+'/preview',folder:'https://drive.google.com/embeddedfolderview?id='+g.id+'#list'}[g.kind];};
+window.gToggle=function(btn){const box=btn.closest('.lms-gl').querySelector('.lms-gframe');const on=!box.classList.contains('open');box.classList.toggle('open',on);btn.textContent=on?'Hide preview':'Preview';if(on&&!box.firstChild){const f=document.createElement('iframe');f.src=btn.dataset.src;f.title='Preview';f.loading='lazy';f.allow='fullscreen';f.setAttribute('allowfullscreen','');f.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox');box.appendChild(f);}};
+window.lmsLink=function(l){const g=gInfo(l.url);
+  if(!g)return `<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`;
+  const col=G_COL[g.kind];
+  return `<div class="lms-gl"><div class="lms-gl-r"><a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span><i class="lms-gdot" style="background:${col}"></i>${E(l.label||G_NAME[g.kind])}</span><small>${G_NAME[g.kind]} ↗</small></a>${l.embed?`<button type="button" class="btn btn-secondary btn-sm" data-src="${E(gEmbedUrl(g))}" onclick="gToggle(this)">Preview</button>`:''}</div>${l.embed?'<div class="lms-gframe"></div>':''}</div>`;};
 function lmsMat(m,isT,cid){
   return `<div class="lms-mat"><div class="lms-mat-t">${E(m.title)}${m.topic?` <small>${E(m.topic)}</small>`:''}</div>${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}
-  ${(m.links||[]).length?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}
+  ${(m.links||[]).length?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}
   ${isT?`<div class="lms-mat-a"><a class="lms-link" onclick="fxMatModal('${E(cid)}','${E(m.id)}')">Edit</a> <a class="fxc-x" onclick="fxMatDelete('${E(cid)}','${E(m.id)}')">Delete</a></div>`:''}</div>`;
 }
 function fxCwTopicList(c){const t=(c.topics||[]).slice();(c.materials||[]).forEach(m=>{if(m.topic&&!t.includes(m.topic))t.push(m.topic);});return t;}
@@ -12707,7 +12729,7 @@ function lmsCwMat(m,c,isT,secIdx,n){
   const meta=[fxPosted(m.at),nl?`${nl} link${nl!==1?'s':''}`:(m.body?'Note':'')].filter(Boolean).join(' · ');
   const open=FX_MATOPEN.has(m.id);
   const head=`<div class="lms-mat-h" role="button" tabindex="0" aria-expanded="${open}" onclick="fxMatToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();fxMatToggle(this)}">${grip}<span class="lms-mat-t">${E(m.title)}</span><span class="lms-mat-m">${E(meta)}</span><i class="lms-caret"></i></div>`;
-  const body=`<div class="lms-mat-fold"><div class="lms-mat-in">${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(l=>`<a href="${E(l.url)}" target="_blank" rel="noopener noreferrer"><span>${E(l.label||lmsHost(l.url))}</span><small>${E(lmsHost(l.url))} ↗</small></a>`).join('')}</div>`:''}${acts}</div></div>`;
+  const body=`<div class="lms-mat-fold"><div class="lms-mat-in">${m.body?`<div class="lms-post-t">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}${acts}</div></div>`;
   const cls='lms-mat item'+(open?' open':'');
   return isT?`<div class="${cls}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-mid="${E(m.id)}">${head}${body}</div>`;
 }
@@ -12725,7 +12747,40 @@ window.lmsMatGroups=function(c,isT){
   return `<div class="lms-cw">${head}${body||'<p class="lms-empty">Post links, readings or notes for this class.</p>'}</div>`;
 };
 let fxMatState={cid:null,id:null};
-function fxMatLinkRow(l){return `<div class="fm-link"><input class="form-control fm-url" placeholder="https://…" value="${E((l&&l.url)||'')}"><input class="form-control fm-lab" placeholder="Label (optional)" value="${E((l&&l.label)||'')}"></div>`;}
+function fxMatLinkRow(l){const g=l&&gInfo(l.url);return `<div class="fm-link"><input class="form-control fm-url" placeholder="https://…" value="${E((l&&l.url)||'')}" oninput="fxMatUrl(this)"><input class="form-control fm-lab" placeholder="Label (optional)" value="${E((l&&l.label)||'')}"><label class="fm-emb" style="${g?'':'display:none'}" title="Students can preview it right on the page"><input type="checkbox" ${l&&l.embed?'checked':''}> Embed</label></div>`;}
+window.fxMatUrl=function(i){const r=i.closest('.fm-link'),w=r.querySelector('.fm-emb');if(w)w.style.display=gInfo(/^https?:\/\//i.test(i.value)?i.value:'https://'+i.value)?'':'none';};
+/* ── Google Drive picker: the teacher signs in with Google once (read access only to files they pick); students never sign in ── */
+let GD={cfg:null,token:null,exp:0};
+const gLoad=src=>new Promise((ok,no)=>{if(document.querySelector('script[src="'+src+'"]'))return ok();const s=document.createElement('script');s.src=src;s.async=true;s.onload=ok;s.onerror=()=>no(new Error('Could not reach Google. Check your connection.'));document.head.appendChild(s);});
+async function gToken(){
+  if(GD.token&&Date.now()<GD.exp)return GD.token;
+  await gLoad('https://accounts.google.com/gsi/client');
+  return new Promise((ok,no)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive.file',callback:r=>{if(r.error)return no(new Error(r.error==='access_denied'?'Google access was not granted.':'Google sign-in failed.'));GD.token=r.access_token;GD.exp=Date.now()+(+r.expires_in-60)*1000;ok(GD.token);},error_callback:e=>no(new Error(e&&e.type==='popup_closed'?'Google sign-in was closed.':'Google sign-in failed.'))});tc.requestAccessToken({prompt:GD.token?'':''});});
+}
+window.gPreload=async function(){try{if(!GD.cfg){const r=await fetch('/.netlify/functions/data?gcfg=1');GD.cfg=r.ok?await r.json():{};}if(GD.cfg.clientId){gLoad('https://accounts.google.com/gsi/client').catch(()=>{});gLoad('https://apis.google.com/js/api.js').catch(()=>{});}}catch(e){}};
+window.fxGDrive=async function(){
+  const err=document.getElementById('fm-err');err.classList.add('hidden');
+  const say=m=>{err.textContent=m;err.classList.remove('hidden');};
+  try{
+    if(!GD.cfg){const r=await fetch('/.netlify/functions/data?gcfg=1');GD.cfg=r.ok?await r.json():{};}
+    if(!GD.cfg.clientId||!GD.cfg.apiKey)return say('Google Drive isn\'t connected for this site yet. You can still paste any Google Docs, Sheets, Slides or Drive link in the box above. See the README to turn on the picker.');
+    const tok=await gToken();await gLoad('https://apis.google.com/js/api.js');
+    await new Promise(ok=>gapi.load('picker',ok));
+    const share=document.getElementById('fm-gshare').checked;
+    const pick=await new Promise(ok=>{const v=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(true);
+      new google.picker.PickerBuilder().addView(v).addView(new google.picker.DocsUploadView()).enableFeature(google.picker.Feature.MULTISELECT_ENABLED).setOAuthToken(tok).setDeveloperKey(GD.cfg.apiKey).setAppId(GD.cfg.appId||'').setCallback(d=>{if(d.action==='picked')ok(d.docs);else if(d.action==='cancel')ok(null);}).build().setVisible(true);});
+    if(!pick)return;
+    const box=document.getElementById('fm-links');let failed=[];
+    for(const f of pick){
+      if(share){try{const r=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(f.id)+'/permissions',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});if(!r.ok)throw 0;}catch(e){failed.push(f.name);}}
+      const row=document.createElement('div');row.innerHTML=fxMatLinkRow({url:f.url,label:f.name,embed:true});
+      const empty=[...box.querySelectorAll('.fm-link')].find(r=>!r.querySelector('.fm-url').value.trim());
+      if(empty)empty.replaceWith(row.firstChild);else box.appendChild(row.firstChild);
+    }
+    box.insertAdjacentHTML('beforeend',fxMatLinkRow());
+    if(failed.length)say('Added, but sharing could not be changed for: '+failed.join(', ')+'. Students may need to request access.');
+  }catch(e){say(e.message||'Something went wrong with Google Drive.');}
+};
 window.fxMatModal=function(cid,id){
   const c=(APP.classes||[]).find(x=>x.id===cid);const m=id&&c?(c.materials||[]).find(x=>x.id===id):null;
   fxMatState={cid,id:id||null};
@@ -12734,12 +12789,12 @@ window.fxMatModal=function(cid,id){
   <div class="form-group"><label class="form-label">Title</label><input id="fm-title" class="form-control" maxlength="120" placeholder="Unit 3 reading guide" value="${E((m&&m.title)||'')}"></div>
   <div class="form-group"><label class="form-label">Description (optional)</label><textarea id="fm-body" class="form-control" rows="3" placeholder="What students should do with this">${E((m&&m.body)||'')}</textarea></div>
   <div class="form-group"><label class="form-label">Topic (optional)</label><input id="fm-topic" class="form-control" maxlength="40" list="fm-topics" placeholder="Unit 3" value="${E((m&&m.topic)||'')}"><datalist id="fm-topics">${topics.map(t=>`<option value="${E(t)}">`).join('')}</datalist></div>
-  <div class="form-group"><label class="form-label">Links</label><div id="fm-links">${((m&&m.links)||[]).concat([null]).slice(0,10).map(fxMatLinkRow).join('')}</div><a class="lms-link" onclick="document.getElementById('fm-links').insertAdjacentHTML('beforeend',fxMatLinkRow())">Add another link</a></div>
+  <div class="form-group"><label class="form-label">Links</label><div id="fm-links">${((m&&m.links)||[]).concat([null]).slice(0,10).map(fxMatLinkRow).join('')}</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><a class="lms-link" onclick="document.getElementById('fm-links').insertAdjacentHTML('beforeend',fxMatLinkRow())">Add another link</a><button type="button" class="btn btn-secondary btn-sm" onclick="fxGDrive()">Add from Google Drive</button><label class="fm-gs"><input type="checkbox" id="fm-gshare" checked> Let students open picked files without signing in</label></div></div>
   <div id="fm-err" class="hidden fx-autherr"></div><div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="fxMatSave()">${m?'Save changes':'Post to class'}</button></div></div>`,'560px');
-  setTimeout(()=>{const i=document.getElementById('fm-title');if(i)i.focus();},50);
+  setTimeout(()=>{const i=document.getElementById('fm-title');if(i)i.focus();},50);if(window.gPreload)gPreload();
 };
 window.fxMatSave=async function(){
-  const links=[...document.querySelectorAll('#fm-links .fm-link')].map(r=>({url:r.querySelector('.fm-url').value.trim(),label:r.querySelector('.fm-lab').value.trim()})).filter(l=>l.url);
+  const links=[...document.querySelectorAll('#fm-links .fm-link')].map(r=>({url:r.querySelector('.fm-url').value.trim(),label:r.querySelector('.fm-lab').value.trim(),embed:!!(r.querySelector('.fm-emb input')&&r.querySelector('.fm-emb input').checked&&r.querySelector('.fm-emb').style.display!=='none')})).filter(l=>l.url);
   const err=document.getElementById('fm-err');
   for(const l of links){let u=l.url;if(!/^https?:\/\//i.test(u))u='https://'+u;try{const x=new URL(u);if(!x.hostname.includes('.'))throw 0;}catch(e){err.textContent='“'+l.url+'” isn’t a valid link.';err.classList.remove('hidden');return;}}
   const r=await apiPost({action:'postMaterial',classId:fxMatState.cid,matId:fxMatState.id,title:document.getElementById('fm-title').value,body:document.getElementById('fm-body').value,topic:document.getElementById('fm-topic').value,links});

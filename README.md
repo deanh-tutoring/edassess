@@ -63,6 +63,20 @@ Search, sort by recently edited, filter by type or status, and publish when you'
 
 Hand out a **join code** or post the test to a class. The **Live Monitor** shows each assignment moving from *Not open → In progress → In grading → Done*, with sorting, class filters and grouping so a busy week stays readable. Copy a student link in one click.
 
+### Google Drive
+
+In **Post material**, teachers can press **Add from Google Drive**, sign in with Google once, and pick Docs, Sheets, Slides, Forms, PDFs, folders or uploads. Pick **Embed** to let students preview the file right on the page. Students never sign in to Google or to anything extra: they click a link or press **Preview**. By default EdAssess sets picked files to "anyone with the link can view" so students can open them; untick that box to keep your own sharing.
+
+Any Google link pasted into the Links box is recognised automatically, so this works even before the picker is set up.
+
+**Turning on the picker (one time, about 10 minutes)**
+1. In Google Cloud Console, create a project and enable the **Google Picker API** and **Google Drive API**.
+2. Create an **OAuth client ID** (Web application) and add your site address under *Authorized JavaScript origins*.
+3. Create an **API key** and restrict it to your site and the Picker API.
+4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
+
+EdAssess asks only for the `drive.file` permission, which covers just the files a teacher picks, not their whole Drive.
+
 ### Classes that feel like a classroom
 <img src="docs/05-class-stream.png" alt="Class stream with announcements and materials" width="880">
 

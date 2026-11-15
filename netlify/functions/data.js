@@ -74,6 +74,21 @@ async function mapLimit(items, n, fn) {
 function reply(statusCode, obj, extra) {
   return { statusCode, headers: { ...JSON_HEADERS, ...(extra || {}) }, body: JSON.stringify(obj) };
 }
+// Google Docs / Sheets / Slides / Forms / Drive links: recognised from the URL alone, so a teacher can also just paste one.
+function googleInfo(u) {
+  try {
+    const x = new URL(u), h = x.hostname;
+    if (h === 'docs.google.com') {
+      const m = /^\/(document|spreadsheets|presentation|forms)\/d\/(?:e\/)?([\w-]{10,120})/.exec(x.pathname);
+      return m ? { kind: m[1], id: m[2] } : null;
+    }
+    if (h === 'drive.google.com') {
+      let m = /^\/file\/d\/([\w-]{10,120})/.exec(x.pathname); if (m) return { kind: 'file', id: m[1] };
+      m = /^\/drive\/(?:u\/\d+\/)?folders\/([\w-]{10,120})/.exec(x.pathname); if (m) return { kind: 'folder', id: m[1] };
+    }
+  } catch (e) { /* not a URL */ }
+  return null;
+}
 const bad = (msg, code = 400, more) => reply(code, { error: msg, ...(more || {}) });
 const okId = (id) => typeof id === 'string' && ID_RE.test(id);
 const okRev = (r) => /^\d{1,9}$/.test(String(r));
@@ -863,7 +878,8 @@ async function classAction(body, user) {
       if (!u) continue;
       if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
       try { const x = new URL(u); if (!/^https?:$/.test(x.protocol) || !x.hostname.includes('.')) continue; u = x.href; } catch (e) { continue; }
-      links.push({ url: u, label: String((l && l.label) || '').trim().slice(0, 120) });
+      const g = googleInfo(u);
+      links.push({ url: u, label: String((l && l.label) || '').trim().slice(0, 120), ...(g && l && l.embed === true ? { embed: true } : {}) });
     }
     c.materials = c.materials || [];
     const base = { title, body: String(body.body || '').trim().slice(0, 4000), topic: String(body.topic || '').trim().slice(0, 40), links };
@@ -907,6 +923,10 @@ async function accessCheckAssignment(asg, student) {
 /* ── GET ── */
 async function handleGet(q, user, student) {
   await ensureMigrated();
+  if (q.gcfg) {
+    // public values only: these identify the app to Google's picker, they are not secrets
+    return reply(200, { ok: true, clientId: process.env.GOOGLE_CLIENT_ID || '', apiKey: process.env.GOOGLE_API_KEY || '', appId: process.env.GOOGLE_APP_ID || '' });
+  }
   if (q.img) {
     if (!/^[a-f0-9]{40}$/.test(q.img)) return bad('Bad image id.', 400);
     const rec = await getJ(P.img + q.img);
