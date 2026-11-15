@@ -1019,6 +1019,153 @@ async function handleGet(q, user, student) {
   return reply(200, { ...(await readFull(user)), serverTime: new Date().toISOString() });
 }
 
+
+/* ══ Live Room: a teacher-driven screen shared with students (slides, polls, typed answers, check-ins) ══ */
+const L = { room: 'v2/live/', resp: 'v2/liver/', part: 'v2/livep/' };
+const LIVE_CODE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const LIVE_TYPES = ['slide', 'mcq', 'poll', 'text'];
+const clip = (s, n) => String(s == null ? '' : s).slice(0, n);
+function cleanSlide(s, i) {
+  const t = LIVE_TYPES.includes(s && s.type) ? s.type : 'slide';
+  const o = { id: okId(s && s.id) ? s.id : 's' + Date.now().toString(36) + i, type: t, title: clip(s && s.title, 200), body: clip(s && s.body, 2000) };
+  if (s && typeof s.img === 'string' && /^(\/\.netlify\/functions\/data\?img=[a-f0-9]{40}|https:\/\/[^\s"'<>]{1,500})$/.test(s.img)) o.img = s.img;
+  if (t === 'mcq' || t === 'poll') {
+    o.options = (Array.isArray(s.options) ? s.options : []).slice(0, 8).map((x) => clip(x, 200)).filter((x) => x.trim());
+    if (o.options.length < 2) o.options = ['A', 'B'];
+    if (t === 'mcq' && Number.isInteger(s.correct) && s.correct >= 0 && s.correct < o.options.length) o.correct = s.correct;
+    if (s.checkin) o.checkin = true;
+  }
+  return o;
+}
+const cleanWidgets = (w) => {
+  w = w || {}; const o = {};
+  if (w.timer && Number.isFinite(+w.timer.endsAt)) o.timer = { endsAt: +w.timer.endsAt, secs: Math.min(36000, Math.max(0, +w.timer.secs | 0)) };
+  if (['red', 'yellow', 'green'].includes(w.light)) o.light = w.light;
+  if (typeof w.note === 'string' && w.note.trim()) o.note = clip(w.note, 300);
+  if (['silent', 'whisper', 'talk'].includes(w.mode)) o.mode = w.mode;
+  return o;
+};
+async function newLiveCode() {
+  for (let i = 0; i < 40; i++) {
+    let c = ''; for (let k = 0; k < 5; k++) c += LIVE_CODE[crypto.randomInt(LIVE_CODE.length)];
+    if (!(await getJ(L.room + c))) return c;
+  }
+  throw new Error('code');
+}
+const liveOwns = (r, user) => r && user && (r.owner === lc(user.username));
+function liveView(r, mine) {          // what students see: no answers key unless revealed
+  const slides = r.slides.map((s, i) => {
+    if (i !== r.idx) return null;
+    const c = { ...s };
+    if (s.type === 'mcq' && !r.reveal) delete c.correct;
+    return c;
+  });
+  return { code: r.id, title: r.title, status: r.status, idx: r.idx, count: r.slides.length, open: !!r.open, reveal: !!r.reveal, slide: slides[r.idx] || null, widgets: r.widgets || {}, rev: r.rev, mine: mine || null, className: r.className || '' };
+}
+async function liveResponses(code, slideId) {
+  const keys = await listKeys(`${L.resp}${code}/${slideId ? slideId + '/' : ''}`);
+  const recs = (await mapLimit(keys, 16, getJ)).filter(Boolean);
+  return recs;
+}
+async function liveAction(body, user) {
+  const a = body.action;
+  if (typeof a !== 'string' || !a.startsWith('live')) return null;
+  const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  /* —— public (students / anyone with the code) —— */
+  if (a === 'liveState' || a === 'liveJoin') {
+    const r = await getJ(L.room + code);
+    if (!r) return bad('No live room with that code.', 404);
+    const pid = okId(body.pid) ? body.pid : null;
+    if (a === 'liveJoin') {
+      const name = clip(body.name, 40).trim();
+      if (!pid || !name) return bad('Enter your name.');
+      const ex = await getJ(L.part + code + '/' + pid);
+      await putJ(L.part + code + '/' + pid, { pid, name, at: (ex && ex.at) || new Date().toISOString(), seen: Date.now() });
+    } else if (pid) {
+      const ex = await getJ(L.part + code + '/' + pid);
+      if (ex && Date.now() - (ex.seen || 0) > 8000) { ex.seen = Date.now(); await putJ(L.part + code + '/' + pid, ex); }
+    }
+    let mine = null;
+    const cur = r.slides[r.idx];
+    if (pid && cur) { const m = await getJ(`${L.resp}${code}/${cur.id}/${pid}`); if (m) mine = m.answer; }
+    return reply(200, { ok: true, room: liveView(r, mine) });
+  }
+  if (a === 'liveRespond') {
+    const r = await getJ(L.room + code);
+    if (!r) return bad('No live room with that code.', 404);
+    if (r.status !== 'live') return bad('This room has ended.');
+    const cur = r.slides[r.idx];
+    if (!cur || cur.id !== body.slideId) return bad('That question has moved on.', 409);
+    if (!r.open) return bad('Responses are closed.', 409);
+    if (!okId(body.pid)) return bad('Join first.');
+    const part = await getJ(L.part + code + '/' + body.pid);
+    if (!part) return bad('Join first.', 403);
+    let ans;
+    if (cur.type === 'text') ans = clip(body.answer, 600).trim();
+    else if (cur.type === 'mcq' || cur.type === 'poll') ans = Number.isInteger(body.answer) && body.answer >= 0 && body.answer < cur.options.length ? body.answer : null;
+    else return bad('Nothing to answer here.');
+    if (ans === null || ans === '') return bad('Pick an answer.');
+    await putJ(`${L.resp}${code}/${cur.id}/${body.pid}`, { pid: body.pid, name: part.name, slideId: cur.id, answer: ans, at: new Date().toISOString() });
+    return reply(200, { ok: true });
+  }
+  /* —— teacher —— */
+  if (!user) return AUTH_ERR();
+  if (a === 'liveList') {
+    const rooms = (await mapLimit(await listKeys(L.room), 16, getJ)).filter((r) => r && (liveOwns(r, user) || (r.classId && (r.coTeachers || []).includes(lc(user.username)))));
+    return reply(200, { ok: true, rooms: rooms.map((r) => ({ code: r.id, title: r.title, classId: r.classId || null, className: r.className || '', status: r.status, count: r.slides.length, createdAt: r.createdAt, endedAt: r.endedAt || null })).sort((x, y) => (x.createdAt < y.createdAt ? 1 : -1)) });
+  }
+  if (a === 'liveCreate') {
+    let className = '', classId = null;
+    if (okId(body.classId)) {
+      const c = await getJ(C_PREFIX + body.classId);
+      if (!c || !(c.teacher === lc(user.username) || (c.coTeachers || []).includes(lc(user.username)))) return bad('No access to that class.', 403);
+      className = c.name; classId = c.id;
+    }
+    const id = await newLiveCode();
+    const slides = (Array.isArray(body.slides) ? body.slides : []).slice(0, 80).map(cleanSlide);
+    const r = { id, owner: lc(user.username), classId, className, title: clip(body.title, 120) || 'Live room', slides, idx: 0, open: !!(slides[0] && slides[0].type !== 'slide'), reveal: false, status: 'live', widgets: {}, createdAt: new Date().toISOString(), rev: 1 };
+    await putJ(L.room + id, r);
+    return reply(200, { ok: true, room: r });
+  }
+  const r = await getJ(L.room + code);
+  if (!r) return bad('Room not found.', 404);
+  if (!liveOwns(r, user)) return bad('No access.', 403);
+  if (a === 'liveGet') {
+    const [resp, parts] = await Promise.all([liveResponses(code, body.slideId && okId(body.slideId) ? body.slideId : null), mapLimit(await listKeys(L.part + code + '/'), 16, getJ)]);
+    return reply(200, { ok: true, room: r, responses: resp.map((x) => ({ pid: x.pid, name: x.name, slideId: x.slideId, answer: x.answer, at: x.at })), participants: parts.filter(Boolean).map((p) => ({ pid: p.pid, name: p.name, seen: p.seen || 0 })) });
+  }
+  if (a === 'liveSave') {
+    if (Array.isArray(body.slides)) r.slides = body.slides.slice(0, 80).map(cleanSlide);
+    if (typeof body.title === 'string') r.title = clip(body.title, 120) || r.title;
+    if (r.idx >= r.slides.length) r.idx = Math.max(0, r.slides.length - 1);
+    r.rev++; await putJ(L.room + code, r);
+    return reply(200, { ok: true, room: r });
+  }
+  if (a === 'liveCtl') {
+    if (Number.isInteger(body.idx) && body.idx >= 0 && body.idx < r.slides.length && body.idx !== r.idx) {
+      r.idx = body.idx; r.reveal = false;
+      r.open = body.open === undefined ? (['mcq', 'poll', 'text'].includes(r.slides[r.idx].type)) : !!body.open;   // questions open on arrival
+    } else if (typeof body.open === 'boolean') r.open = body.open;
+    if (typeof body.reveal === 'boolean') r.reveal = body.reveal;
+    if (body.widgets) r.widgets = cleanWidgets(body.widgets);
+    if (body.addSlide) {       // ask-now: insert a question right after the current slide and jump to it
+      const s = cleanSlide(body.addSlide, r.slides.length);
+      r.slides.splice(r.idx + 1, 0, s); r.idx++; r.reveal = false; r.open = s.type !== 'slide';
+    }
+    if (body.status === 'ended') { r.status = 'ended'; r.open = false; r.endedAt = new Date().toISOString(); }
+    if (body.status === 'live' && r.status === 'ended') { r.status = 'live'; r.endedAt = null; }
+    if (body.clearSlide && okId(body.clearSlide)) await mapLimit(await listKeys(`${L.resp}${code}/${body.clearSlide}/`), 16, delK);
+    r.rev++; await putJ(L.room + code, r);
+    return reply(200, { ok: true, room: r });
+  }
+  if (a === 'liveDelete') {
+    await mapLimit([...(await listKeys(`${L.resp}${code}/`)), ...(await listKeys(`${L.part}${code}/`))], 16, delK);
+    await delK(L.room + code);
+    return reply(200, { ok: true });
+  }
+  return bad('Unknown action: ' + a);
+}
+
 /* ── POST ── */
 // Old cached pages verify a save by comparing the `state` echoed in the reply with what they sent.
 // Echo exactly the records we just wrote (small), never the whole database.
@@ -1031,6 +1178,8 @@ async function handlePost(body, user, student) {
   if (sa) return sa;
   const ca = await classAction(body, user);
   if (ca) return ca;
+  const la = await liveAction(body, user);
+  if (la) return la;
   const PUBLIC = ['upsertSubmission', 'putImage', 'upsertPeerSession', 'putPeerSession'];
   const publicOp = body.action === 'instructorOp' && body.op && body.op.type === 'upload';
   if (!user && !PUBLIC.includes(body.action) && !publicOp) return AUTH_ERR();

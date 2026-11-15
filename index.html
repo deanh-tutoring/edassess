@@ -1538,6 +1538,111 @@ body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:
 .fxc-asg-r .btn{padding:3px 10px!important;font-size:12px!important;min-height:0!important;height:auto!important}
 .lms-row{padding:9px 0!important}.lms-row-t{font-size:14px!important}.lms-row-m{font-size:12px!important}
 .lms-h{font-size:12px!important;margin:14px 0 6px!important}
+
+/* ===== LIVE ROOM ===== */
+.lv-lede{color:var(--ink-soft);font-size:15px;margin:0 0 18px;max-width:560px}
+.lv-empty{border:1px dashed var(--border-dark);border-radius:14px;padding:38px 20px;text-align:center;color:var(--ink-mid);background:var(--plate)}
+.lv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.lv-card{background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:12px;padding:14px 16px}
+.lv-card-t{font-family:var(--f-display);font-size:23px;line-height:1.1;color:var(--ink);margin-bottom:8px}
+.lv-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink-soft);margin-bottom:12px}
+.lv-chip{border:1px solid var(--border-dark);border-radius:99px;padding:1px 9px;color:var(--ink-mid)}
+.lv-chip.on{color:var(--sage);border-color:var(--sage);font-weight:600}
+.lv-card-a{display:flex;gap:6px;flex-wrap:wrap}.lv-del{color:var(--rust)!important}
+.lv-in{width:100%;background:var(--in-bg);color:var(--ink);border:1px solid var(--border-dark);border-radius:8px;padding:9px 12px;font:inherit;font-size:15px}
+.lv-in:focus{outline:2px solid var(--accent);outline-offset:1px}.lv-in::placeholder{color:var(--ph)}
+.lv-in:disabled{opacity:.6}.lv-big{font-size:20px;padding:11px 14px}.lv-sel{width:auto;min-width:180px}
+.lv-lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 5px;display:block}
+.lv-b-top{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}.lv-b-top .lv-in:first-child{flex:1;min-width:220px;font-size:18px}
+.lv-b{display:grid;grid-template-columns:268px 1fr;gap:16px;align-items:start}
+@media(max-width:820px){.lv-b{grid-template-columns:1fr}}
+.lv-rail{display:flex;flex-direction:column;gap:6px}
+.lv-th{display:grid;grid-template-columns:22px 1fr;gap:0 8px;padding:8px 10px;border:1px solid var(--border-dark);border-radius:9px;background:var(--plate-hi);cursor:pointer}
+.lv-th.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.lv-th-n{grid-row:span 2;color:var(--ink-soft);font-size:12px;padding-top:2px}.lv-th-t{font-size:13.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-th-k{font-size:11px;color:var(--ink-soft)}
+.lv-add{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.lv-ed{background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:12px;padding:16px 18px}
+.lv-ed-h{display:flex;gap:6px;align-items:center}
+.lv-opt{display:flex;gap:8px;align-items:center;margin-bottom:6px}.lv-opt input[type=radio]{accent-color:var(--accent);width:18px;height:18px;flex:none}
+.lv-ltr{flex:none;width:26px;height:26px;border-radius:7px;border:1.5px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent)}
+.lv-imgrow{display:flex;gap:10px;align-items:center}.lv-imgrow img{max-height:90px;border-radius:8px;border:1px solid var(--border-dark)}
+/* overlay */
+body.lv-open{overflow:hidden}
+#lv-ov{position:fixed;inset:0;z-index:9500;background:var(--page-bg),var(--paper);background-color:var(--paper);color:var(--ink);overflow:auto;font-family:var(--f-body)}
+.lv-pr{display:flex;flex-direction:column;min-height:100%;height:100%}
+.lv-bar{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border-dark);background:var(--plate-hi);position:relative;flex-wrap:wrap}
+.lv-bar-l,.lv-bar-r,.lv-bar-c{display:flex;align-items:center;gap:10px}.lv-bar-l{flex:1;min-width:0}.lv-bar-r{position:relative;flex-wrap:wrap}
+.lv-bar-t{font-family:var(--f-display);font-size:24px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-x{width:34px;height:34px;border-radius:50%;border:1px solid var(--border-dark);background:transparent;color:var(--ink);cursor:pointer;font-size:15px;flex:none}.lv-x:hover{background:var(--hover-bg)}
+.lv-nav{width:38px;height:38px;border-radius:50%;border:1px solid var(--border-dark);background:var(--cream);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}.lv-nav:disabled{opacity:.35;cursor:default}.lv-nav:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}
+.lv-pos{font-size:14px;color:var(--ink-mid);min-width:54px;text-align:center}.lv-who{font-size:13px;color:var(--ink-mid);margin-right:4px}
+.lv-wrap{flex:1;display:grid;grid-template-columns:1fr;min-height:0}.lv-wrap:has(.lv-res){grid-template-columns:minmax(0,1fr) 380px}
+@media(max-width:900px){.lv-wrap:has(.lv-res){grid-template-columns:1fr}}
+.lv-stage{position:relative;padding:22px 26px;display:flex;flex-direction:column;min-height:0}
+.lv-join{position:absolute;top:14px;right:18px;display:flex;gap:12px;align-items:center;background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:12px;padding:8px 12px;z-index:2}
+.lv-join-k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}.lv-join-u{font-size:12.5px;color:var(--ink-mid);margin-bottom:2px}
+.lv-code{font-family:var(--f-display);font-size:42px;line-height:1;letter-spacing:.14em;color:var(--accent);font-weight:600}
+.lv-qr{width:62px;height:62px;color:var(--ink);background:#fff;padding:4px;border-radius:6px}.lv-qr svg{width:100%;height:100%;display:block}
+.lv-slide{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:60px 4px 8px;min-height:0}
+.lv-slide.has-img{align-items:center}
+.lv-simg{max-width:100%;max-height:62vh;object-fit:contain;border-radius:10px;border:1px solid var(--border)}
+.lv-stext h2{font-family:var(--f-display);font-weight:400;font-size:clamp(34px,5vw,64px);line-height:1.04;margin:0 0 12px;color:var(--ink)}
+.lv-stext p{font-size:clamp(18px,2.2vw,28px);line-height:1.4;color:var(--ink-mid);margin:0;max-width:34em}
+.lv-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:22px}
+.lv-o{display:flex;gap:12px;align-items:center;font-size:clamp(17px,1.9vw,24px);padding:12px 16px;border:1.5px solid var(--border-dark);border-radius:12px;background:var(--plate-hi);color:var(--ink)}
+.lv-o.ok,.lv-bar-row.ok .lv-fill{border-color:var(--sage)}.lv-o.ok{background:var(--sage-pale);border-color:var(--sage)}
+.lv-res{border-left:1px solid var(--border-dark);background:var(--plate);padding:16px 18px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
+.lv-res-h{display:flex;justify-content:space-between;align-items:center;font-size:15px}
+.lv-pill{font-size:11px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border-dark);border-radius:99px;padding:2px 10px;color:var(--ink-soft)}.lv-pill.on{color:var(--sage);border-color:var(--sage);font-weight:700}
+.lv-res-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.lv-count{font-size:14px;color:var(--ink-mid)}.lv-count b{font-size:30px;font-family:var(--f-display);color:var(--ink);font-weight:500}
+.lv-bar-lab{display:flex;gap:8px;align-items:center;font-size:15px;margin-bottom:3px}.lv-bar-o{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lv-bar-row{margin-bottom:10px}.lv-track{height:12px;border-radius:99px;background:var(--hover-bg);overflow:hidden;border:1px solid var(--border)}
+.lv-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .5s var(--ease)}.lv-bar-row.ok .lv-fill,.lv-sm-r.ok .lv-fill{background:var(--sage)}
+.lv-stat{font-size:15px;font-weight:700;color:var(--sage)}
+.lv-texts{display:flex;flex-direction:column;gap:8px;overflow:auto}
+.lv-t{background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:10px;padding:9px 12px;font-size:15px;line-height:1.35;color:var(--ink);word-break:break-word}
+.lv-t-n{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px}
+.lv-cloud{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:center;padding:10px;color:var(--accent);font-family:var(--f-display);font-weight:600;line-height:1.1}
+.lv-dim{color:var(--ink-soft);font-size:13.5px}.lv-wait{font-size:12.5px;color:var(--ink-soft);line-height:1.5}.lv-wait span{text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;margin-right:4px}
+.lv-ask{position:absolute;top:100%;right:0;z-index:5;margin-top:6px;background:var(--modal-bg);border:1px solid var(--border-dark);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;display:flex;flex-direction:column;width:260px}
+.lv-ask button{all:unset;cursor:pointer;display:flex;flex-direction:column;padding:9px 12px;border-radius:8px;color:var(--ink)}.lv-ask button:hover,.lv-ask button:focus-visible{background:var(--hover-bg)}.lv-ask b{font-size:14px}.lv-ask span{font-size:12px;color:var(--ink-soft)}
+/* widget tray */
+.lv-tray{display:none;border-top:1px solid var(--border-dark);background:var(--plate-hi);padding:12px 18px;gap:10px;overflow-x:auto}.lv-tray.on{display:flex}
+.lv-w{flex:none;min-width:170px;background:var(--cream);border:1px solid var(--border-dark);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}.lv-w-wide{min-width:260px;max-width:340px}
+.lv-w-h{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.lv-w-big{font-family:var(--f-display);font-size:38px;line-height:1;font-weight:500;color:var(--ink)}.lv-w-big.done{color:var(--rust)}.lv-w-big.pop{color:var(--accent);animation:lvpop .5s var(--spring)}
+@keyframes lvpop{from{transform:scale(.8)}to{transform:none}}
+.lv-w-r{display:flex;gap:5px;flex-wrap:wrap;align-items:center}.lv-w .lv-in{padding:6px 9px;font-size:13px;min-width:150px}
+.lv-lt{width:30px;height:30px;border-radius:50%;border:2px solid var(--border-dark);cursor:pointer;opacity:.45}.lv-lt.on{opacity:1;box-shadow:0 0 0 3px var(--border-dark)}
+.lv-lt.red,.lv-sw.light.red{background:#D6203E;color:#fff}.lv-lt.yellow,.lv-sw.light.yellow{background:#F2B74A;color:#2A1A00}.lv-lt.green,.lv-sw.light.green{background:#17803D;color:#fff}
+.lv-groups{display:flex;flex-direction:column;gap:3px;font-size:13px;max-height:90px;overflow:auto}.lv-g b{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;align-items:center;justify-content:center;margin-right:6px}
+/* summary */
+.lv-sum-b{padding:20px 26px;max-width:880px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:12px}
+.lv-next{background:var(--hl-soft);border:1px solid var(--line);border-radius:14px;padding:16px 20px;color:var(--ink)}
+.lv-next-h{font-family:var(--f-display);font-size:26px;margin-bottom:6px}.lv-next ul{margin:0 0 10px 18px;padding:0;line-height:1.7;font-size:15px}
+.lv-sm{background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:12px;padding:14px 16px}
+.lv-sm-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}.lv-sm-h b{font-size:17px;color:var(--ink)}.lv-sm-k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.lv-sm-r{display:grid;grid-template-columns:26px minmax(80px,220px) 1fr 28px;gap:10px;align-items:center;margin-bottom:6px;font-size:14px;color:var(--ink)}.lv-sm-o{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-fl{flex:none;font-size:12px;font-weight:700;border-radius:99px;padding:3px 11px;border:1px solid}.lv-fl.bad{color:var(--rust);background:var(--rust-pale);border-color:var(--rust)}.lv-fl.mid{color:var(--gold);background:var(--gold-pale);border-color:var(--gold)}.lv-fl.good{color:var(--sage);background:var(--sage-pale);border-color:var(--sage)}
+/* student */
+.lv-st-ov{display:flex;flex-direction:column}
+.lv-st{max-width:640px;width:100%;margin:0 auto;padding:0 16px 40px;min-height:100%;display:flex;flex-direction:column}
+.lv-st-card{margin:12vh auto 0;width:100%;background:var(--plate-hi);border:1px solid var(--border-dark);border-radius:16px;padding:26px 24px;text-align:center}
+.lv-st-card h2{font-family:var(--f-display);font-weight:400;font-size:36px;margin:6px 0 10px;color:var(--ink)}.lv-st-card form{text-align:left;margin-top:16px}.lv-st-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.lv-err{color:var(--rust);font-size:13px;min-height:18px;margin-top:6px}
+.lv-st-bar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border-dark);font-size:14px}.lv-st-bar b{flex:1;font-family:var(--f-display);font-size:22px;font-weight:400}.lv-st-bar span{color:var(--ink-soft)}
+.lv-st-w{display:none;gap:8px;flex-wrap:wrap;padding:10px 0}
+.lv-sw{display:inline-flex;align-items:center;border:1px solid var(--border-dark);background:var(--plate-hi);color:var(--ink);border-radius:99px;padding:5px 14px;font-size:14px;font-weight:600}.lv-sw.timer{font-family:var(--f-display);font-size:22px;font-weight:500}.lv-sw.timer.done{color:var(--rust);border-color:var(--rust)}.lv-sw.note{border-radius:12px;font-weight:500}
+.lv-st-main{padding-top:16px}.lv-st-main h2{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,7vw,44px);line-height:1.08;margin:6px 0 10px;color:var(--ink)}.lv-st-main p{font-size:18px;line-height:1.45;color:var(--ink-mid);margin:0 0 14px}
+.lv-st-opts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.lv-so{display:flex;gap:12px;align-items:center;text-align:left;font:inherit;font-size:18px;padding:14px 16px;border:1.5px solid var(--border-dark);border-radius:14px;background:var(--plate-hi);color:var(--ink);cursor:pointer;min-height:56px}
+.lv-so:hover:not(:disabled){border-color:var(--accent)}.lv-so.sel{border-color:var(--accent);background:var(--hl-soft);box-shadow:inset 0 0 0 1px var(--accent)}.lv-so.ok{border-color:var(--sage);background:var(--sage-pale)}.lv-so.no{border-color:var(--rust);background:var(--rust-pale)}.lv-so:disabled{cursor:default}
+.lv-st-row{display:flex;align-items:center;gap:12px;margin-top:12px}.lv-ok{color:var(--sage);font-weight:600;font-size:14px}
+#lv-ov .btn-primary{color:var(--on-pop)}
+#page-liveroom>.page-body{padding:24px 32px;max-width:1104px}#page-liveroom .lv-sel{max-width:100%}
+.lv-ltr,.lv-code,.lv-cloud{color:var(--ochre)}.lv-nav:not(:disabled):hover{color:var(--ochre)}
 </style>
 </head>
 <body>
@@ -1703,6 +1808,10 @@ body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/><path d="M9 12h6M9 16h4"/></svg>
         My Tests
       </a>
+      <a class="nav-item" onclick="showPage('liveroom')" data-page="liveroom">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M9 9l5 2.5L9 14z"/></svg>
+        Live Room
+      </a>
       <a class="nav-item" onclick="showPage('live')" data-page="live">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
         Live Monitor
@@ -1748,6 +1857,7 @@ body.fx-ui-dark .hp-foot{color:#C8DADD}.hp-foot a{color:inherit;text-decoration:
     <div id="page-dashboard" class="page-view"></div>
     <div id="page-tests" class="page-view hidden"></div>
     <div id="page-live" class="page-view hidden"></div>
+    <div id="page-liveroom" class="page-view hidden"></div>
     <div id="page-grading" class="page-view hidden"></div>
     <div id="page-classes" class="page-view hidden"></div>
     <div id="page-peer" class="page-view hidden"></div>
@@ -12268,7 +12378,7 @@ function fxClassDetail(c){
      ${[...c.announcements].reverse().map(x=>`<div class="fxc-panel fxc-ann"><div class="fxc-sub">${E(fxTName(x.by))} · ${E(new Date(x.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} <a class="fxc-x" onclick="fxClassUnpost('${c.id}','${x.id}')">Delete</a></div>${E(x.text)}</div>`).join('')}`;
   }
   return `<div class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← Classes</button><h1 class="page-title">${E(c.name)}</h1></div>
-   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="lvNewForClass('${c.id}')">Live room</button><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
    <div class="page-body"><div class="fxc-codebar"><div><div class="fxc-h" style="margin:0">Class join code</div><div class="fxc-bigcode">${E(c.joinCode)}</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
    <div class="fxc-tabs">${tabs.map(([k,l])=>`<button class="${FXC.tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
 }
@@ -12877,6 +12987,320 @@ window.stuRevSubmit=async function(){
   try{await stuRefresh();}catch(e){}
   window.scrollTo(0,0);stuReviewLoad();
 };
+</script>
+<script id="ea-live">
+/* ═══════════ LIVE ROOM — a shared screen: slides, polls, typed answers, check-ins, classroom widgets ═══════════ */
+(function(){
+const $=id=>document.getElementById(id);
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const rid=()=>'s'+Math.random().toString(36).slice(2,9);
+const LET='ABCDEFGH';
+const CHECKIN=['😀 Got it','🙂 Mostly','😕 Not sure','😣 Lost'];
+const clock=()=>new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const joinUrl=c=>location.origin+location.pathname+'?live='+c;
+let LV={rooms:null,draft:null,sel:0,pres:null,poll:null,tick:null,sum:null};
+const T={slide:'Slide',mcq:'Multiple choice',poll:'Poll',text:'Typed answer'};
+
+/* ───────────── teacher: list page ───────────── */
+function pg(){return $('page-liveroom');}
+async function loadRooms(){const r=await apiPost({action:'liveList'});if(r&&r.rooms){LV.rooms=r.rooms;}render();}
+function render(){
+  const p=pg();if(!p||APP.currentPage!=='liveroom')return;
+  if(LV.draft)return renderBuilder();
+  const rows=LV.rooms;
+  p.innerHTML=`<div class="topbar"><h1 class="page-title">Live Room</h1><button class="btn btn-primary" onclick="lvNew()">New live room</button></div>
+  <div class="page-body"><p class="lv-lede">Put a screen in front of your group. Show slides, ask a question, and watch answers arrive.</p>
+  ${rows==null?'<div class="lv-empty">Loading…</div>':!rows.length?`<div class="lv-empty"><b>No rooms yet.</b><br>Start one with slides, or open a blank room and ask questions as you teach.<div style="margin-top:14px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" onclick="lvNew()">Build a room</button><button class="btn btn-secondary" onclick="lvQuick()">Start a blank room</button></div></div>`:
+  `<div class="lv-grid">${rows.map(r=>`<div class="lv-card"><div class="lv-card-t">${E(r.title)}</div><div class="lv-meta"><span class="lv-chip ${r.status==='live'?'on':''}">${r.status==='live'?'● Live':'Ended'}</span>${r.className?`<span class="lv-chip">${E(r.className)}</span>`:'<span class="lv-chip">Standalone</span>'}<span>${r.count} slide${r.count!==1?'s':''}</span><span>${new Date(r.createdAt).toLocaleDateString([],{month:'short',day:'numeric'})}</span></div>
+  <div class="lv-card-a"><button class="btn btn-primary btn-sm" onclick="lvOpen('${r.code}')">${r.status==='live'?'Present':'Reopen'}</button><button class="btn btn-secondary btn-sm" onclick="lvSummary('${r.code}')">Results</button><button class="btn btn-ghost btn-sm" onclick="lvEdit('${r.code}')">Edit</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvDel('${r.code}')">Delete</button></div></div>`).join('')}</div>
+  <div style="margin-top:16px"><button class="btn btn-secondary btn-sm" onclick="lvQuick()">Start a blank room</button></div>`}</div>`;
+}
+window.lvNew=function(classId){
+  LV.draft={code:null,title:'',classId:classId||'',slides:[{id:rid(),type:'slide',title:'',body:''}]};LV.sel=0;
+  if(APP.currentPage!=='liveroom')showPage('liveroom');else render();
+};
+window.lvQuick=async function(classId){
+  const r=await apiPost({action:'liveCreate',title:'Quick room · '+new Date().toLocaleDateString([],{month:'short',day:'numeric'}),classId:classId||undefined,slides:[{type:'slide',title:'Welcome',body:'Join with the code on screen.'}]});
+  if(r&&r.room){lvOpen(r.room.id);}else toast((r&&r.error)||'Could not start a room.','error');
+};
+window.lvDel=async function(c){if(!confirm('Delete this room and every response in it?'))return;const r=await apiPost({action:'liveDelete',code:c});if(r&&r.ok){LV.rooms=(LV.rooms||[]).filter(x=>x.code!==c);render();toast('Deleted.');}};
+window.lvEdit=async function(c){const r=await apiPost({action:'liveGet',code:c});if(!(r&&r.room))return toast('Could not open it.','error');const m=r.room;LV.draft={code:m.id,title:m.title,classId:m.classId||'',slides:m.slides};LV.sel=0;render();};
+
+/* ───────────── builder ───────────── */
+function sl(){return LV.draft.slides[LV.sel];}
+function renderBuilder(){
+  const d=LV.draft,p=pg(),s=sl();
+  const classes=(APP.classes||[]);
+  p.innerHTML=`<div class="topbar"><div style="display:flex;gap:12px;align-items:center"><button class="btn btn-secondary btn-sm" onclick="lvCancel()">← Back</button><h1 class="page-title">${d.code?'Edit room':'New live room'}</h1></div>
+   <div style="display:flex;gap:8px"><button class="btn btn-primary" id="lv-go" onclick="lvSaveStart()">${d.code?'Save':'Save & present'}</button></div></div>
+  <div class="page-body"><div class="lv-b-top"><input id="lv-title" class="lv-in" placeholder="Room title" value="${E(d.title)}" oninput="LV_.draft.title=this.value">
+   ${d.code?'':`<select class="lv-in lv-sel" onchange="LV_.draft.classId=this.value"><option value="">Standalone (anyone with the code)</option>${classes.map(c=>`<option value="${E(c.id)}" ${d.classId===c.id?'selected':''}>${E(c.name)}</option>`).join('')}</select>`}</div>
+  <div class="lv-b"><div class="lv-rail">${d.slides.map((x,i)=>`<div class="lv-th ${i===LV.sel?'on':''}" onclick="lvSel(${i})"><span class="lv-th-n">${i+1}</span><span class="lv-th-t">${E(x.title||'Untitled')}</span><span class="lv-th-k">${T[x.type]}${x.checkin?' · check-in':''}</span></div>`).join('')}
+   <div class="lv-add"><button class="btn btn-secondary btn-sm" onclick="lvAdd('slide')">+ Slide</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('mcq')">+ Multiple choice</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('poll')">+ Poll</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('text')">+ Typed answer</button><button class="btn btn-secondary btn-sm" onclick="lvAdd('checkin')">+ Check-in</button><label class="btn btn-secondary btn-sm" style="cursor:pointer">+ Images / PDF<input type="file" accept="image/*,application/pdf" multiple hidden onchange="lvImport(this.files)"></label></div></div>
+  <div class="lv-ed" id="lv-ed">${edHtml(s)}</div></div></div>`;
+}
+function edHtml(s){
+  const opt=(s.type==='mcq'||s.type==='poll')?`<div class="lv-lbl">Choices${s.type==='mcq'?' — pick the correct one':''}</div>${s.options.map((o,i)=>`<div class="lv-opt">${s.type==='mcq'?`<input type="radio" name="lvc" ${s.correct===i?'checked':''} onchange="LV_.sl().correct=${i}" title="Correct answer">`:`<span class="lv-ltr">${LET[i]}</span>`}<input class="lv-in" value="${E(o)}" oninput="LV_.sl().options[${i}]=this.value" placeholder="Choice ${LET[i]}">${s.options.length>2?`<button class="btn btn-ghost btn-sm" onclick="lvOptDel(${i})">✕</button>`:''}</div>`).join('')}${s.options.length<8?'<button class="btn btn-ghost btn-sm" onclick="lvOptAdd()">+ Add choice</button>':''}`:'';
+  return `<div class="lv-ed-h"><select class="lv-in lv-sel" onchange="lvType(this.value)">${Object.keys(T).map(k=>`<option value="${k}" ${s.type===k?'selected':''}>${T[k]}</option>`).join('')}</select><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="lvMove(-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="lvMove(1)">↓</button><button class="btn btn-ghost btn-sm lv-del" onclick="lvRm()">Remove</button></div>
+  <div class="lv-lbl">${s.type==='slide'?'Title':'Question'}</div><input class="lv-in lv-big" value="${E(s.title)}" oninput="LV_.sl().title=this.value;lvRail()" placeholder="${s.type==='slide'?'Slide title':'Ask something…'}">
+  <div class="lv-lbl">${s.type==='slide'?'Text':'Extra detail (optional)'}</div><textarea class="lv-in" rows="3" oninput="LV_.sl().body=this.value" placeholder="${s.type==='slide'?'What should the screen say?':''}">${E(s.body)}</textarea>
+  ${opt}
+  <div class="lv-lbl">Image (optional)</div>${s.img?`<div class="lv-imgrow"><img src="${E(s.img)}" alt=""><button class="btn btn-ghost btn-sm" onclick="LV_.sl().img='';lvEd()">Remove</button></div>`:`<label class="btn btn-secondary btn-sm" style="cursor:pointer">Upload image<input type="file" accept="image/*" hidden onchange="lvImg(this.files[0])"></label>`}`;
+}
+window.LV_={get draft(){return LV.draft},sl};
+window.lvEd=()=>{const e=$('lv-ed');if(e)e.innerHTML=edHtml(sl());};
+window.lvRail=()=>{const t=document.querySelectorAll('.lv-th')[LV.sel];if(t)t.querySelector('.lv-th-t').textContent=sl().title||'Untitled';};
+window.lvSel=i=>{LV.sel=i;renderBuilder();};
+window.lvCancel=()=>{LV.draft=null;render();};
+window.lvAdd=t=>{const s={id:rid(),type:t==='checkin'?'poll':t,title:t==='checkin'?'How are you feeling about this so far?':'',body:''};
+  if(t==='mcq'||t==='poll'||t==='checkin'){s.options=t==='checkin'?CHECKIN.slice():['','','',''];if(t==='checkin')s.checkin=true;if(t==='mcq')s.correct=0;}
+  LV.draft.slides.push(s);LV.sel=LV.draft.slides.length-1;renderBuilder();};
+window.lvType=t=>{const s=sl();s.type=t;if((t==='mcq'||t==='poll')&&!s.options)s.options=['','','',''];if(t==='mcq'&&s.correct==null)s.correct=0;if(t!=='mcq')delete s.correct;renderBuilder();};
+window.lvOptAdd=()=>{sl().options.push('');lvEd();};
+window.lvOptDel=i=>{const s=sl();s.options.splice(i,1);if(s.correct===i)s.correct=0;else if(s.correct>i)s.correct--;lvEd();};
+window.lvMove=d=>{const a=LV.draft.slides,i=LV.sel,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];LV.sel=j;renderBuilder();};
+window.lvRm=()=>{const a=LV.draft.slides;if(a.length<2)return toast('A room needs at least one slide.','info');a.splice(LV.sel,1);LV.sel=Math.max(0,LV.sel-1);renderBuilder();};
+function shrink(file,max){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.82));};im.src=fr.result;};fr.readAsDataURL(file);});}
+async function upImg(dataUrl){const r=await apiPost({action:'putImage',dataUrl});if(r&&r.url)return r.url;throw new Error((r&&r.error)||'Upload failed');}
+window.lvImg=async f=>{if(!f)return;try{sl().img=await upImg(await shrink(f,1600));lvEd();}catch(e){toast(e.message||'Could not upload.','error');}};
+window.lvImport=async function(files){
+  files=[...files||[]];if(!files.length)return;toast('Importing '+files.length+' file'+(files.length>1?'s':'')+'…','info');
+  let n=0;
+  try{for(const f of files){
+    if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){
+      if(!window.pdfjsLib){await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';s.onload=ok;s.onerror=()=>no(new Error('PDF tools could not load. Export the slides as images instead.'));document.head.appendChild(s);});pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';}
+      const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+      for(let i=1;i<=Math.min(pdf.numPages,60);i++){const page=await pdf.getPage(i),vp=page.getViewport({scale:1.6}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;LV.draft.slides.push({id:rid(),type:'slide',title:'',body:'',img:await upImg(c.toDataURL('image/jpeg',.8))});n++;}
+    }else if(/^image\//.test(f.type)){LV.draft.slides.push({id:rid(),type:'slide',title:'',body:'',img:await upImg(await shrink(f,1600))});n++;}
+  }}catch(e){toast(e.message||'Import failed.','error');}
+  const d=LV.draft;if(d.slides.length>1&&!d.slides[0].title&&!d.slides[0].body&&!d.slides[0].img)d.slides.shift();
+  LV.sel=Math.max(0,d.slides.length-n);renderBuilder();if(n)toast(n+' slide'+(n>1?'s':'')+' added.');
+};
+window.lvSaveStart=async function(){
+  const d=LV.draft,b=$('lv-go');
+  const slides=d.slides.map(s=>({...s,title:s.title||(s.type==='slide'?'':'Question'),options:s.options&&s.options.filter(o=>String(o).trim()).length>=2?s.options:s.options}));
+  if(!slides.length)return;b.disabled=true;
+  const title=(d.title||'').trim()||slides[0].title||'Live room';
+  let r;
+  if(d.code)r=await apiPost({action:'liveSave',code:d.code,title,slides});else r=await apiPost({action:'liveCreate',title,classId:d.classId||undefined,slides});
+  b.disabled=false;
+  if(!(r&&r.room))return toast((r&&r.error)||'Could not save.','error');
+  const code=r.room.id;LV.draft=null;LV.rooms=null;
+  if(d.code){toast('Saved.');loadRooms();}else lvOpen(code);
+};
+
+/* ───────────── presenter ───────────── */
+const ov=()=>$('lv-ov');
+function mount(html,cls){let o=ov();if(!o){o=document.createElement('div');o.id='lv-ov';document.body.appendChild(o);}o.className=cls||'';o.innerHTML=html;document.body.classList.add('lv-open');return o;}
+function unmount(){const o=ov();if(o)o.remove();document.body.classList.remove('lv-open');clearInterval(LV.poll);clearInterval(LV.tick);LV.poll=LV.tick=null;LV.pres=null;}
+window.lvOpen=async function(code){
+  const r=await apiPost({action:'liveGet',code});if(!(r&&r.room))return toast((r&&r.error)||'Could not open it.','error');
+  if(r.room.status==='ended'){await apiPost({action:'liveCtl',code,status:'live'});r.room.status='live';}
+  LV.pres={room:r.room,resp:r.responses||[],parts:r.participants||[],tray:false,wg:{},cloud:false,sig:''};
+  LV.pres.wg=r.room.widgets||{};LS.set('ea_live_t',code);
+  drawPres();startPoll();
+};
+function startPoll(){clearInterval(LV.poll);clearInterval(LV.tick);
+  LV.poll=setInterval(async()=>{const P=LV.pres;if(!P)return;const s=P.room.slides[P.room.idx];const r=await apiPost({action:'liveGet',code:P.room.id,slideId:s&&s.id});if(!r||!r.room||!LV.pres)return;P.parts=r.participants||[];P.resp=r.responses||[];paintResults();paintTop();},1800);
+  LV.tick=setInterval(tickWidgets,500);}
+function cur(){const P=LV.pres;return P.room.slides[P.room.idx];}
+function qr(url){try{if(!window.qrcode)return '';const q=qrcode(0,'M');q.addData(url);q.make();return q.createSvgTag({cellSize:4,margin:0,scalable:true});}catch(e){return '';}}
+async function ctl(o){const P=LV.pres;const r=await apiPost({action:'liveCtl',code:P.room.id,...o});if(r&&r.room){P.room=r.room;P.wg=r.room.widgets||{};P.resp=[];drawPres();}else toast((r&&r.error)||'Not saved.','error');}
+function drawPres(){
+  const P=LV.pres,R=P.room,s=cur();if(!s)return;P.sig='';
+  const q=s.type!=='slide',url=joinUrl(R.id);
+  mount(`<div class="lv-pr">
+   <div class="lv-bar"><div class="lv-bar-l"><button class="lv-x" onclick="lvExit()" title="Leave the screen (room stays live)">✕</button><b class="lv-bar-t">${E(R.title)}</b></div>
+    <div class="lv-bar-c"><button class="lv-nav" onclick="lvGo(-1)" ${R.idx<1?'disabled':''} aria-label="Previous">‹</button><span class="lv-pos">${R.idx+1} / ${R.slides.length}</span><button class="lv-nav" onclick="lvGo(1)" ${R.idx>=R.slides.length-1?'disabled':''} aria-label="Next">›</button></div>
+    <div class="lv-bar-r"><span class="lv-who" id="lv-who"></span><button class="btn btn-secondary btn-sm" onclick="lvAsk()">Ask now</button><button class="btn btn-secondary btn-sm" onclick="lvTray()">${P.tray?'Hide widgets':'Widgets'}</button><button class="btn btn-primary btn-sm" onclick="lvEnd()">End</button></div></div>
+   <div class="lv-wrap"><div class="lv-stage"><div class="lv-join"><div><div class="lv-join-k">Join at</div><div class="lv-join-u">${E(location.host+location.pathname.replace(/\/$/,''))}</div><div class="lv-join-k">code</div><div class="lv-code">${E(R.id)}</div></div><div class="lv-qr">${qr(url)}</div></div>
+    <div class="lv-slide ${s.img?'has-img':''}">${s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:''}${s.title||s.body||!s.img?`<div class="lv-stext">${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}${q&&s.type!=='text'?`<div class="lv-opts">${s.options.map((o,i)=>`<div class="lv-o ${R.reveal&&s.correct===i?'ok':''}"><span class="lv-ltr">${LET[i]}</span>${E(o)}</div>`).join('')}</div>`:''}</div>`:''}</div></div>
+   ${q?`<aside class="lv-res"><div class="lv-res-h"><b>Responses</b><span class="lv-pill ${R.open?'on':''}">${R.open?'Open':'Closed'}</span></div><div id="lv-res-b"></div>
+     <div class="lv-res-a"><button class="btn btn-secondary btn-sm" onclick="lvOpenClose()">${R.open?'Close responses':'Reopen responses'}</button>${s.type==='mcq'?`<button class="btn btn-secondary btn-sm" onclick="lvReveal()">${R.reveal?'Hide answer':'Reveal answer'}</button>`:''}${s.type==='text'?`<button class="btn btn-ghost btn-sm" onclick="lvCloud()">${P.cloud?'List view':'Word cloud'}</button>`:''}<button class="btn btn-ghost btn-sm" onclick="lvClear()">Clear</button></div></aside>`:''}</div>
+   <div class="lv-tray ${P.tray?'on':''}" id="lv-tray">${trayHtml()}</div></div>`);
+  paintResults();paintTop();tickWidgets();
+}
+function paintTop(){const P=LV.pres;if(!P)return;const w=$('lv-who');if(!w)return;const on=P.parts.filter(p=>Date.now()-p.seen<15000).length;w.textContent=on+' here'+(P.parts.length>on?' · '+P.parts.length+' joined':'');}
+function paintResults(){
+  const P=LV.pres,b=$('lv-res-b');if(!b)return;const s=cur(),R=P.room;
+  const rs=P.resp.filter(x=>x.slideId===s.id);const answered=new Set(rs.map(x=>x.pid));
+  const waiting=P.parts.filter(p=>!answered.has(p.pid));
+  let h='';
+  if(s.type==='mcq'||s.type==='poll'){
+    const cnt=s.options.map((_,i)=>rs.filter(x=>x.answer===i).length),tot=rs.length||0,max=Math.max(1,...cnt);
+    h=`<div class="lv-bars">${s.options.map((o,i)=>`<div class="lv-bar-row ${R.reveal&&s.correct===i?'ok':''}"><div class="lv-bar-lab"><span class="lv-ltr">${LET[i]}</span><span class="lv-bar-o">${E(o)}</span><b>${cnt[i]}</b></div><div class="lv-track"><div class="lv-fill" style="width:${cnt[i]/max*100}%"></div></div></div>`).join('')}</div>
+    ${s.type==='mcq'&&s.correct!=null&&tot?`<div class="lv-stat">${Math.round(cnt[s.correct]/tot*100)}% correct</div>`:''}`;
+  }else if(P.cloud){
+    const f={};rs.forEach(x=>x.answer.toLowerCase().replace(/[^\p{L}\p{N}\s']/gu,' ').split(/\s+/).filter(w=>w.length>2&&!STOP.has(w)).forEach(w=>f[w]=(f[w]||0)+1));
+    const ws=Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,40),mx=Math.max(1,...ws.map(x=>x[1]));
+    h=`<div class="lv-cloud">${ws.map(([w,n])=>`<span style="font-size:${14+n/mx*30}px;opacity:${.55+n/mx*.45}">${E(w)}</span>`).join('')||'<span class="lv-dim">Words appear here.</span>'}</div>`;
+  }else h=`<div class="lv-texts">${rs.slice().reverse().map(x=>`<div class="lv-t"><div class="lv-t-n">${E(x.name)}</div>${E(x.answer)}</div>`).join('')||'<div class="lv-dim">Waiting for answers…</div>'}</div>`;
+  h=`<div class="lv-count"><b>${rs.length}</b> of ${P.parts.length} answered</div>`+h+(waiting.length&&P.parts.length?`<div class="lv-wait"><span>Waiting on</span> ${waiting.map(p=>E(p.name)).join(', ')}</div>`:'');
+  // repaint only if content changed (keeps scroll steady)
+  const sig=h;if(P.sig!==sig){P.sig=sig;b.innerHTML=h;}
+}
+const STOP=new Set('the and for are was but not you your this that with have from they what when will would there their about which into than then them been were has had can its our out how why who she him her his just like also very more some any all one two get got did does'.split(' '));
+window.lvGo=d=>{const P=LV.pres,i=P.room.idx+d;if(i<0||i>=P.room.slides.length)return;P.sig='';ctl({idx:i});};
+window.lvOpenClose=()=>ctl({open:!LV.pres.room.open});
+window.lvReveal=()=>ctl({reveal:!LV.pres.room.reveal});
+window.lvCloud=()=>{LV.pres.cloud=!LV.pres.cloud;LV.pres.sig='';drawPres();};
+window.lvClear=async()=>{if(!confirm('Clear all answers to this question?'))return;LV.pres.sig='';await ctl({clearSlide:cur().id});};
+window.lvTray=()=>{LV.pres.tray=!LV.pres.tray;drawPres();};
+window.lvExit=()=>{unmount();LS.set('ea_live_t','');LV.rooms=null;if(APP.currentPage==='liveroom')loadRooms();};
+window.lvEnd=async()=>{if(!confirm('End this room for everyone? You can still see results.'))return;const c=LV.pres.room.id;await apiPost({action:'liveCtl',code:c,status:'ended'});unmount();LS.set('ea_live_t','');lvSummary(c);};
+window.lvAsk=function(){
+  const P=LV.pres;if($('lv-ask'))return $('lv-ask').remove();
+  const d=document.createElement('div');d.id='lv-ask';d.className='lv-ask';
+  const items=[['mcq','Multiple choice A–D','Students pick one'],['poll','Poll','Opinions, no right answer'],['text','Typed answer','Short written reply'],['checkin','Check-in','Got it → Lost']];
+  d.innerHTML=items.map(([k,a,b])=>`<button onclick="lvAskGo('${k}')"><b>${a}</b><span>${b}</span></button>`).join('');
+  ov().querySelector('.lv-bar-r').appendChild(d);
+};
+window.lvAskGo=async function(k){
+  $('lv-ask')&&$('lv-ask').remove();
+  const s=k==='mcq'?{type:'mcq',title:'Quick question',options:['A','B','C','D']}:k==='poll'?{type:'poll',title:'Quick poll',options:['Yes','No']}:k==='text'?{type:'text',title:'Type your answer'}:{type:'poll',checkin:true,title:'How are you feeling about this?',options:CHECKIN.slice()};
+  LV.pres.sig='';await ctl({addSlide:{...s,id:rid()}});
+};
+
+/* widgets */
+function trayHtml(){
+  const P=LV.pres,w=P.wg||{};
+  return `<div class="lv-w"><div class="lv-w-h">Timer</div><div class="lv-w-big" id="lv-tm">${w.timer&&w.timer.endsAt>Date.now()?mmss((w.timer.endsAt-Date.now())/1000):'0:00'}</div><div class="lv-w-r">${[1,3,5,10].map(m=>`<button class="btn btn-secondary btn-sm" onclick="lvTimer(${m*60})">${m}m</button>`).join('')}<button class="btn btn-ghost btn-sm" onclick="lvTimer(0)">Stop</button></div></div>
+  <div class="lv-w"><div class="lv-w-h">Noise level</div><div class="lv-w-r lv-mode">${[['silent','Silent'],['whisper','Whisper'],['talk','Talk']].map(([k,n])=>`<button class="btn ${w.mode===k?'btn-primary':'btn-secondary'} btn-sm" onclick="lvWg({mode:'${k}'})">${n}</button>`).join('')}</div></div>
+  <div class="lv-w"><div class="lv-w-h">Signal</div><div class="lv-w-r">${[['red','Stop'],['yellow','Wait'],['green','Go']].map(([k,n])=>`<button class="lv-lt ${k} ${w.light===k?'on':''}" onclick="lvWg({light:'${k}'})" aria-label="${n}" title="${n}"></button>`).join('')}<button class="btn btn-ghost btn-sm" onclick="lvWg({light:'',mode:''})">Clear</button></div></div>
+  <div class="lv-w"><div class="lv-w-h">Message</div><div class="lv-w-r"><input class="lv-in" id="lv-note" maxlength="300" placeholder="Show students a note" value="${E(w.note||'')}" onkeydown="if(event.key==='Enter')lvNote()"><button class="btn btn-secondary btn-sm" onclick="lvNote()">Show</button></div></div>
+  <div class="lv-w"><div class="lv-w-h">Pick a name</div><div class="lv-w-big" id="lv-pick">—</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvPick()">Pick one</button></div></div>
+  <div class="lv-w lv-w-wide"><div class="lv-w-h">Groups</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvGroups(2)">Pairs</button><button class="btn btn-secondary btn-sm" onclick="lvGroups(3)">Threes</button><button class="btn btn-secondary btn-sm" onclick="lvGroups(4)">Fours</button></div><div id="lv-groups" class="lv-groups"></div></div>
+  <div class="lv-w"><div class="lv-w-h">Dice</div><div class="lv-w-big" id="lv-dice">⚀</div><div class="lv-w-r"><button class="btn btn-secondary btn-sm" onclick="lvDice()">Roll</button></div></div>
+  <div class="lv-w"><div class="lv-w-h">Clock</div><div class="lv-w-big" id="lv-clk">${clock()}</div></div>`;
+}
+window.lvWg=async function(p){const P=LV.pres,w={...P.wg,...p};if(p.light==='')delete w.light;if(p.mode==='')delete w.mode;const r=await apiPost({action:'liveCtl',code:P.room.id,widgets:w});if(r&&r.room){P.wg=r.room.widgets||{};P.room.widgets=P.wg;const t=$('lv-tray');if(t&&!document.activeElement.matches('#lv-note')){const sc=t.scrollTop;t.innerHTML=trayHtml();t.scrollTop=sc;}}};
+window.lvTimer=function(secs){lvWg({timer:secs?{endsAt:Date.now()+secs*1000,secs}:undefined});};
+window.lvNote=()=>lvWg({note:$('lv-note').value.trim()});
+window.lvPick=function(){const ps=LV.pres.parts.filter(p=>Date.now()-p.seen<60000);if(!ps.length)return toast('No students have joined yet.','info');const el=$('lv-pick');let n=0;const t=setInterval(()=>{el.textContent=ps[Math.floor(Math.random()*ps.length)].name;if(++n>14){clearInterval(t);const w=ps[Math.floor(Math.random()*ps.length)];el.textContent=w.name;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),600);}},70);};
+window.lvGroups=function(n){const ps=LV.pres.parts.filter(p=>Date.now()-p.seen<60000).map(p=>p.name);if(ps.length<2)return toast('Need at least two students here.','info');for(let i=ps.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ps[i],ps[j]]=[ps[j],ps[i]];}const k=Math.max(1,Math.round(ps.length/n)),g=Array.from({length:k},()=>[]);ps.forEach((x,i)=>g[i%k].push(x));$('lv-groups').innerHTML=g.map((m,i)=>`<div class="lv-g"><b>${i+1}</b>${m.map(E).join(', ')}</div>`).join('');};
+window.lvDice=function(){const f='⚀⚁⚂⚃⚄⚅',el=$('lv-dice');let n=0;const t=setInterval(()=>{el.textContent=f[Math.floor(Math.random()*6)];if(++n>9)clearInterval(t);},60);};
+function tickWidgets(){const P=LV.pres;if(!P)return;const c=$('lv-clk');if(c)c.textContent=clock();const t=$('lv-tm');if(t){const e=P.wg.timer;const left=e?(e.endsAt-Date.now())/1000:0;t.textContent=mmss(left);t.classList.toggle('done',e&&left<=0);}}
+
+/* ───────────── summary + "what next" ───────────── */
+window.lvSummary=async function(code){
+  const r=await apiPost({action:'liveGet',code});if(!(r&&r.room))return toast((r&&r.error)||'Could not load results.','error');
+  const R=r.room,rs=r.responses,parts=r.participants,qs=R.slides.filter(s=>s.type!=='slide');
+  const by=s=>rs.filter(x=>x.slideId===s.id);
+  const follow={};const note=(n,why)=>{(follow[n]=follow[n]||[]).push(why);};
+  const cards=qs.map(s=>{
+    const a=by(s),n=a.length;let body='',flag='';
+    if(s.type==='mcq'||s.type==='poll'){
+      const cnt=s.options.map((_,i)=>a.filter(x=>x.answer===i).length);
+      body=s.options.map((o,i)=>`<div class="lv-sm-r ${s.correct===i?'ok':''}"><span class="lv-ltr">${LET[i]}</span><span class="lv-sm-o">${E(o)}</span><div class="lv-track"><div class="lv-fill" style="width:${n?cnt[i]/n*100:0}%"></div></div><b>${cnt[i]}</b></div>`).join('');
+      if(s.type==='mcq'&&s.correct!=null&&n){const pc=Math.round(cnt[s.correct]/n*100);flag=pc<60?`<span class="lv-fl bad">Reteach · ${pc}% correct</span>`:pc<85?`<span class="lv-fl mid">Quick review · ${pc}% correct</span>`:`<span class="lv-fl good">Solid · ${pc}% correct</span>`;
+        a.filter(x=>x.answer!==s.correct).forEach(x=>note(x.name,'missed “'+(s.title||'question').slice(0,40)+'”'));}
+      if(s.checkin&&n){const lost=a.filter(x=>x.answer>=2);if(lost.length){flag=`<span class="lv-fl ${lost.length/n>.4?'bad':'mid'}">${lost.length} unsure or lost</span>`;lost.forEach(x=>note(x.name,s.options[x.answer].replace(/^\S+\s/,'').toLowerCase()+' in check-in'));}else flag='<span class="lv-fl good">Everyone with you</span>';}
+    }else body=a.map(x=>`<div class="lv-t"><div class="lv-t-n">${E(x.name)}</div>${E(x.answer)}</div>`).join('')||'<div class="lv-dim">No answers.</div>';
+    return `<div class="lv-sm"><div class="lv-sm-h"><div><div class="lv-sm-k">${T[s.type]}${s.checkin?' · check-in':''} · ${n} answer${n!==1?'s':''}</div><b>${E(s.title||'Question')}</b></div>${flag}</div>${body}</div>`;
+  }).join('');
+  parts.forEach(p=>{const mine=rs.filter(x=>x.pid===p.pid).length;if(qs.length>1&&mine<qs.length/2)note(p.name,'answered '+mine+' of '+qs.length);});
+  const fu=Object.entries(follow).sort((a,b)=>b[1].length-a[1].length).slice(0,12);
+  const reteach=qs.filter(s=>{const a=by(s);return s.type==='mcq'&&s.correct!=null&&a.length&&a.filter(x=>x.answer===s.correct).length/a.length<.6;});
+  mount(`<div class="lv-pr lv-sum"><div class="lv-bar"><div class="lv-bar-l"><button class="lv-x" onclick="lvClose()" aria-label="Close">✕</button><b class="lv-bar-t">${E(R.title)} · Results</b></div><div class="lv-bar-r"><button class="btn btn-secondary btn-sm" onclick="lvCsv('${code}')">Download CSV</button>${R.status==='ended'?`<button class="btn btn-primary btn-sm" onclick="lvOpen('${code}')">Reopen room</button>`:`<button class="btn btn-primary btn-sm" onclick="lvOpen('${code}')">Back to screen</button>`}</div></div>
+   <div class="lv-sum-b"><div class="lv-next"><div class="lv-next-h">What to do next</div>
+     <ul>${reteach.length?`<li><b>Reteach:</b> ${reteach.map(s=>E(s.title||'question')).join('; ')}</li>`:'<li>No question fell below 60% correct.</li>'}
+     ${fu.length?`<li><b>Check in with:</b> ${fu.map(([n,w])=>`${E(n)} <span class="lv-dim">(${E(w[0])}${w.length>1?' +'+(w.length-1):''})</span>`).join(' · ')}</li>`:'<li>No one needs a follow-up from this session.</li>'}</ul>
+     <div class="lv-dim">${parts.length} joined · ${qs.length} question${qs.length!==1?'s':''} · ${R.status==='ended'?'ended '+new Date(R.endedAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'still live'}</div></div>
+   ${cards||'<div class="lv-empty">No questions were asked in this room.</div>'}</div></div>`);
+  LV.sum={code,R,rs,parts};
+};
+window.lvClose=()=>{unmount();LV.rooms=null;if(APP.currentPage==='liveroom')loadRooms();};
+window.lvCsv=function(){
+  const {R,rs,parts}=LV.sum,qs=R.slides.filter(s=>s.type!=='slide');
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const lab=(s,x)=>!x?'':(s.type==='text'?x.answer:(s.options[x.answer]||''));
+  const rows=[['Name',...qs.map(s=>s.title||'Question')].map(q).join(',')];
+  parts.forEach(p=>rows.push([p.name,...qs.map(s=>lab(s,rs.find(x=>x.pid===p.pid&&x.slideId===s.id)))].map(q).join(',')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download=(R.title||'live-room').replace(/[^\w-]+/g,'_')+'.csv';a.click();
+};
+
+/* ───────────── student ───────────── */
+let ST={code:null,pid:null,name:'',room:null,poll:null,tick:null,sig:'',err:''};
+const pidFor=c=>{let p=LS.get('ea_live_pid_'+c);if(!p){p='p'+Math.random().toString(36).slice(2,12);LS.set('ea_live_pid_'+c,p);}return p;};
+window.lvJoinCode=async function(code){
+  code=code.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const r=await apiPost({action:'liveState',code});
+  if(!(r&&r.ok))return false;
+  ST={code,pid:pidFor(code),name:LS.get('ea_live_name')||'',room:r.room,poll:null,tick:null,sig:'',err:''};
+  try{const s=JSON.parse(LS.get('ea_stu_v1')||'null');if(!ST.name&&s&&s.user&&s.user.name)ST.name=s.user.name;}catch(e){}
+  if(LS.get('ea_live_joined_'+code)&&ST.name){await joinNow(ST.name,true);}else stJoinScreen();
+  return true;
+};
+function stJoinScreen(){
+  const R=ST.room;
+  mount(`<div class="lv-st"><div class="lv-st-card"><div class="lv-st-k">You're joining</div><h2>${E(R.title)}</h2>${R.className?`<div class="lv-dim">${E(R.className)}</div>`:''}
+   <form onsubmit="return lvStJoin(event)"><label class="lv-lbl" for="lv-nm">Your name</label><input id="lv-nm" class="lv-in lv-big" maxlength="40" autocomplete="name" placeholder="First name and last initial" value="${E(ST.name)}"><div class="lv-err" id="lv-err">${E(ST.err)}</div><button class="btn btn-primary" style="width:100%;margin-top:12px">Join</button></form><button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="lvStLeave()">Cancel</button></div></div>`,'lv-st-ov');
+  setTimeout(()=>{const i=$('lv-nm');i&&i.focus();},50);
+}
+window.lvStJoin=async function(e){e.preventDefault();const n=$('lv-nm').value.trim().replace(/\s+/g,' ');if(n.length<2){$('lv-err').textContent='Enter your name.';return false;}await joinNow(n);return false;};
+async function joinNow(name,quiet){
+  const r=await apiPost({action:'liveJoin',code:ST.code,pid:ST.pid,name});
+  if(!(r&&r.ok)){ST.err=(r&&r.error)||'Could not join.';if(quiet)LS.set('ea_live_joined_'+ST.code,'');return stJoinScreen();}
+  ST.name=name;LS.set('ea_live_last',ST.code);LS.set('ea_live_name',name);LS.set('ea_live_joined_'+ST.code,'1');ST.room=r.room;ST.sig='';
+  stDraw();clearInterval(ST.poll);clearInterval(ST.tick);
+  ST.poll=setInterval(stPoll,1500);ST.tick=setInterval(stTick,500);
+}
+async function stPoll(){const r=await apiPost({action:'liveState',code:ST.code,pid:ST.pid});if(!r||!r.ok)return;const o=ST.room;ST.room=r.room;
+  const sig=[r.room.slide&&r.room.slide.id,r.room.open,r.room.reveal,r.room.status,r.room.rev].join('|');
+  if(sig!==ST.sig){const sameQ=o&&o.slide&&r.room.slide&&o.slide.id===r.room.slide.id;ST.sig=sig;
+    if(sameQ&&r.room.status==='live'&&r.room.slide.type==='text'&&document.activeElement&&document.activeElement.id==='lv-ta'){stWidgets();stStatus();return;}   // never disturb typing
+    stDraw();}
+  else stWidgets();}
+function stDraw(){
+  const R=ST.room,s=R.slide;
+  if(R.status==='ended'){clearInterval(ST.poll);clearInterval(ST.tick);mount(`<div class="lv-st"><div class="lv-st-card"><h2>That's a wrap</h2><p class="lv-dim">${E(R.title)} has ended. Thanks for joining, ${E(ST.name)}.</p><button class="btn btn-primary" onclick="lvStLeave()">Done</button></div></div>`,'lv-st-ov');return;}
+  const q=s&&s.type!=='slide';
+  mount(`<div class="lv-st"><div class="lv-st-bar"><b>${E(R.title)}</b><span>${E(ST.name)}</span><button class="lv-x" onclick="lvStLeave()" aria-label="Leave">✕</button></div><div class="lv-st-w" id="lv-stw"></div>
+   <div class="lv-st-main">${s?`${s.img?`<img class="lv-simg" src="${E(s.img)}" alt="">`:''}${s.title?`<h2>${E(s.title)}</h2>`:''}${s.body?`<p>${E(s.body).replace(/\n/g,'<br>')}</p>`:''}
+   ${q?stInput(s,R):''}`:'<p class="lv-dim">Waiting for your teacher…</p>'}</div></div>`,'lv-st-ov');
+  stWidgets();stStatus();
+}
+function stInput(s,R){
+  const mine=R.mine;
+  if(s.type==='text')return `<textarea id="lv-ta" class="lv-in" rows="4" maxlength="600" placeholder="Type your answer" ${R.open?'':'disabled'}>${E(typeof mine==='string'?mine:'')}</textarea><div class="lv-st-row"><button class="btn btn-primary" id="lv-send" onclick="lvStSend()" ${R.open?'':'disabled'}>${mine!=null?'Update answer':'Send'}</button><span class="lv-ok" id="lv-st">${mine!=null?'Sent ✓':''}</span></div>${R.open?'':'<div class="lv-dim">Responses are closed.</div>'}`;
+  return `<div class="lv-st-opts">${s.options.map((o,i)=>`<button class="lv-so ${mine===i?'sel':''} ${R.reveal&&s.correct===i?'ok':''} ${R.reveal&&mine===i&&s.correct!==i?'no':''}" onclick="lvStPick(${i})" ${R.open?'':'disabled'}><span class="lv-ltr">${LET[i]}</span>${E(o)}</button>`).join('')}</div><div class="lv-st-row"><span class="lv-ok" id="lv-st">${mine!=null?'Answer sent ✓':''}</span></div>${R.open?'':`<div class="lv-dim">${R.reveal&&s.correct!=null?(mine===s.correct?'Correct!':'The correct answer is highlighted.'):'Responses are closed.'}</div>`}`;
+}
+function stStatus(){}
+window.lvStPick=async function(i){const R=ST.room,s=R.slide;if(!s||!R.open)return;
+  document.querySelectorAll('.lv-so').forEach((b,k)=>b.classList.toggle('sel',k===i));   // in-place, no re-render
+  const r=await apiPost({action:'liveRespond',code:ST.code,pid:ST.pid,slideId:s.id,answer:i});const st=$('lv-st');
+  if(r&&r.ok){R.mine=i;if(st)st.textContent='Answer sent ✓';}else if(st)st.textContent=(r&&r.error)||'Not sent. Try again.';};
+window.lvStSend=async function(){const R=ST.room,s=R.slide,ta=$('lv-ta');if(!s||!ta)return;const v=ta.value.trim();if(!v)return;
+  const b=$('lv-send');b.disabled=true;const r=await apiPost({action:'liveRespond',code:ST.code,pid:ST.pid,slideId:s.id,answer:v});b.disabled=!R.open;
+  const st=$('lv-st');if(r&&r.ok){R.mine=v;b.textContent='Update answer';if(st)st.textContent='Sent ✓';}else if(st)st.textContent=(r&&r.error)||'Not sent. Try again.';};
+window.lvStLeave=function(){clearInterval(ST.poll);clearInterval(ST.tick);LS.set('ea_live_joined_'+ST.code,'');LS.set('ea_live_last','');unmount();const u=new URL(location.href);if(u.searchParams.has('live')){u.searchParams.delete('live');history.replaceState(null,'',u.pathname+u.search+u.hash);}};
+function stWidgets(){const w=(ST.room&&ST.room.widgets)||{},el=$('lv-stw');if(!el)return;
+  const parts=[];
+  if(w.timer)parts.push(`<span class="lv-sw timer" id="lv-sw-tm">${mmss((w.timer.endsAt-Date.now())/1000)}</span>`);
+  if(w.light)parts.push(`<span class="lv-sw light ${w.light}">${{red:'Stop',yellow:'Wait',green:'Go'}[w.light]}</span>`);
+  if(w.mode)parts.push(`<span class="lv-sw">${{silent:'Silent',whisper:'Whisper voices',talk:'Talk freely'}[w.mode]}</span>`);
+  if(w.note)parts.push(`<span class="lv-sw note">${E(w.note)}</span>`);
+  const h=parts.join('');if(el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h;el.style.display=h?'flex':'none';}}
+function stTick(){const w=ST.room&&ST.room.widgets,t=$('lv-sw-tm');if(t&&w&&w.timer){const l=(w.timer.endsAt-Date.now())/1000;t.textContent=mmss(l);t.classList.toggle('done',l<=0);}}
+
+/* ───────────── wiring ───────────── */
+{const o=window.showPage;window.showPage=function(p){const r=o(p);if(p==='liveroom'){const e=pg();if(e){e.classList.remove('hidden');e.classList.add('animate-in');}document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page==='liveroom'));if(!LV.rooms)render();loadRooms();}return r;};}
+{const o=window.fxJoin;window.fxJoin=async function(){
+  const inp=$('join-code'),v=((inp&&inp.value)||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(v.length===5){const btn=$('join-btn');if(btn){btn.disabled=true;btn.textContent='Joining…';}const ok=await window.lvJoinCode(v);if(btn){btn.disabled=false;btn.textContent='Join';}if(ok)return;}
+  return o.apply(this,arguments);};}
+window.lvNewForClass=id=>{showPage('liveroom');lvNew(id);};
+function boot(){
+  const q=new URLSearchParams(location.search).get('live');
+  if(q){window.lvJoinCode(q).then(ok=>{if(!ok)toast('No live room with that code.','error');});return;}
+  const L=LS.get('ea_live_last');if(L&&LS.get('ea_live_joined_'+L)&&!LS.get('ea_live_t')){window.lvJoinCode(L).then(ok=>{if(!ok){LS.set('ea_live_joined_'+L,'');LS.set('ea_live_last','');}});return;}
+  const t=LS.get('ea_live_t');if(t&&typeof eaAuthLoad==='function'&&eaAuthLoad()){setTimeout(()=>{if(!ov())lvOpen(t);},1200);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300));else setTimeout(boot,300);
+})();
+
 </script>
 
 <script id="ea-motion">
