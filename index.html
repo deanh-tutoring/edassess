@@ -1593,6 +1593,41 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
 :root{--lantern-op:.85}body.fx-ui-dark{--lantern-op:.95}
 @media(max-width:900px){.hp-face,.hp-staff .hp-face{left:12%;right:12%}.hp-lamp{width:min(44vw,210px)}}
 .hp-mark i{box-shadow:none!important;animation:ldBob 3.4s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.hp-mark i{animation:none}}
+
+/* ═══ SURVEYS ═══ */
+.sv-mode .sv-hide{display:none!important}
+.sv-kind{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sv-kopt{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--cream)!important;color:var(--ink)!important}
+.sv-kopt input{display:none}.sv-kopt b{font-size:14px;letter-spacing:.02em}.sv-kopt small{font-size:12px;line-height:1.4;color:var(--ink-mid)!important;display:block!important}
+.sv-kopt.on{border-color:var(--accent,#2A52D9);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#2A52D9) 22%,transparent)}
+.sv-asg-note{padding:12px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--paper-warm);color:var(--ink);font-size:13px;line-height:1.5;margin-bottom:14px}
+.sv-mode .mc-option.correct{border-color:var(--border)!important;background:transparent!important}
+.sv-mode .mc-letter.correct{background:var(--paper-warm)!important;border-color:var(--border)!important;color:var(--ink)!important}
+.sv-mode .mc-letter{cursor:default}
+.sv-wrap{max-width:900px;margin:0 auto}
+.sv-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.sv-tab{padding:7px 14px;border-radius:99px;border:1px solid var(--border);background:var(--cream)!important;color:var(--ink)!important;font-size:13px;cursor:pointer}
+.sv-tab.on{background:var(--accent,#2A52D9)!important;border-color:var(--accent,#2A52D9);color:#fff!important}
+.sv-anon{font-size:12px;color:var(--ink);display:flex;gap:6px;align-items:center;cursor:pointer}
+.sv-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.sv-tile{padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-lg,10px);background:var(--cream)!important}
+.sv-tv{font-size:28px;font-weight:600;color:var(--accent,#2A52D9)}.sv-tl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mid)}.sv-ts{font-size:12px;color:var(--ink-mid)}
+.sv-card{padding:18px 20px;border:1px solid var(--border);border-radius:var(--r-lg,10px);background:var(--cream)!important;margin-bottom:14px;color:var(--ink)}
+.sv-qh{display:flex;gap:12px;margin-bottom:14px}.sv-qn{flex:0 0 28px;height:28px;border-radius:50%;background:var(--accent,#2A52D9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.sv-qt{font-size:15px;line-height:1.45;color:var(--ink)}.sv-qm{font-size:12px;color:var(--ink-mid);margin-top:2px}
+.sv-bar{display:grid;grid-template-columns:minmax(90px,32%) 1fr 70px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.sv-bl{color:var(--ink);overflow-wrap:anywhere}.sv-bt{height:14px;border-radius:7px;background:var(--paper-warm);overflow:hidden}.sv-bf{height:100%;border-radius:7px;background:var(--accent,#2A52D9)}
+.sv-bn{display:flex;gap:6px;justify-content:flex-end;color:var(--ink)}.sv-bn span{color:var(--ink-mid)}
+.sv-stat{display:flex;gap:18px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);font-size:13px;color:var(--ink-mid)}.sv-stat b{color:var(--ink)}
+.sv-words{display:flex;flex-wrap:wrap;gap:6px 12px;margin-bottom:12px;color:var(--accent,#2A52D9)}.sv-words sup{font-size:10px;color:var(--ink-mid);margin-left:2px}
+.sv-quotes blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--accent,#2A52D9);background:var(--paper-warm);font-size:14px;line-height:1.5;color:var(--ink);border-radius:0 var(--r) var(--r) 0}
+.sv-quotes cite{display:block;font-size:12px;color:var(--ink-mid);font-style:normal;margin-top:2px}
+.sv-skip{color:var(--ink-mid);font-size:13px}
+.sv-empty{text-align:center;padding:70px 30px;color:var(--ink-mid)}.sv-empty h2{font-size:28px;color:var(--ink);margin-bottom:8px}
+.sv-person{border:1px solid var(--border);border-radius:var(--r);background:var(--cream)!important;margin-bottom:8px;padding:0 14px}
+.sv-person summary{display:flex;justify-content:space-between;padding:11px 0;cursor:pointer;color:var(--ink);font-size:14px}.sv-person summary span{color:var(--ink-mid);font-size:12px}
+.sv-pa{padding:8px 0;border-top:1px solid var(--border)}.sv-pq{font-size:12px;color:var(--ink-mid)}.sv-pv{font-size:14px;color:var(--ink);margin-top:2px}
+@media(max-width:600px){.sv-kind{grid-template-columns:1fr}.sv-bar{grid-template-columns:1fr 60px}.sv-bar .sv-bt{grid-column:1/-1;order:3}}
 </style>
 </head>
 <body>
@@ -3042,7 +3077,7 @@ function renderDashboard(){
             </div>
             <div class="flex-1">
               <div style="font-size:14px;letter-spacing:.03em">${t.title}</div>
-              <div class="text-sm text-muted">${t.questions.length} q · ${t.published?'<span style="color:var(--sage)">Published</span>':'Draft'}</div>
+              <div class="text-sm text-muted">${t.kind==='survey'?'Survey · ':''}${t.questions.length} q · ${t.published?'<span style="color:var(--sage)">Published</span>':'Draft'}</div>
             </div>
             ${t.published?`<span class="badge badge-sage">Live</span>`:`<span class="badge badge-gray">Draft</span>`}
           </div>`).join('')}</div>`}
@@ -3119,7 +3154,7 @@ function renderTestsList(tests){
       <div class="text-sm text-muted">${t.questions.length} question${t.questions.length!==1?'s':''}${sxOn(t)?` · ${t.sections.length} sections${t.sections.some(s=>((s.routing&&s.routing.rules)||[]).length)?' · adaptive':''}`:''} · ${t.subject||'No subject'} · Created ${formatDate(t.createdAt)}</div>
     </div>
     <div class="flex items-center gap-3">
-      ${t.published?`<span class="badge badge-sage">Published</span>`:`<span class="badge badge-gray">Draft</span>`}
+      ${t.kind==='survey'?'<span class="badge badge-ochre">Survey</span>':''}${t.published?`<span class="badge badge-sage">Published</span>`:`<span class="badge badge-gray">Draft</span>`}
       <div class="test-actions">
         <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openBuilder('${t.id}')">Edit</button>
         ${t.published?`<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openAssignModal('${t.id}')">Assign</button>`:''}
@@ -3161,14 +3196,19 @@ function deleteTest(id){
    CREATE TEST MODAL
 ══════════════════════════════════════════════════════════ */
 function openCreateTest(){
+  window._svKind='test';
   openModal(`
   <div class="modal-header">
-    <h2 class="serif" style="font-size:26px">Create New Test</h2>
+    <h2 class="serif" style="font-size:26px">Create New</h2>
     <button class="btn btn-ghost btn-icon" onclick="closeModal()">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
   </div>
   <div class="modal-body">
+    <div class="sv-kind" id="ct-kind">
+      <label class="sv-kopt on" onclick="svPickKind('test')"><input type="radio" name="ct-k" value="test" checked><b>Assessment</b><small>Correct answers, points and scores. Optional secure mode.</small></label>
+      <label class="sv-kopt" onclick="svPickKind('survey')"><input type="radio" name="ct-k" value="survey"><b>Survey</b><small>No keys, no scores, no lockdown. Collect opinions or information and see the results.</small></label>
+    </div>
     <div class="form-group">
       <label class="form-label">Test Title *</label>
       <input type="text" id="ct-title" class="form-control" placeholder="e.g. AP Biology Unit 3 Exam">
@@ -3187,7 +3227,7 @@ function openCreateTest(){
       <label class="form-label">Description (optional)</label>
       <textarea id="ct-desc" class="form-control" rows="2" placeholder="Brief description..."></textarea>
     </div>
-    <label class="flex gap-2 items-center" style="font-size:13px;cursor:pointer"><input type="checkbox" id="ct-sections"> <span><strong>Multiple sections</strong> — separate directions, timers, adaptive routing, weighted grading</span></label>
+    <label class="flex gap-2 items-center" id="ct-sec-wrap" style="font-size:13px;cursor:pointer"><input type="checkbox" id="ct-sections"> <span><strong>Multiple sections</strong> — separate directions, timers, adaptive routing, weighted grading</span></label>
   </div>
   <div class="modal-footer">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -3210,7 +3250,8 @@ function createTest(){
     questions:[],published:false,
     createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
   };
-  if(document.getElementById('ct-sections')&&document.getElementById('ct-sections').checked){
+  if(window._svKind==='survey')test.kind='survey';
+  if(test.kind!=='survey'&&document.getElementById('ct-sections')&&document.getElementById('ct-sections').checked){
     const s1=sxNewSection('Section 1');test.sectioned=true;test.sections=[s1];
     test.continueLater={allowed:true,when:'between',clock:'pause'};
   }
@@ -3238,6 +3279,7 @@ function openBuilder(testId){
 function renderBuilder(){
   const t=APP.currentTest;
   const el=document.getElementById('page-builder');
+  el.classList.toggle('sv-mode',t.kind==='survey');
   el.innerHTML=`
   <div class="topbar" style="flex-shrink:0">
     <div class="flex items-center gap-3">
@@ -3256,7 +3298,7 @@ function renderBuilder(){
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         Import Questions
       </button>
-      <button class="btn btn-secondary btn-sm" onclick="sxOpenManager()" style="${sxOn(t)?'border-color:var(--accent,#2A52D9);color:var(--accent,#2A52D9)':''}">${sxOn(t)?'Sections &amp; Grading':'Sections &amp; Grading'}</button>
+      <button class="btn btn-secondary btn-sm sv-hide" onclick="sxOpenManager()" style="${sxOn(t)?'border-color:var(--accent,#2A52D9);color:var(--accent,#2A52D9)':''}">${sxOn(t)?'Sections &amp; Grading':'Sections &amp; Grading'}</button>
       <button class="btn btn-secondary btn-sm" onclick="openTestSettings()">Settings</button>
       ${t.published?`<button class="btn btn-success btn-sm" onclick="openAssignModal('${t.id}')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
@@ -3264,7 +3306,7 @@ function renderBuilder(){
       </button>`:''}
       <button class="btn btn-primary btn-sm" id="publish-test-btn" onclick="publishTest()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg>
-        ${t.published?'Save Changes':'Publish Test'}
+        ${t.published?'Save Changes':(t.kind==='survey'?'Publish Survey':'Publish Test')}
       </button>
     </div>
   </div>
@@ -3397,8 +3439,8 @@ function renderStandardQEditor(i,q){
       <span class="type-chip">${types[q.type]||q.type}</span>${sxQSectionPicker(i)}
     </div>
     <div class="flex gap-2 items-center">
-      <label style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Points:</label>
-      <input type="number" min="0" step="0.5" class="form-control" style="width:70px" value="${q.points||1}" oninput="APP.currentTest.questions[${i}].points=parseFloat(this.value)||1;save()">
+      <label class="sv-hide" style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Points:</label>
+      <input type="number" min="0" step="0.5" class="form-control sv-hide" style="width:70px" value="${q.points||1}" oninput="APP.currentTest.questions[${i}].points=parseFloat(this.value)||1;save()">
       <button class="btn btn-ghost btn-sm btn-icon" onclick="openLatexInserter(${i},'stem')" title="Insert Math">∑</button>
     </div>
   </div>
@@ -3426,14 +3468,14 @@ function renderStandardQEditor(i,q){
   </div>`}
   ${(q.type==='mc'||q.type==='ms')?`
   <div class="form-group">
-    <label class="form-label">Answer Choices — click letter to set correct answer${q.type==='ms'?' (multiple allowed)':''}</label>
+    <label class="form-label">${APP.currentTest.kind==='survey'?'Answer Choices':'Answer Choices — click letter to set correct answer'}${q.type==='ms'?' (multiple allowed)':''}</label>
     <div id="mc-options-${i}">
       ${renderMCOptions(i,q)}
     </div>
     <button class="btn btn-secondary btn-sm mt-2" onclick="addOption(${i})">+ Add Option</button>
   </div>`:''}
   ${q.type==='short'?`
-  <div class="form-group">
+  <div class="form-group sv-hide">
     <label class="form-label">Answer Key — accepted correct answers (not case sensitive)</label>
     <div id="short-key-${i}">
       ${renderShortKey(i,q)}
@@ -3442,14 +3484,14 @@ function renderStandardQEditor(i,q){
     
   </div>`:''}
   ${q.type==='essay'?`
-  <div class="form-group">
+  <div class="form-group sv-hide">
     <label class="form-label">Rubric (optional — for grading guidance)</label>
     <div id="rubric-${i}">
       ${renderRubric(i,q)}
     </div>
     <button class="btn btn-secondary btn-sm mt-2" onclick="addRubricRow(${i})">+ Add Rubric Criterion</button>
   </div>`:''}
-  <div class="form-group">
+  <div class="form-group sv-hide">
     <label class="form-label">Answer Explanation (optional)</label>
     
     <div id="editor-explanation-${i}" style="background:var(--cream);border-radius:var(--r)"></div>
@@ -3724,6 +3766,7 @@ function removeOption(i,j){
 
 function toggleCorrect(i,j){
   const q=APP.currentTest.questions[i];
+  if(APP.currentTest.kind==='survey')return;
   if(!q.correctAnswers)q.correctAnswers=[];
   if(q.type==='mc'){q.correctAnswers=[j];}
   else{const idx=q.correctAnswers.indexOf(j);if(idx>=0)q.correctAnswers.splice(idx,1);else q.correctAnswers.push(j);}
@@ -4548,7 +4591,7 @@ async function publishTest(){
   const result=await reliableSaveTests();
   setBtnSaving(btn,false);
   if(result.ok){
-    toast(isFirstPublish?'Test published and confirmed.':'Changes saved and confirmed.','success');
+    toast(isFirstPublish?(t.kind==='survey'?'Survey published and confirmed.':'Test published and confirmed.'):'Changes saved and confirmed.','success');
     renderBuilder();
   } else {
     // Roll back the optimistic flag so the UI never claims something
@@ -4572,7 +4615,8 @@ function openAssignModal(testId){
     <button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
   </div>
   <div class="modal-body">
-    <div class="assign-section">
+    ${t.kind==='survey'?'<div class="sv-asg-note"><b>Survey</b> — no scores, no answer key, no lockdown. Students answer once and see a thank-you. You get a results report with charts, counts and a CSV export.</div>':''}
+    <div class="assign-section sv-na" ${t.kind==='survey'?'style="display:none"':''}>
       <div class="assign-section-title">Scoring</div>
       <label class="checkbox-wrap mb-2">
         <input type="checkbox" id="as-release" checked>
@@ -4604,7 +4648,7 @@ function openAssignModal(testId){
         <span style="font-size:13px">Shuffle answer choices</span>
       </label>
     </div>
-    <div class="assign-section">
+    <div class="assign-section sv-na" ${t.kind==='survey'?'style="display:none"':''}>
       <div class="assign-section-title">Tools</div>
       <label class="checkbox-wrap">
         <input type="checkbox" id="as-desmos">
@@ -4612,7 +4656,7 @@ function openAssignModal(testId){
       </label>
       
     </div>
-    <div class="assign-section">
+    <div class="assign-section sv-na" ${t.kind==='survey'?'style="display:none"':''}>
       <div class="assign-section-title">Security</div>
       <label class="checkbox-wrap">
         <input type="checkbox" id="as-locked" onchange="document.getElementById('as-strikes-wrap').style.display=this.checked?'block':'none'">
@@ -4660,6 +4704,7 @@ async function createAssignment(testId){
     createdAt:new Date().toISOString(),
   };
   Object.assign(a,sxReadAssign(APP.tests.find(x=>x.id===testId)));
+  {const _t=APP.tests.find(x=>x.id===testId);if(_t&&_t.kind==='survey')Object.assign(a,{survey:true,releaseScores:false,locked:false,ultraLockdown:false,maxStrikes:0,allowDesmos:false});}
   if(window.fxAsgExtras)Object.assign(a,fxAsgExtras());
   APP.assignments.push(a);
   const btn=document.getElementById('create-assignment-btn');
@@ -5686,6 +5731,7 @@ function recalcAndSave(sid){
 function needsGrading(s,t){
   if(!t) t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t) return false;
+  if(t.kind==='survey') return false;
   const fqs=sxGradableItems(t,s);
   return fqs.some(item=>{
     const q=item.q;
@@ -5702,6 +5748,7 @@ function needsGrading(s,t){
 function autoScore(s,t){
   if(!t) t=APP.tests.find(tt=>tt.id===s.testId);
   if(!t) return;
+  if(t.kind==='survey'){s.score=0;s.survey=true;return;}
   // Sectioned and/or custom-graded tests go through the grading engine (section
   // weights, adaptive paths, letter grades…). Everything else keeps the original sum.
   if(sxUsesEngine(t)){const g=sxComputeGrade(t,s);s.grade=g;s.score=g.points;return;}
@@ -5986,7 +6033,7 @@ function renderNameEntry(a,t){
     </div>
   </div>
   <div style="background:var(--cream);width:440px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:56px 48px;box-shadow:-24px 0 60px -30px rgba(20,26,46,.45)">
-    <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:12px">Assessment</div>
+    <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:12px">${t.kind==='survey'?'Survey':'Assessment'}</div>
     <h2 style="font-family:var(--f-display);font-size:36px;color:var(--ink);margin-bottom:4px;line-height:1.1">${t.title}</h2>
     ${t.subject?`<p style="color:var(--ink-soft);font-size:14px;font-style:italic;font-family:var(--f-body);margin-bottom:20px">${t.subject}${t.grade?' · '+t.grade:''}</p>`:'<div style="margin-bottom:20px"></div>'}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px">
@@ -6005,7 +6052,7 @@ function renderNameEntry(a,t){
       <strong>⚠ Secure Mode:</strong> This exam will enter fullscreen. ${a.maxStrikes===0?'Exiting fullscreen will show a warning but will not auto-submit your exam.':`Exiting fullscreen ${a.maxStrikes||2} time${(a.maxStrikes||2)!==1?'s':''} will auto-submit your exam.`}
     </div>`:''}
     <button style="width:100%;padding:13px;background:var(--fill);color:var(--on-fill);border:none;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;font-family:var(--f-body);transition:background .15s" onclick="startExam('${a.id}')" onmouseover="this.style.background='var(--ink-mid)'" onmouseout="this.style.background='var(--ink)'">
-      Begin Exam →
+      ${t.kind==='survey'?'Begin Survey →':'Begin Exam →'}
     </button>
   </div>
 </div>`;
@@ -7806,6 +7853,7 @@ function submitExam(confirmed){
 }
 
 function renderSubmittedScreen(sub,a,t){
+  if(t&&t.kind==='survey'||a&&a.survey){document.getElementById('student-wrapper').innerHTML=`<div class="ea-done"><div class="ea-done-card"><div class="ea-done-mark"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2 class="ea-done-h"><u>Thank you.</u></h2><p class="ea-done-p">${sub.studentName?'Thanks, '+E(sub.studentName)+'. ':''}Your response has been recorded.</p><p class="ea-done-foot">You may close this window.</p></div></div>`;return;}
   const totalPts=calcTotalPoints(t,sub);
   const pct=totalPts>0?Math.round(sub.score/totalPts*100):0;
   document.getElementById('student-wrapper').innerHTML=`
@@ -11388,7 +11436,7 @@ function fxAsgShort(iso){if(!iso)return '—';const d=new Date(iso);return isNaN
 function fxAsgRowsHtml(mode){
   const U=fxAsgUi[mode];
   let infos=APP.assignments.filter(a=>!a.preview).map(fxAsgInfo);
-  if(mode==='grade')infos=infos.filter(i=>i.sub.length);
+  if(mode==='grade')infos=infos.filter(i=>i.sub.length&&!i.a.survey);
   if(mode==='an')infos=infos.filter(i=>i.sub.length);
   const SORTS={new:(x,y)=>new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0),old:(x,y)=>new Date(x.a.createdAt||0)-new Date(y.a.createdAt||0),az:(x,y)=>x.title.localeCompare(y.title),
     grade:(x,y)=>(y.pend-x.pend)||(new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0)),subs:(x,y)=>(y.sub.length-x.sub.length)||(new Date(y.a.createdAt||0)-new Date(x.a.createdAt||0)),
@@ -11461,6 +11509,7 @@ function fxBackBtn(fn,label){return `<button class="btn btn-ghost btn-sm fxa-bac
   fxLive.keep=false;return o(p);};}
 {const o=window.renderAnalytics;window.renderAnalytics=function(){
   if(!fxAn.open||!APP.assignments.find(a=>a.id===fxAn.open)){fxAn.open=null;return fxAsgLanding('an','page-analytics','Analytics');}
+  {const _a=APP.assignments.find(a=>a.id===fxAn.open);if(_a&&_a.survey&&window.svResults)return svResults(_a);}
   o();const tb=document.querySelector('#page-analytics .topbar');if(tb)tb.insertAdjacentHTML('afterbegin',fxBackBtn('fxAnBack','All assignments'));};}
 
 /* ───────────── EDITOR+ : markdown, tables, dividers, resizable images ───────────── */
@@ -12429,6 +12478,105 @@ async function fxStuDisable(key,v){await apiPost({action:'adminSetStudentDisable
 {const o=window.fxAccountModal;window.fxAccountModal=function(f){o(f);const me=fxMe();if(me&&me.role==='admin'&&!f){const b=document.querySelector('#modal-container .modal-body > div:last-child');if(b)b.insertAdjacentHTML('beforeend','<button class="btn btn-secondary" onclick="fxStudentsModal()">Manage students</button>');}};}
 </script>
 
+<script id="ea-survey">
+/* ───────────── SURVEYS: no keys, no scores, analytical results ───────────── */
+function svPickKind(k){
+  window._svKind=k;
+  document.querySelectorAll('#ct-kind .sv-kopt').forEach(n=>{const on=n.querySelector('input').value===k;n.classList.toggle('on',on);n.querySelector('input').checked=on;});
+  const w=document.getElementById('ct-sec-wrap');if(w)w.style.display=k==='survey'?'none':'';
+  const h=document.querySelector('.modal-header h2');
+  const lbl=document.querySelector('label[for="ct-title"],.modal-body .form-group .form-label');
+  const t=document.getElementById('ct-title');if(t)t.placeholder=k==='survey'?'e.g. Start-of-term check-in':'e.g. AP Biology Unit 3 Exam';
+}
+const SV_STOP=new Set('a an and are as at be but by for from had has have he her his i if in is it its me my of on or our she so that the their them they this to was we were what when which who will with you your not no yes do does did can could would should just very really also than then there these those about into more most some such'.split(' '));
+const SV_LIKERT={'strongly disagree':1,'disagree':2,'somewhat disagree':2.5,'neutral':3,'neither agree nor disagree':3,'somewhat agree':3.5,'agree':4,'strongly agree':5,'never':1,'rarely':2,'sometimes':3,'often':4,'always':5,'very poor':1,'poor':2,'fair':3,'good':4,'very good':4.5,'excellent':5,'not at all':1,'slightly':2,'somewhat':3,'moderately':3,'very':4,'extremely':5,'very unlikely':1,'unlikely':2,'likely':4,'very likely':5,'very unhappy':1,'unhappy':2,'happy':4,'very happy':5,'very dissatisfied':1,'dissatisfied':2,'satisfied':4,'very satisfied':5};
+const svUi={tab:'summary',anon:true,open:{}};
+const svPlain=h=>{const d=document.createElement('div');d.innerHTML=String(h||'');d.querySelectorAll('.math-inline[data-latex]').forEach(n=>{n.textContent=n.getAttribute('data-latex')});return(d.textContent||'').replace(/\s+/g,' ').trim();};
+function svSubs(a){return APP.submissions.filter(s=>s.assignmentId===a.id&&s.status==='submitted'&&!fxIsPrev(s.id));}
+function svOptVal(txt){const t=svPlain(txt).toLowerCase();if(/^-?\d+(\.\d+)?$/.test(t))return parseFloat(t);const m=t.match(/^(\d+(\.\d+)?)\b/);if(m&&t.length<24)return parseFloat(m[1]);return SV_LIKERT[t]!=null?SV_LIKERT[t]:null;}
+function svStats(vals){if(!vals.length)return null;const s=vals.slice().sort((x,y)=>x-y),n=s.length,mean=s.reduce((x,y)=>x+y,0)/n,med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;return{mean:Math.round(mean*100)/100,med:Math.round(med*100)/100,n};}
+function svAnalyze(t,subs){
+  return flatQuestions(t).map((it,n)=>{
+    const q=it.q,key=it.key,type=q.type;
+    const raw=subs.map(s=>({s,v:s.answers?s.answers[key]:undefined}));
+    const has=v=>v!==undefined&&v!==null&&!(Array.isArray(v)&&!v.length)&&!(typeof v==='string'&&!svPlain(v));
+    const given=raw.filter(r=>has(r.v));
+    const out={n,key,q,type,stem:svPlain(q.stem)||'(No question text)',answered:given.length,total:subs.length};
+    if(type==='mc'||type==='ms'){
+      const opts=(q.options||[]).map(o=>svPlain(o)||'(blank)');
+      const counts=opts.map(()=>0);
+      given.forEach(r=>{(Array.isArray(r.v)?r.v:[r.v]).forEach(i=>{if(counts[i]!==undefined)counts[i]++;});});
+      out.opts=opts.map((o,i)=>({label:o,count:counts[i]}));
+      const vals=opts.map(svOptVal);
+      if(opts.length>1&&vals.every(v=>v!=null)&&type==='mc'){const all=[];given.forEach(r=>{const v=vals[r.v];if(v!=null)all.push(v);});out.stats=svStats(all);out.scale=true;}
+    }else{
+      out.texts=given.map(r=>({name:r.s.studentName||'Anonymous',t:svPlain((r.s.answers_text&&r.s.answers_text[key])||r.v)})).filter(x=>x.t);
+      const f={};out.texts.forEach(x=>x.t.toLowerCase().replace(/[^a-z0-9'\s-]/g,' ').split(/\s+/).forEach(w=>{if(w.length>2&&!SV_STOP.has(w))f[w]=(f[w]||0)+1;}));
+      out.words=Object.entries(f).filter(e=>e[1]>1||out.texts.length<4).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,24);
+    }
+    return out;
+  });
+}
+function svTime(subs){const d=subs.filter(s=>s.startedAt&&s.submittedAt).map(s=>(new Date(s.submittedAt)-new Date(s.startedAt))/60000).filter(x=>x>=0&&x<600);return d.length?svStats(d):null;}
+function svResults(a){
+  const el=document.getElementById('page-analytics');
+  const t=APP.tests.find(x=>x.id===a.testId)||{title:a.title||'Survey',questions:[]};
+  const subs=svSubs(a),qs=svAnalyze(t,subs);
+  const cls=(a.classIds||[]).map(id=>(APP.classes||[]).find(c=>c.id===id)).filter(Boolean);
+  const invited=cls.reduce((n,c)=>n+((c.students||[]).length),0);
+  const rate=invited?Math.round(subs.length/invited*100):null;
+  const tm=svTime(subs);
+  const compl=qs.length&&subs.length?Math.round(qs.reduce((n,q)=>n+q.answered,0)/(qs.length*subs.length)*100):null;
+  const tabs=[['summary','Summary'],['text','Written responses'],['people','Individual responses']];
+  const tile=(l,v,s)=>`<div class="sv-tile"><div class="sv-tv">${v}</div><div class="sv-tl">${l}</div>${s?`<div class="sv-ts">${s}</div>`:''}</div>`;
+  let body='';
+  if(!subs.length){body=`<div class="sv-empty"><h2 class="serif">No responses yet</h2><p>Share the join code <b>${E(a.code||'')}</b> or the student link. Results fill in as people submit.</p></div>`;}
+  else if(svUi.tab==='summary'){
+    body=`<div class="sv-tiles">${tile('Responses',subs.length,invited?`of ${invited} invited`:'')}${rate!=null?tile('Response rate',rate+'%',''):''}${compl!=null?tile('Completion',compl+'%','questions answered'):''}${tm?tile('Typical time',(tm.med<1?'<1':Math.round(tm.med*10)/10)+' min','median'):''}</div>`+
+    qs.map(q=>svQCard(q)).join('');
+  }else if(svUi.tab==='text'){
+    const tq=qs.filter(q=>q.texts);
+    body=tq.length?tq.map(q=>svQCard(q,true)).join(''):`<div class="sv-empty"><p>This survey has no written-response questions.</p></div>`;
+  }else{
+    body=`<div class="sv-people">`+subs.slice().sort((x,y)=>new Date(x.submittedAt||0)-new Date(y.submittedAt||0)).map((s,i)=>{
+      const nm=svUi.anon?'Respondent '+(i+1):E(s.studentName||'Anonymous');
+      return `<details class="sv-person"><summary><b>${nm}</b><span>${s.submittedAt?new Date(s.submittedAt).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):''}</span></summary>${qs.map(q=>`<div class="sv-pa"><div class="sv-pq">${q.n+1}. ${E(q.stem)}</div><div class="sv-pv">${svAnsText(q,s)}</div></div>`).join('')}</details>`;}).join('')+`</div>`;
+  }
+  el.innerHTML=`<div class="topbar"><div class="flex items-center gap-3">${fxBackBtn('fxAnBack','All assignments')}<h1 class="page-title">${E(t.title)}</h1><span class="badge badge-ochre">Survey</span></div>
+    <div class="flex gap-2 items-center"><label class="sv-anon"><input type="checkbox" ${svUi.anon?'checked':''} onchange="svUi.anon=this.checked;svResults(APP.assignments.find(x=>x.id==='${a.id}'))"> Hide names</label><button class="btn btn-secondary btn-sm" onclick="svCsv('${a.id}')">Export CSV</button></div></div>
+  <div class="page-content sv-wrap"><div class="sv-tabs">${tabs.map(([k,l])=>`<button class="sv-tab ${svUi.tab===k?'on':''}" onclick="svUi.tab='${k}';svResults(APP.assignments.find(x=>x.id==='${a.id}'))">${l}</button>`).join('')}</div>${body}</div>`;
+}
+function svAnsText(q,s){
+  const v=s.answers?s.answers[q.key]:undefined;
+  if(v===undefined||v===null||v==='')return '<i class="sv-skip">No answer</i>';
+  if(q.opts){const arr=Array.isArray(v)?v:[v];const l=arr.map(i=>q.opts[i]&&q.opts[i].label).filter(Boolean);return l.length?E(l.join(', ')):'<i class="sv-skip">No answer</i>';}
+  return E(svPlain((s.answers_text&&s.answers_text[q.key])||v))||'<i class="sv-skip">No answer</i>';
+}
+function svQCard(q,textOnly){
+  const typ={mc:'Single choice',ms:'Select all',short:'Short answer',essay:'Long answer'}[q.type]||q.type;
+  let inner='';
+  if(q.opts){
+    const mx=Math.max(1,...q.opts.map(o=>o.count)),base=q.answered||1;
+    inner=q.opts.map(o=>{const pct=Math.round(o.count/base*100);return `<div class="sv-bar"><div class="sv-bl">${E(o.label)}</div><div class="sv-bt"><div class="sv-bf" style="width:${o.count?Math.max(2,o.count/mx*100):0}%"></div></div><div class="sv-bn"><b>${o.count}</b><span>${pct}%</span></div></div>`;}).join('');
+    if(q.stats)inner+=`<div class="sv-stat"><span>Mean <b>${q.stats.mean}</b></span><span>Median <b>${q.stats.med}</b></span><span>Answers <b>${q.stats.n}</b></span></div>`;
+  }else{
+    const open=svUi.open[q.key]||textOnly,list=open?q.texts:q.texts.slice(0,4);
+    inner=(q.words&&q.words.length?`<div class="sv-words">${q.words.map(([w,c])=>`<span style="font-size:${Math.min(18,12+c*1.6)}px">${E(w)}<sup>${c}</sup></span>`).join('')}</div>`:'')+
+      `<div class="sv-quotes">${list.map((x,i)=>`<blockquote>${E(x.t)}${svUi.anon?'':`<cite>— ${E(x.name)}</cite>`}</blockquote>`).join('')||'<i class="sv-skip">No written answers</i>'}</div>`+
+      (!textOnly&&q.texts.length>4?`<button class="btn btn-ghost btn-sm" onclick="svUi.open['${q.key}']=!svUi.open['${q.key}'];svResults(APP.assignments.find(x=>x.id===fxAn.open))">${svUi.open[q.key]?'Show fewer':'Show all '+q.texts.length}</button>`:'');
+  }
+  return `<div class="sv-card"><div class="sv-qh"><span class="sv-qn">${q.n+1}</span><div><div class="sv-qt">${E(q.stem)}</div><div class="sv-qm">${typ} · ${q.answered} of ${q.total} answered</div></div></div>${inner}</div>`;
+}
+function svCsv(aid){
+  const a=APP.assignments.find(x=>x.id===aid),t=APP.tests.find(x=>x.id===a.testId);if(!t)return;
+  const subs=svSubs(a),qs=svAnalyze(t,subs);
+  const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const head=['Respondent','Submitted'].concat(qs.map(q=>(q.n+1)+'. '+q.stem));
+  const rows=subs.map((s,i)=>[svUi.anon?'Respondent '+(i+1):(s.studentName||'Anonymous'),s.submittedAt||''].concat(qs.map(q=>svAnsText(q,s).replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace('No answer',''))));
+  fxDownload([head].concat(rows).map(r=>r.map(esc).join(',')).join('\n'),`${(t.title||'survey').replace(/[^\w\- ]+/g,'')} - responses.csv`,'text/csv');
+}
+
+</script>
 <script id="ea-home">
 /* ===== EdAssess homepage (logged-out front door) ===== */
 (function(){

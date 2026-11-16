@@ -191,3 +191,13 @@ EdAssess is a single page (`index.html`) plus one serverless function (`netlify/
 <div align="center">
 <sub>Made with care for classrooms. Questions or ideas? Open an issue.</sub>
 </div>
+
+## Surveys (no answer keys)
+
+When you create something new you can now choose **Assessment** or **Survey**. A survey is for collecting information, not testing it:
+
+- All the usual question types work, but there are no points, answer keys, rubrics, explanations, sections or grading.
+- Assigning a survey hides scoring, tools and secure mode. Students answer and see a simple thank-you; nothing is ever scored.
+- Surveys never appear in the Grade Center or in grade averages.
+- **Analytics → your survey** shows a survey-style report: response count, rate (when assigned to a class), completion, typical time, bar charts with counts and percentages for every choice question, mean and median for rating-style scales (1–5, Strongly disagree…Strongly agree, etc.), written answers with a keyword summary, and an individual-responses tab.
+- "Hide names" keeps responses anonymous on screen and in the CSV export.

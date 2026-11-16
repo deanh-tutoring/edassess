@@ -40,3 +40,6 @@ Signed-out visitors land on a lantern-river homepage: join-code field in the cen
 
 ## Bolder lanterns
 Lanterns now read as lanterns everywhere: the homepage pair has a hook, cap, ribbed glowing body and tassel with a plain label plate for the text; drifting lanterns, the brand mark, the loader and the river are drawn with the same anatomy (cap, ribs, glowing core, red tassel). Text never sits on the glow, only on the plate.
+
+## Surveys
+`test.kind==='survey'` marks a survey; its assignments carry `survey:true` with scores, security and tools forced off. The builder uses the `.sv-mode` class to hide scoring controls; results live in the `ea-survey` script block (`svResults`) and replace the Analytics detail view. Server: `testMax` returns 0 for surveys and `studentHome` exposes `survey`.

@@ -718,7 +718,7 @@ async function studentPeerSave(body, s) {
   const mine = ps.pairs.filter((p) => ids.has(p.reviewerSubId));
   return reply(200, { ok: true, total: mine.length, done: mine.filter((p) => p.status === 'completed').length });
 }
-const testMax = (t) => ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
+const testMax = (t) => (t && t.kind === 'survey') ? 0 : ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
 async function studentHome(s) {
   const classes = (await allClasses()).filter((c) => !c.archived || s.preview || (c.students || []).some((x) => x.key === s.key));
   const mine = s.preview ? classes.filter((c) => (ownerOf(c) === s.owner || (c.coTeachers || []).map(lc).includes(s.owner)) && (!s.cid || c.id === s.cid)) : classes.filter((c) => (c.students || []).some((x) => x.key === s.key));
@@ -736,7 +736,7 @@ async function studentHome(s) {
   for (const a of wanted.values()) {
     if (!(a.testId in tcache)) { const r = okId(a.testId) ? await getJ(P.test + a.testId) : null; tcache[a.testId] = r ? r.data : null; }
     const t = tcache[a.testId];
-    assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
+    assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, survey: !!(a.survey || (t && t.kind === 'survey')), questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
   }
   const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, graded: !!x.graded, maxScore: x.maxScore > 0 ? x.maxScore : null, curved: x.curvedScore == null ? null : x.curvedScore }));
   const set = new Set();
