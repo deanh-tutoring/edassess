@@ -201,3 +201,6 @@ When you create something new you can now choose **Assessment** or **Survey**. A
 - Surveys never appear in the Grade Center or in grade averages.
 - **Analytics → your survey** shows a survey-style report: response count, rate (when assigned to a class), completion, typical time, bar charts with counts and percentages for every choice question, mean and median for rating-style scales (1–5, Strongly disagree…Strongly agree, etc.), written answers with a keyword summary, and an individual-responses tab.
 - "Hide names" keeps responses anonymous on screen and in the CSV export.
+
+## Teachers as students
+A teacher can be a student in someone else's class. The class owner invites them by typing `@username` in "Invite by name". The invited teacher clicks **Student mode** in the sidebar, which opens a new tab as their own student identity (named after their teacher profile), where they accept the invite or enter a join code, do the work and see grades. Their teaching account stays untouched, and the **Back to teacher mode** button closes that tab.

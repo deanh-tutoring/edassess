@@ -613,6 +613,7 @@ async function studentFromEvent(event) {
   if (meta.pv) s = { key: 'preview~' + meta.imp, name: 'Student view', preview: true, cid: meta.cid || null, owner: meta.imp };   // virtual, never stored
   else s = await getJ(S_PREFIX + t.slice(2));
   if (!s || s.disabled) return null;
+  if (s.teacher) { const tu = await getJ(U_PREFIX + s.teacher); if (!tu || tu.disabled) return null; }   // a teacher's own student identity dies with the teacher account
   if (meta.imp) { s = { ...s }; Object.defineProperty(s, '_imp', { value: meta.imp }); Object.defineProperty(s, '_ro', { value: !!meta.pv }); }   // non-enumerable: never saved
   return s;
 }
@@ -819,7 +820,7 @@ async function classAction(body, user) {
   if (a.startsWith('admin')) {
     if (user.role !== 'admin') return bad('Admin only.', 403);
     if (a === 'adminListStudents') {
-      const ss = (await mapLimit(await listKeys(S_PREFIX), 12, getJ)).filter(Boolean);
+      const ss = (await mapLimit(await listKeys(S_PREFIX), 12, getJ)).filter((x) => x && !x.teacher);
       const cls = await allClasses();
       const out = [];
       for (const s of ss) {
@@ -872,7 +873,11 @@ async function classAction(body, user) {
     const res = { invited: [], already: [], bad: [] };
     c.students = c.students || []; c.invites = c.invites || [];
     for (const raw of Array.isArray(body.names) ? body.names.slice(0, 80) : []) {
-      const n = normStudentName(raw);
+      let n = normStudentName(raw);
+      if (!n && /^@[A-Za-z0-9._-]{2,40}$/.test(String(raw).trim())) {   // invite a teacher to join as a student
+        const tu = await getJ(U_PREFIX + lc(String(raw).trim().slice(1)));
+        if (tu && !tu.disabled) n = { key: 't~' + lc(tu.username), name: tu.name || tu.username };
+      }
       if (!n) { if (String(raw).trim()) res.bad.push(String(raw).trim()); continue; }
       if (c.students.some((x) => x.key === n.key) || c.invites.some((i) => i.key === n.key)) { res.already.push(n.name); continue; }
       c.invites.push({ key: n.key, name: n.name, at: new Date().toISOString(), by: lc(user.username) });
@@ -1070,6 +1075,14 @@ async function handlePost(body, user, student) {
   await ensureMigrated();
   const au = await authAction(body, user);
   if (au) return au;
+  if (body.action === 'teacherStudentSession') {
+    if (!user) return AUTH_ERR();
+    const me = lc(user.username), key = 't~' + me;
+    let rec = await getJ(S_PREFIX + key);
+    if (!rec) { rec = { key, name: user.name || user.username, teacher: me, createdAt: new Date().toISOString() }; await putJ(S_PREFIX + key, rec); }
+    else if (rec.name !== (user.name || user.username)) { rec.name = user.name || user.username; await putJ(S_PREFIX + key, rec); }
+    return reply(200, { ok: true, token: signToken('s:' + key, 12 * 3600 * 1000, { self: 1 }), student: pubStudent(rec) });
+  }
   const sa = await studentAction(body, student);
   if (sa) return sa;
   const ca = await classAction(body, user);

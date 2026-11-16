@@ -12067,18 +12067,28 @@ window.addEventListener('DOMContentLoaded',()=>{if(new URLSearchParams(location.
 const EA_STU_KEY='ea_stu_v1';
 /* Teacher "student view": this tab (and only this tab) runs on a short-lived student token kept in sessionStorage */
 const IMP=(()=>{try{
-  if(/[?&]imp=1/.test(location.search)){const h=localStorage.getItem('ea_imp_handoff');if(h){localStorage.removeItem('ea_imp_handoff');const o=JSON.parse(h);if(o&&o.exp>Date.now()&&o.token)sessionStorage.setItem('ea_imp',JSON.stringify({token:o.token,student:o.student,preview:!!o.preview,className:o.className||''}));}
+  if(/[?&]imp=1/.test(location.search)){const h=localStorage.getItem('ea_imp_handoff');if(h){localStorage.removeItem('ea_imp_handoff');const o=JSON.parse(h);if(o&&o.exp>Date.now()&&o.token)sessionStorage.setItem('ea_imp',JSON.stringify({token:o.token,student:o.student,preview:!!o.preview,self:!!o.self,className:o.className||''}));}
     history.replaceState(null,'',location.pathname+location.hash);}
   return JSON.parse(sessionStorage.getItem('ea_imp'))||null;}catch(e){return null;}})();
 if(IMP){window.eaAuthLoad=function(){return null;};window.eaToken=function(){return '';};}
 function stuLoad(){if(IMP)return {token:IMP.token,student:IMP.student};try{return JSON.parse(localStorage.getItem(EA_STU_KEY))||null;}catch(e){return null;}}
 function stuToken(){const a=stuLoad();return (a&&a.token)||'';}
 function stuSave(o){if(IMP)return;try{localStorage.setItem(EA_STU_KEY,JSON.stringify(o));}catch(e){}}
+window.fxSelfStudent=async function(){
+  const w=window.open('about:blank','_blank');
+  if(!w){toast('Allow pop-ups for this site to open student mode.','error');return;}
+  try{w.document.body.style.cssText='font:16px system-ui;padding:32px;color:#555';w.document.body.textContent='Opening student mode…';}catch(e){}
+  const r=await apiPost({action:'teacherStudentSession'});
+  if(!(r&&r.ok&&r.token)){try{w.close();}catch(e){}toast((r&&r.error)||'Could not open student mode.','error');return;}
+  try{localStorage.setItem('ea_imp_handoff',JSON.stringify({token:r.token,student:r.student,self:true,exp:Date.now()+30000}));}catch(e){try{w.close();}catch(_){}return toast('Your browser blocked student mode (storage).','error');}
+  w.location.href=location.origin+location.pathname+'?imp=1';
+};
+document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector('.sidebar-footer');if(f&&!IMP)f.insertAdjacentHTML('afterbegin','<a class="nav-item" onclick="fxSelfStudent()" title="Join classes and do work as a student" style="margin-bottom:6px"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg>Student mode</a>');});
 window.fxImpExit=function(){try{sessionStorage.removeItem('ea_imp');}catch(e){}window.close();setTimeout(()=>{location.href=location.origin+location.pathname;},150);};
 if(IMP){document.addEventListener('DOMContentLoaded',()=>{
-  document.body.classList.add('imp-on');document.title='Student view · '+(IMP.preview?(IMP.className||'class'):IMP.student.name);
+  document.body.classList.add('imp-on');document.title=(IMP.self?'Student mode · ':'Student view · ')+(IMP.preview?(IMP.className||'class'):IMP.student.name);
   const b=document.createElement('div');b.id='imp-bar';b.setAttribute('role','status');
-  b.innerHTML=`<span class="imp-dot"></span><span class="imp-t">${IMP.preview?`<b>Student view</b> · previewing ${E(IMP.className||'your class')}. Read-only: nothing here is saved.`:`<b>Student view</b> · you are acting as <b>${E(IMP.student.name)}</b>. Anything you submit is saved to their account.`}</span><button class="imp-x" onclick="fxImpExit()">Exit student view</button>`;
+  b.innerHTML=IMP.self?`<span class="imp-dot"></span><span class="imp-t"><b>Student mode</b> · you are in as <b>${E(IMP.student.name)}</b>, a student. Join classes and submit work here; your teaching account is untouched.</span><button class="imp-x" onclick="fxImpExit()">Back to teacher mode</button>`:`<span class="imp-dot"></span><span class="imp-t">${IMP.preview?`<b>Student view</b> · previewing ${E(IMP.className||'your class')}. Read-only: nothing here is saved.`:`<b>Student view</b> · you are acting as <b>${E(IMP.student.name)}</b>. Anything you submit is saved to their account.`}</span><button class="imp-x" onclick="fxImpExit()">Exit student view</button>`;
   document.body.appendChild(b);});}
 const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 /* one fetch wrapper for both kinds of sign-in: a browser is a teacher OR a student at a time */
@@ -12386,7 +12396,7 @@ function fxClassDetail(c){
     const st=fxClassStats(c);
     body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
      ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="lms-link" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</a> <a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the code.</td></tr>'}</tbody></table></div>
-     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
+     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K — or @username to invite a fellow teacher as a student"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
       ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
   }else if(FXC.tab==='assignments'){
     const as=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
@@ -13091,7 +13101,7 @@ window.fxClassDetail=function(c){
     const st=fxClassStats(c);
     body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
      ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="lms-link" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</a> <a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the class code.</td></tr>'}</tbody></table></div>
-     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
+     <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K — or @username to invite a fellow teacher as a student"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
       ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
   }
   return `<div class="lms-t-top"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← All classes</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxViewAsModal('${c.id}')">Student view</button><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
