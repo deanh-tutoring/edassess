@@ -1631,6 +1631,10 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
 
 /* lanterns outside the home page stay still */
 .ea-lamp{animation:none!important}
+
+/* lanterns live only on the home page */
+.ea-lamp,#ea-boot i,.fxc-none::before,.lms-empty::before,#ea-lanterns{display:none!important}
+.hp-mark .ea-lamp,#home-page #ea-lanterns{display:none!important}
 </style>
 </head>
 <body>
@@ -13231,7 +13235,7 @@ window.stuRevSubmit=async function(){
       x.strokeStyle=red?'#FF8A78':'#C23A2B';x.lineWidth=Math.max(1,s*.05);x.beginPath();x.moveTo(px,py+h*.5);x.lineTo(px,py+h*.66);x.stroke();x.globalAlpha=1;}
     var _sk='';
     function tick(now){if(!run)return;var hp=document.getElementById('home-page'),home=!!(hp&&hp.offsetParent!==null);var dt=home?Math.min(.05,(now-last)/1000):0;last=now;var dark=document.body.classList.contains('fx-ui-dark');
-      if(!home){var key=W+'x'+H+dark;if(key===_sk){requestAnimationFrame(tick);return;}_sk=key;}else _sk='';
+      c.style.display=home?'':'none';if(!home){requestAnimationFrame(tick);return;}
       x.clearRect(0,0,W,H);
       for(var k=0;k<L.length;k++){var l=L[k];l.y-=l.v*dt;l.ph+=dt*.6;if(l.y<-.12){l.y=1.12;l.x=Math.random();}
         lantern((l.x+Math.sin(l.ph)*.012)*W,l.y*H,l.s,l.a,l.c==='r',dark);}
