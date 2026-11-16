@@ -320,9 +320,11 @@ async function upsertSubmission(sub, user, student) {
   if (!user) { delete clean.graded; delete clean.gradedAt; if (prev && prev.graded) { clean.graded = true; clean.gradedAt = prev.gradedAt || null; } }
   if (!user) {
     const asg0 = okId(clean.assignmentId) ? await getJ(P.asg + clean.assignmentId) : null;
+    if (student && student._ro) return bad('This is a preview. Open student view as a specific student to take or submit work.', 403);
     const deny = await accessCheckAssignment(asg0, student);
     if (deny) return deny;
     if (prev && prev.studentKey && (!student || student.key !== prev.studentKey)) return reply(403, { error: 'This submission belongs to another account.' });
+    if (student && student._imp) clean.viaTeacher = student._imp;
     if (student) { clean.studentKey = student.key; if (asg0 && asg0.requireAccount) clean.studentName = student.name; }
   } else if (prev && prev.studentKey) clean.studentKey = prev.studentKey;
   if (user) {
@@ -412,9 +414,13 @@ const USER_RE = /^[A-Za-z0-9_.-]{3,30}$/;
 const b64u = (b) => Buffer.from(b).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 const lc = (s) => String(s || '').trim().toLowerCase();
 function secret() { return process.env.EA_AUTH_SECRET || ''; }
-function signToken(u) {
-  const p = b64u(JSON.stringify({ u, exp: Date.now() + TOKEN_TTL_MS }));
+function signToken(u, ttl, extra) {
+  const p = b64u(JSON.stringify({ u, exp: Date.now() + (ttl || TOKEN_TTL_MS), ...(extra || {}) }));
   return p + '.' + b64u(crypto.createHmac('sha256', secret()).update(p).digest());
+}
+function tokenMeta(tok) {   // payload of a valid token (used for teacher "student view" sessions)
+  const u = readToken(tok); if (!u) return null;
+  try { return JSON.parse(Buffer.from(tok.split('.')[0].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString()); } catch (e) { return null; }
 }
 function readToken(tok) {
   if (!secret() || typeof tok !== 'string') return null;
@@ -602,8 +608,13 @@ async function studentFromEvent(event) {
   const m = /^Bearer\s+(.+)$/i.exec(h.authorization || h.Authorization || '');
   const t = m && readToken(m[1]);
   if (!t || !t.startsWith('s:')) return null;
-  const s = await getJ(S_PREFIX + t.slice(2));
-  return s && !s.disabled ? s : null;
+  const meta = tokenMeta(m[1]) || {};
+  let s;
+  if (meta.pv) s = { key: 'preview~' + meta.imp, name: 'Student view', preview: true, cid: meta.cid || null, owner: meta.imp };   // virtual, never stored
+  else s = await getJ(S_PREFIX + t.slice(2));
+  if (!s || s.disabled) return null;
+  if (meta.imp) { s = { ...s }; Object.defineProperty(s, '_imp', { value: meta.imp }); Object.defineProperty(s, '_ro', { value: !!meta.pv }); }   // non-enumerable: never saved
+  return s;
 }
 const STU_ERR = () => reply(401, { error: 'Please sign in to your student account.', needAccount: true });
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -709,8 +720,8 @@ async function studentPeerSave(body, s) {
 }
 const testMax = (t) => ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
 async function studentHome(s) {
-  const classes = (await allClasses()).filter((c) => !c.archived || (c.students || []).some((x) => x.key === s.key));
-  const mine = classes.filter((c) => (c.students || []).some((x) => x.key === s.key));
+  const classes = (await allClasses()).filter((c) => !c.archived || s.preview || (c.students || []).some((x) => x.key === s.key));
+  const mine = s.preview ? classes.filter((c) => (ownerOf(c) === s.owner || (c.coTeachers || []).map(lc).includes(s.owner)) && (!s.cid || c.id === s.cid)) : classes.filter((c) => (c.students || []).some((x) => x.key === s.key));
   const invites = classes.filter((c) => !c.archived && (c.invites || []).some((i) => i.key === s.key));
   const ids = new Set(mine.map((c) => c.id));
   const asgAll = await allAsgs();
@@ -766,6 +777,8 @@ async function studentAction(body, student) {
   const SA = ['studentPeerTask', 'studentPeerSave', 'studentMe', 'studentChangePassword', 'joinClass', 'respondInvite', 'leaveClass'];
   if (!SA.includes(a)) return null;
   if (!student) return STU_ERR();
+  if (student._imp && ['studentChangePassword', 'joinClass', 'respondInvite', 'leaveClass'].includes(a)) return bad('Not available in student view.', 403);
+  if (student._ro && a === 'studentPeerSave') return bad('Preview only: pick a student to act as them.', 403);
   if (a === 'studentMe') return reply(200, await studentHome(student));
   if (a === 'studentPeerTask') return studentPeerTask(body, student);
   if (a === 'studentPeerSave') return studentPeerSave(body, student);
@@ -799,7 +812,7 @@ async function studentAction(body, student) {
 }
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled'];
+  const CA = ['createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -836,6 +849,15 @@ async function classAction(body, user) {
   const role = classRole(c, user);
   if (!c || !role) return bad('Class not found.', 404);
   if ((a === 'deleteClass' || a === 'setClassCoTeachers') && role !== 'owner') return bad('Only the class owner can do that.', 403);
+  if (a === 'impersonateStudent') {
+    if (!secret()) return bad('Accounts are not configured yet.', 500);
+    const TTL = 2 * 3600 * 1000, me = lc(user.username);
+    if (!body.studentKey) return reply(200, { ok: true, preview: true, token: signToken('s:preview~' + me, TTL, { imp: me, pv: 1, cid: c.id }), student: { key: 'preview~' + me, name: 'Student view', role: 'student' }, className: c.name });
+    const st = (c.students || []).find((x) => x.key === String(body.studentKey));
+    const rec = st && (await getJ(S_PREFIX + st.key));
+    if (!rec) return bad('That student is not in this class.', 404);
+    return reply(200, { ok: true, token: signToken('s:' + rec.key, TTL, { imp: me }), student: pubStudent(rec), className: c.name });
+  }
   if (a === 'deleteClass') { await delK(C_PREFIX + c.id); dropClsCache(); return reply(200, { ok: true }); }
   if (a === 'setClassCoTeachers') { c.coTeachers = await cleanCoTeachers(body.coTeachers, ownerOf(c)); await saveClass(c); return reply(200, { ok: true, coTeachers: c.coTeachers }); }
   if (a === 'updateClass') {

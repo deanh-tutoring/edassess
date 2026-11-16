@@ -77,6 +77,15 @@ Any Google link pasted into the Links box is recognised automatically, so this w
 
 EdAssess asks only for the `drive.file` permission, which covers just the files a teacher picks, not their whole Drive.
 
+### Student view
+
+In any class, **Student view** opens the student side in a new tab (your own tab stays signed in as you):
+
+- **Preview this class:** see the stream, classwork and grades exactly as students do. It is read-only, so nothing you click is saved.
+- **View as a student:** pick a student (or use **View as student** on the People tab) and use the app as them, including taking or submitting an assignment. Work is saved to their account and marked as done by you. Changing their password and joining or leaving classes are switched off.
+
+A bar across the top always shows who you are viewing as, with **Exit student view**. These sessions last two hours.
+
 ### Classes that feel like a classroom
 <img src="docs/05-class-stream.png" alt="Class stream with announcements and materials" width="880">
 
