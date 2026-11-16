@@ -37,3 +37,6 @@ Navy top bar with red rule; timer + Hide live only inside the bar and toggle in 
 
 ## Front door
 Signed-out visitors land on a lantern-river homepage: join-code field in the centre, a Students lantern (round, pale blue) and a Staff lantern (tall, deep teal with a red seal) either side. Routes: #/welcome, #/signin|signup/student|staff. Sign-in forms are the existing ones, shown one at a time.
+
+## Bolder lanterns
+Lanterns now read as lanterns everywhere: the homepage pair has a hook, cap, ribbed glowing body and tassel with a plain label plate for the text; drifting lanterns, the brand mark, the loader and the river are drawn with the same anatomy (cap, ribs, glowing core, red tassel). Text never sits on the glow, only on the plate.

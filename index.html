@@ -1559,6 +1559,40 @@ body.imp-on{padding-top:38px}body.imp-on .stu-top{top:38px}
 /* ghost buttons on the student side were white-on-light */
 .lms-btn.ghost,.stu-btn.ghost{background:var(--plate-hi)!important;color:var(--ink)!important;border:1px solid var(--border-dark)!important}
 .lms-btn.ghost:hover,.stu-btn.ghost:hover{background:var(--hover-bg)!important;color:var(--ink)!important}
+
+/* ===== BOLD LANTERNS ===== */
+#home-page{--hp-halo:rgba(47,91,234,.34);--hp-halo2:rgba(30,170,176,.34)}
+body.fx-ui-dark #home-page{--hp-halo:rgba(110,150,255,.5);--hp-halo2:rgba(80,220,215,.42)}
+.hp-lamp{width:clamp(200px,19vw,290px);filter:drop-shadow(0 6px 26px var(--hp-glow))}
+.hp-lamp::before{content:"";position:absolute;inset:-22% -30%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,var(--hp-halo),transparent 72%);animation:hpPulse 4.5s ease-in-out infinite alternate}
+.hp-staff .hp-lamp::before{background:radial-gradient(closest-side,var(--hp-halo2),transparent 72%);animation-delay:-2s}
+@keyframes hpPulse{from{opacity:.7;transform:scale(.96)}to{opacity:1;transform:scale(1.06)}}
+.hp-string{width:2px;background:var(--hp-ink);opacity:.55}
+.hp-tassel{display:none}
+.hp-hook{fill:none;stroke:#16363C;stroke-width:3.2;stroke-linecap:round}body.fx-ui-dark .hp-hook{stroke:#8FB6BC}
+.hp-cap{fill:#16363C;stroke:#0B1F23;stroke-width:1}body.fx-ui-dark .hp-cap{fill:#2A5560;stroke:#6FA3AA}
+.hp-trim{fill:#C23A2B}
+.hp-stu .hp-body{stroke:#1B3AA8;stroke-width:3}.hp-staff .hp-body{stroke:#16363C;stroke-width:3}
+body.fx-ui-dark .hp-staff .hp-body{stroke:#6FA3AA}
+.hp-stu .hp-ribs path{stroke:#1B3AA8;stroke-opacity:.62;stroke-width:2.6;fill:none}
+.hp-staff .hp-ribs path{stroke:#16363C;stroke-opacity:.9;stroke-width:4;fill:none}
+body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
+.hp-cord{stroke:#1B3AA8;stroke-width:2.4;fill:none}.hp-knot{fill:#1B3AA8}.hp-fringe{stroke:#2F5BEA;stroke-width:2.6;stroke-linecap:round;fill:none}
+.hp-cord.red,.hp-fringe.red{stroke:#C23A2B}.hp-knot.red{fill:#C23A2B}
+.hp-face{inset:auto 15% auto 15%;top:49%;transform:translateY(-50%);padding:12px 10px 13px;border-radius:14px;gap:5px}
+.hp-stu .hp-face{background:rgba(255,255,255,.94);border:1.5px solid #1B3AA8;box-shadow:0 4px 16px rgba(20,40,120,.25)}
+.hp-staff .hp-face{background:rgba(9,30,35,.92);border:1.5px solid #7FC6CB;box-shadow:0 4px 16px rgba(0,0,0,.3);left:17%;right:17%}
+.hp-seal{right:5%;bottom:-6px;z-index:2}
+.hp-staff .hp-seal{right:16%;bottom:15%}
+.hp-lantern:hover .hp-lamp,.hp-lantern:focus-within .hp-lamp{filter:drop-shadow(0 6px 40px var(--hp-glow));transform:scale(1.03)}
+.hp-fl{filter:drop-shadow(0 0 14px var(--c))}
+.hp-fl svg{width:30px;height:44px}
+.ea-lamp,.hp-mark i{width:16px;height:23px;border-radius:0;margin-right:9px;vertical-align:-5px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 34'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='52%25' r='58%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.4' stop-color='%23A9C0FF'/%3E%3Cstop offset='1' stop-color='%232F5BEA'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M12 0v3' stroke='%238FB6BC' stroke-width='1.6'/%3E%3Crect x='7' y='3' width='10' height='3.4' rx='1.2' fill='%2316363C'/%3E%3Cellipse cx='12' cy='17' rx='10.5' ry='11' fill='url(%23g)' stroke='%231B3AA8' stroke-width='1'/%3E%3Cpath d='M2.5 12.5q9.5 3.5 19 0M1.8 17h20.4M2.5 21.5q9.5-3.5 19 0' fill='none' stroke='%231B3AA8' stroke-opacity='.6' stroke-width='.9'/%3E%3Crect x='7' y='27' width='10' height='3.4' rx='1.2' fill='%2316363C'/%3E%3Cpath d='M12 30.4v3.4' stroke='%23C23A2B' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;box-shadow:none;filter:drop-shadow(0 0 7px rgba(76,120,255,.85))}
+#ea-boot i{width:54px;height:76px;border-radius:0;box-shadow:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 34'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='52%25' r='58%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.4' stop-color='%23A9C0FF'/%3E%3Cstop offset='1' stop-color='%232F5BEA'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M12 0v3' stroke='%238FB6BC' stroke-width='1.6'/%3E%3Crect x='7' y='3' width='10' height='3.4' rx='1.2' fill='%232A5560'/%3E%3Cellipse cx='12' cy='17' rx='10.5' ry='11' fill='url(%23g)' stroke='%236F95FF' stroke-width='1'/%3E%3Cpath d='M2.5 12.5q9.5 3.5 19 0M1.8 17h20.4M2.5 21.5q9.5-3.5 19 0' fill='none' stroke='%231B3AA8' stroke-opacity='.6' stroke-width='.9'/%3E%3Crect x='7' y='27' width='10' height='3.4' rx='1.2' fill='%232A5560'/%3E%3Cpath d='M12 30.4v3.4' stroke='%23C23A2B' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 0 22px rgba(76,120,255,.9))}
+.fxc-none::before,.lms-empty::before{content:"";display:block;width:26px;height:37px;margin:0 auto 10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 34'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='52%25' r='58%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.4' stop-color='%23A9C0FF'/%3E%3Cstop offset='1' stop-color='%232F5BEA'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M12 0v3' stroke='%238FB6BC' stroke-width='1.6'/%3E%3Crect x='7' y='3' width='10' height='3.4' rx='1.2' fill='%2316363C'/%3E%3Cellipse cx='12' cy='17' rx='10.5' ry='11' fill='url(%23g)' stroke='%231B3AA8' stroke-width='1'/%3E%3Cpath d='M2.5 12.5q9.5 3.5 19 0M1.8 17h20.4M2.5 21.5q9.5-3.5 19 0' fill='none' stroke='%231B3AA8' stroke-opacity='.6' stroke-width='.9'/%3E%3Crect x='7' y='27' width='10' height='3.4' rx='1.2' fill='%2316363C'/%3E%3Cpath d='M12 30.4v3.4' stroke='%23C23A2B' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 0 8px rgba(76,120,255,.55))}
+:root{--lantern-op:.85}body.fx-ui-dark{--lantern-op:.95}
+@media(max-width:900px){.hp-face,.hp-staff .hp-face{left:12%;right:12%}.hp-lamp{width:min(44vw,210px)}}
+.hp-mark i{box-shadow:none!important;animation:ldBob 3.4s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.hp-mark i{animation:none}}
 </style>
 </head>
 <body>
@@ -1598,12 +1632,17 @@ body.imp-on{padding-top:38px}body.imp-on .stu-top{top:38px}
   <main class="hp-stage">
     <section class="hp-lantern hp-stu" aria-labelledby="hp-s-h">
       <div class="hp-swing"><i class="hp-string"></i>
-        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 280" aria-hidden="true"><defs><radialGradient id="hpg1" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="var(--hp-s1)"/><stop offset="1" stop-color="var(--hp-s2)"/></radialGradient></defs>
-          <rect x="88" y="6" width="64" height="16" rx="5" class="hp-cap"/><ellipse cx="120" cy="140" rx="104" ry="116" fill="url(#hpg1)" class="hp-body"/>
-          <g class="hp-ribs"><path d="M120 24v232M120 24C70 60 70 220 120 256M120 24c50 36 50 196 0 232M120 24C42 70 42 210 120 256M120 24c78 46 78 186 0 232"/></g>
-          <rect x="88" y="258" width="64" height="16" rx="5" class="hp-cap"/></svg>
+        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 340" aria-hidden="true"><defs>
+          <radialGradient id="hpg1" cx="50%" cy="50%" r="58%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".28" stop-color="#D5E3FF"/><stop offset=".62" stop-color="#6F95FF"/><stop offset="1" stop-color="#2142BC"/></radialGradient>
+          <clipPath id="hpc1"><path d="M64 60C4 94 2 252 64 286H176C238 252 236 94 176 60Z"/></clipPath></defs>
+          <circle cx="120" cy="13" r="9" class="hp-hook"/><path d="M120 22V40" class="hp-hook"/>
+          <path d="M82 40h76l-8 22H90z" class="hp-cap"/><rect x="74" y="34" width="92" height="9" rx="4" class="hp-trim"/>
+          <path d="M64 60C4 94 2 252 64 286H176C238 252 236 94 176 60Z" fill="url(#hpg1)" class="hp-body"/>
+          <g clip-path="url(#hpc1)" class="hp-ribs"><path d="M0 92Q120 118 240 92M0 124Q120 152 240 124M0 156Q120 184 240 156M0 188Q120 216 240 188M0 220Q120 248 240 220M0 252Q120 280 240 252"/></g>
+          <ellipse cx="78" cy="150" rx="14" ry="52" fill="#fff" opacity=".35" transform="rotate(8 78 150)"/>
+          <path d="M82 284h76l8 16H74z" class="hp-cap"/><rect x="74" y="281" width="92" height="9" rx="4" class="hp-trim"/>
+          <path d="M120 300v16" class="hp-cord"/><circle cx="120" cy="319" r="4.5" class="hp-knot"/><path d="M120 322l-9 15M120 322l-3 17M120 322l3 17M120 322l9 15" class="hp-fringe"/></svg>
           <div class="hp-face"><svg class="hp-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5"/></svg><h2 id="hp-s-h">Students</h2><p>Take a test, check your grades, review a classmate.</p></div></div>
-        <div class="hp-tassel"><i></i></div>
       </div>
       <div class="hp-actions"><a class="hp-btn hp-pri" href="#/signin/student">Sign in</a><a class="hp-btn" href="#/signup/student">Create account</a></div>
     </section>
@@ -1618,11 +1657,16 @@ body.imp-on{padding-top:38px}body.imp-on .stu-top{top:38px}
     </section>
     <section class="hp-lantern hp-staff" aria-labelledby="hp-t-h">
       <div class="hp-swing"><i class="hp-string"></i>
-        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 300" aria-hidden="true"><defs><linearGradient id="hpg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--hp-t1)"/><stop offset="1" stop-color="var(--hp-t2)"/></linearGradient></defs>
-          <rect x="80" y="6" width="80" height="16" rx="4" class="hp-cap"/><rect x="26" y="22" width="188" height="250" rx="18" fill="url(#hpg2)" class="hp-body"/>
-          <g class="hp-ribs"><path d="M26 74h188M26 220h188M82 22v250M158 22v250"/></g><rect x="80" y="272" width="80" height="16" rx="4" class="hp-cap"/></svg>
-          <div class="hp-face"><svg class="hp-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><h2 id="hp-t-h">Staff</h2><p>Build tests, run them live, grade and manage classes.</p></div><i class="hp-seal" aria-hidden="true">EA</i></div>
-        <div class="hp-tassel"><i></i></div>
+        <div class="hp-lamp"><svg class="hp-shape" viewBox="0 0 240 340" aria-hidden="true"><defs>
+          <radialGradient id="hpg2" cx="50%" cy="50%" r="62%"><stop offset="0" stop-color="#F2FFFC"/><stop offset=".3" stop-color="#9BEBE0"/><stop offset=".7" stop-color="#2E9AA3"/><stop offset="1" stop-color="#15515B"/></radialGradient></defs>
+          <circle cx="120" cy="13" r="9" class="hp-hook"/><path d="M120 22V36" class="hp-hook"/>
+          <path d="M14 76Q64 70 92 46L120 28l28 18Q176 70 226 76L208 90H32z" class="hp-cap"/><rect x="40" y="86" width="160" height="8" rx="3" class="hp-trim"/>
+          <rect x="46" y="92" width="148" height="182" rx="4" fill="url(#hpg2)" class="hp-body"/>
+          <g class="hp-ribs"><path d="M46 150h148M46 212h148M96 92v182M144 92v182"/></g>
+          <rect x="40" y="92" width="10" height="186" rx="3" class="hp-cap"/><rect x="190" y="92" width="10" height="186" rx="3" class="hp-cap"/>
+          <rect x="34" y="272" width="172" height="18" rx="4" class="hp-cap"/><rect x="46" y="290" width="22" height="8" rx="2" class="hp-cap"/><rect x="172" y="290" width="22" height="8" rx="2" class="hp-cap"/>
+          <path d="M120 290v22" class="hp-cord red"/><circle cx="120" cy="316" r="5" class="hp-knot red"/><path d="M120 320l-10 17M120 320l-3.5 19M120 320l3.5 19M120 320l10 17" class="hp-fringe red"/></svg>
+          <div class="hp-face"><svg class="hp-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><h2 id="hp-t-h">Staff</h2><p>Build tests, run them live, grade and manage classes.</p></div><i class="hp-seal" aria-hidden="true">教</i></div>
       </div>
       <div class="hp-actions"><a class="hp-btn hp-pri" href="#/signin/staff">Sign in</a><a class="hp-btn" href="#/signup/staff">Create account</a></div>
     </section>
@@ -1635,7 +1679,6 @@ body.imp-on{padding-top:38px}body.imp-on .stu-top{top:38px}
   </div>
   <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a><span>·</span><span>Made for classrooms</span></footer>
 </div>
-
 <div id="login-page" class="hidden">
   <!-- Art panel -->
   <div class="login-art">
@@ -12393,10 +12436,10 @@ const $=id=>document.getElementById(id);const HP={active:false};
 const loggedOut=()=>{const a=$('app'),s=$('stu-app');return (!a||a.classList.contains('hidden'))&&(!s||s.classList.contains('hidden'));};
 function hello(){const h=new Date().getHours();return h<5?'Still up?':h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
 function floats(){const w=document.querySelector('.hp-floats');if(!w||w.children.length)return;
-  const cols=['#7FA0FF','#F2F6F5','#E58A7B','#9DB4FF','#F7C9BE','#C9D8FF'];
-  for(let i=0;i<9;i++){const e=document.createElement('i');e.className='hp-fl';const s=.55+Math.random()*.7;
-    e.style.cssText=`--s:${s};--d:${70+Math.random()*70}s;--dl:${-Math.random()*120}s;--b:${3+Math.random()*3}s;--y:${4+Math.random()*34}%;--c:${cols[i%cols.length]}`;
-    e.innerHTML='<svg viewBox="0 0 24 30" width="24" height="30"><rect x="8" y="1" width="8" height="3" rx="1.5" fill="currentColor" opacity=".7"/><ellipse cx="12" cy="15" rx="9" ry="10.5" fill="currentColor"/><rect x="8" y="26" width="8" height="3" rx="1.5" fill="currentColor" opacity=".7"/></svg>';w.appendChild(e);}}
+  const cols=['#4F7BFF','#FFFFFF','#FF8A78','#8FB0FF','#FFC2B4','#B7CBFF','#E9453A'];
+  for(let i=0;i<8;i++){const e=document.createElement('i');e.className='hp-fl';const s=.9+Math.random()*.9;
+    e.style.cssText=`--s:${s};--d:${60+Math.random()*60}s;--dl:${-Math.random()*110}s;--b:${3+Math.random()*3}s;--y:${2+Math.random()*30}%;--c:${cols[i%cols.length]}`;
+    e.innerHTML='<svg viewBox="0 0 30 44" width="30" height="44"><path d="M15 0v4" stroke="currentColor" stroke-width="1.6" opacity=".8"/><rect x="9" y="4" width="12" height="4" rx="1.6" fill="#16363C"/><ellipse cx="15" cy="23" rx="12.5" ry="14" fill="currentColor"/><ellipse cx="15" cy="23" rx="6" ry="9" fill="#fff" opacity=".55"/><path d="M3 18Q15 22 27 18M2.6 23h24.8M3 28Q15 24 27 28" fill="none" stroke="#16363C" stroke-opacity=".45" stroke-width="1"/><rect x="9" y="37" width="12" height="4" rx="1.6" fill="#16363C"/><path d="M15 41v3" stroke="#E9453A" stroke-width="1.6"/></svg>';w.appendChild(e);}}
 function showHome(){$('login-page').classList.add('hidden');$('home-page').classList.remove('hidden');document.body.classList.add('hp-on');$('hp-hello').textContent=hello();floats();document.title='EdAssess';}
 function hideHome(){$('home-page').classList.add('hidden');document.body.classList.remove('hp-on');}
 function showLogin(kind,mode){
@@ -13012,13 +13055,22 @@ window.stuRevSubmit=async function(){
     var x=c.getContext('2d'),W,H,L=[],dpr=Math.min(2,devicePixelRatio||1);
     function size(){W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);}
     size();addEventListener('resize',size);
-    for(var i=0;i<16;i++)L.push({x:Math.random(),y:Math.random(),r:4+Math.random()*10,v:.012+Math.random()*.03,ph:Math.random()*6.28,a:.12+Math.random()*.2});
+    for(var i=0;i<14;i++){var d=Math.random();L.push({x:Math.random(),y:Math.random(),s:14+d*30,v:.008+d*.02,ph:Math.random()*6.28,a:.5+d*.5,c:i%5===3?'r':'b'});}
     var last=performance.now(),run=true;document.addEventListener('visibilitychange',function(){run=!document.hidden;if(run){last=performance.now();requestAnimationFrame(tick);}});
-    function tick(now){if(!run)return;var dt=Math.min(.05,(now-last)/1000);last=now;x.clearRect(0,0,W,H);
-      for(var k=0;k<L.length;k++){var l=L[k];l.y-=l.v*dt;l.ph+=dt*.6;if(l.y<-.1){l.y=1.1;l.x=Math.random();}
-        var px=(l.x+Math.sin(l.ph)*.012)*W,py=l.y*H,g=x.createRadialGradient(px,py,0,px,py,l.r*4);
-        g.addColorStop(0,'rgba(150,180,255,'+l.a+')');g.addColorStop(.35,'rgba(76,120,255,'+l.a*.45+')');g.addColorStop(1,'rgba(76,120,255,0)');
-        x.fillStyle=g;x.beginPath();x.arc(px,py,l.r*4,0,6.283);x.fill();}
+    function lantern(px,py,s,a,red,dark){
+      var w=s*.78,h=s,g=x.createRadialGradient(px,py,0,px,py,s*2.6);
+      g.addColorStop(0,(red?'rgba(255,120,100,':'rgba(110,150,255,')+(a*.38)+')');g.addColorStop(1,'rgba(110,150,255,0)');x.fillStyle=g;x.fillRect(px-s*2.6,py-s*2.6,s*5.2,s*5.2);
+      x.globalAlpha=a;x.strokeStyle=dark?'#8FB6BC':'#16363C';x.lineWidth=Math.max(1,s*.05);
+      x.beginPath();x.moveTo(px,py-h*.62);x.lineTo(px,py-h*.5);x.stroke();
+      var b=x.createRadialGradient(px,py,0,px,py,h*.55);b.addColorStop(0,'#fff');b.addColorStop(.45,red?'#FFB4A6':'#A9C0FF');b.addColorStop(1,red?'#D6403A':'#2F5BEA');
+      x.fillStyle=b;x.beginPath();x.ellipse(px,py,w*.5,h*.4,0,0,6.283);x.fill();
+      x.strokeStyle=red?'#8E1F1A':'#1B3AA8';x.lineWidth=Math.max(1,s*.045);x.stroke();
+      x.globalAlpha=a*.55;for(var k=-1;k<=1;k++){x.beginPath();x.ellipse(px,py+k*h*.2,w*.5*(k?.88:1),h*.07,0,0,6.283);x.stroke();}
+      x.globalAlpha=a;x.fillStyle=dark?'#3A6A75':'#16363C';x.fillRect(px-w*.28,py-h*.5,w*.56,h*.1);x.fillRect(px-w*.28,py+h*.4,w*.56,h*.1);
+      x.strokeStyle=red?'#FF8A78':'#C23A2B';x.lineWidth=Math.max(1,s*.05);x.beginPath();x.moveTo(px,py+h*.5);x.lineTo(px,py+h*.66);x.stroke();x.globalAlpha=1;}
+    function tick(now){if(!run)return;var dt=Math.min(.05,(now-last)/1000);last=now;x.clearRect(0,0,W,H);var dark=document.body.classList.contains('fx-ui-dark');
+      for(var k=0;k<L.length;k++){var l=L[k];l.y-=l.v*dt;l.ph+=dt*.6;if(l.y<-.12){l.y=1.12;l.x=Math.random();}
+        lantern((l.x+Math.sin(l.ph)*.012)*W,l.y*H,l.s,l.a,l.c==='r',dark);}
       requestAnimationFrame(tick);}
     requestAnimationFrame(tick);
   }
