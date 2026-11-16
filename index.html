@@ -1635,6 +1635,9 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
 /* lanterns live only on the home page */
 .ea-lamp,#ea-boot i,.fxc-none::before,.lms-empty::before,#ea-lanterns{display:none!important}
 .hp-mark .ea-lamp,#home-page #ea-lanterns{display:none!important}
+
+/* plain-text answers, comments and messages keep their line breaks */
+.fx-bub,.lms-post-t,.sv-quotes blockquote,.sv-pv,.sv-bl,.ea-done-p,.fxc-ann,.stu-ann,.lms-row-m{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -5247,7 +5250,7 @@ function openPeerSessionDetail(id){
             return `<div style="margin-top:6px;padding-left:10px;border-left:2px solid var(--border)">
               <div class="text-xs text-muted">${q?('Essay: '+stripHtml(q.stem).slice(0,60)):ek}</div>
               <div style="font-size:13px;font-weight:600">${total}/${max} pts</div>
-              ${fb?`<div style="font-size:12px;margin-top:4px;font-style:italic;color:var(--ink-soft)">"${fb.replace(/</g,'&lt;')}"</div>`:''}
+              ${fb?`<div style="font-size:12px;margin-top:4px;font-style:italic;color:var(--ink-soft);white-space:pre-wrap">"${fb.replace(/</g,'&lt;')}"</div>`:''}
             </div>`;
           }).join('');
           return `<div style="padding:10px;background:var(--paper-warm);border-radius:var(--r);margin-bottom:8px">
@@ -5546,7 +5549,7 @@ function fxPeerForGrader(s,t){
       const sc=(p.rubricScores&&p.rubricScores[key])||{};const tot=Object.values(sc).reduce((a,v)=>a+v,0);
       const mx=it.q.rubric?it.q.rubric.reduce((a,r)=>a+(r.maxPoints||0),0):0;const fb=p.feedback&&p.feedback[key];
       if(!mx&&!fb)return '';
-      return `<div class="fxp-b"><div class="text-xs text-muted">${escapeHtml(stripHtml(it.q.stem).slice(0,90))}</div>${mx?`<div style="font-weight:700;font-size:14px">${tot}/${mx} pts</div>`:''}${fb?`<div style="font-size:13.5px;line-height:1.55;margin-top:4px">${escapeHtml(fb)}</div>`:''}</div>`;
+      return `<div class="fxp-b"><div class="text-xs text-muted">${escapeHtml(stripHtml(it.q.stem).slice(0,90))}</div>${mx?`<div style="font-weight:700;font-size:14px">${tot}/${mx} pts</div>`:''}${fb?`<div style="font-size:13.5px;line-height:1.55;margin-top:4px;white-space:pre-wrap">${escapeHtml(fb)}</div>`:''}</div>`;
     }).join('');
     return `<div class="fxp-r"><div class="fxp-h"><b>${escapeHtml(p.reviewerName||'Reviewer')}</b><label class="text-xs" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" ${p.hiddenFromStudent?'checked':''} onchange="togglePeerReviewHidden('${ps.id}','${p.id}',this.checked)"> Hide from student</label></div>${blocks||'<div class="text-sm text-muted">No score or comment recorded.</div>'}</div>`;
   }).join('');
@@ -8373,7 +8376,7 @@ function renderPeerFeedbackReceived(s,fqs){
         return `<div style="margin-top:8px;padding-left:12px;border-left:2px solid var(--burgundy-pale)">
           <div class="text-xs text-muted">${stripHtml(item.q.stem).slice(0,70)}</div>
           ${max?`<div style="font-size:13px;font-weight:600">${total}/${max} pts</div>`:''}
-          ${fb?`<div style="font-size:13px;margin-top:4px;font-style:italic;color:var(--ink)">"${fb.replace(/</g,'&lt;')}"</div>`:''}
+          ${fb?`<div style="font-size:13px;margin-top:4px;font-style:italic;color:var(--ink);white-space:pre-wrap">"${fb.replace(/</g,'&lt;')}"</div>`:''}
         </div>`;
       }).join('');
       return `<div style="background:var(--cream);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:12px">
@@ -8465,7 +8468,7 @@ function loadStudentResults(sid){
         </div>
         <div style="font-family:var(--f-body);font-size:16px;line-height:1.7;color:var(--ink)">${renderStem(q.explanation)}</div>
       </div>`:''}
-      ${comment?`<div style="background:var(--slate-pale);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 14px;margin-top:10px;font-size:13px"><span style="font-weight:700;color:var(--slate-blue);font-family:var(--f-body);font-size:10px;letter-spacing:.08em;text-transform:uppercase">${s.commentBy&&s.commentBy[qKey]?sxE(fxTName(s.commentBy[qKey]))+' says: ':'Instructor Feedback: '}</span><span style="font-family:var(--f-body);font-size:16px">${comment}</span></div>`:''}
+      ${comment?`<div style="background:var(--slate-pale);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 14px;margin-top:10px;font-size:13px"><span style="font-weight:700;color:var(--slate-blue);font-family:var(--f-body);font-size:10px;letter-spacing:.08em;text-transform:uppercase">${s.commentBy&&s.commentBy[qKey]?sxE(fxTName(s.commentBy[qKey]))+' says: ':'Instructor Feedback: '}</span><span style="font-family:var(--f-body);font-size:16px;white-space:pre-wrap">${comment}</span></div>`:''}
     </div>`;
   });
   sw.innerHTML=`<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
@@ -11246,7 +11249,7 @@ function fxMsgsHtml(subs){
     return `<div class="fx-mrow ${u?'new':''}"><div class="fx-mhead"><strong>${sxE(s.studentName)}</strong><span class="text-muted" style="font-size:12px">${s.status==='in-progress'?'In exam':'Submitted'}</span>${u?`<span class="fx-dotb">${u} new</span>`:''}<span style="flex:1"></span>${u?`<button class="btn btn-ghost btn-sm" onclick="fxMarkRead('${sxA(s.id)}')">Mark read</button>`:''}</div>
       <div class="fx-thread">${th.map(m=>`<div class="fx-bub ${m.from==='instructor'?'me':'them'}">${sxE(m.text)}<span>${m.from==='instructor'?'You':sxE(s.studentName)} · ${fxAgo(m.at)}</span></div>`).join('')}</div>
       ${s.status==='in-progress'?`<div class="fx-mreply"><div>${['Yes','No','Re-read the question','Come see me'].map(q=>`<span class="fx-qchip" onclick="fxDraft['${sxA(s.id)}']='${q}';document.getElementById('fx-rp-${sxA(s.id)}').value='${q}'">${q}</span>`).join('')}</div>
-      <div style="display:flex;gap:8px"><input id="fx-rp-${sxA(s.id)}" class="form-control" placeholder="Reply…" maxlength="500" value="${sxA(fxDraft[s.id]||'')}" oninput="fxDraft['${sxA(s.id)}']=this.value" onkeydown="if(event.key==='Enter')fxReply('${sxA(s.id)}')"><button class="btn btn-primary" onclick="fxReply('${sxA(s.id)}')">Send</button></div></div>`:''}</div>`;
+      <div style="display:flex;gap:8px"><textarea rows="2" style="resize:vertical;min-height:40px" id="fx-rp-${sxA(s.id)}" class="form-control" placeholder="Reply…" maxlength="500" oninput="fxDraft['${sxA(s.id)}']=this.value" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();fxReply('${sxA(s.id)}');}">${sxE(fxDraft[s.id]||'')}</textarea><button class="btn btn-primary" onclick="fxReply('${sxA(s.id)}')">Send</button></div></div>`:''}</div>`;
   }).join('');
 }
 async function fxReply(sid){
@@ -12247,7 +12250,7 @@ function stuHome(){
       ${(d.classes||[]).map(c=>`<div class="stu-class" onclick="stuClassModal('${E(c.id)}')"><div class="stu-class-name">${E(c.name)}</div><div class="stu-row-meta">${E(stuTeachers(c))}${c.period?' · '+E(c.period):''}</div></div>`).join('')||'<div class="stu-empty">You haven’t joined a class yet.</div>'}
       <div class="stu-join"><input id="stu-code" maxlength="10" placeholder="CLASS CODE" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" onkeydown="if(event.key==='Enter')fxStuJoinCode()"><button class="stu-btn" onclick="fxStuJoinCode()">Join class</button></div></div>
     <div class="stu-card"><div class="stu-card-h"><h2>Announcements</h2></div>
-      ${anns.length?anns.map(x=>`<div class="stu-ann"><div class="stu-row-meta">${E(x.cls)} · ${E(tN(x.by))} · ${E(new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}))}</div><div>${E(x.text)}</div></div>`).join(''):'<div class="stu-empty">No announcements.</div>'}</div>
+      ${anns.length?anns.map(x=>`<div class="stu-ann"><div class="stu-row-meta">${E(x.cls)} · ${E(tN(x.by))} · ${E(new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}))}</div><div style="white-space:pre-wrap">${E(x.text)}</div></div>`).join(''):'<div class="stu-empty">No announcements.</div>'}</div>
   </div></div>`;
 }
 function stuAssignments(){
@@ -12408,7 +12411,7 @@ function fxClassDetail(c){
      ${as.map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted').length;return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span>${subs}/${c.students.length} submitted</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;
   }else{
     body=`<div class="fxc-panel"><textarea id="fxc-ann" rows="3" placeholder="Post an announcement to students in this class"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div>
-     ${[...c.announcements].reverse().map(x=>`<div class="fxc-panel fxc-ann"><div class="fxc-sub">${E(fxTName(x.by))} · ${E(new Date(x.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} <a class="fxc-x" onclick="fxClassUnpost('${c.id}','${x.id}')">Delete</a></div>${E(x.text)}</div>`).join('')}`;
+     ${[...c.announcements].reverse().map(x=>`<div class="fxc-panel fxc-ann"><div class="fxc-sub">${E(fxTName(x.by))} · ${E(new Date(x.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} <a class="fxc-x" onclick="fxClassUnpost('${c.id}','${x.id}')">Delete</a></div><div style="white-space:pre-wrap">${E(x.text)}</div></div>`).join('')}`;
   }
   return `<div class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← Classes</button><h1 class="page-title">${E(c.name)}</h1></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="fxViewAsModal('${c.id}')">Student view</button><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
@@ -12508,7 +12511,7 @@ function svPickKind(k){
 const SV_STOP=new Set('a an and are as at be but by for from had has have he her his i if in is it its me my of on or our she so that the their them they this to was we were what when which who will with you your not no yes do does did can could would should just very really also than then there these those about into more most some such'.split(' '));
 const SV_LIKERT={'strongly disagree':1,'disagree':2,'somewhat disagree':2.5,'neutral':3,'neither agree nor disagree':3,'somewhat agree':3.5,'agree':4,'strongly agree':5,'never':1,'rarely':2,'sometimes':3,'often':4,'always':5,'very poor':1,'poor':2,'fair':3,'good':4,'very good':4.5,'excellent':5,'not at all':1,'slightly':2,'somewhat':3,'moderately':3,'very':4,'extremely':5,'very unlikely':1,'unlikely':2,'likely':4,'very likely':5,'very unhappy':1,'unhappy':2,'happy':4,'very happy':5,'very dissatisfied':1,'dissatisfied':2,'satisfied':4,'very satisfied':5};
 const svUi={tab:'summary',anon:true,open:{}};
-const svPlain=h=>{const d=document.createElement('div');d.innerHTML=String(h||'');d.querySelectorAll('.math-inline[data-latex]').forEach(n=>{n.textContent=n.getAttribute('data-latex')});return(d.textContent||'').replace(/\s+/g,' ').trim();};
+const svPlain=(h,keep)=>{const d=document.createElement('div');d.innerHTML=String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|div|li|h[1-6])>/gi,'$&\n');d.querySelectorAll('.math-inline[data-latex]').forEach(n=>{n.textContent=n.getAttribute('data-latex')});const tx=d.textContent||'';return keep?tx.replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{3,}/g,'\n\n').trim():tx.replace(/\s+/g,' ').trim();};
 function svSubs(a){return APP.submissions.filter(s=>s.assignmentId===a.id&&s.status==='submitted'&&!fxIsPrev(s.id));}
 function svOptVal(txt){const t=svPlain(txt).toLowerCase();if(/^-?\d+(\.\d+)?$/.test(t))return parseFloat(t);const m=t.match(/^(\d+(\.\d+)?)\b/);if(m&&t.length<24)return parseFloat(m[1]);return SV_LIKERT[t]!=null?SV_LIKERT[t]:null;}
 function svStats(vals){if(!vals.length)return null;const s=vals.slice().sort((x,y)=>x-y),n=s.length,mean=s.reduce((x,y)=>x+y,0)/n,med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;return{mean:Math.round(mean*100)/100,med:Math.round(med*100)/100,n};}
@@ -12527,7 +12530,7 @@ function svAnalyze(t,subs){
       const vals=opts.map(svOptVal);
       if(opts.length>1&&vals.every(v=>v!=null)&&type==='mc'){const all=[];given.forEach(r=>{const v=vals[r.v];if(v!=null)all.push(v);});out.stats=svStats(all);out.scale=true;}
     }else{
-      out.texts=given.map(r=>({name:r.s.studentName||'Anonymous',t:svPlain((r.s.answers_text&&r.s.answers_text[key])||r.v)})).filter(x=>x.t);
+      out.texts=given.map(r=>({name:r.s.studentName||'Anonymous',t:svPlain((r.s.answers_text&&r.s.answers_text[key])||r.v,true)})).filter(x=>x.t);
       const f={};out.texts.forEach(x=>x.t.toLowerCase().replace(/[^a-z0-9'\s-]/g,' ').split(/\s+/).forEach(w=>{if(w.length>2&&!SV_STOP.has(w))f[w]=(f[w]||0)+1;}));
       out.words=Object.entries(f).filter(e=>e[1]>1||out.texts.length<4).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,24);
     }
@@ -12567,7 +12570,7 @@ function svAnsText(q,s){
   const v=s.answers?s.answers[q.key]:undefined;
   if(v===undefined||v===null||v==='')return '<i class="sv-skip">No answer</i>';
   if(q.opts){const arr=Array.isArray(v)?v:[v];const l=arr.map(i=>q.opts[i]&&q.opts[i].label).filter(Boolean);return l.length?E(l.join(', ')):'<i class="sv-skip">No answer</i>';}
-  return E(svPlain((s.answers_text&&s.answers_text[q.key])||v))||'<i class="sv-skip">No answer</i>';
+  return E(svPlain((s.answers_text&&s.answers_text[q.key])||v,true))||'<i class="sv-skip">No answer</i>';
 }
 function svQCard(q,textOnly){
   const typ={mc:'Single choice',ms:'Select all',short:'Short answer',essay:'Long answer'}[q.type]||q.type;
