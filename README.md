@@ -179,6 +179,15 @@ If your teacher sends you a survey, there is nothing to prepare for. Answer hone
 
 ---
 
+## Fair use and age rules
+
+EdAssess has a plain-language **Terms of Service** (look for **Terms** on the front page, the sign-in screens and the sidebar, or add `?terms=1` to the site address). The big points:
+
+- Teachers must be at least 13. You confirm your age when you sign up.
+- Students who are 12 or under need a parent or guardian's permission before making an account, and they confirm that when they create it.
+- Cheating, harassment, scraping, trying to break the sign-in or exam protections, and using EdAssess for things that aren't teaching are not allowed. Teachers also agree to use Student view only to help students and not to collect sensitive information in surveys.
+- If something breaks the rules, we start with a message when we can, and you can always appeal by email.
+
 ## Your privacy
 
 We keep the data collection small. Students don't need an email address, there are no ads and no tracking, and passwords are stored only as salted hashes. The full policy is built into the app (look for **Privacy policy** on the sign-in page and in the sidebar, or add `?privacy=1` to the site address). It explains what we store, who can see it, which outside services are involved, how long things are kept and how to ask for something to be deleted.

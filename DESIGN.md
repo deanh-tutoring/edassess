@@ -43,3 +43,6 @@ Lanterns now read as lanterns everywhere: the homepage pair has a hook, cap, rib
 
 ## Surveys
 `test.kind==='survey'` marks a survey; its assignments carry `survey:true` with scores, security and tools forced off. The builder uses the `.sv-mode` class to hide scoring controls; results live in the `ea-survey` script block (`svResults`) and replace the Analytics detail view. Server: `testMax` returns 0 for surveys and `studentHome` exposes `survey`.
+
+## Terms and age gate
+`ea-terms` script (`fxTermsOpen`, `?terms=1`) reuses the privacy overlay styles. Teacher signup and student account creation require an `agree:true` flag, enforced in data.js. Records keep `termsAt` and `termsV` (`TERMS_V`). Bump `TERMS_V` when the Terms change materially.

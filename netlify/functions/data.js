@@ -490,6 +490,7 @@ async function authAction(body, user) {
     if (!secret()) return bad('Sign-up is not configured yet: the site owner must set EA_AUTH_SECRET.', 500);
     const kw = process.env.EA_TEACHER_KEYWORD;
     if (!kw) return bad('Teacher sign-up is not configured yet.', 500);
+    if (body.agree !== true) return bad('Please confirm you are 13 or older and agree to the Terms of Service and Privacy Policy.');
     if (!sameStr(lc(body.keyword), lc(kw))) return bad('That keyword is not right.', 403);
     const username = String(body.username || '').trim(), name = String(body.name || '').trim().slice(0, 60);
     if (!USER_RE.test(username)) return bad('Username: 3–30 letters, numbers, . _ -');
@@ -497,7 +498,7 @@ async function authAction(body, user) {
     if (String(body.password || '').length < 8) return bad('Password needs at least 8 characters.');
     await ensureAdmin();
     if (await getJ(U_PREFIX + lc(username))) return bad('That username is taken.', 409);
-    const u = { username, name, role: 'teacher', createdAt: new Date().toISOString() };
+    const u = { username, name, role: 'teacher', createdAt: new Date().toISOString(), termsAt: new Date().toISOString(), termsV: TERMS_V };
     await setPassword(u, body.password, false);
     return reply(200, { token: signToken(lc(username)), user: pubUser(u) });
   }
@@ -719,6 +720,7 @@ async function studentPeerSave(body, s) {
   const mine = ps.pairs.filter((p) => ids.has(p.reviewerSubId));
   return reply(200, { ok: true, total: mine.length, done: mine.filter((p) => p.status === 'completed').length });
 }
+const TERMS_V = '2026-11-17';
 const testMax = (t) => (t && t.kind === 'survey') ? 0 : ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
 async function studentHome(s) {
   const classes = (await allClasses()).filter((c) => !c.archived || s.preview || (c.students || []).some((x) => x.key === s.key));
@@ -756,9 +758,10 @@ async function studentAction(body, student) {
     if (!n) return bad(NAME_HELP);
     const pw = String(body.password || '');
     if (a === 'studentSignup') {
+      if (body.agree !== true) return bad('Please confirm you are 13 or older, or that a parent or guardian said it is OK, and agree to the Terms of Service.');
       if (pw.length < 6) return bad('Choose a password with at least 6 characters.');
       if (await getJ(S_PREFIX + n.key)) return bad('There is already an account named ' + n.name + '. Sign in instead — or, if you are a different student, add a number after your initial (for example ' + n.name.replace(/\d*$/, '') + '2).', 409);
-      const s = { key: n.key, name: n.name, createdAt: new Date().toISOString() };
+      const s = { key: n.key, name: n.name, createdAt: new Date().toISOString(), termsAt: new Date().toISOString(), termsV: TERMS_V };
       await setStudentPw(s, pw, false);
       return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s), created: true });
     }

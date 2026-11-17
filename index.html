@@ -1638,6 +1638,12 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
 
 /* plain-text answers, comments and messages keep their line breaks */
 .fx-bub,.lms-post-t,.sv-quotes blockquote,.sv-pv,.sv-bl,.ea-done-p,.fxc-ann,.stu-ann,.lms-row-m{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* terms agreement checkbox */
+.fx-agree{display:flex;gap:10px;align-items:flex-start;margin:4px 0 14px;font-size:13px;line-height:1.45;color:var(--ink);cursor:pointer;text-align:left}
+.fx-agree.hidden{display:none}
+.fx-agree input{margin-top:3px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--accent,#2A52D9)}
+.fx-agree a{color:var(--accent,#2A52D9);text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1722,7 +1728,7 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
     <svg class="hp-w hp-w1" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="M0 100c150-34 300-34 450 0s300 34 450 0 300-34 450 0V200H0z"/></svg>
     <div class="hp-floats"></div>
   </div>
-  <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a><span>·</span><span>Made for classrooms</span></footer>
+  <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a> <a href="#/welcome" onclick="event.preventDefault();window.fxTermsOpen&&fxTermsOpen()">Terms</a><span>·</span><span>Made for classrooms</span></footer>
 </div>
 <div id="login-page" class="hidden">
   <!-- Art panel -->
@@ -1758,6 +1764,7 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
     <div class="form-group"><label class="form-label">Password</label><input type="password" id="stu-pass" class="form-control" autocomplete="current-password" onkeydown="if(event.key==='Enter'&&stuMode==='in')fxStuAuth()"></div>
     <div class="form-group hidden" id="stu-pass2-wrap"><label class="form-label">Confirm password</label><input type="password" id="stu-pass2" class="form-control" autocomplete="new-password" onkeydown="if(event.key==='Enter')fxStuAuth()"></div>
     <div id="stu-note" class="hidden stu-hint">Use your first name and last initial (like <b>Sam K</b>). If someone already has that name, add a number: <b>Sam K2</b>. Choose a password of 6+ characters — your teacher can reset it but can’t see it.</div>
+    <label class="fx-agree hidden" id="stu-agree-wrap"><input type="checkbox" id="stu-agree"><span>I am <b>13 or older</b>, <b>or a parent or guardian said it is OK</b> for me to make this account. I agree to the <a onclick="fxTermsOpen()">Terms</a> and <a onclick="fxPrivacyClose&&fxPrivacyClose();fxPrivacyOpen()">Privacy Policy</a>.</span></label>
     <div id="stu-err" class="hidden fx-autherr"></div>
     <button class="btn btn-primary btn-lg login-btn" id="stu-go" onclick="fxStuAuth()">Sign in</button>
     <a class="fx-authlink" id="stu-swap" onclick="fxStuMode(stuMode==='in'?'up':'in')">First time here? <b>Create my account</b></a>
@@ -1776,6 +1783,7 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
       <div class="form-group"><label class="form-label">Password</label><input id="su-pass" type="password" class="form-control" autocomplete="new-password"></div>
       <div class="form-group"><label class="form-label">Confirm password</label><input id="su-pass2" type="password" class="form-control" autocomplete="new-password"></div>
       <div class="form-group"><label class="form-label">Staff keyword</label><input id="su-key" class="form-control" autocomplete="off" autocapitalize="off" onkeydown="if(event.key==='Enter')fxSignup()"></div>
+      <label class="fx-agree"><input type="checkbox" id="su-agree"><span>I am <b>13 or older</b>, and I agree to the <a onclick="fxTermsOpen()">Terms of Service</a> and <a onclick="fxPrivacyClose&&fxPrivacyClose();fxPrivacyOpen()">Privacy Policy</a>.</span></label>
       <div id="signup-error" class="hidden fx-autherr"></div>
       <button class="btn btn-primary btn-lg login-btn" onclick="fxSignup()">Create account</button>
       <a class="fx-authlink" onclick="fxAuthMode('in')">Back to sign in</a>
@@ -11778,7 +11786,8 @@ window.doLogin=async function(){
 async function fxSignup(){
   const v=id=>document.getElementById(id).value;
   if(v('su-pass')!==v('su-pass2')){fxShowErr('signup-error','Passwords do not match.');return;}
-  const r=await apiPost({action:'signup',name:v('su-name'),username:v('su-user'),password:v('su-pass'),keyword:v('su-key')});
+  if(!document.getElementById('su-agree').checked){fxShowErr('signup-error','Please confirm you are 13 or older and agree to the Terms and Privacy Policy.');return;}
+  const r=await apiPost({action:'signup',name:v('su-name'),username:v('su-user'),password:v('su-pass'),keyword:v('su-key'),agree:true});
   if(!r||r.__httpError||!r.token){fxShowErr('signup-error',(r&&r.error)||'Could not reach the server.');return;}
   fxAuthDone(r);
 }
@@ -12001,7 +12010,7 @@ function fxPrivacyOpen(){
   const d=document.createElement('div');d.id='fx-pv';
   d.innerHTML=`<div class="pv-bar"><button class="pv-back" onclick="fxPrivacyClose()">← Back</button><span>EdAssess</span></div>
   <div class="pv-wrap"><nav class="pv-toc"><div class="pv-toc-h">Contents</div><a href="#pv0" onclick="fxPvGo(event,0)">1. Overview</a><a href="#pv1" onclick="fxPvGo(event,1)">2. What we collect</a><a href="#pv2" onclick="fxPvGo(event,2)">3. How we use it</a><a href="#pv3" onclick="fxPvGo(event,3)">4. Surveys</a><a href="#pv4" onclick="fxPvGo(event,4)">5. Who can see what</a><a href="#pv5" onclick="fxPvGo(event,5)">6. Teachers who are also students</a><a href="#pv6" onclick="fxPvGo(event,6)">7. Storage and third parties</a><a href="#pv7" onclick="fxPvGo(event,7)">8. Data kept in your browser</a><a href="#pv8" onclick="fxPvGo(event,8)">9. Retention</a><a href="#pv9" onclick="fxPvGo(event,9)">10. Security</a><a href="#pv10" onclick="fxPvGo(event,10)">11. Your rights and choices</a><a href="#pv11" onclick="fxPvGo(event,11)">12. Children and schools</a><a href="#pv12" onclick="fxPvGo(event,12)">13. Changes and contact</a></nav>
-  <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Privacy <u>policy</u></h1><div class="pv-date">Last updated November 16, 2026</div><section id="pv0"><h2><i>1</i>Overview</h2><p class="lead">EdAssess exists to run classroom assessments, surveys and classes. It collects what it needs to do that and nothing more. We do not sell data, show ads, or track people across other websites.</p>
+  <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Privacy <u>policy</u></h1><div class="pv-date">Last updated November 17, 2026</div><section id="pv0"><h2><i>1</i>Overview</h2><p class="lead">EdAssess exists to run classroom assessments, surveys and classes. It collects what it needs to do that and nothing more. We do not sell data, show ads, or track people across other websites.</p>
 <h3>Who this covers</h3>
 <p>This policy applies to everyone who uses EdAssess, which is run by <b>Dean H</b> at <b>edassess.netlify.app</b> (“we”, “us”). It covers three kinds of people:</p>
 <ul><li><b>Students</b> join an assessment or survey with a link or a short code. Many can do this with no account. A student may also make an optional account (a first name and last initial, plus a password) to join classes and see their assignments and grades.</li>
@@ -12031,6 +12040,7 @@ function fxPrivacyOpen(){
 <h3>Teachers</h3>
 <ul><li><b>Account details.</b> A username, a display name (shown to students), and a password stored only as a salted scrypt hash.</li>
 <li><b>Sign-in session.</b> After signing in, a signed token stays in your browser for up to 30 days. Signing out removes it.</li>
+<li><b>Agreement record.</b> When you make an account, we save the date and which version of the Terms you agreed to. Students saying they are 13 or older, or that a parent or guardian gave permission, is recorded the same way. We do not ask for proof of age or collect a parent’s details.</li>
 <li><b>Teacher keyword.</b> Making a teacher account requires a keyword. It is checked on our server and is not saved with your account.</li>
 <li><b>Content you create.</b> Tests, surveys, questions, images, rubrics, assignments, join codes, curves, class posts, materials, links and settings.</li>
 <li><b>Sharing and co-teaching.</b> Which teachers you share a test with (view or edit) and which co-teachers you add to an assignment or class.</li>
@@ -12101,8 +12111,8 @@ function fxPrivacyOpen(){
 <p><b>Students and parents or guardians.</b> Requests to see, correct or delete a student’s data should go first to the teacher or school that assigned the work. We will respond to requests from a school or teacher, and to verified requests from a student or parent or guardian where the law gives that right. Depending on where you live, this can include rights to access, correct, delete, export or restrict the use of personal data, and to complain to a data protection authority.</p>
 <p><b>Cookies and tracking.</b> Because EdAssess does not track people across sites, there is nothing to opt out of. A browser’s “Do Not Track” signal is respected in the sense that we do no tracking to begin with.</p>
 <p><b>Where data is processed.</b> Our host may process data in the United States and other countries where it operates. If you are outside the United States, using EdAssess means your information may be handled there.</p></section><section id="pv11"><h2><i>12</i>Children and schools</h2><p>Students are identified only by the name they type or, if they choose to make an account, by first name and last initial. We never ask for an email address. EdAssess is intended for use under the direction of a teacher or school. We do not knowingly collect personal information from a child under 13 directly for any purpose other than the school’s educational use. Schools and teachers are responsible for having any permission they need to use the service with their students, including parental consent where it applies (for example under COPPA in the United States), and for handling student education records under laws such as FERPA.</p>
-<p>Teacher accounts are for adults. If you believe a child has created a teacher account, contact us and we will remove it.</p></section><section id="pv12"><h2><i>13</i>Changes and contact</h2><p>We may update this policy as the service changes. When we do, we will change the “Last updated” date and, for material changes, tell signed-in teachers in the app. Using EdAssess after an update means you accept the updated policy.</p>
-<p><b>Recent changes in this version:</b> added surveys, Google Drive attachments, student view and student mode for teachers, a table of what the app keeps in your browser, and a list of third-party services.</p>
+<p>Teacher accounts are for people who are <b>13 or older</b>, and teachers confirm their age when they sign up. A student account for a child <b>12 or under</b> requires permission from a parent or guardian, and the child confirms that permission when making the account. Parents and guardians can ask us at any time to delete their child’s account and data. If you believe a child under 13 has made a teacher account, or an account without permission, contact us and we will remove it. Our <a onclick="fxPrivacyClose();fxTermsOpen()" style="cursor:pointer;text-decoration:underline">Terms of Service</a> explain the age and permission rules in full.</p></section><section id="pv12"><h2><i>13</i>Changes and contact</h2><p>We may update this policy as the service changes. When we do, we will change the “Last updated” date and, for material changes, tell signed-in teachers in the app. Using EdAssess after an update means you accept the updated policy.</p>
+<p><b>Recent changes in this version:</b> added age and parent-permission rules, a record of when someone agreed to the Terms, surveys, Google Drive attachments, student view and student mode for teachers, a table of what the app keeps in your browser, and a list of third-party services.</p>
 <p><b>Dean H</b><br>edassess.netlify.app<br><a href="mailto:deanh.tutoring@gmail.com">deanh.tutoring@gmail.com</a></p></section></main></div>`;
   document.body.appendChild(d);document.body.classList.add('pv-open');d.scrollTop=0;
 }
@@ -12115,6 +12125,74 @@ window.addEventListener('DOMContentLoaded',()=>{if(new URLSearchParams(location.
   const sp=new URLSearchParams(location.search);if(sp.get('results')||sp.get('portal')||sp.get('peerreview')||sp.get('upload'))document.body.insertAdjacentHTML('beforeend','<a id="pv-link-stu" class="pv-foot stu" onclick="fxPrivacyOpen()">Privacy</a>');
 });
 </script>
+<script id="ea-terms">
+function fxTermsOpen(){
+  if(document.getElementById('fx-pv'))fxPrivacyClose();
+  const d=document.createElement('div');d.id='fx-pv';
+  d.innerHTML=`<div class="pv-bar"><button class="pv-back" onclick="fxPrivacyClose()">← Back</button><span>EdAssess</span></div>
+  <div class="pv-wrap"><nav class="pv-toc"><div class="pv-toc-h">Contents</div><a href="#pv0" onclick="fxPvGo(event,0)">1. The short version</a><a href="#pv1" onclick="fxPvGo(event,1)">2. Agreement</a><a href="#pv2" onclick="fxPvGo(event,2)">3. Who may use EdAssess</a><a href="#pv3" onclick="fxPvGo(event,3)">4. Accounts and security</a><a href="#pv4" onclick="fxPvGo(event,4)">5. What teachers agree to</a><a href="#pv5" onclick="fxPvGo(event,5)">6. What students agree to</a><a href="#pv6" onclick="fxPvGo(event,6)">7. Acceptable use</a><a href="#pv7" onclick="fxPvGo(event,7)">8. Your content and our service</a><a href="#pv8" onclick="fxPvGo(event,8)">9. Surveys and information collection</a><a href="#pv9" onclick="fxPvGo(event,9)">10. Third-party services</a><a href="#pv10" onclick="fxPvGo(event,10)">11. If something goes wrong: our enforcement</a><a href="#pv11" onclick="fxPvGo(event,11)">12. Availability, backups and changes</a><a href="#pv12" onclick="fxPvGo(event,12)">13. Disclaimers</a><a href="#pv13" onclick="fxPvGo(event,13)">14. Limits on our responsibility</a><a href="#pv14" onclick="fxPvGo(event,14)">15. Ending your use</a><a href="#pv15" onclick="fxPvGo(event,15)">16. Changes, law and contact</a></nav>
+  <main class="pv-main"><div class="pv-eyebrow">Students &amp; teachers</div><h1>Terms of <u>service</u></h1><div class="pv-date">Last updated November 17, 2026</div><section id="pv0"><h2><i>1</i>The short version</h2><p class="lead">EdAssess is a free classroom tool run by one person. These terms are meant to be fair and readable. Be honest, be kind, keep students safe, and don’t break or misuse the service. If you do, we may step in.</p>
+<table><tr><th>Who</th><th>The main rule</th></tr>
+<tr><td><b>Teachers</b></td><td>You must be at least 13 years old. You are responsible for how you use EdAssess with your students.</td></tr>
+<tr><td><b>Students 13 and older</b></td><td>You can make an account yourself, or just join an assessment with a code.</td></tr>
+<tr><td><b>Students 12 and under</b></td><td>You need a parent or guardian’s permission before you make an account. Ask a grown-up first.</td></tr>
+<tr><td><b>Everyone</b></td><td>Don’t cheat the system, harass people, break the law, or try to break the service.</td></tr></table></section><section id="pv1"><h2><i>2</i>Agreement</h2><p>These Terms of Service (“Terms”) are an agreement between you and <b>Dean H</b>, who runs EdAssess at <b>edassess.netlify.app</b> (“we”, “us”). By making an account, joining a class, or using EdAssess, you agree to these Terms and to our <a onclick="fxPrivacyClose();fxPrivacyOpen()" style="cursor:pointer;text-decoration:underline">Privacy Policy</a>. If you do not agree, please do not use EdAssess.</p>
+<p>If you use EdAssess on behalf of a school or organization, you confirm that you are allowed to do that and that these Terms apply to that use too.</p></section><section id="pv2"><h2><i>3</i>Who may use EdAssess</h2><ul><li><b>Teachers.</b> You must be <b>at least 13 years old</b> to make a teacher account. When you sign up, you confirm your age. If we learn that a teacher account belongs to someone younger than 13, we will remove it.</li>
+<li><b>Students 13 and older</b> may make a student account on their own.</li>
+<li><b>Students 12 and under</b> may only make a student account with <b>permission from a parent or guardian</b>. By creating the account, the student confirms that permission was given. A teacher or school that has legal authority to consent on a parent’s behalf for educational use (for example under COPPA) may also give it, and is responsible for doing so properly.</li>
+<li><b>Joining with just a code.</b> Many assessments and surveys can be opened with a link or code and a typed name, without an account. That is a teacher’s or school’s activity. The teacher or school is responsible for making sure its students are allowed to take part, including getting any parent permission the law requires.</li>
+<li><b>Parents and guardians.</b> If your child has an account and you did not agree to it, or you would like it removed, contact us (see the last section) or their teacher and we will delete it.</li>
+<li>You may not use EdAssess if you have been removed from it before and were told not to return, or if the law in your place forbids it.</li></ul></section><section id="pv3"><h2><i>4</i>Accounts and security</h2><ul><li>Give accurate information. Students should use their own first name and last initial, not someone else’s.</li>
+<li>One person, one account. Do not share your password, and do not sign in as someone else. Teachers should not give students their own sign-in details.</li>
+<li>You are responsible for what happens under your account. If you think someone else has accessed it, change your password and tell us.</li>
+<li>The staff keyword used to create teacher accounts is private. Do not share it publicly or use it to make accounts for people who have not been approved by the person who gave it to you.</li>
+<li>Do not create accounts in bulk, create fake accounts, or use automated tools to sign up or sign in.</li></ul></section><section id="pv4"><h2><i>5</i>What teachers agree to</h2><p>Teachers hold a position of trust. By using EdAssess with students, you agree that:</p>
+<ul><li>You are allowed to use it with your students, and you have any permission your school, district or the law requires (including parent permission, and obligations under laws like FERPA and COPPA).</li>
+<li>You will only collect information from students that you need for teaching. Do not use surveys or questions to collect health details, financial details, government ID numbers, passwords, precise locations or other sensitive information.</li>
+<li>You will treat student work and results as confidential and share them only with people who have a proper reason to see them.</li>
+<li>You will use <b>Student view</b>, <b>View as a student</b> and <b>Student mode</b> only to help students, check what they see or learn alongside colleagues. You will not use them to impersonate a student in a way that harms them, to read private messages that are not yours to read, or to change a student’s work dishonestly.</li>
+<li>You will keep join codes and links within your classes, and you will not post them publicly.</li>
+<li>You will make sure the files, links and embeds you attach (including Google Drive files) are ones you have the right to share, and that sharing them with students is appropriate.</li>
+<li>You will keep your own copies of anything important. EdAssess is not a records system.</li></ul></section><section id="pv5"><h2><i>6</i>What students agree to</h2><ul><li><b>Do your own work</b> unless the teacher says otherwise. Do not look up answers, share answers, use someone else’s work, or help others cheat during an assessment.</li>
+<li>Do not try to get around exam settings (for example lockdown, timers, or the one-attempt rule) or look at anything that is not yours.</li>
+<li>Do not share assessment codes, questions or answers with people who should not have them.</li>
+<li>Be respectful in class posts, messages and written answers. No bullying, threats, hate or sexual content.</li>
+<li>Do not put other people’s private information (such as phone numbers, addresses or passwords) in your answers or messages.</li>
+<li>If you are 12 or under, have a parent or guardian’s permission before you make an account.</li></ul></section><section id="pv6"><h2><i>7</i>Acceptable use</h2><p>To keep EdAssess safe and available for everyone, you must not use it to:</p>
+<ul><li>break any law or someone’s rights, or help anyone else do so;</li>
+<li>harass, bully, threaten, stalk or expose anyone, or share private information about people without permission;</li>
+<li>post or send content that is hateful, sexually explicit, graphically violent, or that exploits or endangers children;</li>
+<li>spread malware, or try to gain access to accounts, data or systems that are not yours;</li>
+<li>probe, scan or test the service for weaknesses, or attempt to bypass sign-in, permissions, rate limits, lockouts or exam protections without our written permission. If you find a security problem, please report it to us privately (see the last section) and give us a reasonable chance to fix it;</li>
+<li>overload or disrupt the service, including with automated requests, scraping, bots, load testing or very large uploads;</li>
+<li>copy, resell, rent out or sublicense EdAssess, or run it as a service for others, without our written permission (you may run your own copy under any license that comes with the source);</li>
+<li>pretend to be another person, school or organization, or to be EdAssess;</li>
+<li>collect people’s personal information for purposes other than education, send spam or advertising, or use EdAssess to run a business unrelated to teaching;</li>
+<li>store things that have nothing to do with teaching and learning, such as using EdAssess as a general file host;</li>
+<li>build tests or surveys designed to trick, phish or collect passwords or payment details; or</li>
+<li>use it to make high-stakes decisions about a person (such as grades that affect school placement) without human review. Automatic scoring can be wrong, and teachers are responsible for checking results that matter.</li></ul></section><section id="pv7"><h2><i>8</i>Your content and our service</h2><ul><li><b>Your content is yours.</b> Tests, surveys, questions, posts, materials, answers and anything else you add belong to you (or to the school or person who has the right to them). We do not claim ownership of it.</li>
+<li><b>What you let us do.</b> You give us permission to store, copy, display and process your content only as needed to run EdAssess for you and the people you share it with, and to keep backups. This permission ends when your content is deleted, apart from backups held for a limited time.</li>
+<li><b>You promise</b> you have the right to add what you add, and that it does not break these Terms or anyone’s rights (including copyright). Do not upload copyrighted tests, textbooks or materials you do not have permission to share.</li>
+<li><b>The service is ours.</b> The EdAssess software, design and name belong to us or our licensors. These Terms do not give you ownership of them.</li>
+<li><b>Feedback.</b> If you send us ideas or suggestions, we may use them without owing you anything.</li>
+<li><b>Copyright concerns.</b> If you believe something on EdAssess infringes your copyright, email us with a link to it and a short explanation, and we will review it.</li></ul></section><section id="pv8"><h2><i>9</i>Surveys and information collection</h2><p>Surveys and open questions are powerful, and with that comes responsibility. The person who creates a survey is responsible for what it asks and for how the answers are used. Hiding names on the results screen does not make the stored answers anonymous. Do not promise students anonymity that EdAssess cannot give. Do not use EdAssess to run polls or research on people without whatever approval your school or the law requires.</p></section><section id="pv9"><h2><i>10</i>Third-party services</h2><p>EdAssess works with other services, such as Netlify (hosting), Google (Drive attachments and fonts), Desmos (the optional graphing calculator) and public code libraries. Those services have their own terms and privacy practices, and we are not responsible for them. If you link or embed content from another site, you are responsible for making sure it is appropriate and that you may share it.</p></section><section id="pv10"><h2><i>11</i>If something goes wrong: our enforcement</h2><p>We want to be fair. Where we reasonably can, we will start with a message and a chance to fix the problem. We may skip that step when something is dangerous, illegal or abusive.</p>
+<ul><li>We may remove content, disable accounts, close a class or assignment, or block access if these Terms are broken, if safety or security is at risk, or if the law requires.</li>
+<li>If a teacher account is disabled, tests, classes and other content it owns may become unavailable to students.</li>
+<li>We may tell a student’s school or teacher, a parent or guardian, or the authorities if we believe a child is in danger or a serious crime has taken place.</li>
+<li><b>Appeals.</b> If you think we made a mistake, email us. Explain what happened, and we will take a second look and reply.</li></ul></section><section id="pv11"><h2><i>12</i>Availability, backups and changes</h2><p>EdAssess is provided free of charge by one person. We work hard to keep it running, but we cannot promise it will always be available, error-free or fast. We may change, pause or retire features, and we may update the service at any time. We try to keep recoverable trash and version history, but backups are not guaranteed. Please keep your own copies of anything you cannot afford to lose, and avoid relying on EdAssess alone for deadlines or high-stakes exams without a backup plan.</p></section><section id="pv12"><h2><i>13</i>Disclaimers</h2><p>EdAssess is provided <b>“as is” and “as available.”</b> To the fullest extent the law allows, we do not make any promises that the service will meet your needs, that scores, grades and analytics will be accurate, or that it will be secure or uninterrupted. Some places do not allow certain disclaimers, so some of this may not apply to you.</p></section><section id="pv13"><h2><i>14</i>Limits on our responsibility</h2><p>To the fullest extent the law allows, we are not liable for indirect, incidental, special or consequential damages, or for lost data, lost grades, lost opportunities or lost profits arising from your use of EdAssess. Since the service is free, our total liability for any claim is limited to <b>US $100</b>. Nothing in these Terms limits responsibility that cannot be limited by law, such as for fraud or for harm caused on purpose. You are responsible for your own content and for your own use of EdAssess, and you agree to cover reasonable losses we suffer because you knowingly broke these Terms or the law.</p></section><section id="pv14"><h2><i>15</i>Ending your use</h2><p>You can stop using EdAssess at any time. Teachers can delete their own content and ask us to delete their account. Students (or a parent or guardian) can ask us or their teacher to delete a student account. When an account is deleted, the sections of these Terms that are meant to continue (such as content ownership, disclaimers and limits on responsibility) continue to apply. See the Privacy Policy for what happens to stored data.</p></section><section id="pv15"><h2><i>16</i>Changes, law and contact</h2><ul><li><b>Changes.</b> We may update these Terms. We will change the “Last updated” date and, for material changes, tell signed-in teachers in the app. If you keep using EdAssess after a change, you accept the new Terms. If you do not agree, stop using it.</li>
+<li><b>Resolving problems.</b> Please contact us first. Most problems can be settled by talking.</li>
+<li><b>Law.</b> These Terms are governed by the laws of the United States and of the state where the operator lives, without regard to conflict-of-law rules. If part of these Terms cannot be enforced, the rest still applies. If we do not enforce something right away, we have not given up the right to do it later.</li>
+<li><b>The whole agreement.</b> These Terms and the Privacy Policy are the whole agreement between you and us about EdAssess.</li></ul>
+<p><b>Dean H</b><br>edassess.netlify.app<br><a href="mailto:deanh.tutoring@gmail.com">deanh.tutoring@gmail.com</a></p></section></main></div>`;
+  document.body.appendChild(d);document.body.classList.add('pv-open');d.scrollTop=0;
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  if(new URLSearchParams(location.search).get('terms'))setTimeout(fxTermsOpen,60);
+  const tl=(id,cls)=>`<a id="${id}" class="${cls}" onclick="fxTermsOpen()">Terms</a>`;
+  [['pv-link-login','tm-link-login','pv-foot'],['pv-link-side','tm-link-side','pv-foot side'],['pv-link-stu','tm-link-stu','pv-foot stu']].forEach(([a,b,c])=>{const el=document.getElementById(a);if(el&&!document.getElementById(b))el.insertAdjacentHTML('afterend',tl(b,c));});
+});
+</script>
+
 <script id="ea-students">
 /* ═══ STUDENT ACCOUNTS, CLASSES, STUDENT HOME ═══ */
 const EA_STU_KEY='ea_stu_v1';
@@ -12168,12 +12246,13 @@ const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 })();
 /* ── login page: student panel ── */
 let stuMode='in';
-function fxStuMode(m){stuMode=m;document.getElementById('stu-pass2-wrap').classList.toggle('hidden',m!=='up');document.getElementById('stu-go').textContent=m==='up'?'Create my account':'Sign in';document.getElementById('stu-swap').innerHTML=m==='up'?'Already have an account? <b>Sign in</b>':'First time here? <b>Create my account</b>';document.getElementById('stu-note').classList.toggle('hidden',m!=='up');}
+function fxStuMode(m){stuMode=m;{const w=document.getElementById('stu-agree-wrap');if(w)w.classList.toggle('hidden',m!=='up');}document.getElementById('stu-pass2-wrap').classList.toggle('hidden',m!=='up');document.getElementById('stu-go').textContent=m==='up'?'Create my account':'Sign in';document.getElementById('stu-swap').innerHTML=m==='up'?'Already have an account? <b>Sign in</b>':'First time here? <b>Create my account</b>';document.getElementById('stu-note').classList.toggle('hidden',m!=='up');}
 async function fxStuAuth(){
   const name=document.getElementById('stu-name').value.trim(),pw=document.getElementById('stu-pass').value,err=document.getElementById('stu-err');
   err.classList.add('hidden');
   if(stuMode==='up'&&pw!==document.getElementById('stu-pass2').value){err.textContent='Passwords do not match.';err.classList.remove('hidden');return;}
-  const r=await apiPost({action:stuMode==='up'?'studentSignup':'studentLogin',name,password:pw});
+  if(stuMode==='up'&&!document.getElementById('stu-agree').checked){err.textContent='Please confirm you are 13 or older, or that a parent or guardian said it is OK, and agree to the Terms.';err.classList.remove('hidden');return;}
+  const r=await apiPost({action:stuMode==='up'?'studentSignup':'studentLogin',name,password:pw,agree:stuMode==='up'});
   if(!r||r.__httpError||!r.token){err.textContent=(r&&r.error)||'Could not reach the server.';err.classList.remove('hidden');
     if(r&&r.status===404)fxStuMode('up');return;}
   try{const a=eaAuthLoad();if(a)localStorage.setItem(EA_AUTH_KEY,JSON.stringify({token:'',last:a.last||''}));}catch(e){}
