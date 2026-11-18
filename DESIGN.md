@@ -46,3 +46,6 @@ Lanterns now read as lanterns everywhere: the homepage pair has a hook, cap, rib
 
 ## Terms and age gate
 `ea-terms` script (`fxTermsOpen`, `?terms=1`) reuses the privacy overlay styles. Teacher signup and student account creation require an `agree:true` flag, enforced in data.js. Records keep `termsAt` and `termsV` (`TERMS_V`). Bump `TERMS_V` when the Terms change materially.
+
+## Question types
+`ea-qtypes` script holds the `QT` registry (rating, ranking, matching, cloze, numeric, matrix, availability): `init`, `editor`, `widget`, `grade`, `show`, `text`. Builder, student exam, grading and results hook in by wrapping `renderQEditor`, `renderSingleStudentQ`, `addQuestion` and `renderBuilder`; `qtAuto(q)` marks the auto-graded types for scoring. Availability slots are defined in the teacher's zone and stored as UTC ISO strings, so each viewer converts with `Intl`.

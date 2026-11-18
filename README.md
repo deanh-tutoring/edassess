@@ -65,6 +65,17 @@ The results are built for reading patterns, not grading:
 
 One honest note: hiding names changes what you see on screen. Students still type a name to get in, so if you need truly anonymous answers, tell them to leave it generic.
 
+### More ways to ask
+Besides multiple choice, multi-select, short answer and essays, you can now add:
+
+- **Ranking:** students put items in order. In an assessment it's scored (with optional partial credit). In a survey you see each item's average rank.
+- **Matching:** students pair items from a shuffled menu. Scored, with optional partial credit.
+- **Fill in the blanks:** write a sentence and put answers in double curly braces, like `{{Paris}}` or `{{color|colour}}` for more than one accepted answer. Each blank can earn partial credit.
+- **Number:** a typed number, graded within a tolerance you choose (or just collected in a survey, with the average, median and spread).
+- **Rating:** stars, numbers, or a 0 to 10 recommend scale (surveys). You get the distribution, the average and a recommend score.
+- **Grid:** rows of statements against a scale such as Strongly disagree to Strongly agree (surveys), with a heat-mapped summary.
+- **Availability calendar (surveys):** pick a date range, weekdays, a daily window, a slot length and your own time zone. Each student sees the grid in their own time zone (they can change it) and clicks or drags across the times they can do. Your results show a heat map and a "best times" list, and you can switch the time zone you view them in.
+
 ### Running it live
 <img src="docs/04-live.png" alt="The Live Monitor" width="880">
 

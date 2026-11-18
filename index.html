@@ -1644,6 +1644,42 @@ body.fx-ui-dark .hp-staff .hp-ribs path{stroke:#0B2A30}
 .fx-agree.hidden{display:none}
 .fx-agree input{margin-top:3px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--accent,#2A52D9)}
 .fx-agree a{color:var(--accent,#2A52D9);text-decoration:underline;cursor:pointer}
+
+/* ═══ MORE QUESTION TYPES ═══ */
+.qt-panel{background:var(--paper-warm);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-top:10px}
+.qt-h{display:flex;flex-direction:column;gap:2px;margin:6px 0 8px;color:var(--ink)}.qt-h b{font-size:13px;letter-spacing:.04em}.qt-h span,.qt-hint2{font-size:12px;color:var(--ink-mid);line-height:1.45}
+.qt-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}.qt-row{display:flex;gap:8px;align-items:center}.qt-row .form-control{flex:1;min-width:0}
+.qt-n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--accent,#2A52D9);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}.qt-arrow{color:var(--ink-mid)}
+.qt-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.qt-grid2 label{display:flex;flex-direction:column;gap:4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid)}
+.qt-chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin:6px 12px 6px 0;cursor:pointer}.qt-wd{display:flex;flex-wrap:wrap;margin:4px 0}.qt-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.qt-w{margin-top:6px;color:var(--bb-text,var(--ink))}.qt-direct{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--ink-mid);margin-bottom:10px}
+.qt-rate{display:flex;gap:6px;flex-wrap:wrap}.qt-star{font-size:38px;line-height:1;background:none;border:0;cursor:pointer;color:var(--border-dark,#aab);padding:2px}.qt-star.on{color:#E8A400}.qt-star:hover{transform:scale(1.1)}
+.qt-num-b{min-width:46px;height:46px;border-radius:var(--r);border:1.5px solid var(--border-dark,#aab);background:var(--cream)!important;color:var(--ink)!important;font-size:16px;cursor:pointer}.qt-num-b.on{background:var(--accent,#2A52D9)!important;border-color:var(--accent,#2A52D9);color:#fff!important}
+.qt-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-mid);margin-top:6px;max-width:420px}
+.qt-rank{display:flex;flex-direction:column;gap:8px}.qt-ritem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--border-dark,#aab);border-radius:var(--r);background:var(--cream)!important;color:var(--ink);cursor:grab}
+.qt-grip{color:var(--ink-mid);letter-spacing:-2px}.qt-rn{width:26px;height:26px;border-radius:50%;background:var(--accent,#2A52D9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 26px}.qt-rt{flex:1}
+.qt-mv{display:flex;flex-direction:column;gap:2px}.qt-mv button{border:1px solid var(--border);background:var(--paper-warm)!important;color:var(--ink)!important;border-radius:4px;font-size:10px;cursor:pointer;padding:1px 7px}.qt-mv button:disabled{opacity:.35;cursor:default}
+.qt-hint{font-size:13px;color:var(--ink-mid);margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.qt-match{display:flex;flex-direction:column;gap:10px}.qt-mrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}.qt-ml{padding:11px 14px;border:1.5px solid var(--border-dark,#aab);border-radius:var(--r);background:var(--cream)!important;color:var(--ink)}
+.qt-cloze{font-family:var(--f-body);font-size:18px;line-height:2.4;color:var(--ink)}.qt-blank{border:0;border-bottom:2px solid var(--accent,#2A52D9);background:var(--cream)!important;color:var(--ink)!important;min-width:110px;width:150px;font:inherit;font-size:17px;text-align:center;margin:0 4px;padding:2px 6px;outline:none;border-radius:3px 3px 0 0}
+.qt-numw{display:flex;gap:10px;align-items:center}.qt-numin{width:200px;font-size:18px;padding:11px 14px;border:1.5px solid var(--border-dark,#aab);border-radius:var(--r);background:var(--cream)!important;color:var(--ink)!important;outline:none}.qt-unit{color:var(--ink-mid);font-size:15px}
+.qt-mxw,.sv-mxs,.qt-av-scroll{overflow-x:auto}.qt-mx,.sv-mx{border-collapse:collapse;width:100%;font-size:14px;color:var(--ink)}.qt-mx th,.qt-mx td,.sv-mx th,.sv-mx td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--border)}
+.qt-mx th:first-child,.sv-mx th:first-child{text-align:left;font-weight:500;min-width:150px}.qt-mx thead th,.sv-mx thead th{font-size:11px;letter-spacing:.04em;color:var(--ink-mid);font-weight:600}
+.qt-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-dark,#aab);background:var(--cream)!important;cursor:pointer;padding:0}.qt-dot.on{background:var(--accent,#2A52D9)!important;border-color:var(--accent,#2A52D9);box-shadow:inset 0 0 0 4px var(--cream)}
+.qt-av-tz{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin-bottom:10px}.qt-tzsel{width:auto!important;max-width:240px;display:inline-block}.qt-av-hint{color:var(--ink-mid);font-size:12px;flex-basis:100%}
+.qt-avg{display:grid;gap:3px;user-select:none;touch-action:none;min-width:max-content}.qt-avd{font-size:12px;font-weight:600;color:var(--ink)!important;background:var(--paper-warm)!important;border:1px solid var(--border);border-radius:4px;padding:6px 4px;cursor:pointer;text-align:center}.sv-avd{cursor:default}
+.qt-avt{font-size:11px;color:var(--ink-mid);text-align:right;padding-right:8px;align-self:center;white-space:nowrap}
+.qt-avc{height:26px;border-radius:4px;background:var(--paper-warm);border:1px solid var(--border);cursor:pointer}.qt-avc.on{background:var(--accent,#2A52D9);border-color:var(--accent,#2A52D9)}.qt-avc.off{background:transparent;border:0;cursor:default}
+.qt-av-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--ink)}
+.sv-avc{height:26px;border-radius:4px;background:color-mix(in srgb,var(--accent,#2A52D9) calc(var(--a)*100%),var(--paper-warm));border:1px solid var(--border);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.sv-avc[style*="--a:1.00"],.sv-avc[style*="--a:0.9"],.sv-avc[style*="--a:0.8"],.sv-avc[style*="--a:0.7"],.sv-avc[style*="--a:0.6"]{color:#fff}
+.sv-avtz{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin-bottom:10px}
+.sv-best{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);background:var(--paper-warm);margin-bottom:12px;color:var(--ink);font-size:14px}.sv-bt-row{display:flex;gap:12px;padding:6px 0;border-top:1px dashed var(--border);margin-top:6px}.sv-bt-n{flex:0 0 74px;font-weight:600;color:var(--accent,#2A52D9)}
+.sv-hc{--a:0;padding:6px 4px;border-radius:4px;background:color-mix(in srgb,var(--accent,#2A52D9) calc(var(--a)*70%),var(--paper-warm));display:flex;flex-direction:column;align-items:center;font-size:12px;color:var(--ink)}.sv-hc span{font-size:10px;color:var(--ink-mid)}
+.qt-cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px;color:var(--ink)}.qt-cmp ol{margin:6px 0 0 20px;padding:0}.qt-cmp li.ok{color:var(--sage,#2d7a4f)}.qt-cmp li.bad{color:var(--rust,#b3261e)}
+.qt-mrow2{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--border);color:var(--ink)}.qt-mrow2.ok>span:nth-child(3){color:var(--sage,#2d7a4f)}.qt-mrow2.bad>span:nth-child(3){color:var(--rust,#b3261e)}
+.qt-fill{display:inline-block;padding:2px 10px;border-radius:4px;border:1px solid currentColor}.qt-fill.ok{color:var(--sage,#2d7a4f)}.qt-fill.bad{color:var(--rust,#b3261e)}.qt-key{font-size:12px;color:var(--ink-mid);margin-left:8px}
+@media(max-width:600px){.qt-grid2,.qt-mrow,.qt-cmp{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3397,7 +3433,7 @@ function renderQSidebarList(){
           <div class="question-number">${qNum++}</div>
           <div class="flex-1 overflow-hidden">
             <div style="font-size:12px;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${stripHtml(q.stem)||'(No question text)'}</div>
-            <div class="type-chip" style="margin-top:2px">${q.type==='mc'?'MC':q.type==='ms'?'MS':q.type==='short'?'Short':'Essay'}</div>
+            <div class="type-chip" style="margin-top:2px">${(window.QTL&&QTL(q))||(q.type==='mc'?'MC':q.type==='ms'?'MS':q.type==='short'?'Short':'Essay')}</div>
           </div>
           <button onclick="event.stopPropagation();removeQ(${i})" class="btn btn-ghost btn-icon btn-sm" style="opacity:.5">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M6 18L18 6M6 6l12 12"/></svg>
@@ -5589,7 +5625,7 @@ function openGradingStudent(sid){
       const ans=s.answers?s.answers[qKey]:undefined;
       const types={mc:'Multiple Choice',ms:'Multi-Select',short:'Short Answer',essay:'Essay'};
       let ansHtml='';
-      const isCorrect=(q.type==='mc'||q.type==='ms'||q.type==='short')?isAnswerCorrect(q,ans):null;
+      const isCorrect=qtAuto(q)?isAnswerCorrect(q,ans):null;
       if(q.type==='mc'||q.type==='ms'){
         const opts=q.options||[];
         ansHtml=opts.map((opt,j)=>{
@@ -5609,6 +5645,8 @@ function openGradingStudent(sid){
           <input type="number" min="0" max="${q.points||1}" step="${q.rubricHalf?0.5:1}" class="form-control" style="width:70px" value="${(s.mcOverrides&&s.mcOverrides[qKey]!==undefined)?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${q.points||1},${q.rubricHalf?1:0})">
           <span style="font-size:11px;color:var(--ink-soft)">/ ${q.points||1} pts (leave blank for auto)</span>
         </div>`;
+      } else if(window.QT&&QT[q.type]&&QT[q.type].grade){
+        ansHtml=qtGradeHtml(q,ans,s,qKey,sid);
       } else if(q.type==='short'){
         // ans may be rich HTML containing rendered KaTeX spans
         const displayAns=(typeof ans==='string'&&ans.trim())?ans:'<em style="color:var(--ink-soft)">No response</em>';
@@ -5649,7 +5687,7 @@ function openGradingStudent(sid){
         </div>`;
       }
       let scoreIndicator='';
-      if(q.type==='mc'||q.type==='ms'||q.type==='short'){
+      if(qtAuto(q)){
         const overridden=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;
         const pts=overridden?s.mcOverrides[qKey]:(isCorrect?(q.points||1):0);
         scoreIndicator=`<span class="badge ${isCorrect?'badge-sage':'badge-rust'}">${overridden?'Override: ':''}${pts}/${q.points||1}pts</span>`;
@@ -5857,7 +5895,7 @@ function renderQuestionBreakdown(t,subs){
   const rows=fqs.map((item,i)=>{
     const q=item.q;const qKey=item.key;
     let correct=0;let pointsEarned=0;let n=0;
-    const objective=(q.type==='mc'||q.type==='ms'||q.type==='short');
+    const objective=qtAuto(q);
     subs.forEach(s=>{
       if(sxOn(t)&&!sxSubTook(t,s,item)) return;   // adaptive: only students who were given this question
       n++;
@@ -8200,6 +8238,7 @@ function calcTotalPoints(t,s){
 }
 
 function isAnswerCorrect(q,ans){
+  if(window.QT&&QT[q.type]&&QT[q.type].grade) return QT[q.type].grade(q,ans)===1;
   if(!q.correctAnswers||!q.correctAnswers.length) return false;
   if(q.type==='mc') return ans===q.correctAnswers[0];
   if(q.type==='ms'){
@@ -8437,6 +8476,10 @@ function loadStudentResults(sid){
           ${icon}
         </div>`;
       }).join('');
+    } else if(window.QT&&QT[q.type]&&QT[q.type].grade){
+      const ov=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;const got=ov?s.mcOverrides[qKey]:qtAward(q,ans);const full=got>=(q.points||1)-1e-9;
+      correct=full;statusColor=full?'var(--sage)':got>0?'var(--ochre,#b7791f)':'var(--rust)';statusLabel=full?'Correct':got>0?'Partial: '+got+'/'+(q.points||1):'Incorrect';
+      ansHtml=`<div class="grade-q-answer">${QT[q.type].show(q,ans)}</div>`;
     } else if(q.type==='short'){
       const overridden=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;
       correct=overridden?(s.mcOverrides[qKey]>0):isAnswerCorrect(q,ans);
@@ -8909,9 +8952,9 @@ function sxMarkEnded(t,sub,reason,now){
 // Points awarded for ONE question — the single source of truth (legacy autoScore uses it too).
 function sxQuestionAward(q,key,s){
   const ans=s.answers?s.answers[key]:undefined;
-  if(q.type==='mc'||q.type==='ms'||q.type==='short'){
+  if(qtAuto(q)){
     if(s.mcOverrides&&s.mcOverrides[key]!==undefined) return s.mcOverrides[key];
-    return isAnswerCorrect(q,ans)?(q.points||1):0;
+    return qtAward(q,ans);
   }
   if(q.type==='essay'){
     const rt=(s.rubricScores&&s.rubricScores[key])?Object.values(s.rubricScores[key]).reduce((x,v)=>x+v,0):0;
@@ -8934,7 +8977,7 @@ function sxSectionScore(t,sub,sectionId){
     const award=sxQuestionAward(q,it.key,sub);
     r.points+=award;r.max+=pts;
     if(sub.answers&&sub.answers[it.key]!==undefined) r.answered++;
-    if(q.type==='mc'||q.type==='ms'||q.type==='short'){
+    if(qtAuto(q)){
       r.autoMax+=pts;r.autoPoints+=award;r.autoCount++;
       if(isAnswerCorrect(q,sub.answers?sub.answers[it.key]:undefined)) r.autoCorrect++;
     }
@@ -9045,7 +9088,7 @@ function sxProgress(t,sub){
 /* ── authoring: validation + path simulation ────────────────────── */
 function sxAutoStats(t,sectionId){
   let autoMax=0,autoCount=0;
-  sxItems(t,sectionId).forEach(it=>{const q=it.q;if(q.type==='mc'||q.type==='ms'||q.type==='short'){autoMax+=q.points||1;autoCount++;}});
+  sxItems(t,sectionId).forEach(it=>{const q=it.q;if(qtAuto(q)){autoMax+=q.points||1;autoCount++;}});
   return {autoMax,autoCount};
 }
 // pct: {[sectionId]: 0-100}. Returns the path a student with those results would take.
@@ -11101,7 +11144,7 @@ function fxQuestionsHtml(subs){
     real.forEach(s=>{
       if(!sxSubTook(t,s,item))return;N++;
       const ans=s.answers?s.answers[item.key]:undefined;
-      if(ans!==undefined){answered++;if(['mc','ms','short'].includes(item.q.type)){autoN++;const ov=s.mcOverrides&&s.mcOverrides[item.key]!==undefined;if(ov?s.mcOverrides[item.key]>0:isAnswerCorrect(item.q,ans))correct++;}}
+      if(ans!==undefined){answered++;if(qtAuto(item.q)){autoN++;const ov=s.mcOverrides&&s.mcOverrides[item.key]!==undefined;if(ov?s.mcOverrides[item.key]>0:isAnswerCorrect(item.q,ans))correct++;}}
       const tm=s.qTimes&&s.qTimes[item.key];if(tm>0){sumT+=tm;tn++;}
     });
     return{i,item,N,answered,autoN,correct,avg:tn?sumT/tn:null,tn};
@@ -12029,7 +12072,7 @@ function fxPrivacyOpen(){
 <li><b>Name.</b> Whatever the student types when joining. We suggest first name and last initial. Students should not enter anything more identifying than their teacher asks for.</li>
 <li><b>Responses.</b> Answers, written responses, crossed-out choices, flags, highlights and notes, and when each question was answered or the session started and ended.</li>
 <li><b>Scores and feedback.</b> Automatic scores, grades a teacher enters, rubric marks and teacher comments.</li>
-<li><b>Survey responses.</b> Answers to survey questions, including any written answers, plus the time the response was submitted. Surveys have no scores or answer keys.</li>
+<li><b>Survey responses.</b> Answers to survey questions, including any written answers, numbers, rankings, grid choices and, for availability questions, the exact time slots a student picks (saved as universal clock times so they convert to any time zone), plus the time the response was submitted. Surveys have no scores or answer keys.</li>
 <li><b>Classes.</b> Teachers create classes, invite students by name or share a class code, and post announcements and materials that class members can see. A class roster is visible to the teachers of that class.</li>
 <li><b>Messages.</b> Questions a student sends to the teacher during a test, and the teacher’s replies. Messages can contain several lines of text.</li>
 <li><b>Uploaded work.</b> Photos or PDFs of handwritten work, including files sent from a phone by scanning a QR code.</li>
@@ -12093,6 +12136,7 @@ function fxPrivacyOpen(){
 <tr><td>Local copies of work</td><td>Fast loading, and keeps answers safe if the connection drops.</td><td>Until sync, or until sign-out.</td></tr>
 <tr><td>Display preferences</td><td>Text size and light or night theme.</td><td>Until you clear browser data.</td></tr>
 <tr><td>Student notepad and highlights</td><td>Private scratch space during an exam.</td><td>Stored on the device only.</td></tr>
+<tr><td>Time zone choice</td><td>Used when a student picks times on an availability question, so the calendar shows their local time.</td><td>Until you clear browser data.</td></tr>
 <tr><td>Message “seen” markers</td><td>Remembers which replies you have read.</td><td>Until you clear browser data.</td></tr>
 <tr><td>Student view or student mode session</td><td>Holds the temporary sign-in for that tab. A short handoff entry (about 30 seconds) passes it to the new tab.</td><td>Closes with the tab.</td></tr></table></section><section id="pv8"><h2><i>9</i>Retention</h2><ul><li><b>Student submissions and survey responses</b> stay until the teacher who owns the assignment deletes them.</li>
 <li><b>Deleted tests and assignments</b> go to a recoverable trash before removal, so a mistaken delete can be undone. Deleting something does not instantly remove every copy.</li>
@@ -12654,6 +12698,14 @@ function svAnalyze(t,subs){
       out.opts=opts.map((o,i)=>({label:o,count:counts[i]}));
       const vals=opts.map(svOptVal);
       if(opts.length>1&&vals.every(v=>v!=null)&&type==='mc'){const all=[];given.forEach(r=>{const v=vals[r.v];if(v!=null)all.push(v);});out.stats=svStats(all);out.scale=true;}
+    }else if(window.QT&&QT[type]){
+      const arrs=given.map(r=>r.v);
+      if(type==='rating'){const hi=type==='rating'&&q.scale&&q.scale.style==='nps'?10:((q.scale&&q.scale.max)||5),lo=q.scale&&q.scale.style==='nps'?0:1;out.opts=[];for(let k=lo;k<=hi;k++)out.opts.push({label:String(k),count:arrs.filter(x=>+x===k).length});const nums=arrs.map(Number).filter(x=>isFinite(x));out.stats=svStats(nums);out.scale=true;
+        if(q.scale&&q.scale.style==='nps'&&nums.length){const pr=nums.filter(x=>x>=9).length,de=nums.filter(x=>x<=6).length;out.nps=Math.round((pr-de)/nums.length*100);out.npsParts=[pr,nums.length-pr-de,de];}}
+      else if(type==='numeric'){const nums=arrs.map(x=>parseFloat(String(x).replace(/,/g,''))).filter(x=>isFinite(x));out.stats=svStats(nums);if(nums.length){out.min=Math.min(...nums);out.max=Math.max(...nums);const bins=Math.min(8,Math.max(3,Math.ceil(Math.sqrt(nums.length))));const w=(out.max-out.min)/bins||1;out.hist=[...Array(bins)].map((_,b)=>({lo:out.min+b*w,hi:out.min+(b+1)*w,count:0}));nums.forEach(x=>{let b=Math.floor((x-out.min)/w);if(b>=bins)b=bins-1;out.hist[b].count++;});out.unit=(q.num&&q.num.unit)||'';}}
+      else if(type==='ranking'){const it=(q.items||[]).map(x=>svPlain(x)||'(blank)');out.rank=it.map((label,k)=>{let sum=0,first=0,n=0;arrs.forEach(a=>{if(!Array.isArray(a))return;const p=a.indexOf(k);if(p>=0){sum+=p+1;n++;if(p===0)first++;}});return{label,avg:n?Math.round(sum/n*100)/100:null,first,n};}).sort((a,b)=>(a.avg==null)-(b.avg==null)||a.avg-b.avg);}
+      else if(type==='matrix'){const cols=(q.cols||[]).map(x=>svPlain(x));const cv=cols.map(svOptVal);const numeric=cols.length&&cv.every(x=>x!=null);out.cols=cols;out.rows=(q.rows||[]).map((r,j)=>{const counts=cols.map(()=>0);let vals=[];arrs.forEach(a=>{if(Array.isArray(a)&&a[j]!=null&&counts[a[j]]!==undefined){counts[a[j]]++;if(numeric)vals.push(cv[a[j]]);}});const n=counts.reduce((x,y)=>x+y,0);return{label:svPlain(r)||'(blank)',counts,n,mean:numeric&&vals.length?svStats(vals).mean:null};});}
+      else if(type==='availability'){out.avSel=[];given.forEach(r=>{const idx=subs.indexOf(r.s);(Array.isArray(r.v)?r.v:[]).forEach(iso=>{const ms=Date.parse(iso);if(isFinite(ms))out.avSel.push({ms,name:svUi.anon?'Respondent '+(idx+1):(r.s.studentName||'Anonymous')});});});}
     }else{
       out.texts=given.map(r=>({name:r.s.studentName||'Anonymous',t:svPlain((r.s.answers_text&&r.s.answers_text[key])||r.v,true)})).filter(x=>x.t);
       const f={};out.texts.forEach(x=>x.t.toLowerCase().replace(/[^a-z0-9'\s-]/g,' ').split(/\s+/).forEach(w=>{if(w.length>2&&!SV_STOP.has(w))f[w]=(f[w]||0)+1;}));
@@ -12694,16 +12746,21 @@ function svResults(a){
 function svAnsText(q,s){
   const v=s.answers?s.answers[q.key]:undefined;
   if(v===undefined||v===null||v==='')return '<i class="sv-skip">No answer</i>';
+  if(window.QT&&QT[q.type])return E(QT[q.type].text(q.q,v))||'<i class="sv-skip">No answer</i>';
   if(q.opts){const arr=Array.isArray(v)?v:[v];const l=arr.map(i=>q.opts[i]&&q.opts[i].label).filter(Boolean);return l.length?E(l.join(', ')):'<i class="sv-skip">No answer</i>';}
   return E(svPlain((s.answers_text&&s.answers_text[q.key])||v,true))||'<i class="sv-skip">No answer</i>';
 }
 function svQCard(q,textOnly){
-  const typ={mc:'Single choice',ms:'Select all',short:'Short answer',essay:'Long answer'}[q.type]||q.type;
+  const typ={mc:'Single choice',ms:'Select all',short:'Short answer',essay:'Long answer',rating:'Rating',ranking:'Ranking',numeric:'Number',matrix:'Grid',availability:'Availability'}[q.type]||q.type;
   let inner='';
-  if(q.opts){
+  if(q.type==='availability'){inner=svAvail(q);}
+  else if(q.rank){inner=svRank(q);}
+  else if(q.rows){inner=svMatrix(q);}
+  else if(q.hist){inner=svHist(q);}
+  else if(q.opts){
     const mx=Math.max(1,...q.opts.map(o=>o.count)),base=q.answered||1;
     inner=q.opts.map(o=>{const pct=Math.round(o.count/base*100);return `<div class="sv-bar"><div class="sv-bl">${E(o.label)}</div><div class="sv-bt"><div class="sv-bf" style="width:${o.count?Math.max(2,o.count/mx*100):0}%"></div></div><div class="sv-bn"><b>${o.count}</b><span>${pct}%</span></div></div>`;}).join('');
-    if(q.stats)inner+=`<div class="sv-stat"><span>Mean <b>${q.stats.mean}</b></span><span>Median <b>${q.stats.med}</b></span><span>Answers <b>${q.stats.n}</b></span></div>`;
+    if(q.stats)inner+=`<div class="sv-stat"><span>Mean <b>${q.stats.mean}</b></span><span>Median <b>${q.stats.med}</b></span><span>Answers <b>${q.stats.n}</b></span>${q.nps!=null?`<span>Recommend score <b>${q.nps>0?'+':''}${q.nps}</b> <i class="sv-skip">(${q.npsParts[0]} promoters, ${q.npsParts[1]} neutral, ${q.npsParts[2]} detractors)</i></span>`:''}</div>`;
   }else{
     const open=svUi.open[q.key]||textOnly,list=open?q.texts:q.texts.slice(0,4);
     inner=(q.words&&q.words.length?`<div class="sv-words">${q.words.map(([w,c])=>`<span style="font-size:${Math.min(18,12+c*1.6)}px">${E(w)}<sup>${c}</sup></span>`).join('')}</div>`:'')+
@@ -12720,6 +12777,193 @@ function svCsv(aid){
   const rows=subs.map((s,i)=>[svUi.anon?'Respondent '+(i+1):(s.studentName||'Anonymous'),s.submittedAt||''].concat(qs.map(q=>svAnsText(q,s).replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace('No answer',''))));
   fxDownload([head].concat(rows).map(r=>r.map(esc).join(',')).join('\n'),`${(t.title||'survey').replace(/[^\w\- ]+/g,'')} - responses.csv`,'text/csv');
 }
+
+function svRank(q){const mx=Math.max(...q.rank.map(r=>r.avg||0),1);return q.rank.map((r,i)=>`<div class="sv-bar"><div class="sv-bl">${i+1}. ${E(r.label)}</div><div class="sv-bt"><div class="sv-bf" style="width:${r.avg==null?0:Math.max(3,(1-(r.avg-1)/Math.max(mx-1,1))*100)}%"></div></div><div class="sv-bn"><b>${r.avg==null?'-':r.avg}</b><span>${r.first} first</span></div></div>`).join('')+'<div class="sv-stat"><span>Lower average rank is more preferred.</span></div>';}
+function svHist(q){const mx=Math.max(1,...q.hist.map(h=>h.count)),f=x=>Math.round(x*100)/100;return q.hist.map(h=>`<div class="sv-bar"><div class="sv-bl">${f(h.lo)} to ${f(h.hi)}</div><div class="sv-bt"><div class="sv-bf" style="width:${h.count?Math.max(2,h.count/mx*100):0}%"></div></div><div class="sv-bn"><b>${h.count}</b></div></div>`).join('')+`<div class="sv-stat"><span>Mean <b>${q.stats.mean}</b></span><span>Median <b>${q.stats.med}</b></span><span>Lowest <b>${q.min}</b></span><span>Highest <b>${q.max}</b></span><span>Answers <b>${q.stats.n}</b>${q.unit?' ('+E(q.unit)+')':''}</span></div>`;}
+function svMatrix(q){return `<div class="sv-mxs"><table class="sv-mx"><thead><tr><th></th>${q.cols.map(c=>`<th>${E(c)}</th>`).join('')}${q.rows.some(r=>r.mean!=null)?'<th>Mean</th>':''}</tr></thead><tbody>${q.rows.map(r=>{const mx=Math.max(1,...r.counts);return `<tr><th>${E(r.label)}</th>${r.counts.map(c=>`<td><div class="sv-hc" style="--a:${r.n?(c/Math.max(r.n,1)).toFixed(2):0}"><b>${c}</b><span>${r.n?Math.round(c/r.n*100):0}%</span></div></td>`).join('')}${q.rows.some(x=>x.mean!=null)?`<td><b>${r.mean==null?'-':r.mean}</b></td>`:''}</tr>`;}).join('')}</tbody></table></div>`;}
+function svAvail(q){
+  const av=q.q.avail||{},slotMin=av.slot||30,teacherTz=av.tz||'UTC';const tz=svUi.tz&&svUi.tz[q.key]||teacherTz;
+  const cnt={},who={};q.avSel.forEach(x=>{cnt[x.ms]=(cnt[x.ms]||0)+1;(who[x.ms]=who[x.ms]||[]).push(x.name);});
+  const slots=qtAvSlots(av),g=qtGrid(slots,tz),mx=Math.max(1,...Object.values(cnt),1),people=q.answered;
+  const sel=`<div class="sv-avtz">Showing times in ${qtTzSelect('sv-tz-'+q.key,tz,`svUi.tz=svUi.tz||{};svUi.tz['${q.key}']=this.value;svResults(APP.assignments.find(x=>x.id===fxAn.open))`)} <span class="sv-skip">${tz===teacherTz?'(your time zone for this question)':'<a style="cursor:pointer;text-decoration:underline" onclick="svUi.tz=svUi.tz||{};delete svUi.tz[\''+q.key+'\'];svResults(APP.assignments.find(x=>x.id===fxAn.open))">reset</a>'}</span></div>`;
+  if(!people)return sel+'<i class="sv-skip">Nobody has picked a time yet.</i>';
+  const heat=`<div class="qt-av-scroll"><div class="qt-avg sv-avg" style="grid-template-columns:64px repeat(${g.dk.length},minmax(64px,1fr))"><div></div>${g.dk.map(d=>`<div class="qt-avd sv-avd">${E(qtDayLbl(d))}</div>`).join('')}${g.tr.map(t=>`<div class="qt-avt">${qtTimeLbl(t)}</div>`+g.dk.map(d=>{const ms=g.cell.get(d+'|'+t);if(ms==null)return '<div class="qt-avc off"></div>';const c=cnt[ms]||0;return `<div class="sv-avc" style="--a:${(c/mx).toFixed(2)}" title="${c} of ${people}${c&&!svUi.anon?': '+E(who[ms].join(', ')):''}">${c||''}</div>`;}).join('')).join('')}</div></div><div class="sv-skip" style="margin-top:6px">Darker means more people can make it. Hover a cell to see who.</div>`;
+  const byCount={};Object.keys(cnt).forEach(ms=>{(byCount[cnt[ms]]=byCount[cnt[ms]]||[]).push(+ms);});
+  const tops=Object.keys(byCount).map(Number).sort((a,b)=>b-a).slice(0,3);
+  const best=`<div class="sv-best"><b>Best times</b>${tops.map(c=>`<div class="sv-bt-row"><span class="sv-bt-n">${c} of ${people}</span><span>${qtRanges(byCount[c],slotMin,tz).slice(0,8).map(E).join('<br>')}${qtRanges(byCount[c],slotMin,tz).length>8?'<br>and more':''}</span></div>`).join('')}</div>`;
+  return sel+best+heat;
+}
+
+</script>
+<script id="ea-qtypes">
+/* ───────────── MORE QUESTION TYPES ───────────── */
+const QT={};
+window.qtAuto=q=>['mc','ms','short','ranking','matching','cloze','numeric'].includes(q.type);
+const qtE=s=>E(String(s==null?'':s));
+const qtQ=i=>APP.currentTest.questions[i];
+const qtIsSv=()=>!!(APP.currentTest&&APP.currentTest.kind==='survey');
+function qtRefreshPanel(i){const q=qtQ(i),el=document.getElementById('qt-panel-'+i);if(el&&q&&QT[q.type])el.innerHTML=QT[q.type].editor(i,q,qtIsSv());}
+function qtMut(i,fn,refresh){const q=qtQ(i);if(!q)return;fn(q);save();if(refresh)qtRefreshPanel(i);}
+window.qtMut=qtMut;
+function qtSeed(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0||1;}
+function qtShuffle(n,seed){const a=[...Array(n).keys()];let s=qtSeed(seed);const r=()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}if(n>1&&a.every((v,i)=>v===i))a.push(a.shift());return a;}
+/* ── time zones ── */
+const QT_TZS=(()=>{try{const l=Intl.supportedValuesOf('timeZone');if(l&&l.length)return l;}catch(e){}return['Pacific/Honolulu','America/Anchorage','America/Los_Angeles','America/Denver','America/Chicago','America/New_York','America/Halifax','America/Sao_Paulo','Atlantic/Reykjavik','Europe/London','Europe/Paris','Europe/Athens','Africa/Cairo','Europe/Moscow','Asia/Dubai','Asia/Karachi','Asia/Kolkata','Asia/Dhaka','Asia/Bangkok','Asia/Shanghai','Asia/Tokyo','Australia/Sydney','Pacific/Auckland'];})();
+const qtMyTz=()=>{try{return localStorage.getItem('ea_tz')||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){return'UTC';}};
+function qtTzOff(ms,tz){const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'});const p={};f.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return Date.UTC(+p.year,+p.month-1,+p.day,(+p.hour)%24,+p.minute,+p.second)-Math.floor(ms/1000)*1000;}
+function qtZ2U(Y,M,D,min,tz){const g=Date.UTC(Y,M-1,D,0,min);let u=g-qtTzOff(g,tz);u=g-qtTzOff(u,tz);return u;}
+function qtParts(ms,tz){const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'numeric',minute:'numeric'});const p={};f.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return{dkey:p.year+'-'+p.month+'-'+p.day,tmin:((+p.hour)%24)*60+(+p.minute)};}
+const qtDayLbl=(dkey)=>{const [y,m,d]=dkey.split('-').map(Number);return new Date(Date.UTC(y,m-1,d,12)).toLocaleDateString([], {timeZone:'UTC',weekday:'short',month:'short',day:'numeric'});};
+const qtTimeLbl=(min)=>{const h=Math.floor(min/60),m=min%60,ap=h>=12?'pm':'am',h12=h%12||12;return h12+(m?':'+String(m).padStart(2,'0'):'')+ap;};
+const qtTzLbl=tz=>tz.replace(/_/g,' ');
+function qtTzSelect(id,val,onchange){const list=QT_TZS.includes(val)?QT_TZS:[val].concat(QT_TZS);return `<select id="${id}" class="form-control qt-tzsel" onchange="${onchange}">${list.map(z=>`<option value="${qtE(z)}" ${z===val?'selected':''}>${qtE(qtTzLbl(z))}</option>`).join('')}</select>`;}
+/* availability slots, defined in the teacher's time zone, stored as UTC instants */
+function qtAvSlots(av){
+  const out=[];if(!av||!av.start)return out;const [Y,M,D]=av.start.split('-').map(Number);if(!Y)return out;
+  const days=Math.max(1,Math.min(31,av.days||7)),slot=av.slot||30;
+  for(let i=0;i<days;i++){const c=new Date(Date.UTC(Y,M-1,D+i));const dow=c.getUTCDay();if(av.weekdays&&!av.weekdays.includes(dow))continue;
+    for(let m=(av.from||0)*60;m<(av.to||24)*60;m+=slot)out.push(qtZ2U(c.getUTCFullYear(),c.getUTCMonth()+1,c.getUTCDate(),m,av.tz||'UTC'));}
+  return out;
+}
+function qtGrid(slots,tz){const cell=new Map(),dk=new Set(),tr=new Set();slots.forEach(ms=>{const p=qtParts(ms,tz);dk.add(p.dkey);tr.add(p.tmin);cell.set(p.dkey+'|'+p.tmin,ms);});return{dk:[...dk].sort(),tr:[...tr].sort((a,b)=>a-b),cell};}
+function qtRanges(msList,slotMin,tz){ // merge consecutive slots into "Mon Dec 1, 3:00pm to 4:30pm"
+  const s=[...msList].sort((a,b)=>a-b),out=[],step=slotMin*60000;let st=null,pv=null;
+  const fmt=(a,b)=>{const pa=qtParts(a,tz),pb=qtParts(b+step,tz);return qtDayLbl(pa.dkey)+', '+qtTimeLbl(pa.tmin)+' to '+qtTimeLbl(pb.tmin);};
+  s.forEach(ms=>{if(st===null){st=pv=ms;return;}if(ms-pv===step){pv=ms;return;}out.push(fmt(st,pv));st=pv=ms;});if(st!==null)out.push(fmt(st,pv));return out;
+}
+/* ── shared bits for editors ── */
+const qtLine=(i,arr,key,ph,extra)=>`<div class="qt-list">${arr.map((v,j)=>`<div class="qt-row"><span class="qt-n">${j+1}</span><input class="form-control" value="${qtE(v)}" placeholder="${ph} ${j+1}" oninput="qtMut(${i},q=>{q.${key}[${j}]=this.value})"><button class="btn btn-ghost btn-icon btn-sm" title="Remove" onclick="qtMut(${i},q=>{if(q.${key}.length>2)q.${key}.splice(${j},1)},true)">✕</button></div>`).join('')}<button class="btn btn-secondary btn-sm" onclick="qtMut(${i},q=>{q.${key}.push('')},true)">+ Add</button></div>`;
+const qtHead=(t,s)=>`<div class="qt-h"><b>${t}</b>${s?`<span>${s}</span>`:''}</div>`;
+/* ═════ RATING ═════ */
+QT.rating={label:'Rating',survey:true,assess:false,short:'Rating',
+ icon:'<path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/>',
+ init(q){q.scale={style:'stars',max:5,low:'',high:''};},
+ editor(i,q){const s=q.scale||(q.scale={style:'stars',max:5});return qtHead('Rating scale','Students pick one number')+`<div class="qt-grid2"><label>Style<select class="form-control" onchange="qtMut(${i},q=>{q.scale.style=this.value;if(this.value==='nps')q.scale.max=10},true)"><option value="stars" ${s.style==='stars'?'selected':''}>Stars</option><option value="numbers" ${s.style==='numbers'?'selected':''}>Numbers</option><option value="nps" ${s.style==='nps'?'selected':''}>0 to 10 (recommend scale)</option></select></label>
+  ${s.style==='nps'?'':`<label>Highest value<select class="form-control" onchange="qtMut(${i},q=>{q.scale.max=+this.value})">${[3,4,5,6,7,8,9,10].map(n=>`<option ${s.max===n?'selected':''}>${n}</option>`).join('')}</select></label>`}
+  <label>Low label (optional)<input class="form-control" value="${qtE(s.low||'')}" placeholder="Not at all" oninput="qtMut(${i},q=>{q.scale.low=this.value})"></label>
+  <label>High label (optional)<input class="form-control" value="${qtE(s.high||'')}" placeholder="Extremely" oninput="qtMut(${i},q=>{q.scale.high=this.value})"></label></div>`;},
+ widget(q,key,ans){const s=q.scale||{style:'stars',max:5};const lo=s.style==='nps'?0:1,hi=s.style==='nps'?10:(s.max||5);const vals=[];for(let v=lo;v<=hi;v++)vals.push(v);
+  return `<div class="qt-rate ${s.style}">${vals.map(v=>s.style==='stars'?`<button class="qt-star ${ans>=v?'on':''}" onclick="qtSet('${key}',${v})" aria-label="${v}">★</button>`:`<button class="qt-num-b ${ans===v?'on':''}" onclick="qtSet('${key}',${v})">${v}</button>`).join('')}</div>${(s.low||s.high)?`<div class="qt-ends"><span>${qtE(s.low||'')}</span><span>${qtE(s.high||'')}</span></div>`:''}`;},
+ show(q,ans){return ans==null?'<em>No response</em>':String(ans)+' / '+((q.scale&&q.scale.style==='nps')?10:(q.scale&&q.scale.max)||5);},
+ text(q,ans){return ans==null?'':String(ans);}};
+/* ═════ RANKING ═════ */
+QT.ranking={label:'Ranking',survey:true,assess:true,
+ icon:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>',
+ init(q){q.items=['','',''];q.partial=true;},
+ editor(i,q,sv){return qtHead(sv?'Items to rank':'Items, in the CORRECT order',sv?'Students order them. Results show the average rank.':'Students see them shuffled and must put them in this order.')+qtLine(i,q.items||(q.items=['','','']),'items','Item')+(sv?'':`<label class="qt-chk"><input type="checkbox" ${q.partial!==false?'checked':''} onchange="qtMut(${i},q=>{q.partial=this.checked})"> Give partial credit for items in the right spot</label>`);},
+ order(q,key,ans){const n=(q.items||[]).length;if(Array.isArray(ans)&&ans.length===n)return ans;const sub=APP.currentStudentExam&&APP.currentStudentExam.sub;return qtShuffle(n,(sub&&sub.id||'')+key);},
+ widget(q,key,ans){const ord=this.order(q,key,ans),set=Array.isArray(ans);
+  return `<div class="qt-rank" data-key="${key}">${ord.map((it,p)=>`<div class="qt-ritem" draggable="true" data-p="${p}" ondragstart="qtDragStart(event,'${key}',${p})" ondragover="event.preventDefault()" ondrop="qtDrop(event,'${key}',${p})"><span class="qt-grip">⋮⋮</span><span class="qt-rn">${p+1}</span><span class="qt-rt">${renderStem(q.items[it])||'(blank)'}</span><span class="qt-mv"><button onclick="qtMove('${key}',${p},-1)" ${p===0?'disabled':''} aria-label="Move up">▲</button><button onclick="qtMove('${key}',${p},1)" ${p===ord.length-1?'disabled':''} aria-label="Move down">▼</button></span></div>`).join('')}</div>
+  ${set?'':`<div class="qt-hint">Drag items or use the arrows. <button class="btn btn-secondary btn-sm" onclick="qtSet('${key}',${JSON.stringify(ord)})">Keep this order</button></div>`}`;},
+ grade(q,ans){const n=(q.items||[]).length;if(!Array.isArray(ans)||ans.length!==n||!n)return 0;let ok=0;ans.forEach((v,p)=>{if(v===p)ok++;});return q.partial!==false?ok/n:(ok===n?1:0);},
+ show(q,ans){const it=q.items||[];if(!Array.isArray(ans))return '<em>No response</em>';return `<div class="qt-cmp"><div><b>Student order</b><ol>${ans.map((v,p)=>`<li class="${v===p?'ok':'bad'}">${renderStem(it[v])}</li>`).join('')}</ol></div><div><b>Correct order</b><ol>${it.map(x=>`<li>${renderStem(x)}</li>`).join('')}</ol></div></div>`;},
+ text(q,ans){return Array.isArray(ans)?ans.map(v=>svPlain((q.items||[])[v])).join(' > '):'';}};
+/* ═════ MATCHING ═════ */
+QT.matching={label:'Matching',survey:false,assess:true,
+ icon:'<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6l10 12M7 18L17 6"/>',
+ init(q){q.pairs=[{l:'',r:''},{l:'',r:''},{l:'',r:''}];q.partial=true;},
+ editor(i,q){const p=q.pairs||(q.pairs=[]);return qtHead('Matching pairs','Left item and its correct match. Students match them from a shuffled menu.')+`<div class="qt-list">${p.map((x,j)=>`<div class="qt-row"><span class="qt-n">${j+1}</span><input class="form-control" value="${qtE(x.l)}" placeholder="Left item" oninput="qtMut(${i},q=>{q.pairs[${j}].l=this.value})"><span class="qt-arrow">↔</span><input class="form-control" value="${qtE(x.r)}" placeholder="Matches with" oninput="qtMut(${i},q=>{q.pairs[${j}].r=this.value})"><button class="btn btn-ghost btn-icon btn-sm" onclick="qtMut(${i},q=>{if(q.pairs.length>2)q.pairs.splice(${j},1)},true)">✕</button></div>`).join('')}<button class="btn btn-secondary btn-sm" onclick="qtMut(${i},q=>{q.pairs.push({l:'',r:''})},true)">+ Add pair</button></div><label class="qt-chk"><input type="checkbox" ${q.partial!==false?'checked':''} onchange="qtMut(${i},q=>{q.partial=this.checked})"> Give partial credit for each right match</label>`;},
+ widget(q,key,ans){const p=q.pairs||[];const sub=APP.currentStudentExam&&APP.currentStudentExam.sub;const ord=qtShuffle(p.length,(sub&&sub.id||'')+key+'m');const a=Array.isArray(ans)?ans:[];
+  return `<div class="qt-match">${p.map((x,j)=>`<div class="qt-mrow"><div class="qt-ml">${renderStem(x.l)||'(blank)'}</div><select class="form-control" onchange="qtMatch('${key}',${j},this.value)"><option value="">Choose…</option>${ord.map(k=>`<option value="${k}" ${a[j]===k?'selected':''}>${qtE(svPlain(p[k].r)||'(blank)')}</option>`).join('')}</select></div>`).join('')}</div>`;},
+ grade(q,ans){const p=q.pairs||[];if(!Array.isArray(ans)||!p.length)return 0;let ok=0;p.forEach((x,j)=>{if(ans[j]===j)ok++;});return q.partial!==false?ok/p.length:(ok===p.length?1:0);},
+ show(q,ans){const p=q.pairs||[];const a=Array.isArray(ans)?ans:[];return `<div class="qt-cmp1">${p.map((x,j)=>`<div class="qt-mrow2 ${a[j]===j?'ok':'bad'}"><span>${renderStem(x.l)}</span><span>→</span><span>${a[j]!=null&&p[a[j]]?renderStem(p[a[j]].r):'<em>none</em>'}</span>${a[j]===j?'':`<span class="qt-key">Correct: ${renderStem(x.r)}</span>`}</div>`).join('')}</div>`;},
+ text(q,ans){return '';}};
+/* ═════ FILL IN THE BLANK ═════ */
+QT.cloze={label:'Fill in the blanks',survey:false,assess:true,
+ icon:'<path d="M4 7h6M14 7h6M4 17h4M12 17h8"/><path d="M4 12h16" stroke-dasharray="3 3"/>',
+ init(q){q.cloze='The capital of France is {{Paris}}.';q.partial=true;q.caseSens=false;},
+ parse(q){const parts=[],re=/\{\{([^}]*)\}\}/g;let last=0,m,blanks=[];const t=q.cloze||'';while((m=re.exec(t))){parts.push({t:t.slice(last,m.index)});parts.push({b:blanks.length});blanks.push(m[1].split('|').map(x=>x.trim()).filter(Boolean));last=re.lastIndex;}parts.push({t:t.slice(last)});return{parts,blanks};},
+ editor(i,q){const n=this.parse(q).blanks.length;return qtHead('Sentence with blanks','Put each answer inside double curly braces. Use | for other accepted answers, like {{color|colour}}.')+`<textarea class="form-control" rows="4" oninput="qtMut(${i},q=>{q.cloze=this.value});document.getElementById('qt-cl-n-${i}').textContent=QT.cloze.parse(qtQ(${i})).blanks.length+' blank(s)'">${qtE(q.cloze||'')}</textarea><div class="qt-hint2"><span id="qt-cl-n-${i}">${n} blank(s)</span></div><label class="qt-chk"><input type="checkbox" ${q.caseSens?'checked':''} onchange="qtMut(${i},q=>{q.caseSens=this.checked})"> Capital letters must match</label><label class="qt-chk"><input type="checkbox" ${q.partial!==false?'checked':''} onchange="qtMut(${i},q=>{q.partial=this.checked})"> Give partial credit for each right blank</label>`;},
+ widget(q,key,ans){const {parts}=this.parse(q);const a=Array.isArray(ans)?ans:[];return `<div class="qt-cloze">${parts.map(p=>p.b!==undefined?`<input class="qt-blank" value="${qtE(a[p.b]||'')}" autocomplete="off" aria-label="Blank ${p.b+1}" oninput="qtBlank('${key}',${p.b},this.value)">`:qtE(p.t).replace(/\n/g,'<br>')).join('')}</div>`;},
+ grade(q,ans){const {blanks}=this.parse(q);if(!blanks.length||!Array.isArray(ans))return 0;const nm=s=>{s=String(s||'').trim().replace(/\s+/g,' ');return q.caseSens?s:s.toLowerCase();};let ok=0;blanks.forEach((acc,j)=>{if(acc.some(x=>nm(x)===nm(ans[j])&&nm(ans[j])!==''))ok++;});return q.partial!==false?ok/blanks.length:(ok===blanks.length?1:0);},
+ show(q,ans){const {parts,blanks}=this.parse(q);const a=Array.isArray(ans)?ans:[];const nm=s=>{s=String(s||'').trim().replace(/\s+/g,' ');return q.caseSens?s:s.toLowerCase();};return `<div class="qt-cloze-r">${parts.map(p=>p.b!==undefined?`<span class="qt-fill ${blanks[p.b].some(x=>nm(x)===nm(a[p.b])&&nm(a[p.b]))?'ok':'bad'}">${qtE(a[p.b]||'(blank)')}</span>${blanks[p.b].some(x=>nm(x)===nm(a[p.b])&&nm(a[p.b]))?'':`<span class="qt-key">${qtE(blanks[p.b].join(' / '))}</span>`}`:qtE(p.t).replace(/\n/g,'<br>')).join('')}</div>`;},
+ text(q,ans){return Array.isArray(ans)?ans.join(' | '):'';}};
+/* ═════ NUMBER ═════ */
+QT.numeric={label:'Number',survey:true,assess:true,
+ icon:'<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
+ init(q){q.num={answer:'',tol:0,pct:false,unit:'',min:'',max:''};},
+ editor(i,q,sv){const n=q.num||(q.num={});return qtHead(sv?'Number answer':'Number answer and tolerance',sv?'Results show the average, median and spread.':'Graded automatically within the tolerance you set.')+`<div class="qt-grid2">${sv?`<label>Lowest allowed (optional)<input class="form-control" type="number" value="${qtE(n.min)}" oninput="qtMut(${i},q=>{q.num.min=this.value})"></label><label>Highest allowed (optional)<input class="form-control" type="number" value="${qtE(n.max)}" oninput="qtMut(${i},q=>{q.num.max=this.value})"></label>`:`<label>Correct answer<input class="form-control" type="number" step="any" value="${qtE(n.answer)}" oninput="qtMut(${i},q=>{q.num.answer=this.value})"></label><label>Allowed difference (plus or minus)<input class="form-control" type="number" step="any" min="0" value="${qtE(n.tol)}" oninput="qtMut(${i},q=>{q.num.tol=this.value})"></label>`}<label>Unit label (optional)<input class="form-control" value="${qtE(n.unit||'')}" placeholder="cm, hours, %" oninput="qtMut(${i},q=>{q.num.unit=this.value})"></label>${sv?'':`<label class="qt-chk" style="align-self:end"><input type="checkbox" ${n.pct?'checked':''} onchange="qtMut(${i},q=>{q.num.pct=this.checked})"> Difference is a percent</label>`}</div>`;},
+ widget(q,key,ans){const n=q.num||{};return `<div class="qt-numw"><input class="qt-numin" inputmode="decimal" autocomplete="off" value="${qtE(ans==null?'':ans)}" placeholder="Type a number" oninput="qtNum('${key}',this.value)">${n.unit?`<span class="qt-unit">${qtE(n.unit)}</span>`:''}</div>`;},
+ val(ans){const v=parseFloat(String(ans==null?'':ans).replace(/,/g,''));return isFinite(v)?v:null;},
+ grade(q,ans){const n=q.num||{};const v=this.val(ans),c=parseFloat(n.answer);if(v==null||!isFinite(c))return 0;const tol=parseFloat(n.tol)||0;const d=Math.abs(v-c);return d<=(n.pct?Math.abs(c)*tol/100:tol)+1e-9?1:0;},
+ show(q,ans){const n=q.num||{};const ok=this.grade(q,ans)===1;return `<div class="qt-fill ${ok?'ok':'bad'}">${ans==null||ans===''?'(no answer)':qtE(ans)} ${qtE(n.unit||'')}</div><div class="qt-key">Correct: ${qtE(n.answer)} ${qtE(n.unit||'')}${parseFloat(n.tol)?` (plus or minus ${qtE(n.tol)}${n.pct?'%':''})`:''}</div>`;},
+ text(q,ans){return ans==null?'':String(ans);}};
+/* ═════ GRID (LIKERT MATRIX) ═════ */
+const QT_PRESETS={'Agree (5)':['Strongly disagree','Disagree','Neutral','Agree','Strongly agree'],'Agree (4)':['Strongly disagree','Disagree','Agree','Strongly agree'],'Frequency':['Never','Rarely','Sometimes','Often','Always'],'Satisfaction':['Very dissatisfied','Dissatisfied','Neutral','Satisfied','Very satisfied'],'Quality':['Poor','Fair','Good','Very good','Excellent']};
+window.QT_PRESETS=QT_PRESETS;
+QT.matrix={label:'Grid',survey:true,assess:false,
+ icon:'<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
+ init(q){q.rows=['',''];q.cols=QT_PRESETS['Agree (5)'].slice();},
+ editor(i,q){return qtHead('Rows (statements)','One answer per row')+qtLine(i,q.rows||(q.rows=['','']),'rows','Statement')+qtHead('Columns (the scale)','Pick a preset or type your own')+`<div class="qt-presets">${Object.keys(QT_PRESETS).map(k=>`<button class="btn btn-secondary btn-sm" onclick="qtMut(${i},q=>{q.cols=QT_PRESETS['${k}'].slice()},true)">${k}</button>`).join('')}</div>`+qtLine(i,q.cols||(q.cols=['','']),'cols','Column');},
+ widget(q,key,ans){const a=Array.isArray(ans)?ans:[];const cols=q.cols||[];return `<div class="qt-mxw"><table class="qt-mx"><thead><tr><th></th>${cols.map(c=>`<th>${qtE(svPlain(c))}</th>`).join('')}</tr></thead><tbody>${(q.rows||[]).map((r,j)=>`<tr><th scope="row">${renderStem(r)||'(blank)'}</th>${cols.map((c,k)=>`<td><button class="qt-dot ${a[j]===k?'on':''}" onclick="qtMx('${key}',${j},${k})" aria-label="${qtE(svPlain(r))}: ${qtE(svPlain(c))}"></button></td>`).join('')}</tr>`).join('')}</tbody></table></div>`;},
+ show(q,ans){const a=Array.isArray(ans)?ans:[];return (q.rows||[]).map((r,j)=>svPlain(r)+': '+(a[j]!=null?svPlain((q.cols||[])[a[j]]):'-')).join('; ');},
+ text(q,ans){return this.show(q,ans);}};
+/* ═════ AVAILABILITY ═════ */
+QT.availability={label:'Availability',survey:true,assess:false,
+ icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>',
+ init(q){const d=new Date(Date.now()+86400000);const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');let tz='UTC';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){}q.avail={tz,start:iso,days:7,weekdays:[1,2,3,4,5],from:9,to:17,slot:30};},
+ editor(i,q){const a=q.avail||(q.avail={});const n=qtAvSlots(a).length;const hrs=[...Array(25).keys()];const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return qtHead('Availability calendar','Students tick the times they can meet. Each student sees the grid in their own time zone, and results come back in yours.')+`<div class="qt-grid2"><label>Your time zone${qtTzSelect('qt-avtz-'+i,a.tz||'UTC',`qtMut(${i},q=>{q.avail.tz=this.value},true)`)}</label>
+  <label>First day<input class="form-control" type="date" value="${qtE(a.start||'')}" onchange="qtMut(${i},q=>{q.avail.start=this.value},true)"></label>
+  <label>Number of days<input class="form-control" type="number" min="1" max="31" value="${a.days||7}" onchange="qtMut(${i},q=>{q.avail.days=Math.max(1,Math.min(31,+this.value||7))},true)"></label>
+  <label>Slot length<select class="form-control" onchange="qtMut(${i},q=>{q.avail.slot=+this.value},true)">${[15,30,45,60,90,120].map(m=>`<option value="${m}" ${a.slot===m?'selected':''}>${m} minutes</option>`).join('')}</select></label>
+  <label>Day starts<select class="form-control" onchange="qtMut(${i},q=>{q.avail.from=+this.value},true)">${hrs.slice(0,24).map(h=>`<option value="${h}" ${a.from===h?'selected':''}>${qtTimeLbl(h*60)}</option>`).join('')}</select></label>
+  <label>Day ends<select class="form-control" onchange="qtMut(${i},q=>{q.avail.to=+this.value},true)">${hrs.slice(1).map(h=>`<option value="${h}" ${a.to===h?'selected':''}>${qtTimeLbl((h%24)*60)}${h===24?' (midnight)':''}</option>`).join('')}</select></label></div>
+  <div class="qt-wd">${wd.map((w,d)=>`<label class="qt-chk"><input type="checkbox" ${(a.weekdays||[]).includes(d)?'checked':''} onchange="qtMut(${i},q=>{const s=new Set(q.avail.weekdays||[]);this.checked?s.add(${d}):s.delete(${d});q.avail.weekdays=[...s].sort()},true)"> ${w}</label>`).join('')}</div>
+  <div class="qt-hint2">${n?n+' time slots':'No slots yet. Check your dates, weekdays and hours.'}${(a.to||0)<=(a.from||0)?' <b style="color:var(--rust,#b3261e)">The end time must be after the start time.</b>':''}</div>`;},
+ widget(q,key,ans){const av=q.avail||{};const slots=qtAvSlots(av);const tz=qtMyTz();const sel=new Set((Array.isArray(ans)?ans:[]).map(x=>Date.parse(x)));const g=qtGrid(slots,tz);
+  if(!slots.length)return '<div class="qt-hint">No times have been offered for this question.</div>';
+  return `<div class="qt-av" data-key="${key}"><div class="qt-av-tz">Times shown in <b>${qtE(qtTzLbl(tz))}</b> ${qtTzSelect('qt-mytz-'+key,tz,`qtSetTz(this.value,'${key}')`)} <span class="qt-av-hint">Click or drag across the times you can do. Click a day to pick or clear the whole day.</span></div>
+   <div class="qt-av-scroll"><div class="qt-avg" style="grid-template-columns:64px repeat(${g.dk.length},minmax(72px,1fr))"><div></div>${g.dk.map(d=>`<button class="qt-avd" onclick="qtAvDay('${key}','${d}')">${qtE(qtDayLbl(d))}</button>`).join('')}
+   ${g.tr.map(t=>`<div class="qt-avt">${qtTimeLbl(t)}</div>`+g.dk.map(d=>{const ms=g.cell.get(d+'|'+t);return ms==null?'<div class="qt-avc off"></div>':`<div class="qt-avc ${sel.has(ms)?'on':''}" data-ms="${ms}" data-d="${d}"></div>`;}).join('')).join('')}</div></div>
+   <div class="qt-av-foot"><span id="qt-av-n-${key}">${sel.size} slot${sel.size===1?'':'s'} chosen</span><button class="btn btn-ghost btn-sm" onclick="qtAvClear('${key}')">Clear all</button></div></div>`;},
+ text(q,ans){const av=q.avail||{};return Array.isArray(ans)?qtRanges(ans.map(x=>Date.parse(x)),av.slot||30,av.tz||'UTC').join('; '):'';}};
+/* ───────────── student interactions ───────────── */
+function qtCur(key){const ex=APP.currentStudentExam;if(!ex)return null;const it=flatQuestions(ex.t).find(f=>f.key===key);return it?{q:it.q,sub:ex.sub}:null;}
+function qtAfter(key){
+  const ex=APP.currentStudentExam;const fq=examItems();const n=fq.filter(f=>ex.sub.answers&&ex.sub.answers[f.key]!==undefined).length;
+  document.querySelectorAll('#student-wrapper span').forEach(sp=>{const tn=sp.firstChild;if(tn&&tn.nodeType===3&&/^\d+\/\d+ answered/.test(tn.nodeValue))tn.nodeValue=tn.nodeValue.replace(/^\d+/,n);});
+  try{fxDecorateStudent();}catch(e){}
+}
+function qtCommit(key,val,redraw){const c=qtCur(key);if(!c)return;if(val===undefined)delete c.sub.answers[key];else c.sub.answers[key]=val;save();saveLocalResume();if(redraw!==false)qtRedraw(key);qtAfter(key);}
+function qtRedraw(key){const c=qtCur(key),el=document.getElementById('qt-w-'+key);if(c&&el)el.innerHTML=QT[c.q.type].widget(c.q,key,c.sub.answers[key]);}
+window.qtSet=(key,v)=>qtCommit(key,v);
+window.qtMove=(key,p,d)=>{const c=qtCur(key);if(!c)return;const ord=QT.ranking.order(c.q,key,c.sub.answers[key]).slice();const t=p+d;if(t<0||t>=ord.length)return;[ord[p],ord[t]]=[ord[t],ord[p]];qtCommit(key,ord);};
+let qtDrag=null;window.qtDragStart=(e,key,p)=>{qtDrag={key,p};try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(p));}catch(x){}};
+window.qtDrop=(e,key,p)=>{e.preventDefault();if(!qtDrag||qtDrag.key!==key||qtDrag.p===p)return;const c=qtCur(key);if(!c)return;const ord=QT.ranking.order(c.q,key,c.sub.answers[key]).slice();const [m]=ord.splice(qtDrag.p,1);ord.splice(p,0,m);qtDrag=null;qtCommit(key,ord);};
+window.qtMatch=(key,j,v)=>{const c=qtCur(key);if(!c)return;const a=Array.isArray(c.sub.answers[key])?c.sub.answers[key].slice():new Array((c.q.pairs||[]).length).fill(null);a[j]=v===''?null:+v;qtCommit(key,a.every(x=>x==null)?undefined:a,false);};
+window.qtBlank=(key,j,v)=>{const c=qtCur(key);if(!c)return;const n=QT.cloze.parse(c.q).blanks.length;const a=Array.isArray(c.sub.answers[key])?c.sub.answers[key].slice():new Array(n).fill('');a[j]=v;qtCommit(key,a.every(x=>!String(x).trim())?undefined:a,false);};
+window.qtNum=(key,v)=>{v=String(v).trim();qtCommit(key,v===''?undefined:v,false);};
+window.qtMx=(key,j,k)=>{const c=qtCur(key);if(!c)return;const a=Array.isArray(c.sub.answers[key])?c.sub.answers[key].slice():new Array((c.q.rows||[]).length).fill(null);a[j]=a[j]===k?null:k;qtCommit(key,a.every(x=>x==null)?undefined:a);};
+window.qtSetTz=(tz,key)=>{try{localStorage.setItem('ea_tz',tz);}catch(e){}qtRedraw(key);};
+function qtAvSet(key,list){const c=qtCur(key);if(!c)return;const arr=[...list].sort((a,b)=>a-b).map(ms=>new Date(ms).toISOString());qtCommit(key,arr.length?arr:undefined,false);const n=document.getElementById('qt-av-n-'+key);if(n)n.textContent=arr.length+' slot'+(arr.length===1?'':'s')+' chosen';}
+window.qtAvClear=key=>{qtCommit(key,undefined);};
+window.qtAvDay=(key,d)=>{const root=document.querySelector('.qt-av[data-key="'+key+'"]');if(!root)return;const cells=[...root.querySelectorAll('.qt-avc[data-d="'+d+'"]')];const all=cells.every(c=>c.classList.contains('on'));cells.forEach(c=>c.classList.toggle('on',!all));qtAvSet(key,[...root.querySelectorAll('.qt-avc.on')].map(c=>+c.dataset.ms));};
+{let paint=null;
+ document.addEventListener('pointerdown',e=>{const c=e.target.closest&&e.target.closest('.qt-avc[data-ms]');if(!c)return;const root=c.closest('.qt-av');paint={root,add:!c.classList.contains('on'),key:root.dataset.key};c.classList.toggle('on',paint.add);e.preventDefault();});
+ document.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elementFromPoint(e.clientX,e.clientY);const c=el&&el.closest&&el.closest('.qt-avc[data-ms]');if(c&&paint.root.contains(c))c.classList.toggle('on',paint.add);});
+ const end=()=>{if(!paint)return;const p=paint;paint=null;qtAvSet(p.key,[...p.root.querySelectorAll('.qt-avc.on')].map(c=>+c.dataset.ms));};
+ document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);}
+/* ───────────── plug into the student exam ───────────── */
+{const o=window.renderSingleStudentQ;window.renderSingleStudentQ=function(q,key,a,fqs){const h=o.apply(this,arguments);if(!QT[q.type])return h;const sub=APP.currentStudentExam.sub;const hint={ranking:'Put the items in order.',matching:'Match each item.',cloze:'Fill in the blanks.',numeric:'Enter a number.',rating:'Choose a rating.',matrix:'Choose one answer in each row.',availability:'Select every time that works for you.'}[q.type]||'';
+  const w=`<div class="qt-w" id="qt-w-${key}">${QT[q.type].widget(q,key,sub.answers[key])}</div>`;const i=h.lastIndexOf('</div>');return i<0?h+w:h.slice(0,i)+(hint?`<div class="qt-direct">${hint}</div>`:'')+w+h.slice(i);};}
+/* ───────────── plug into the builder ───────────── */
+{const o=window.renderQEditor;window.renderQEditor=function(i){const q=APP.currentTest&&APP.currentTest.questions[i];let h=o.apply(this,arguments);if(!q||!QT[q.type])return h;
+  h=h.replace(/<span class="type-chip">[^<]*<\/span>/,`<span class="type-chip">${QT[q.type].label}</span>`);
+  const panel=`<div class="form-group qt-panel" id="qt-panel-${i}">${QT[q.type].editor(i,q,qtIsSv())}</div>`;
+  const m=h.indexOf('<div class="form-group sv-hide">\n    <label class="form-label">Answer Explanation');if(m>=0)return h.slice(0,m)+panel+h.slice(m);
+  const e=h.lastIndexOf('</div>');return h.slice(0,e)+panel+h.slice(e);};}
+{const o=window.addQuestion;window.addQuestion=function(type){if(!QT[type])return o(type);const t=APP.currentTest;const q={type,stem:'',points:1,image:null};QT[type].init(q);if(typeof sxOn==='function'&&sxOn(t))q.sectionId=sxActiveSectionId();t.questions.push(q);activeQIndex=t.questions.length-1;save();renderBuilder();requestAnimationFrame(()=>initBuilderEditors(activeQIndex));};}
+window.QTL=q=>QT[q.type]?(QT[q.type].short||QT[q.type].label):null;
+function qtDecorateGrid(){const g=document.querySelector('#page-builder .q-type-grid');if(!g||!APP.currentTest)return;const sv=APP.currentTest.kind==='survey';g.querySelectorAll('.qt-btn').forEach(x=>x.remove());
+  Object.keys(QT).forEach(k=>{if(sv?!QT[k].survey:!QT[k].assess)return;g.insertAdjacentHTML('beforeend',`<div class="q-type-btn qt-btn" onclick="addQuestion('${k}')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">${QT[k].icon}</svg><span>${QT[k].label.replace(' ','<br>')}</span></div>`);});
+  if(sv){g.querySelectorAll('.q-type-btn:not(.qt-btn)').forEach(b=>{const t=(b.getAttribute('onclick')||'');if(/passage|upload/.test(t)||b.classList.contains('fx-up-type'))b.style.display='none';});}}
+{const o=window.renderBuilder;window.renderBuilder=function(){const r=o.apply(this,arguments);try{qtDecorateGrid();}catch(e){}return r;};}
+/* ───────────── scoring ───────────── */
+window.qtAward=function(q,ans){if(QT[q.type]&&QT[q.type].grade){const f=QT[q.type].grade(q,ans);return Math.round(f*(q.points||1)*100)/100;}return isAnswerCorrect(q,ans)?(q.points||1):0;};
+window.qtGradeHtml=function(q,ans,s,qKey,sid){const pts=q.points||1;const ov=s.mcOverrides&&s.mcOverrides[qKey]!==undefined;const got=ov?s.mcOverrides[qKey]:qtAward(q,ans);
+  return `<div class="grade-q-answer">${QT[q.type].show(q,ans)}</div><div class="flex items-center gap-2 mt-2" style="padding-top:8px;border-top:1px solid var(--border)"><label style="font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase">Override score:</label><input type="number" min="0" max="${pts}" step="0.5" class="form-control" style="width:70px" value="${ov?s.mcOverrides[qKey]:''}" placeholder="auto" oninput="setMCOverride('${sid}','${qKey}',this.value,${pts},1)"><span style="font-size:11px;color:var(--ink-soft)">/ ${pts} pts (auto: ${Math.round(qtAward(q,ans)*100)/100})</span></div>`;};
+window.QT=QT;
 
 </script>
 <script id="ea-home">
