@@ -181,6 +181,8 @@ async function ensureMigrated() {
 }
 
 /* ── tests ── */
+// grader-only rubric material must never reach a student's browser
+const stripRub = (t) => { if (!t) return t; const o = JSON.parse(JSON.stringify(t)); const w = (n) => { if (Array.isArray(n)) n.forEach(w); else if (n && typeof n === 'object') { delete n.rubricGuide; delete n.rubricModel; delete n.rubricBank; Object.values(n).forEach(w); } }; w(o); return o; };
 const unwrapTest = (rec) => (rec ? { ...rec.data, rev: rec.rev } : null);
 async function snapshot(id, rec) {
   await putJ(`${P.hist}${id}/${String(rec.rev).padStart(8, '0')}`, {
@@ -696,7 +698,7 @@ async function studentPeerTask(body, s) {
   const pending = mine.filter((p) => p.status !== 'completed');
   const pair = pending.find((p) => p.id === body.pairId) || pending[0] || null;
   const r = okId(ps.testId) ? await getJ(P.test + ps.testId) : null;
-  const out = { ok: true, session: { id: ps.id, status: ps.status, essayKeys: ps.essayKeys || [] }, total: mine.length, done: mine.length - pending.length, test: r ? unwrapTest(r) : null, pair: null, answers: {} };
+  const out = { ok: true, session: { id: ps.id, status: ps.status, essayKeys: ps.essayKeys || [] }, total: mine.length, done: mine.length - pending.length, test: r ? stripRub(unwrapTest(r)) : null, pair: null, answers: {} };
   if (pair && ps.status === 'active') {
     out.pair = { id: pair.id, rubricScores: pair.rubricScores || {}, feedback: pair.feedback || {} };
     const sub = await findSub(pair.revieweeSubId);
@@ -994,7 +996,7 @@ async function handleGet(q, user, student) {
     if (!ps) return reply(200, { tests: [], assignments: [], submissions: [], peerSessions: [], scoped: 'peer' });
     const test = okId(ps.testId) ? await getJ(P.test + ps.testId) : null;
     const subs = (await mapLimit((ps.includedSubmissionIds || []).filter(okId), 12, findSub)).filter(Boolean);
-    return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: [], submissions: subs, peerSessions: [ps], teachers: await teachersForStudent(null, test, subs), scoped: 'peer' });
+    return reply(200, { tests: test ? [stripRub(unwrapTest(test))] : [], assignments: [], submissions: subs, peerSessions: [ps], teachers: await teachersForStudent(null, test, subs), scoped: 'peer' });
   }
   if (!user && !q.sub && !q.exam && !q.results) return AUTH_ERR();
   if (q.test) {
@@ -1010,7 +1012,7 @@ async function handleGet(q, user, student) {
     out.teachers = await teachersForStudent(okId(sub.assignmentId) ? await getJ(P.asg + sub.assignmentId) : null, null, [sub]);
     if (q.testId && okId(q.testId)) {
       const rec = await getJ(P.test + q.testId);
-      if (rec && String(rec.rev) !== String(q.testRev)) out.test = unwrapTest(rec);
+      if (rec && String(rec.rev) !== String(q.testRev)) out.test = stripRub(unwrapTest(rec));
       if (rec) out.testRev = rec.rev;
     }
     return reply(200, out);
@@ -1030,7 +1032,7 @@ async function handleGet(q, user, student) {
     const test = asg && okId(asg.testId) ? await getJ(P.test + asg.testId) : null;
     const page = asg ? await readSubsPage(P.sub + q.exam + '/', null) : { submissions: [], next: null };
     if (asg && asg.requireAccount) page.submissions = page.submissions.filter((x) => x.studentKey === student.key);
-    return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: asg ? [asg] : [], submissions: page.submissions, peerSessions: [], teachers: await teachersForStudent(asg, test, page.submissions), scoped: 'exam', truncated: !!page.next });
+    return reply(200, { tests: test ? [stripRub(unwrapTest(test))] : [], assignments: asg ? [asg] : [], submissions: page.submissions, peerSessions: [], teachers: await teachersForStudent(asg, test, page.submissions), scoped: 'exam', truncated: !!page.next });
   }
   if (q.results) {
     const sub = await findSub(q.results);
@@ -1039,7 +1041,7 @@ async function handleGet(q, user, student) {
     const tid = asg ? asg.testId : sub.testId;
     const test = okId(tid) ? await getJ(P.test + tid) : null;
     const peers = (await readAll(P.peer)).vals.filter(Boolean).map((ps) => peerSafeSession(ps, sub.id)).filter(Boolean);
-    return reply(200, { tests: test ? [unwrapTest(test)] : [], assignments: asg ? [asg] : [], submissions: [sub], peerSessions: peers, teachers: await teachersForStudent(asg, test, [sub]), scoped: 'results' });
+    return reply(200, { tests: test ? [stripRub(unwrapTest(test))] : [], assignments: asg ? [asg] : [], submissions: [sub], peerSessions: peers, teachers: await teachersForStudent(asg, test, [sub]), scoped: 'results' });
   }
   if (q.part === 'core') return reply(200, { ...(await readCore(user)), serverTime: new Date().toISOString() });
   if (q.part === 'subs') {

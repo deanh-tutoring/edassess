@@ -234,3 +234,11 @@ Rubrics now support several scoring models in one place. Each criterion can be a
 ## Peer review for students who did not take the test
 
 When you start a peer review session you choose two lists. The first is the responses to be reviewed: real submissions and any sample responses you write yourself. The second is the reviewers: students who took the test, whole classes you pick from your rosters, or names you type in. Reviewers who never took the test see the work with no author shown, exactly like everyone else. Students with accounts find the review on their Home page. Anyone added by name uses the session link.
+
+## One review screen everywhere
+
+Peer reviewers now grade with the same components teachers use: the same rubric level cards, running totals and checklist or deduction controls. The screen is identical whether a student reviews from their class or from the session link, and line breaks in the work being reviewed are kept in both. Grader-only material such as the scoring guide, model answer and comment bank is never sent to a student's browser.
+
+## Motion
+
+Pages and lists ease in when you navigate (never when data refreshes in the background), buttons and rubric levels give a small press response, a thin progress bar shows while the app talks to the server, dashboard numbers count up, and finishing a grading list or a review gets a short confetti burst. All of it switches off for people who ask their device to reduce motion.

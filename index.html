@@ -1813,6 +1813,45 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .pb-none{padding:14px;color:var(--muted);font-size:13px}
 .pb-add{margin-top:14px;padding:14px;border:1.5px dashed var(--border-dark);border-radius:10px;display:grid;gap:10px;font-size:14px}
 .pb-line{display:flex;gap:10px;align-items:flex-start}
+
+/* ── motion: smooth, springy, never blocking ── */
+@media (prefers-reduced-motion:no-preference){
+ :root{--spring:cubic-bezier(.22,1,.36,1);--pop:cubic-bezier(.34,1.56,.64,1)}
+ .page-view.animate-in{animation:pageIn .28s var(--spring) both}
+ @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+ @keyframes riseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+ :is(body[data-nav],.animate-in,.enter,.modal,.sh-main) :is(.test-card,.fxc-card,.stat-card,.lms-row,.lms-class,.fxa-row,.test-row,.grade-q-row,.rub-c,.lms-rv,.fxr-card,.lms-panel){animation:riseIn .38s var(--spring) both}
+ :is(body[data-nav],.animate-in,.enter,.modal,.sh-main) :is(.test-card,.fxc-card,.stat-card,.lms-row,.lms-class,.fxa-row,.test-row):nth-child(2){animation-delay:.04s}
+ :is(body[data-nav],.animate-in,.enter,.modal,.sh-main) :is(.test-card,.fxc-card,.stat-card,.lms-row,.lms-class,.fxa-row,.test-row):nth-child(3){animation-delay:.08s}
+ :is(body[data-nav],.animate-in,.enter,.modal,.sh-main) :is(.test-card,.fxc-card,.stat-card,.lms-row,.lms-class,.fxa-row,.test-row):nth-child(4){animation-delay:.12s}
+ :is(body[data-nav],.animate-in,.enter,.modal,.sh-main) :is(.test-card,.fxc-card,.lms-row,.lms-class,.fxa-row,.test-row):nth-child(n+5){animation-delay:.16s}
+ .test-card,.fxc-card,.stat-card,.lms-class,.lms-row{transition:transform .22s var(--spring),border-color .18s,box-shadow .22s}
+ .test-card:hover,.fxc-card:hover,.lms-class:hover{transform:translateY(-3px);border-color:var(--accent)!important;box-shadow:0 10px 24px -12px rgba(30,60,180,.35)!important}
+ .btn,.lms-btn,.lms-go{transition:transform .14s var(--spring),background-color .15s,border-color .15s,box-shadow .2s}
+ .btn:active,.lms-btn:active{transform:scale(.96)}
+ .btn-primary:hover{box-shadow:0 8px 18px -8px rgba(47,91,234,.7)!important;transform:translateY(-1px)}
+ .modal-backdrop:not(.sheet-bd){animation:bdIn .2s ease both}.modal:not(.sheet){animation:modalIn .32s var(--pop) both}
+ @keyframes bdIn{from{opacity:0}to{opacity:1}}@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+ .modal-backdrop.closing{animation:bdOut .15s ease both!important}@keyframes bdOut{to{opacity:0}}
+ .modal-backdrop.sheet-bd{animation:sheetIn .26s var(--spring) both!important}.sh-main.sh-fade{animation:shFade .22s var(--spring)!important}
+ @keyframes sheetIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+ .modal-backdrop.sheet-bd.sh-still{animation:none!important}
+ .toast{animation:toastIn .4s var(--pop) both}@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
+ .rub-tile,.sh-st,.rub-chip,.btn{position:relative}
+ .pop{animation:popB .3s var(--pop)}@keyframes popB{0%{transform:scale(1)}45%{transform:scale(1.045)}100%{transform:scale(1)}}
+ .rub-tile.on{animation:tilePop .34s var(--pop)}@keyframes tilePop{0%{transform:scale(.96)}60%{transform:scale(1.035)}100%{transform:scale(1)}}
+ .rub-gt,.rub-pts,.rub-step output{transition:color .2s}
+ .sh-pal{animation:bdIn .15s ease both}.sh-pal-box{animation:modalIn .26s var(--pop) both}
+ .sh-pi{transition:background .1s,transform .12s}.sh-pi.on{transform:translateX(3px)}
+ .lms-empty{background:linear-gradient(90deg,transparent,rgba(47,91,234,.12),transparent);background-size:220% 100%;animation:shim 1.3s linear infinite;border-radius:10px;padding:18px}
+ @keyframes shim{from{background-position:130% 0}to{background-position:-130% 0}}
+ .sidebar-nav .nav-item,.nav-item{transition:background .15s,transform .15s var(--spring),padding .15s}.nav-item:hover{transform:translateX(3px)}
+ .ea-logo{transition:transform .5s var(--pop)}.sidebar-logotype:hover .ea-logo,.hp-mark:hover .ea-logo{transform:rotate(-8deg) scale(1.08)}
+ html{scroll-behavior:smooth}
+}
+#ea-prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:3000;background:linear-gradient(90deg,var(--accent),#7C9BFF,#FFC93C);box-shadow:0 0 10px rgba(47,91,234,.6);opacity:0;transition:width .22s ease-out,opacity .25s;pointer-events:none;border-radius:0 3px 3px 0}
+.ea-conf{position:fixed;inset:0;z-index:4000;pointer-events:none;overflow:hidden}.ea-conf i{position:absolute;top:62%;border-radius:2px;display:block}
+.lms-rv-wrap{margin-top:14px}
 </style>
 </head>
 <body>
@@ -5582,45 +5621,15 @@ function renderPeerReviewCard(ps,pair,doneCount,totalCount){
   const pct=totalCount?Math.round(doneCount/totalCount*100):0;
   return `<div style="min-height:100vh;background:var(--paper);font-family:var(--f-body)">
     <div style="background:var(--glass);backdrop-filter:blur(6px);color:var(--ink);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5">
-      <div style="font-family:var(--f-body);font-size:20px;font-weight:300">${t?t.title:'Peer Review'}</div>
+      <div style="font-family:var(--f-body);font-size:20px;font-weight:800;letter-spacing:-.02em">${t?t.title:'Peer Review'}</div>
       <div style="font-size:11px;opacity:.6;letter-spacing:.08em;text-transform:uppercase">Review ${doneCount+1} of ${totalCount}</div>
     </div>
     <div style="background:var(--paper-aged);height:4px"><div style="background:var(--burgundy);height:100%;width:${pct}%;transition:width .3s"></div></div>
     <div style="max-width:820px;margin:0 auto;padding:32px 20px 100px">
-      <div style="background:var(--burgundy-pale);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:24px;font-size:12.5px;color:var(--burgundy);line-height:1.6">
+      <div style="background:var(--hl-soft);border:1.5px solid var(--accent);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:24px;font-size:13.5px;color:var(--ink);line-height:1.6">
         <strong>Anonymous review:</strong> you won't see whose response this is, and they won't see who reviewed them. Score each rubric criterion the way your instructor would, then add optional written feedback.
       </div>
-      ${essayItems.map(item=>{
-        const key=item.key;const q=item.q;
-        const ans=s&&s.answers?s.answers[key]:undefined;
-        const draftScores=(pair.rubricScores&&pair.rubricScores[key])||{};
-        const draftFeedback=(pair.feedback&&pair.feedback[key])||'';
-        return `<div style="background:var(--cream);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;margin-bottom:20px">
-          <div style="font-size:16px;margin-bottom:14px;font-family:var(--f-body);line-height:1.5">${renderStem(q.stem)||'(No question text)'}</div>
-          <div style="background:var(--paper-aged);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;font-family:var(--f-body);font-size:15px;line-height:1.7">${ans&&String(ans).trim()?ans:'<em style="color:var(--ink-soft)">No response was submitted for this question.</em>'}</div>
-          ${(q.rubric&&q.rubric.length)?`
-          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Rubric</div>
-          ${q.rubric.map((row,ri)=>{
-            const scored=draftScores[ri];
-            const pts=[];for(let p=0;p<=row.maxPoints;p+=q.rubricHalf?.5:1)pts.push(Math.round(p*2)/2);
-            return `<div class="rubric-row">
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:600;letter-spacing:.03em">${row.criterion}</div>
-                ${row.description?`<div class="text-xs text-muted">${row.description}</div>`:''}
-              </div>
-              <div class="rubric-pts-btns">
-                ${pts.map(p=>`<button type="button" class="rubric-pt-btn ${scored===p?'selected':''}" onclick="setPeerRubricScore('${pair.id}','${key}',${ri},${p})">${p}pts</button>`).join('')}
-              </div>
-              <div style="margin-left:8px;font-size:13px;font-weight:600;min-width:56px;text-align:right">${scored!==undefined?scored:'—'}/${row.maxPoints}</div>
-            </div>`;
-          }).join('')}
-          `:'<div class="text-sm text-muted" style="font-style:italic;margin-bottom:12px">No rubric was set for this question.</div>'}
-          <div style="margin-top:14px">
-            <label class="form-label">Feedback for this response (optional)</label>
-            <textarea class="form-control" rows="3" placeholder="What worked well? What could be stronger?" oninput="setPeerFeedback('${pair.id}','${key}',this.value)">${draftFeedback.replace(/</g,'&lt;')}</textarea>
-          </div>
-        </div>`;
-      }).join('')}
+      ${peerReviewBody({id:'pair:'+pair.id,items:essayItems,answers:(s&&s.answers)||{},scores:(pair.rubricScores=pair.rubricScores||{}),feedback:pair.feedback||{},fb:k=>"setPeerFeedback('"+pair.id+"','"+k+"',this.value)",change:()=>save()})}
       <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="submitPeerReview('${pair.id}')">Submit Review &amp; Continue</button>
     </div>
   </div>`;
@@ -5660,14 +5669,7 @@ function submitPeerReview(pairId){
   if(!pair) return;
   const t=APP.tests.find(tt=>tt.id===ps.testId);
   const fqs=t?flatQuestions(t):[];
-  for(const key of ps.essayKeys){
-    const item=fqs.find(f=>f.key===key);
-    const rubric=item&&item.q.rubric;
-    if(!rubric||!rubric.length) continue;
-    const scores=(pair.rubricScores&&pair.rubricScores[key])||{};
-    const allScored=rubric.every((_,ri)=>scores[ri]!==undefined);
-    if(!allScored){toast('Please score every rubric criterion before submitting.','error');return;}
-  }
+  if(!peerReviewComplete(ps.essayKeys.map(k=>fqs.find(f=>f.key===k)).filter(Boolean),pair.rubricScores||{})){toast('Please score every required rubric criterion before submitting.','error');return;}
   pair.status='completed';
   pair.completedAt=new Date().toISOString();
   save();
@@ -12072,86 +12074,36 @@ function fxCreditPill(h){if(!h)return;let e=document.getElementById('fx-credit')
 </script>
 
 <script id="ea-polish">
-/* ═══ SAT SCALED SCORE ═══
-   S1  = min(650, 200 + 450·f1)            f = (points earned ÷ points possible) in that module
-   S2E = 450 + 200·f2   (easier module 2)  S2H = 450 + 350·f2   (harder module 2)
-   W   = 0.55·S1 + 0.45·S2                 R  = 200 + 600·(W − 312.5)/405
-   Because f is a fraction, any module length works. A one-module or unsectioned test uses its overall
-   fraction for both modules. If the module-2 difficulty isn't named ("harder"/"easier" in its title),
-   it is blended smoothly from module-1 performance. The reported range is R ± 20 rounded to 10 and
-   limited to 200–800; shorter tests widen it. A perfect paper is always 800.                          */
-function fxSatCalc(t,sub,g){
-  if(!t||!t.satSubject||!g||!g.sections)return null;
-  const rows=g.sections.filter(r=>r.scored&&r.max>0&&r.reached!==false);
-  if(!rows.length)return null;
-  const tot=rows.reduce((a,r)=>({p:a.p+r.points,m:a.m+r.max,n:a.n+r.count}),{p:0,m:0,n:0});
-  const perfect=!g.pending&&tot.p>=tot.m-1e-9;
-  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-  let m1,m2,n;
-  if(rows.length>=2){m1=rows[0];m2=rows[1];n=m1.count+m2.count;}
-  else{m1=m2=rows[0];n=rows[0].count;}
-  const f1=m1.points/m1.max,f2=m2.points/m2.max;
-  const S1=Math.min(650,200+450*f1);
-  const easy=450+200*f2,hard=450+350*f2;
-  const label=(m2.title||'')+' '+(m2.id||'');
-  const lv=(t.sections||[]).find(x=>x.id===m2.id);let h=lv&&lv.satLevel==='hard'?1:lv&&lv.satLevel==='easy'?0:/hard|upper|advanced/i.test(label)?1:/easy|easier|lower|basic/i.test(label)?0:clamp((f1-0.4)/0.4,0,1);
-  if(m1===m2)h=clamp((f1-0.4)/0.4,0,1);
-  const S2=easy*(1-h)+hard*h;
-  const W=0.55*S1+0.45*S2;
-  const R=200+600*(W-312.5)/405;
-  const r10=x=>Math.round(x/10)*10,c=x=>clamp(r10(x),200,800);
-  const full=t.satSubject==='sat-math'?44:54;
-  const margin=n>=full?20:Math.min(100,Math.ceil(20*Math.sqrt(full/Math.max(1,n))/10)*10);
-  let score=c(R),lo=c(R-margin),hi=c(R+margin);
-  if(perfect){score=800;lo=800;hi=800;}
-  return {score,lo,hi,margin,partial:n<full,text:lo===hi?String(score):`${score} (${lo}–${hi})`};
-}
-{const o=window.sxComputeGrade;window.sxComputeGrade=function(t,s){const g=o(t,s);if(t&&t.satSubject){try{const r=fxSatCalc(t,s,g);if(r){g.scaled=r.text;g.sat=r;}}catch(e){}}return g;};}
-{const o=window.sxGrading;window.sxGrading=function(t){const G=o(t);if(t&&t.satSubject)G.showScaled=true;return G;};}
-{const o=window.sxUsesEngine;window.sxUsesEngine=function(t){return o(t)||!!(t&&t.satSubject);};}
+/* EdAssess polish: top progress bar, confetti, count-up numbers */
+(function(){
+const reduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* slim progress bar while the app talks to the server */
+let n=0,bar=null,tm=null,w=0;
+function mk(){if(bar)return;bar=document.createElement('div');bar.id='ea-prog';document.body.appendChild(bar);}
+function start(){mk();n++;if(n>1)return;w=8;bar.style.opacity='1';bar.style.width=w+'%';clearInterval(tm);tm=setInterval(()=>{w+=(92-w)*.12;bar.style.width=w+'%';},180);}
+function done(){n=Math.max(0,n-1);if(n)return;clearInterval(tm);bar.style.width='100%';setTimeout(()=>{if(!n){bar.style.opacity='0';setTimeout(()=>{if(!n)bar.style.width='0';},260);}},180);}
+const ap=window.apiPost;
+if(typeof ap==='function')window.apiPost=function(){start();let p;try{p=ap.apply(this,arguments);}catch(e){done();throw e;}return Promise.resolve(p).then(r=>{done();return r;},e=>{done();throw e;});};
+/* mark real navigation so list entrance animations never replay on background refreshes */
+let navT=null;const sp=window.showPage;
+if(typeof sp==='function')window.showPage=function(){document.body.setAttribute('data-nav','1');clearTimeout(navT);navT=setTimeout(()=>document.body.removeAttribute('data-nav'),900);return sp.apply(this,arguments);};
+/* confetti */
+window.shConfetti=function(){if(reduce())return;const c=['#2F5BEA','#FFC93C','#2E9E6B','#E5533D','#7C5CFF'],f=document.createDocumentFragment(),box=document.createElement('div');box.className='ea-conf';
+  for(let i=0;i<70;i++){const s=document.createElement('i');const x=50+(Math.random()-.5)*20;s.style.cssText=`left:${x}%;background:${c[i%5]};width:${6+Math.random()*6}px;height:${8+Math.random()*10}px`;
+    const dx=(Math.random()-.5)*620,dy=-(180+Math.random()*320),r=(Math.random()-.5)*900;
+    s.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx*.6}px,${dy}px) rotate(${r*.5}deg)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy+620}px) rotate(${r}deg)`,opacity:0}],{duration:1500+Math.random()*900,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'});box.appendChild(s);}
+  document.body.appendChild(box);setTimeout(()=>box.remove(),2800);};
+const tt=window.toast;
+if(typeof tt==='function')window.toast=function(m){try{if(/^(Review submitted|Every submission in this list is graded|Assignment created)/.test(m))setTimeout(window.shConfetti,120);}catch(e){}return tt.apply(this,arguments);};
+/* count-up numbers on stat tiles */
+function count(el){const t=el.textContent.trim();if(!/^\d{1,6}(\.\d+)?%?$/.test(t)||el.dataset.cu===t)return;el.dataset.cu=t;if(reduce())return;
+  const pct=t.endsWith('%'),end=parseFloat(t),dec=(t.split('.')[1]||'').replace('%','').length,t0=performance.now(),D=650;
+  (function f(now){const k=Math.min(1,(now-t0)/D),e=1-Math.pow(1-k,3),v=end*e;el.textContent=(dec?v.toFixed(dec):Math.round(v))+(pct?'%':'');if(k<1)requestAnimationFrame(f);else el.textContent=t;})(t0);}
+let q=null;const run=()=>{document.querySelectorAll('.stat-value,.fx-stat b,.lms-stat b').forEach(count);};
+new MutationObserver(()=>{clearTimeout(q);q=setTimeout(run,60);}).observe(document.body,{childList:true,subtree:true});
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('.rub-tile,.btn,.sh-st,.rub-chip');if(!t||reduce())return;t.classList.remove('pop');void t.offsetWidth;t.classList.add('pop');},true);
+})();
 
-/* ═══ NO VISUAL REFRESH ═══ */
-// keep every scroll position and the focused field across a re-render
-function fxKeep(fn){
-  const keyOf=(el,i)=>(el.id?'#'+el.id:(el.className&&typeof el.className==='string'?'.'+el.className.split(/\s+/)[0]:el.tagName))+'|'+i;
-  const saved=[];const seen={};
-  document.querySelectorAll('body *').forEach(el=>{if(el.scrollTop>0||el.scrollLeft>0){const base=keyOf(el,0).split('|')[0];seen[base]=(seen[base]||0);saved.push([base,seen[base]++,el.scrollTop,el.scrollLeft]);}});
-  const wy=window.scrollY,ae=document.activeElement,aid=ae&&ae.id,ss=ae&&ae.selectionStart,se=ae&&ae.selectionEnd;
-  document.body.classList.add('fx-still');
-  let r;try{r=fn();}finally{
-    const cnt={};
-    saved.forEach(([base,idx,top,left])=>{let list;try{list=document.querySelectorAll(base.startsWith('#')?base:base.startsWith('.')?base:base);}catch(e){return;}const el=list[idx];if(el){el.scrollTop=top;el.scrollLeft=left;}});
-    if(wy)window.scrollTo(0,wy);
-    if(aid){const e=document.getElementById(aid);if(e&&e!==document.activeElement){e.focus();try{e.setSelectionRange(ss,se);}catch(x){}}}
-    requestAnimationFrame(()=>document.body.classList.remove('fx-still'));
-  }
-  return r;
-}
-['renderStudentExam','renderLive','renderGrading','renderAnalytics','renderDashboard','renderTests'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){return fxKeep(()=>o.apply(this,arguments));};});
-// pages only "rise in" when you navigate to them, never when they refresh themselves
-{const o=window.showPage;window.showPage=function(p){const r=o(p);const pg=document.getElementById('page-'+p);if(pg)setTimeout(()=>pg.classList.remove('animate-in'),900);return r;};}
-// choosing an answer changes only the choice itself — no rebuild of the question
-window.selectAnswer=function(key,displayJ,type){
-  const ex=APP.currentStudentExam,sub=ex.sub,a=ex.a;
-  let j=displayJ;
-  if(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])j=sub.shuffledChoices[key][displayJ];
-  if(type==='mc'){sub.answers[key]=j;}
-  else{if(!Array.isArray(sub.answers[key]))sub.answers[key]=[];const arr=sub.answers[key];const i=arr.indexOf(j);if(i>=0)arr.splice(i,1);else arr.push(j);}
-  save();saveLocalResume();
-  const btns=[...document.querySelectorAll('#student-wrapper .answer-btn')].filter(b=>(b.getAttribute('onclick')||'').indexOf("selectAnswer('"+key+"'")===0);
-  if(!btns.length){renderStudentExam();return;}
-  btns.forEach(b=>{
-    const m=/selectAnswer\('[^']*',(\d+)/.exec(b.getAttribute('onclick'));if(!m)return;
-    const dj=+m[1];const aj=(sxShufC(a)&&sub.shuffledChoices&&sub.shuffledChoices[key])?sub.shuffledChoices[key][dj]:dj;
-    const on=type==='mc'?sub.answers[key]===aj:(sub.answers[key]||[]).includes(aj);
-    b.classList.toggle('selected',on);
-    if(type==='ms'){const bx=b.firstElementChild;if(bx&&!bx.classList.contains('answer-letter')){bx.style.background=on?'var(--bb-blue)':'transparent';bx.style.borderColor=on?'var(--bb-blue)':'#8B98A9';bx.innerHTML=on?'<svg fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg>':'';}}
-  });
-  // answered counter + question-palette dot
-  const fq=examItems();const n=fq.filter(f=>sub.answers&&sub.answers[f.key]!==undefined).length;
-  document.querySelectorAll('#student-wrapper span').forEach(sp=>{const tn=sp.firstChild;if(tn&&tn.nodeType===3&&/^\d+\/\d+ answered/.test(tn.nodeValue))tn.nodeValue=tn.nodeValue.replace(/^\d+/,n);});
-  try{fxDecorateStudent();}catch(e){}
-};
 </script>
 
 <script id="ea-privacy">
@@ -13634,12 +13586,7 @@ window.stuReviewView=function(){
   const items=stuRevItems(R);
   return `${back}<header class="lms-head"><div><h1>${E(title)}</h1><p class="lms-row-m">Peer review ${d.done+1} of ${d.total} · anonymous both ways</p></div></header>
   <p class="lms-note">You won’t see whose work this is, and they won’t see who reviewed them. Score each criterion the way your teacher would, then add feedback that helps.</p>
-  ${items.map(it=>{const k=it.key,q=it.q,ans=d.answers[k],sc=R.scores[k]||{};
-    return `<section class="lms-rv"><div class="lms-rv-q">${renderStem(q.stem)||'(No question text)'}</div>
-    <div class="lms-rv-a">${ans&&String(ans).trim()?E(String(ans)).replace(/\n/g,'<br>'):'<i>No response.</i>'}</div>
-    ${(q.rubric&&q.rubric.length)?q.rubric.map((row,ri)=>{const pts=[];for(let p=0;p<=row.maxPoints;p+=q.rubricHalf?.5:1)pts.push(Math.round(p*2)/2);
-      return `<div class="rubric-row"><div style="flex:1"><div style="font-weight:700;font-size:14px">${E(row.criterion)}</div>${row.description?`<div class="lms-row-m">${E(row.description)}</div>`:''}</div><div class="rubric-pts-btns">${pts.map(p=>`<button type="button" class="rubric-pt-btn ${sc[ri]===p?'selected':''}" onclick="stuRevScore('${E(k)}',${ri},${p})">${p}</button>`).join('')}</div><div class="lms-rv-t">${sc[ri]!==undefined?sc[ri]:'—'}/${row.maxPoints}</div></div>`;}).join(''):'<p class="lms-row-m">No rubric for this question. Leave written feedback below.</p>'}
-    <label class="lms-rv-l">Feedback <span class="lms-row-m">(optional)</span></label><textarea class="form-control" rows="3" placeholder="What worked? What would make it stronger?" oninput="stuRevFb('${E(k)}',this.value)">${E(R.fb[k]||'')}</textarea></section>`;}).join('')}
+  <div class="lms-rv-wrap">${peerReviewBody({id:'stu:'+R.sid,items:items,answers:d.answers,scores:R.scores,feedback:R.fb,fb:function(k){return "stuRevFb('"+k+"',this.value)"},change:function(){stuRevQueue()}})}</div>
   <div class="lms-rv-bar"><button class="lms-btn" id="stu-rv-go" onclick="stuRevSubmit()">Submit review</button><span class="lms-row-m" id="stu-rv-st"></span></div>`;
 };
 let _revT=null;
@@ -13652,7 +13599,7 @@ window.stuRevScore=function(k,ri,v){const R=STU.rev;R.scores[k]=R.scores[k]||{};
 window.stuRevFb=function(k,v){STU.rev.fb[k]=v;stuRevQueue();};
 window.stuRevSubmit=async function(){
   const R=STU.rev;
-  for(const it of stuRevItems(R)){const rb=it.q.rubric;if(!rb||!rb.length)continue;const sc=R.scores[it.key]||{};if(!rb.every((_,i)=>sc[i]!==undefined)){toast('Score every criterion before submitting.','error');return;}}
+  if(!peerReviewComplete(stuRevItems(R),R.scores)){toast('Score every required criterion before submitting.','error');return;}
   const b=document.getElementById('stu-rv-go');if(b){b.disabled=true;b.textContent='Submitting…';}
   clearTimeout(_revT);
   const r=await stuRevSave(true);
@@ -13785,7 +13732,7 @@ const lvTitle=t=>{const a=String(t||'').split('\n');return{h:a.length>1?a[0].tri
 function val(s,qKey,ri){return s.rubricScores&&s.rubricScores[qKey]?s.rubricScores[qKey][ri]:undefined;}
 function sumOf(s,qKey){const o=(s.rubricScores&&s.rubricScores[qKey])||{};return Object.values(o).reduce((a,v)=>a+(+v||0),0);}
 function maxTotal(q){return totalOf(q.rubric||[]);}
-function crit(q,s,qKey,sid,r,ri){
+function crit(q,s,qKey,sid,r,ri,opts){opts=opts||{};
   const k=r.kind||'std',v=val(s,qKey,ri),max=maxOf(r),half=!!q.rubricHalf,step=half?.5:1;
   let body='';
   if(k==='check'){body=`<label class="rub-chk"><input type="checkbox" ${v>0?'checked':''} onchange="rubPick('${sid}','${qKey}',${ri},this.checked?${max}:0)"><span>Met</span></label>`;}
@@ -13797,17 +13744,18 @@ function crit(q,s,qKey,sid,r,ri){
   const note=(s.rubricNotes&&s.rubricNotes[qKey]&&s.rubricNotes[qKey][ri])||'';
   const chips=bank(q);
   return `<div class="rub-c rub-k-${k}" data-ri="${ri}"><div class="rub-ch"><div><b>${E(r.criterion||'Criterion '+(ri+1))}</b>${k!=='std'?`<em>${KIND[k]}</em>`:''}${r.description?`<p>${E(r.description)}</p>`:''}</div><span class="rub-pts" data-pts>${k==='deduct'?(v||0):(v===undefined?'–':v)} / ${k==='deduct'?'−'+max:max}</span></div>${body}
-   <details class="rub-note" ${note?'open':''}><summary>Feedback for this criterion</summary><textarea class="form-control" rows="2" placeholder="Visible to the student" oninput="rubNote('${sid}','${qKey}',${ri},this.value)">${E(note)}</textarea>${chips.length?`<div class="rub-chips">${chips.map(c=>`<button type="button" class="rub-chip" data-t="${E(c)}" onclick="rubChip(this,'${sid}','${qKey}',${ri})">${E(c)}</button>`).join('')}</div>`:''}</details></div>`;
+   ${opts.peer?'':`<details class="rub-note" ${note?'open':''}><summary>Feedback for this criterion</summary><textarea class="form-control" rows="2" placeholder="Visible to the student" oninput="rubNote('${sid}','${qKey}',${ri},this.value)">${E(note)}</textarea>${chips.length?`<div class="rub-chips">${chips.map(c=>`<button type="button" class="rub-chip" data-t="${E(c)}" onclick="rubChip(this,'${sid}','${qKey}',${ri})">${E(c)}</button>`).join('')}</div>`:''}</details>`}</div>`;
 }
-window.rubGradeHtml=function(q,s,qKey,sid){
+window.rubGradeHtml=function(q,s,qKey,sid,opts){opts=opts||{};
   const R=q.rubric;
   return `<div class="rub-g" data-sid="${sid}" data-k="${qKey}">
-   ${q.rubricGuide?`<details class="rub-aid"><summary>Scoring guide</summary><div>${E(q.rubricGuide)}</div></details>`:''}
-   ${q.rubricModel?`<details class="rub-aid"><summary>Model answer</summary><div>${E(q.rubricModel)}</div></details>`:''}
-   <div class="rub-gbar"><b>Rubric</b><span class="rub-gt" data-gt>${sumOf(s,qKey)} / ${maxTotal(q)}</span><span class="rub-sp"></span><button type="button" class="btn btn-ghost btn-sm" onclick="rubFull('${sid}','${qKey}')">Full marks</button><button type="button" class="btn btn-ghost btn-sm" onclick="rubClear('${sid}','${qKey}')">Clear</button></div>
-   ${R.map((r,ri)=>crit(q,s,qKey,sid,r,ri)).join('')}</div>`;
+   ${!opts.peer&&q.rubricGuide?`<details class="rub-aid"><summary>Scoring guide</summary><div>${E(q.rubricGuide)}</div></details>`:''}
+   ${!opts.peer&&q.rubricModel?`<details class="rub-aid"><summary>Model answer</summary><div>${E(q.rubricModel)}</div></details>`:''}
+   <div class="rub-gbar"><b>Rubric</b><span class="rub-gt" data-gt>${sumOf(s,qKey)} / ${maxTotal(q)}</span><span class="rub-sp"></span>${opts.peer?'':`<button type="button" class="btn btn-ghost btn-sm" onclick="rubFull('${sid}','${qKey}')">Full marks</button><button type="button" class="btn btn-ghost btn-sm" onclick="rubClear('${sid}','${qKey}')">Clear</button>`}</div>
+   ${R.map((r,ri)=>crit(q,s,qKey,sid,r,ri,opts)).join('')}</div>`;
 };
-function ctx(sid,qKey){const s=APP.submissions.find(x=>x.id===sid);if(!s)return{};const t=APP.tests.find(x=>x.id===s.testId);const it=(sxGradableItems(t,s)||[]).find(i=>(i.passageIdx!==undefined?`p${i.passageIdx}_s${i.subIdx}`:String(i.idx))===qKey);return{s,t,q:it&&it.q};}
+window.RUBPEER=window.RUBPEER||{};
+function ctx(sid,qKey){const P=RUBPEER[sid];if(P)return{s:P.s,t:null,q:P.qs[qKey]};const s=APP.submissions.find(x=>x.id===sid);if(!s)return{};const t=APP.tests.find(x=>x.id===s.testId);const it=(sxGradableItems(t,s)||[]).find(i=>(i.passageIdx!==undefined?`p${i.passageIdx}_s${i.subIdx}`:String(i.idx))===qKey);return{s,t,q:it&&it.q};}
 function paint(sid,qKey){
   const {s,t,q}=ctx(sid,qKey);if(!s||!q)return;
   const root=document.querySelector(`.rub-g[data-sid="${sid}"][data-k="${qKey}"]`);if(!root)return;
@@ -13822,10 +13770,11 @@ function paint(sid,qKey){
   const sc=document.getElementById('gr-score');if(sc){try{sc.textContent=`${s.score||0}/${calcTotalPoints(t,s)} pts`;}catch(e){}}
   const st=document.querySelector(`.sh-st[data-id="${sid}"] em`);if(st&&!s.graded)st.textContent='In progress';
 }
+function commit(sid,qKey){const P=RUBPEER[sid];if(P){if(P.change)P.change(qKey);}else{save();recalcAndSave(sid);}paint(sid,qKey);}
 function write(sid,qKey,ri,v){const {s}=ctx(sid,qKey);if(!s)return;s.rubricScores=s.rubricScores||{};s.rubricScores[qKey]=s.rubricScores[qKey]||{};
   if(v===undefined)delete s.rubricScores[qKey][ri];else s.rubricScores[qKey][ri]=v;
   const q=ctx(sid,qKey).q;if(q){let g=0;while(sumOf(s,qKey)<-1e-9&&g++<50){const d=q.rubric.findIndex((r,i)=>r.kind==='deduct'&&(val(s,qKey,i)||0)<0);if(d<0)break;s.rubricScores[qKey][d]=Math.min(0,(val(s,qKey,d)||0)+(+q.rubric[d].penalty||1));}}
-  save();recalcAndSave(sid);paint(sid,qKey);}
+  commit(sid,qKey);}
 window.rubPick=function(sid,qKey,ri,v,typed){const {s,q}=ctx(sid,qKey);if(!s||!q)return;const r=q.rubric[ri],max=maxOf(r);
   if(typed){if(v===''){write(sid,qKey,ri,undefined);return;}let n=parseFloat(v);if(isNaN(n))return;n=Math.max(0,Math.min(max,fxRound(n,q.rubricHalf)));write(sid,qKey,ri,n);return;}
   v=+v;const cur=val(s,qKey,ri);if(cur===v&&(r.kind||'std')!=='check')write(sid,qKey,ri,undefined);else write(sid,qKey,ri,v);};
@@ -13834,10 +13783,33 @@ window.rubDeduct=function(sid,qKey,ri,d){const {s,q}=ctx(sid,qKey);if(!s||!q)ret
   const others=sumOf(s,qKey)-(val(s,qKey,ri)||0);while(n>0&&others-n*pen<0)n--;
   write(sid,qKey,ri,n?-n*pen:0);};
 window.rubFull=function(sid,qKey){const {s,q}=ctx(sid,qKey);if(!s||!q)return;s.rubricScores=s.rubricScores||{};s.rubricScores[qKey]=s.rubricScores[qKey]||{};
-  q.rubric.forEach((r,ri)=>{const k=r.kind||'std';if(k==='std'||k==='check')s.rubricScores[qKey][ri]=maxOf(r);else if(k==='deduct')s.rubricScores[qKey][ri]=0;});save();recalcAndSave(sid);paint(sid,qKey);};
-window.rubClear=function(sid,qKey){const {s}=ctx(sid,qKey);if(!s)return;if(s.rubricScores)delete s.rubricScores[qKey];save();recalcAndSave(sid);paint(sid,qKey);};
+  q.rubric.forEach((r,ri)=>{const k=r.kind||'std';if(k==='std'||k==='check')s.rubricScores[qKey][ri]=maxOf(r);else if(k==='deduct')s.rubricScores[qKey][ri]=0;});commit(sid,qKey);};
+window.rubClear=function(sid,qKey){const {s}=ctx(sid,qKey);if(!s)return;if(s.rubricScores)delete s.rubricScores[qKey];commit(sid,qKey);};
 window.rubNote=function(sid,qKey,ri,v){const {s}=ctx(sid,qKey);if(!s)return;s.rubricNotes=s.rubricNotes||{};s.rubricNotes[qKey]=s.rubricNotes[qKey]||{};if(v.trim())s.rubricNotes[qKey][ri]=v;else delete s.rubricNotes[qKey][ri];save();};
 window.rubChip=function(btn,sid,qKey,ri){const ta=btn.closest('.rub-note').querySelector('textarea');ta.value=(ta.value.trim()?ta.value.replace(/\s+$/,'')+'\n':'')+btn.dataset.t;rubNote(sid,qKey,ri,ta.value);};
+
+/* ---------- shared peer review body (same components the teacher grades with) ---------- */
+const OK=new Set(['P','BR','STRONG','B','EM','I','U','UL','OL','LI','BLOCKQUOTE','H1','H2','H3','H4','CODE','PRE','SUB','SUP','SPAN','DIV','S']);
+window.rubSafeHtml=function(a){a=String(a==null?'':a);if(!a.trim())return '';
+  if(!/<[a-z][\s\S]*>/i.test(a))return E(a).replace(/\n/g,'<br>');
+  const d=new DOMParser().parseFromString('<div>'+a+'</div>','text/html').body.firstChild;
+  (function w(n){[].slice.call(n.childNodes).forEach(c=>{if(c.nodeType===3)return;if(c.nodeType!==1){n.removeChild(c);return;}
+    if(!OK.has(c.tagName)){const t=document.createTextNode(c.textContent);n.replaceChild(t,c);return;}
+    [].slice.call(c.attributes).forEach(at=>c.removeAttribute(at.name));w(c);});})(d);
+  return d.innerHTML;};
+window.peerReviewBody=function(o){
+  const P={s:{rubricScores:o.scores,rubricNotes:{}},qs:{},change:o.change};RUBPEER[o.id]=P;
+  return o.items.map((it,i)=>{const q=it.q,k=it.key;P.qs[k]=q;o.scores[k]=o.scores[k]||{};
+    const has=q.rubric&&q.rubric.length,sum=Object.values(o.scores[k]).reduce((a,v)=>a+(+v||0),0);
+    const ans=rubSafeHtml(o.answers[k]);
+    return `<div class="grade-q-row"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span style="font-size:10px;font-weight:700;letter-spacing:.06em">Q${i+1}</span><span class="type-chip">Essay</span></div><span class="text-xs text-muted" id="gqs-${k}">${sum}/${q.points||1}</span></div>
+     <div style="font-size:15px;margin-bottom:8px;line-height:1.5">${renderStem(q.stem)||'(No question text)'}</div>
+     <div class="grade-q-answer">${ans||'<em>No response</em>'}</div>
+     ${has?rubGradeHtml(q,P.s,k,o.id,{peer:true}):'<p class="rub-ch" style="margin:10px 0"><span>No rubric was set for this question. Leave written feedback below.</span></p>'}
+     <div class="mt-2"><label style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px">Feedback for the author (anonymous, optional)</label>
+     <textarea class="form-control" rows="3" style="font-size:13px" placeholder="What worked well? What would make it stronger?" oninput="${o.fb(k)}">${E((o.feedback&&o.feedback[k])||'')}</textarea></div></div>`;}).join('');
+};
+window.peerReviewComplete=function(items,scores){for(const it of items){const rb=it.q.rubric;if(!rb||!rb.length)continue;const sc=scores[it.key]||{};if(!rb.every((r,i)=>(r.kind&&r.kind!=='std')||sc[i]!==undefined))return false;}return true;};
 
 /* ---------- student-facing results ---------- */
 window.rubStudentHtml=function(q,s,qKey){
