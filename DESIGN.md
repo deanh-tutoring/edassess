@@ -49,3 +49,8 @@ Lanterns now read as lanterns everywhere: the homepage pair has a hook, cap, rib
 
 ## Question types
 `ea-qtypes` script holds the `QT` registry (rating, ranking, matching, cloze, numeric, matrix, availability): `init`, `editor`, `widget`, `grade`, `show`, `text`. Builder, student exam, grading and results hook in by wrapping `renderQEditor`, `renderSingleStudentQ`, `addQuestion` and `renderBuilder`; `qtAuto(q)` marks the auto-graded types for scoring. Availability slots are defined in the teacher's zone and stored as UTC ISO strings, so each viewer converts with `Intl`.
+
+
+## Type, color and mark
+
+The interface uses Inter in bold weights. Surfaces are white with strong borders and a single blue accent. The mark is a white E with a gold check on a blue tile (logo.svg, favicon.svg, icon-*.png).

@@ -226,3 +226,7 @@ EdAssess is one page (`index.html`) and one serverless function (`netlify/functi
 ## Moving around
 
 Every screen has its own address, so Back, Forward and Refresh return you to the same place. Setup forms such as creating a test, assigning it, or editing a class open as full pages. The grading screen has a list of submissions on the left and Previous and Next buttons (or the [ and ] keys). Press Ctrl+K, or /, to search for anything. Press ? to see every shortcut.
+
+## Rubrics
+
+Rubrics now support several scoring models in one place. Each criterion can be a scored criterion with performance levels, a checklist item, a deduction (points removed per occurrence, with a cap), or a bonus. Descriptions and level descriptors can run to as many lines as you like. There are more than twenty ready-made templates (analytic, holistic, single point, checklist, deductions and subject specific ones), plus a personal library, JSON copy and paste, a scoring guide, a model answer and a comment bank. While grading, clicking a level updates the score on the spot without redrawing the page, each criterion can carry its own feedback, and students see the level they earned with your notes.
