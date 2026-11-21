@@ -230,3 +230,7 @@ Every screen has its own address, so Back, Forward and Refresh return you to the
 ## Rubrics
 
 Rubrics now support several scoring models in one place. Each criterion can be a scored criterion with performance levels, a checklist item, a deduction (points removed per occurrence, with a cap), or a bonus. Descriptions and level descriptors can run to as many lines as you like. There are more than twenty ready-made templates (analytic, holistic, single point, checklist, deductions and subject specific ones), plus a personal library, JSON copy and paste, a scoring guide, a model answer and a comment bank. While grading, clicking a level updates the score on the spot without redrawing the page, each criterion can carry its own feedback, and students see the level they earned with your notes.
+
+## Peer review for students who did not take the test
+
+When you start a peer review session you choose two lists. The first is the responses to be reviewed: real submissions and any sample responses you write yourself. The second is the reviewers: students who took the test, whole classes you pick from your rosters, or names you type in. Reviewers who never took the test see the work with no author shown, exactly like everyone else. Students with accounts find the review on their Home page. Anyone added by name uses the session link.

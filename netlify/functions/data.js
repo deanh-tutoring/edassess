@@ -276,7 +276,11 @@ async function readFull(user) {
   const core = await readCore(user);
   const ok = await subKeyFilter(user);
   const page = await readSubsPage(P.sub, null, ok);
-  return { ...core, submissions: page.submissions, truncated: !!page.next };
+  // teacher-written sample responses for peer review live outside any assignment
+  const tids = new Set(core.tests.map((x) => x.id));
+  const sk = await listKeys(P.sub + '_/');
+  const samples = (await mapLimit(sk, 12, getJ)).filter((v) => v && v.sample && tids.has(v.testId));
+  return { ...core, submissions: page.submissions.concat(samples), truncated: !!page.next };
 }
 async function subKeyFilter(user) {
   const ids = await myAsgIds(user);
@@ -286,6 +290,7 @@ async function subKeyFilter(user) {
 async function canTouchSub(sub, user) {
   if (!sub) return false;
   if (okId(sub.assignmentId)) { const a = await getJ(P.asg + sub.assignmentId); return !!asgRole(a, user); }
+  if (sub.sample && okId(sub.testId)) { const r = await getJ(P.test + sub.testId); return !!r && (testRole(r.data, user) || lc(user.username) === ADMIN_USER); }
   return lc(user.username) === ADMIN_USER;
 }
 // names the students may see: assignment/test owners, co-teachers, graders, commenters, op senders
@@ -666,7 +671,7 @@ async function peerSummary(s, subs) {
   const sessions = (await readAll(P.peer)).vals.filter(Boolean);
   const tasks = [], feedback = {};
   for (const ps of sessions) {
-    const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId));
+    const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId) || (p.reviewerKey && p.reviewerKey === s.key));
     if (mine.length) {
       const done = mine.filter((p) => p.status === 'completed').length;
       if (ps.status === 'active' || done === mine.length) {
@@ -686,7 +691,7 @@ async function studentPeerTask(body, s) {
   const ps = okId(body.sessionId) ? await getJ(P.peer + body.sessionId) : null;
   if (!ps) return bad('That peer review no longer exists.', 404);
   const ids = await mySubIds(s);
-  const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId));
+  const mine = (ps.pairs || []).filter((p) => ids.has(p.reviewerSubId) || (p.reviewerKey && p.reviewerKey === s.key));
   if (!mine.length) return bad('You are not part of this peer review.', 403);
   const pending = mine.filter((p) => p.status !== 'completed');
   const pair = pending.find((p) => p.id === body.pairId) || pending[0] || null;
@@ -705,7 +710,7 @@ async function studentPeerSave(body, s) {
   if (!ps) return bad('That peer review no longer exists.', 404);
   if (ps.status !== 'active') return bad('This peer review is closed.', 409);
   const ids = await mySubIds(s);
-  const pair = (ps.pairs || []).find((p) => p.id === body.pairId && ids.has(p.reviewerSubId));
+  const pair = (ps.pairs || []).find((p) => p.id === body.pairId && (ids.has(p.reviewerSubId) || (p.reviewerKey && p.reviewerKey === s.key)));
   if (!pair) return bad('That review is not assigned to you.', 403);
   if (pair.status === 'completed') return reply(200, { ok: true, already: true });
   const sc = body.rubricScores && typeof body.rubricScores === 'object' ? body.rubricScores : {};
@@ -717,7 +722,7 @@ async function studentPeerSave(body, s) {
   if (!pair.startedAt) pair.startedAt = new Date().toISOString();
   if (body.complete) { pair.status = 'completed'; pair.completedAt = new Date().toISOString(); }
   await putJ(key, ps);
-  const mine = ps.pairs.filter((p) => ids.has(p.reviewerSubId));
+  const mine = ps.pairs.filter((p) => ids.has(p.reviewerSubId) || (p.reviewerKey && p.reviewerKey === s.key));
   return reply(200, { ok: true, total: mine.length, done: mine.filter((p) => p.status === 'completed').length });
 }
 const TERMS_V = '2026-11-17';

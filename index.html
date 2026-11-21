@@ -1803,6 +1803,16 @@ label,.form-label,th,.badge,.type-chip,.btn{font-weight:700}
 #home-page{--hp-soft:#26393D;--hp-sky1:#FFFFFF;--hp-sky2:#E6EEFF;--hp-wv1:#C9D9FF;--hp-wv2:#9DB8FF;--hp-wv3:#6F93F5;--hp-card:rgba(255,255,255,.92);--hp-line:rgba(12,36,40,.28)}
 body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;--hp-wv2:#0B2F36;--hp-wv3:#07232A;--hp-card:rgba(8,28,32,.6);--hp-line:rgba(242,246,245,.2);--hp-soft:#A9C0C4}
 .hp-link{font-weight:700}.hp-btn{font-weight:700}
+/* peer review builder */
+.pb-list{max-height:260px;overflow:auto;border:1.5px solid var(--border);border-radius:10px;padding:6px;background:#fff}
+.pb-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+.pb-row:hover{background:var(--hl-soft)}.pb-row input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.pb-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-tag{font-style:normal;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.pb-x{border:0;background:transparent;cursor:pointer;font-size:14px;color:var(--muted);padding:2px 6px;border-radius:6px}.pb-x:hover{background:var(--rust-pale);color:var(--rust)}
+.pb-none{padding:14px;color:var(--muted);font-size:13px}
+.pb-add{margin-top:14px;padding:14px;border:1.5px dashed var(--border-dark);border-radius:10px;display:grid;gap:10px;font-size:14px}
+.pb-line{display:flex;gap:10px;align-items:flex-start}
 </style>
 </head>
 <body>
@@ -5245,7 +5255,7 @@ function renderPeerPage(){
   // Tests eligible for peer review: have at least one essay question AND at least one submitted response.
   const eligibleTests=APP.tests.filter(t=>{
     if(getEssayKeysForTest(t).length===0) return false;
-    return APP.submissions.some(s=>s.testId===t.id&&s.status==='submitted');
+    return true;
   });
   if(!_peerBuilderTestId&&eligibleTests.length) _peerBuilderTestId=eligibleTests[0].id;
   const sessions=APP.peerSessions.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
@@ -5259,7 +5269,7 @@ function renderPeerPage(){
       <div style="font-size:16px;font-weight:700;margin-bottom:4px">Start a new peer review session</div>
       
       ${eligibleTests.length===0?`
-        <div style="padding:16px;background:var(--paper-warm);border-radius:var(--r);font-size:13px;color:var(--ink-soft)">No eligible tests yet. A test needs at least one essay question and at least one submitted response before you can start peer review on it.</div>
+        <div style="padding:16px;background:var(--paper-warm);border-radius:var(--r);font-size:13px;color:var(--ink-soft)">No eligible tests yet. A test needs at least one essay question before you can start peer review on it.</div>
       `:`
         <div class="form-group">
           <label class="form-label">Test</label>
@@ -5349,7 +5359,7 @@ function renderPeerSessionCard(ps){
     <div class="flex items-center justify-between mb-2">
       <div>
         <div style="font-size:15px;font-weight:700">${t.title}</div>
-        <div class="text-xs text-muted">Started ${formatDate(ps.createdAt)} · ${ps.includedSubmissionIds.length} students · ${ps.reviewsPerStudent} review${ps.reviewsPerStudent!==1?'s':''} each</div>
+        <div class="text-xs text-muted">Started ${formatDate(ps.createdAt)} · ${ps.includedSubmissionIds.length} response${ps.includedSubmissionIds.length!==1?'s':''} · ${ps.reviewerCount||new Set(ps.pairs.map(p=>p.reviewerName)).size} reviewer${(ps.reviewerCount||new Set(ps.pairs.map(p=>p.reviewerName)).size)!==1?'s':''} · ${ps.reviewsPerStudent} review${ps.reviewsPerStudent!==1?'s':''} each</div>
       </div>
       <span class="badge ${ps.status==='active'?'badge-sage':'badge-gray'}">${ps.status==='active'?'Active':'Closed'}</span>
     </div>
@@ -5500,7 +5510,7 @@ function renderPeerReviewNameEntry(ps,t){
     <h2 style="font-family:var(--f-display);font-size:32px;color:var(--ink);margin-bottom:4px;line-height:1.1">${t.title}</h2>
     
     <div style="margin-bottom:20px">
-      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">Enter the exact name you used on the exam</label>
+      <label style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;color:var(--ink-soft)">Enter your name exactly as your teacher listed it</label>
       <input type="text" id="peer-name-input" style="width:100%;padding:11px 14px;border:1px solid var(--border-dark);border-radius:var(--r);font-size:14px;outline:none;font-family:var(--f-body);background:var(--cream);color:var(--ink);letter-spacing:.04em" placeholder="e.g. Dean H" onkeydown="if(event.key==='Enter')submitPeerReviewName('${ps.id}')">
       <div class="form-hint" style="margin-top:6px">Example: Dean H</div>
       <div id="peer-name-error" class="hidden" style="margin-top:8px;background:var(--rust-pale);border:1px solid var(--rust);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--rust);letter-spacing:.04em"></div>
@@ -13836,6 +13846,86 @@ window.rubStudentHtml=function(q,s,qKey){
     const L=lvTitle(r.levels&&r.levels[v]);
     const pts=k==='deduct'?`${v||0}`:`${v===undefined?0:v}/${max}`;
     return `<div class="rub-sc"><div class="rub-sh"><b>${E(r.criterion)}${k!=='std'?` <em>${KIND[k]}</em>`:''}</b><span>${pts}</span></div>${L.h?`<strong>${E(L.h)}</strong>`:''}${L.b?`<p>${E(L.b)}</p>`:''}${nt[ri]?`<blockquote>${E(nt[ri])}</blockquote>`:''}</div>`;}).join('')+'</div>';
+};
+})();
+
+</script>
+<script id="ea-peer">
+/* Peer review: reviewers who never took the test, and teacher-written sample responses */
+(function(){
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let extra=[],sel={rev:{},vee:{}},forTest=null;
+function reset(t){if(forTest!==t){forTest=t;extra=[];sel={rev:{},vee:{}};}}
+const on=(k,id)=>sel[k][id]!==false;
+const subsOf=t=>APP.submissions.filter(s=>s.testId===t.id&&s.status==='submitted');
+const samplesOf=t=>APP.submissions.filter(s=>s.testId===t.id&&s.sample);
+function refresh(){const b=document.getElementById('peer-builder-body');if(b)b.innerHTML=renderPeerBuilderBody();}
+window.peerToggle=function(k,id,v){sel[k][id]=!!v;};
+window.peerAll=function(k,v){const t=APP.tests.find(x=>x.id===_peerBuilderTestId);if(!t)return;const ids=k==='rev'?subsOf(t).map(s=>s.id).concat(extra.map(x=>x.id)):subsOf(t).concat(samplesOf(t)).map(s=>s.id);ids.forEach(i=>sel[k][i]=v);refresh();};
+renderPeerBuilderBody=function(){
+  const t=APP.tests.find(tt=>tt.id===_peerBuilderTestId);if(!t)return '';reset(t.id);
+  const subs=subsOf(t),smp=samplesOf(t),classes=(APP.classes||[]).filter(c=>(c.students||[]).length);
+  const row=(k,id,name,tag,del)=>`<label class="pb-row"><input type="checkbox" ${on(k,id)?'checked':''} onchange="peerToggle('${k}','${id}',this.checked)"><span class="student-avatar" style="background:${avatarColor(name)};color:#fff;width:26px;height:26px;font-size:10px;font-weight:700">${initials(name)}</span><span class="pb-n">${E(name)}</span>${tag?`<em class="pb-tag">${tag}</em>`:''}${del?`<button type="button" class="pb-x" title="Remove" onclick="event.preventDefault();${del}">✕</button>`:''}</label>`;
+  return `
+  <div class="form-group"><label class="form-label">Responses to be reviewed (${subs.length+smp.length})</label>
+    <div class="pb-list">${subs.map(s=>row('vee',s.id,s.studentName,'')).join('')}${smp.map(s=>row('vee',s.id,s.studentName,'Sample',`peerSampleDel('${s.id}')`)).join('')}${(subs.length+smp.length)?'':'<div class="pb-none">No responses yet. Add a sample response below, or wait for students to submit.</div>'}</div>
+    <div class="flex gap-2 mt-2"><button type="button" class="btn btn-secondary btn-sm" onclick="peerSampleModal()">Add a sample response</button><button type="button" class="btn btn-ghost btn-sm" onclick="peerAll('vee',true)">Select all</button><button type="button" class="btn btn-ghost btn-sm" onclick="peerAll('vee',false)">Select none</button></div>
+    <div class="form-hint">Sample responses are written by you. Reviewers see them exactly like a classmate's work, with no name shown.</div></div>
+  <div class="form-group"><label class="form-label">Reviewers (${subs.length+extra.length})</label>
+    <div class="pb-list">${subs.map(s=>row('rev',s.id,s.studentName,'Took the test')).join('')}${extra.map(x=>row('rev',x.id,x.name,x.key?'Has an account':'Name only',`peerExtraDel('${x.id}')`)).join('')}${(subs.length+extra.length)?'':'<div class="pb-none">Add reviewers below.</div>'}</div>
+    <div class="flex gap-2 mt-2" style="flex-wrap:wrap"><button type="button" class="btn btn-ghost btn-sm" onclick="peerAll('rev',true)">Select all</button><button type="button" class="btn btn-ghost btn-sm" onclick="peerAll('rev',false)">Select none</button></div>
+    <div class="pb-add"><b>Add reviewers who did not take this test</b>
+      ${classes.length?`<div class="pb-line"><select class="form-control" id="pb-class" style="flex:1">${classes.map(c=>`<option value="${c.id}">${E(c.name)} (${c.students.length})</option>`).join('')}</select><button type="button" class="btn btn-secondary btn-sm" onclick="peerAddClass()">Add this class</button></div>`:''}
+      <div class="pb-line"><textarea class="form-control" id="pb-names" rows="2" placeholder="Or type names, one per line. They open the review link and enter their name." style="flex:1"></textarea><button type="button" class="btn btn-secondary btn-sm" onclick="peerAddNames()">Add names</button></div>
+      <div class="form-hint">Students in a class see the review on their Home page. Anyone added by name uses the session link.</div></div></div>
+  <div class="form-group"><label class="form-label">Reviews per reviewer</label><input type="number" id="peer-reviews-per-student" class="form-control" style="width:120px" value="2" min="1" max="20"></div>
+  <button class="btn btn-primary" id="start-peer-session-btn" onclick="startPeerSession()">Start peer review session</button>`;
+};
+window.peerAddClass=function(){const id=(document.getElementById('pb-class')||{}).value;const c=(APP.classes||[]).find(x=>x.id===id);if(!c)return;addExtra((c.students||[]).map(s=>({name:s.name,key:s.key})));};
+window.peerAddNames=function(){const v=(document.getElementById('pb-names')||{}).value||'';addExtra(v.split('\n').map(x=>x.trim()).filter(Boolean).map(n=>({name:formatStudentName(n),key:null})));};
+function addExtra(list){const t=APP.tests.find(x=>x.id===_peerBuilderTestId);const have=new Set(subsOf(t).map(s=>s.studentName.toLowerCase()).concat(extra.map(x=>x.name.toLowerCase())));let n=0;
+  list.forEach(x=>{if(!x.name||have.has(x.name.toLowerCase()))return;have.add(x.name.toLowerCase());extra.push({id:'x'+uid(),name:x.name,key:x.key});n++;});
+  refresh();toast(n?`${n} reviewer${n===1?'':'s'} added.`:'Those reviewers are already on the list.',n?'success':'error');}
+window.peerExtraDel=function(id){extra=extra.filter(x=>x.id!==id);refresh();};
+window.peerSampleDel=function(id){if(!confirm('Delete this sample response?'))return;const s=APP.submissions.find(x=>x.id===id);APP.submissions=APP.submissions.filter(x=>x.id!==id);delete _lastSynced.submissions[id];cacheLocally();apiPost({action:'deleteSubmission',id});refresh();};
+window.peerSampleModal=function(){
+  const t=APP.tests.find(x=>x.id===_peerBuilderTestId);if(!t)return;
+  const fq=flatQuestions(t),keys=getEssayKeysForTest(t),n=samplesOf(t).length;
+  openModal(`<div class="modal-header"><h2 class="serif">Add a sample response</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><div class="form-group"><label class="form-label">Label</label><input class="form-control" id="smp-name" value="Sample ${String.fromCharCode(65+(n%26))}" maxlength="60"></div>
+  ${keys.map((k,i)=>{const it=fq.find(f=>f.key===k);const stem=String((it&&it.q.stem)||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,160);return `<div class="form-group"><label class="form-label">Response ${keys.length>1?'to question '+(i+1):''}</label><div class="form-hint" style="margin-bottom:6px">${E(stem)}</div><textarea class="form-control" rows="7" data-k="${k}" placeholder="Write the sample response. Line breaks are kept."></textarea></div>`;}).join('')}
+  <div id="smp-err" class="hidden" style="color:var(--rust);font-weight:700;font-size:13px"></div></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="peerSampleSave()">Save sample</button></div>`,'720px');
+};
+window.peerSampleSave=function(){
+  const t=APP.tests.find(x=>x.id===_peerBuilderTestId);const name=(document.getElementById('smp-name').value||'').trim();
+  const ans={};document.querySelectorAll('#modal-container textarea[data-k]').forEach(a=>{const v=a.value.trim();if(v)ans[a.dataset.k]=v.split(/\n{2,}/).map(p=>'<p>'+E(p).replace(/\n/g,'<br>')+'</p>').join('');});
+  const err=document.getElementById('smp-err');
+  if(!name||!Object.keys(ans).length){err.textContent='Enter a label and at least one response.';err.classList.remove('hidden');return;}
+  const now=new Date().toISOString();
+  APP.submissions.push({id:uid(),testId:t.id,studentName:name,status:'sample',sample:true,answers:ans,flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,startedAt:now,submittedAt:now});
+  save();closeModal();refresh();toast('Sample response saved.','success');
+};
+function pairUp(reviewers,vee,N){
+  const cnt={};vee.forEach(id=>cnt[id]=0);const pairs=[];let low=N;
+  const rs=reviewers.slice();shuffleArray(rs);
+  rs.forEach(r=>{const c=vee.filter(id=>id!==r.subId);shuffleArray(c);c.sort((a,b)=>cnt[a]-cnt[b]);const take=c.slice(0,N);low=Math.min(low,take.length);
+    take.forEach(id=>{cnt[id]++;pairs.push({id:uid(),reviewerName:r.name,reviewerSubId:r.subId||null,reviewerKey:r.key||null,revieweeSubId:id,status:'pending',rubricScores:{},feedback:{},hiddenFromStudent:false,startedAt:null,completedAt:null});});});
+  return {pairs,actual:low};
+}
+startPeerSession=async function(){
+  const t=APP.tests.find(tt=>tt.id===_peerBuilderTestId);if(!t)return;
+  const vee=subsOf(t).concat(samplesOf(t)).filter(s=>on('vee',s.id)).map(s=>s.id);
+  const reviewers=subsOf(t).filter(s=>on('rev',s.id)).map(s=>({name:s.studentName,subId:s.id,key:s.studentKey||null})).concat(extra.filter(x=>on('rev',x.id)).map(x=>({name:x.name,subId:null,key:x.key})));
+  if(!vee.length){toast('Choose at least one response to be reviewed.','error');return;}
+  if(!reviewers.length){toast('Choose at least one reviewer.','error');return;}
+  const N=Math.max(1,parseInt(document.getElementById('peer-reviews-per-student').value,10)||1);
+  const {pairs,actual}=pairUp(reviewers,vee,N);
+  if(!pairs.length){toast('Those reviewers have nothing to review. Add a sample response or more students.','error');return;}
+  const ps={id:uid(),testId:t.id,createdAt:new Date().toISOString(),reviewsPerStudent:actual||N,status:'active',essayKeys:getEssayKeysForTest(t),includedSubmissionIds:vee,reviewerCount:reviewers.length,pairs};
+  const btn=document.getElementById('start-peer-session-btn');setBtnSaving(btn,true,'Starting…');
+  APP.peerSessions.push(ps);save();await new Promise(r=>setTimeout(r,400));setBtnSaving(btn,false);
+  toast(`Peer review started with ${reviewers.length} reviewer${reviewers.length===1?'':'s'}, ${actual||N} review${(actual||N)===1?'':'s'} each.`,'success');renderPeerPage();
 };
 })();
 
