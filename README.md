@@ -221,3 +221,8 @@ EdAssess is one page (`index.html`) and one serverless function (`netlify/functi
 <div align="center">
 <sub>Made with care for classrooms. Questions or ideas? Open an issue.</sub>
 </div>
+
+
+## Moving around
+
+Every screen has its own address, so Back, Forward and Refresh return you to the same place. Setup forms such as creating a test, assigning it, or editing a class open as full pages. The grading screen has a list of submissions on the left and Previous and Next buttons (or the [ and ] keys). Press Ctrl+K, or /, to search for anything. Press ? to see every shortcut.
