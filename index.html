@@ -2813,6 +2813,7 @@ function eaResolveConflict(id,choice){
 function eaScopeQuery(){
   const p=new URLSearchParams(location.search);
   if(p.get('exam')) return {exam:p.get('exam')};
+  if(p.get('scan')) return {exam:p.get('scan')};
   if(p.get('results')) return {results:p.get('results')};
   return null;
 }
@@ -8777,6 +8778,8 @@ window.addEventListener('DOMContentLoaded',async ()=>{
     loadUploadPage();
   } else if(params.get('exam')){
     loadStudentExam();
+  } else if(params.get('scan')){
+    loadStudentScan(params.get('scan'));
   } else if(params.get('results')){
     loadStudentResults(params.get('results'));
   } else if(params.get('portal')){
@@ -11955,7 +11958,7 @@ const EA_AUTH_KEY='ea_auth_v1';
 window.EA_ME=null;window.EA_AUTH_FAILED=false;
 function eaAuthLoad(){try{return JSON.parse(localStorage.getItem(EA_AUTH_KEY))||null;}catch(e){return null;}}
 function eaToken(){const a=eaAuthLoad();return (a&&a.token)||'';}
-function eaStudentPage(){const p=new URLSearchParams(location.search);return ['exam','results','portal','peerreview','upload'].some(k=>p.get(k));}
+function eaStudentPage(){const p=new URLSearchParams(location.search);return ['exam','scan','results','portal','peerreview','upload'].some(k=>p.get(k));}
 (function(){
   const f=window.fetch.bind(window);
   window.fetch=function(u,o){
@@ -14634,16 +14637,74 @@ window.scStu2=async files=>{const E0=APP.currentStudentExam,box=$('sc-st');if(!E
   catch(x){box.innerHTML=`<div style="color:var(--rust,#b3261e)">${e(x.message)}</div>`}};
 window.eaScan={prep,findAnchors,readSheet,sheetGeom,sheetHtml,toAnswers,loadImg,numbered};
 
+/* ───────── student: turn in a paper answer sheet by photo (no exam screen) ───────── */
+const SS={a:null,t:null,name:'',pages:{},cur:{},ack:{},ver:null,need:1,ok:false,busy:false,err:''};
+function ssCss(){if($('ss-css'))return;const s=document.createElement('style');s.id='ss-css';s.textContent=`
+.ss{min-height:100vh;background:#f4f6fb;color:#111;font-family:Inter,system-ui,sans-serif;padding:20px 14px 60px}.ss-w{max-width:640px;margin:0 auto}.ss h1{font-size:26px;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}.ss .sub{color:#555;font-size:14px;margin:0 0 16px}
+.ss-c{background:var(--cream);border:2px solid #111;border-radius:16px;padding:16px;margin:0 0 14px}.ss-c h2{font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.08em}
+.ss ol{margin:0 0 6px 18px;padding:0;font-size:14px;line-height:1.5}.ss-b{display:inline-flex;align-items:center;justify-content:center;border:2px solid #111;background:#111;color:#fff;border-radius:12px;padding:11px 18px;font:700 15px Inter,sans-serif;cursor:pointer}.ss-b.g{background:var(--cream);color:#111}.ss-b[disabled]{opacity:.35;cursor:not-allowed}
+.ss-in{width:100%;border:2px solid #111;border-radius:10px;padding:10px 12px;font:16px Inter,sans-serif}.ss-cv{width:100%;border-radius:10px;border:1px solid #ccc;margin:6px 0}
+.ss-r{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:10px;border:2px solid transparent;margin:2px 0;flex-wrap:wrap}.ss-r.f{border-color:#e5484d;background:var(--cream)4f4}.ss-r.d{border-color:#1a9d4b;background:#f2fbf5}.ss-n{font-weight:800;min-width:34px;text-align:right}
+.ss-ch{min-width:42px;height:42px;border:2px solid #111;border-radius:50%;background:var(--cream);font:700 15px Inter,sans-serif;cursor:pointer;padding:0 6px}.ss-ch.on{background:#111;color:#fff}.ss-ch.bl{border-radius:21px;font-size:12px;border-style:dashed;min-width:58px}.ss-ch.bl.on{background:#555}
+.ss-t{font-size:12px;color:#b3261e;font-weight:700;flex-basis:100%;margin-left:44px}.ss-ok{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:10px 0}.ss-ok input{width:22px;height:22px;margin-top:2px}.ss-er{color:#b3261e;font-weight:600;margin:8px 0}`;document.head.appendChild(s)}
+function ssWho(){try{const a=stuLoad();return(a&&a.student&&a.student.name)||''}catch(x){return''}}
+window.loadStudentScan=function(aid){
+  ssCss();const a=(APP.assignments||[]).find(x=>x.id===aid),t=a&&(APP.tests||[]).find(x=>x.id===a.testId),sw=$('student-wrapper');
+  const lp=$('login-page'),ap=$('app');if(lp)lp.classList.add('hidden');if(ap)ap.classList.add('hidden');sw.classList.remove('hidden');
+  if(!a||!t){sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>One moment</h1><p class="sub">Checking this assignment...</p></div></div></div>';
+    fetch(API_URL+'?exam='+encodeURIComponent(aid),{cache:'no-store'}).then(async r=>{let j={};try{j=await r.json()}catch(x){}
+      const msg=r.status===401&&j.needAccount?'This assignment needs your EdAssess account. Sign in, then tap Scan sheet on your assignment list.':r.status===403&&j.notInClass?'This assignment is only for students in the class.':'Check the link your teacher gave you.';
+      sw.innerHTML=`<div class="ss"><div class="ss-w"><div class="ss-c"><h1>${r.status===401||r.status===403?'Sign in needed':'Assignment not found'}</h1><p class="sub">${e(msg)}</p><a class="ss-b" href="${location.pathname}">Go to EdAssess</a></div></div></div>`}).catch(()=>{sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>Could not load</h1><p class="sub">Check your connection and try again.</p></div></div></div>'});return}
+  Object.assign(SS,{a,t,name:ssWho(),pages:{},cur:{},ack:{},ver:null,need:1,err:''});ssDraw()};
+window.ssRows=ssRows;function ssRows(){const out=[];Object.keys(SS.pages).sort().forEach(p=>SS.pages[p].ans.forEach(r=>out.push(r)));return out}
+function ssPos(r){return SS.cur[r.key]||[]}
+function ssDraw(){
+  const sw=$('student-wrapper'),{a,t}=SS,rows=ssRows(),n=Object.keys(SS.pages).length,flagged=rows.filter(r=>r.status!=='ok'),open=flagged.filter(r=>!SS.ack[r.key]);
+  const noSheet=!t.sheetCfg,pages=SS.need,missing=Math.max(0,pages-n);
+  const canGo=n>0&&!missing&&!open.length&&SS.conf&&(SS.name||'').trim().length>1;
+  sw.innerHTML=`<div class="ss"><div class="ss-w"><h1>${e(a.title||t.title||'Assessment')}</h1><p class="sub">Turn in your paper answer sheet. You do not need to take the test on screen.</p>
+  <div class="ss-c"><h2>Your name</h2><input class="ss-in" id="ss-name" placeholder="First name and last initial" value="${e(SS.name)}" ${ssWho()?'readonly':''} oninput="SS_name(this.value)"></div>
+  <div class="ss-c"><h2>${n?'Add another photo':'Photograph your sheet'}</h2>${n?'':'<ol><li>Lay the sheet flat in good light.</li><li>Keep all four black squares in the picture.</li><li>Take the photo from straight above.</li></ol>'}
+  <label class="ss-b" style="margin-right:8px">Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="ssFile(this.files);this.value=''"></label><label class="ss-b g">Choose photo<input type="file" accept="image/*" style="display:none" onchange="ssFile(this.files);this.value=''"></label>${SS.busy?'<span class="sub" style="margin-left:10px">Reading...</span>':''}${SS.err?`<div class="ss-er">${e(SS.err)}</div>`:''}</div>
+  ${n?`<div class="ss-c"><h2>Check every answer</h2><p class="sub" style="margin-top:0">Compare each row with your paper sheet. Tap a letter to change it. Rows in red could not be read clearly, so choose what you marked.${missing?` <b>Your sheet has ${pages} pages and ${missing} still need${missing===1?'s':''} a photo.</b>`:''}</p>
+   ${Object.keys(SS.pages).sort().map(p=>`<canvas class="ss-cv" id="ss-cv-${p}"></canvas>`).join('')}
+   ${rows.map(ssRow).join('')}</div>
+  <div class="ss-c"><label class="ss-ok"><input type="checkbox" ${SS.conf?'checked':''} onchange="SS.conf=this.checked;ssDraw()"><span>I checked every answer above and it matches what I marked on my paper sheet.</span></label>
+  ${open.length?`<div class="ss-er">${open.length} answer${open.length===1?'':'s'} still need your attention.</div>`:''}
+  <button class="ss-b" ${canGo?'':'disabled'} onclick="ssSubmit()">Submit my answers</button><p class="sub" style="margin:10px 0 0">You will see results only after you submit, and only if your teacher has released them.</p></div>`:''}</div></div>`;
+  Object.keys(SS.pages).forEach(p=>{const c=$('ss-cv-'+p);if(c)drawOverlay(SS.pages[p],c,Math.min(600,Math.max(300,innerWidth-60)))})}
+function ssRow(r){const q=r.type==='ms',pos=ssPos(r),fl=r.status!=='ok',done=!fl||SS.ack[r.key];
+  const why=r.status==='multi'?'Two marks found. Pick the one you meant.':r.status==='faint'?'The mark was too light to read.':r.status==='blank'?'No mark found. Choose your answer or leave it blank.':'';
+  return `<div class="ss-r ${fl?(done?'d':'f'):''}"><span class="ss-n">${r.n}</span>${r.ord.slice(0,6).map((_,i)=>`<button type="button" class="ss-ch ${pos.includes(i)?'on':''}" onclick="ssSet('${r.key}',${i})">${lab(cfgOf(SS.t,{}),i)}</button>`).join('')}<button type="button" class="ss-ch bl ${!pos.length&&SS.ack[r.key]?'on':''}" onclick="ssSet('${r.key}',-1)">Blank</button>${fl&&!done?`<div class="ss-t">${why}</div>`:''}</div>`}
+window.ssDraw=ssDraw;window.SS=SS;window.SS_name=v=>{SS.name=v;const b=document.querySelector('.ss-b:not(.g)[onclick^=ssSubmit]');if(b)b.disabled=!(Object.keys(SS.pages).length&&!Math.max(0,SS.need-Object.keys(SS.pages).length)&&SS.conf&&v.trim().length>1&&!ssRows().filter(r=>r.status!=='ok'&&!SS.ack[r.key]).length)};
+window.ssSet=(k,i)=>{const r=ssRows().find(x=>x.key===k);if(!r)return;let p=ssPos(r).slice();if(i<0)p=[];else if(r.type==='ms'){const x=p.indexOf(i);if(x>=0)p.splice(x,1);else p.push(i)}else p=p[0]===i?[]:[i];SS.cur[k]=p;SS.ack[k]=true;SS.conf=false;ssDraw()};
+window.ssFile=async files=>{const f0=files[0];if(!f0)return;SS.busy=true;SS.err='';ssDraw();await new Promise(r=>setTimeout(r,30));
+  try{const img=await loadImg(f0),res=readSheet(img,SS.t,{o:{}});
+    if(!res.ok){SS.err=res.err}
+    else if(SS.ver!==null&&res.ver!==SS.ver){SS.err='This photo is from a different version of the sheet. Use pages from the same sheet.'}
+    else if(!SS.t.sheetCfg){SS.err='Your teacher has not set up sheet scanning for this test yet.'}
+    else{SS.ver=res.ver;SS.need=res.pages;SS.pages[res.page]=res;res.ans.forEach(r=>{SS.cur[r.key]=r.status==='ok'?r.on.slice():[];delete SS.ack[r.key]});SS.conf=false}}
+  catch(x){SS.err=x.message}
+  SS.busy=false;ssDraw()};
+window.ssSubmit=function(){
+  const{a,t}=SS,name=(SS.name||'').trim(),rows=ssRows();if(!name||!rows.length)return;
+  const answers={};rows.forEach(r=>{const p=ssPos(r);if(!p.length)return;answers[r.key]=r.type==='mc'?r.ord[p[0]]:p.map(i=>r.ord[i]).sort((x,y)=>x-y)});
+  const iso=new Date().toISOString(),nm=ssWho()?name:formatStudentName(name);
+  const sub={id:uid(),testId:t.id,assignmentId:a.id,studentName:nm,status:'submitted',startedAt:iso,submittedAt:iso,answers,flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,scanned:true,scanConfirmed:true,sheetVersion:SS.ver};
+  APP.submissions.push(sub);try{autoScore(sub,t)}catch(x){}try{save()}catch(x){}
+  renderSubmittedScreen(sub,a,t)};
+/* open it from the assignment list and from the exam start screen */
+(function(){const o=window.stuRow;if(typeof o==='function')window.stuRow=function(a){const h=o(a);if(!a||!a.sheet)return h;return h.replace(/(<a class="stu-btn" href="\?exam=)/,`<a class="stu-btn ghost" href="?scan=${e(a.id)}">Scan sheet</a>$1`)};})();
+(function(){const o=window.loadStudentExam;if(typeof o==='function')window.loadStudentExam=function(){const r=o.apply(this,arguments);try{const a=APP.assignments.find(x=>x.id===new URLSearchParams(location.search).get('exam')),t=a&&APP.tests.find(x=>x.id===a.testId);
+  if(t&&t.sheetCfg&&t.sheetCfg.studentScan!==false){const l=document.createElement('a');l.href='?scan='+a.id;l.textContent='Have a paper answer sheet? Turn it in by photo instead';l.style.cssText='position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#fff;font:600 14px Inter,sans-serif;text-decoration:underline;z-index:5';$('student-wrapper').appendChild(l)}}catch(x){}return r}})();
+
 /* ───────── entry points ───────── */
 function nav(){
   if(document.querySelector('.nav-item[data-page="print"]'))return;const b=document.querySelector('.nav-item[data-page="backup"]');if(!b)return;
   const a=document.createElement('a');a.className='nav-item';a.dataset.page='print';a.onclick=()=>prCenter();
   a.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 14h12v7H6z"/></svg>Print';b.parentNode.insertBefore(a,b);}
 function ctx(){
-  const sw=$('student-wrapper');
-  if(sw&&window.APP&&APP.currentStudentExam&&APP.currentStudentExam.t&&sw.querySelector('.student-q,.student-timer-center,.sx-note,[class*=student]')&&!document.getElementById('sc-stu-btn')&&!document.getElementById('sc-st')&&APP.currentStudentExam.t.sheetCfg&&APP.currentStudentExam.t.sheetCfg.studentScan!==false&&APP.currentStudentExam.t.questions.some(q=>q.type==='mc'||q.type==='ms')){
-    const b=document.createElement('button');b.id='sc-stu-btn';b.type='button';b.className='btn btn-secondary';b.textContent='Scan my answer sheet';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:50';b.onclick=()=>scanForStudent();document.body.appendChild(b);}
-  else if(document.getElementById('sc-stu-btn')&&!(APP.currentStudentExam&&APP.currentStudentExam.t))document.getElementById('sc-stu-btn').remove();
+
   /* builder header */
   const bp=$('page-builder');
   if(bp&&!bp.classList.contains('hidden')&&APP.currentTest&&!bp.querySelector('.pr-quick')){

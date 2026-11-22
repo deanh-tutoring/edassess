@@ -270,3 +270,7 @@ Tests with sections print as booklets. Each section gets its own header, time li
 The bubble answer sheet has four black corner squares, version and sheet bubbles, and an optional student number. Print one per student for a class and the number comes pre-filled. Then open **Scan bubble sheets** (Print Center, command palette), take or upload a photo of each filled sheet, and multiple choice is scored right away. Anything faint or double marked is flagged for you to fix before you record it. Students can also scan their own sheet while taking a test to fill in their multiple choice answers.
 
 Answer sheets are fully customizable in the Print Center: title, instruction line, extra header fields, bubbles per question, letters (A, a or 1), bubble shape and size, row spacing, columns, shaded row groups, letters inside bubbles, and which header lines appear. The design is saved with the test, so the scanner always reads the sheet the way it was printed. You can also turn off student self-scanning per test.
+
+### Students turning in a paper sheet
+
+Students do not have to open the test at all. Once you have printed a sheet for a test, a **Scan sheet** button appears next to Start on their assignment list (and a "turn it in by photo" link on the test start screen). They photograph their sheet, check every answer against their paper, fix anything flagged, tick the confirmation box and submit. Nothing is scored or shown to them until they confirm, and results appear afterward only if you have released them.
