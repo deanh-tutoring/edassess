@@ -262,3 +262,9 @@ Everything can go on paper, and it is laid out for paper rather than copied from
 - **Print this page:** prints what you are looking at with the menus hidden.
 
 The grader also has a Print button for the student you are viewing.
+
+### Sections, STOP pages and scannable answer sheets
+
+Tests with sections print as booklets. Each section gets its own header, time limit and any special instructions you type, and a STOP page follows it. EdAssess measures the pages and adds blank pages so every STOP page, and every new section, lands on an odd page and cannot be peeked at. Images in questions, passages and options print too.
+
+The bubble answer sheet has four black corner squares, version and sheet bubbles, and an optional student number. Print one per student for a class and the number comes pre-filled. Then open **Scan bubble sheets** (Print Center, command palette), take or upload a photo of each filled sheet, and multiple choice is scored right away. Anything faint or double marked is flagged for you to fix before you record it. Students can also scan their own sheet while taking a test to fill in their multiple choice answers.

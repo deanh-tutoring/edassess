@@ -1914,6 +1914,12 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .pr-pv{border:2px solid var(--line,#d8dce6);border-radius:10px;overflow:hidden;background:#e9ecf2}.pr-pv iframe{width:100%;height:100%;border:0;background:#fff}
 @media(max-width:900px){.pr-modal .pr-wrap{grid-template-columns:1fr;height:auto}.pr-pv{height:60vh}}
 @media print{#sidebar,.sh-bar,.sh-rail,.sh-pn,#sh-pal,.modal-backdrop,#ea-nf,.pr-quick,.cw-menu,.btn{display:none!important}#main,.page-view{height:auto!important;overflow:visible!important;margin:0!important}body{background:#fff!important}}
+.pr-sec{border-top:2px solid var(--line,#d8dce6);margin-top:10px;padding-top:8px}.pr-sec b{display:block;margin-bottom:4px}
+.sc-list{margin-top:12px;display:grid;gap:10px}.sc-card{border:2px solid var(--line,#d8dce6);border-radius:12px;padding:10px 12px}.sc-card.bad{border-color:#e5484d}
+.sc-top{display:flex;gap:12px}.sc-cv{width:220px;max-height:280px;object-fit:contain;border-radius:8px;border:1px solid var(--line,#d8dce6);align-self:flex-start}.sc-info{flex:1;min-width:0}
+.sc-sc{margin:6px 0;font-size:16px}.sc-fl{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0}.sc-f{display:flex;gap:6px;align-items:center;font-size:13px}.sc-f select{border:1px solid var(--line,#ccc);border-radius:6px;padding:2px 4px}
+@media(max-width:560px){.sc-top{flex-direction:column}.sc-cv{width:100%}}
+@media print{#sc-stu-btn{display:none!important}}
 </style>
 </head>
 <body>
@@ -14110,7 +14116,13 @@ const $=id=>document.getElementById(id);
 const TL={mc:'Multiple choice',ms:'Select all',short:'Short answer',essay:'Essay',passage:'Passage'};const tl=q=>TL[q.type]||(window.QT&&QT[q.type]&&QT[q.type].label)||q.type;
 const LET='ABCDEFGHIJ';
 const pl=h=>{h=String(h==null?'':h);if(!/<[a-z][\s\S]*>/i.test(h))return h;try{return(new DOMParser().parseFromString(h,'text/html').body.textContent||'').trim()}catch(x){return h.replace(/<[^>]+>/g,'')}};
-const rich=h=>{h=String(h==null?'':h);try{return window.rubSafeHtml?rubSafeHtml(h):e(pl(h)).replace(/\n/g,'<br>')}catch(x){return e(pl(h))}};
+const OKT=new Set(['P','BR','STRONG','B','EM','I','U','UL','OL','LI','BLOCKQUOTE','H1','H2','H3','H4','CODE','PRE','SUB','SUP','SPAN','DIV','S','IMG','TABLE','THEAD','TBODY','TR','TD','TH','FIGURE','FIGCAPTION']);
+const rich=h=>{h=String(h==null?'':h);if(!h.trim())return'';if(!/<[a-z][\s\S]*>/i.test(h))return e(h).replace(/\n/g,'<br>');
+  try{const d=new DOMParser().parseFromString('<div>'+h+'</div>','text/html').body.firstChild;
+  (function w(n){[].slice.call(n.childNodes).forEach(c=>{if(c.nodeType===3)return;if(c.nodeType!==1){n.removeChild(c);return}
+    if(!OKT.has(c.tagName)){n.replaceChild(document.createTextNode(c.textContent),c);return}
+    const keep=c.tagName==='IMG'?{src:1,alt:1,width:1,height:1}:{colspan:1,rowspan:1};
+    [].slice.call(c.attributes).forEach(at=>{if(!keep[at.name]||(at.name==='src'&&!/^(data:image\/|https?:|blob:)/i.test(at.value)))c.removeAttribute(at.name)});w(c)})})(d);return d.innerHTML}catch(x){return e(pl(h))}};
 const stem=h=>{try{return window.renderStem?renderStem(h):rich(h)}catch(x){return rich(h)}};
 const rng=seed=>{let s=0;for(let i=0;i<seed.length;i++)s=(s*31+seed.charCodeAt(i))>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}};
 const shuf=(a,seed)=>{const r=rng(seed),b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
@@ -14158,6 +14170,14 @@ td.c,th.c{text-align:center}tr{break-inside:avoid}thead{display:table-header-gro
 .sm{font-size:${sz-2}pt;color:#555}.muted{color:#666}
 .bs{display:grid;grid-template-columns:repeat(${o.bscols||3},1fr);gap:0 18pt}.bs .r{display:flex;align-items:center;gap:5pt;padding:2.2pt 0;border-bottom:.5pt solid #ddd}.bs .r b{min-width:20pt;text-align:right;font-size:${sz-2}pt}
 .tb{position:sticky;top:0;background:#111;color:#fff;padding:8px 14px;font:13px Helvetica,Arial;display:flex;justify-content:space-between}.tb button{background:#2f6bff;color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer}
+.sf{position:relative;width:7in;height:9.6in;margin:0 auto}.an{position:absolute;background:#000;display:block}
+.sb{position:absolute;width:.15in;height:.15in;border:1.3pt solid #000;border-radius:50%;box-sizing:border-box;display:block}.sb.on{background:#000}
+.st2{position:absolute;font-size:7pt;line-height:1;color:#222;white-space:nowrap}.st2.lb{font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}.st2.dg{font-size:6.5pt;width:.1in;text-align:center;margin-left:-.01in}.st2.nn{font-size:8pt;font-weight:700;width:.3in;text-align:right;margin-left:-.05in}
+.sht{position:absolute;font-size:13pt;line-height:1.25}.sht span{font-size:9pt;color:#444}.sht2{position:absolute;font-size:7.5pt;color:#444;line-height:1.3}.sfl{position:absolute;border-bottom:1pt solid #000;font-size:9pt;color:#444;padding-bottom:1pt;height:.22in;display:flex;align-items:flex-end}
+.sech{border-top:3pt solid #111;padding-top:6pt;margin:2pt 0 10pt}.sl2{font-size:${sz-2}pt;text-transform:uppercase;letter-spacing:.12em;color:#555;font-weight:700}.ins.sp{border-width:2pt}
+.un[data-odd]{break-before:page;page-break-before:page}.blankpg{break-before:page;page-break-before:page;min-height:2in;display:flex;align-items:flex-end;justify-content:center;color:#999;font-size:8pt;padding-bottom:4in}.stop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:7.6in;border:7pt solid #111;border-radius:12pt;padding:30pt;break-inside:avoid}
+.stop h1{font-size:110pt;letter-spacing:.12em;margin:0;line-height:1}.stl{font-size:${sz+7}pt;font-weight:800;margin:6pt 0 14pt;text-transform:uppercase;letter-spacing:.08em}.stop p{font-size:${sz+3}pt;max-width:5in;margin:0 0 10pt}.stop .dn{font-weight:800}
+
 @media print{.tb{display:none}}
 @media screen{body{padding:24px;max-width:8.5in;margin:0 auto;background:var(--cream)}.pg{border-bottom:1px dashed #bbb;margin-bottom:24px;padding-bottom:24px}}`;}
 
@@ -14205,40 +14225,83 @@ function ansText(q,a,s,key){const t=q.type;
   try{return e(QT[t].text(q,a))}catch(x){return e(JSON.stringify(a))}}
 
 /* ───────── paper test ───────── */
+/* ───────── ordering: sections, versions ───────── */
+const secOn=t=>{try{return sxOn(t)}catch(x){return false}};
+function groupShuffle(list,seed,ver){
+  if(!ver)return list;const g=[];list.forEach(x=>{const l=g[g.length-1];if(l&&l[0].idx===x.idx)l.push(x);else g.push([x])});return shuf(g,seed).flat();}
+function blocks(t,o,ver){
+  const its=items(t);
+  if(secOn(t))return t.sections.map((sec,i)=>({sec,i,items:groupShuffle(its.filter(x=>sxQSection(t,t.questions[x.idx])===sec.id),'g'+ver+t.id+sec.id,ver)})).filter(b=>b.items.length);
+  return [{sec:null,i:0,items:groupShuffle(its,'g'+ver+t.id,ver)}];}
+function numbered(t,o,ver){let n=0;const out=[];blocks(t,o,ver).forEach(b=>b.items.forEach(x=>{n++;out.push(Object.assign({n,sec:b.sec},x))}));return out;}
+
+/* ───────── paper test, with sections and STOP pages ───────── */
+const secLine=(sec,o)=>[sec.timeLimitMin?sec.timeLimitMin+' minutes':'',sec.calculator?'Calculator allowed':'',sec.showReference?'Reference sheet allowed':''].filter(Boolean).join(' · ');
+function secHead(sec,bi,nb,o){
+  const ins=(o.secIns&&o.secIns[sec.id])||'';
+  return `<div class="sech"><div class="sl2">Section ${bi+1} of ${nb}</div><h2 style="margin:0">${e(sec.title||'Section '+(bi+1))}</h2>${secLine(sec,o)?`<div class="sub"><b>${e(secLine(sec,o))}</b></div>`:''}${sec.directions?`<div class="ins" style="margin:6pt 0 0">${rich(sec.directions)}</div>`:''}${ins?`<div class="ins sp" style="margin:6pt 0 0"><b>Special instructions.</b> ${e(ins).replace(/\n/g,'<br>')}</div>`:''}</div>`;}
+function stopPage(sec,bi,nb,o){
+  const last=bi===nb-1;const nx=!last;
+  return `<div class="stop"><h1>STOP</h1><div class="stl">${last?'End of the test':'End of Section '+(bi+1)}</div><p>${e(o.stopText||'If you finish before time is called, you may check your work on this section only. Do not turn to the next section.').replace(/\n/g,'<br>')}</p><p class="dn">${nx?'Do not turn the page until you are told to.':'Hand in your test and answer sheet when you are told to.'}</p></div>`;}
 function paperBody(t,o,ver){
-  const its=items(t);let order=its;
-  if(ver&&o.shuffleQ!==false){/* shuffle top-level questions and keep passage blocks together */
-    const groups=[];t.questions.forEach((q,i)=>groups.push(its.filter(x=>x.idx===i)));
-    order=shuf(groups,'g'+ver+t.id).flat();}
+  const bl=blocks(t,o,ver),its=items(t);
   const tot=its.reduce((a,x)=>a+(x.q.points||1),0);
   const nm=o.name!==false?`<div class="fld"><div>Name</div><div class="s">Date</div><div class="s">Class</div>${o.score!==false?'<div class="s">Score / '+fmt(tot)+'</div>':''}</div>`:'';
-  let n=0,lastP=-1,h=`<div class="hd"><div><h1>${e(t.title||'Test')}</h1><div class="sub">${[t.subject,o.teacher,its.length+' questions',fmt(tot)+' points'].filter(Boolean).map(e).join(' · ')}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div>${nm}`;
+  let n=0,lastP=-1,h=`<div class="hd"><div><h1>${e(t.title||'Test')}</h1><div class="sub">${[t.subject,o.teacher,its.length+' questions',fmt(tot)+' points',secOn(t)?bl.length+' sections':''].filter(Boolean).map(e).join(' · ')}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div>${nm}`;
   if(o.instructions)h+=`<div class="ins">${e(o.instructions).replace(/\n/g,'<br>')}</div>`;
-  const body=[];
-  order.forEach(it=>{n++;
-    if(it.passageQ&&it.idx!==lastP){lastP=it.idx;const p=it.passageQ;body.push(`<div class="pas">${(p.docs||[]).map(d=>`<h3>${e(d.title||'')}</h3>${rich(d.content||'')}`).join('')}${p.stem?stem(p.stem):''}</div>`);}
-    body.push(qBody(it.q,n,o,ver,it.key,0));});
-  const cols=o.cols===2?`<div style="column-count:2;column-gap:22pt;column-rule:.5pt solid #ccc">${body.join('')}</div>`:body.join('');
-  return h+cols;}
+  const units=[];let cur=h;
+  bl.forEach((b,bi)=>{
+    const body=[];
+    b.items.forEach(it=>{n++;
+      if(it.passageQ&&it.idx!==lastP){lastP=it.idx;const p=it.passageQ;body.push(`<div class="pas">${(p.docs||[]).map(d=>`<h3>${e(d.title||'')}</h3>${rich(d.content||'')}`).join('')}${p.stem?stem(p.stem):''}</div>`);}
+      body.push(qBody(it.q,n,o,ver,it.key,0));});
+    const cols=o.cols===2?`<div style="column-count:2;column-gap:22pt;column-rule:.5pt solid #ccc">${body.join('')}</div>`:body.join('');
+    if(b.sec){cur+=`<section class="sec">${secHead(b.sec,bi,bl.length,o)}${cols}</section>`;units.push({h:cur,odd:bi>0&&o.stops!==false});cur='';if(o.stops!==false)units.push({h:stopPage(b.sec,bi,bl.length,o),odd:true});}
+    else cur+=cols;});
+  if(cur)units.push({h:cur});
+  return units.map(u=>`<div class="un"${u.odd?' data-odd="1"':''}>${u.h}</div>`).join('');}
+
+/* ───────── bubble sheet: fixed geometry shared by the printer and the scanner ───────── */
+const SHW=7,SHH=9.6,ANC=[[.2,.2],[SHW-.2,.2],[SHW-.2,SHH-.2],[.2,SHH-.2]],PER=24,CW=1.62,RP=0.3,GY=1.95,BP=0.215;
+const idPos=(r,d)=>({x:4.55+.22*d,y:.5+.25*r}),verPos=i=>({x:4.55+.22*i,y:1.3}),pgPos=i=>({x:5.75+.22*i,y:1.3});
+function sheetRows(t,o,ver){return numbered(t,o,ver).filter(x=>x.q.type==='mc'||x.q.type==='ms')}
+function sheetGeom(t,o,ver,page){
+  const all=sheetRows(t,o,ver),pages=Math.max(1,Math.ceil(all.length/(PER*4)));const ch=all.slice(page*PER*4,(page+1)*PER*4);
+  const rows=ch.map((x,k)=>{const c=Math.floor(k/PER),r=k%PER,x0=.3+c*CW,ord=orderFor(x.q,ver,x.key),m=Math.min(6,ord.length);
+    return{n:x.n,key:x.key,type:x.q.type,ord,x0,y:GY+RP*r,opts:Array.from({length:m},(_,i)=>({x:x0+.45+BP*i,y:GY+RP*r}))}});
+  return{rows,pages,cols:Math.max(1,Math.ceil(ch.length/PER)),over:all.some(x=>(x.q.options||[]).length>6)};}
+function sheetHtml(t,o,ver,page,stu){
+  const g=sheetGeom(t,o,ver,page),pos=(x,y,r)=>`left:${(x-r).toFixed(3)}in;top:${(y-r).toFixed(3)}in`;
+  const bub=(x,y,on,at)=>`<i class="sb${on?' on':''}" ${at||''} style="${pos(x,y,.075)}"></i>`;
+  const txt=(x,y,s,c)=>`<span class="st2 ${c||''}" style="left:${x}in;top:${y}in">${s}</span>`;
+  let h=`<div class="sf">`;
+  [.18,.12,.12,.12].forEach((s,i)=>{h+=`<i class="an" style="${pos(ANC[i][0],ANC[i][1],s)};width:${s*2}in;height:${s*2}in"></i>`});
+  h+=`<div class="sht" style="left:.8in;top:.12in;width:3.6in"><b>${e(t.title||'Answer sheet')}</b><br><span>Answer sheet${o.versions>1||ver?' · Version '+LET[ver||0]:''}${g.pages>1?' · Sheet '+(page+1)+' of '+g.pages:''}</span></div>`;
+  h+=`<div class="sfl" style="left:.8in;top:.78in;width:3.6in">${stu?e(stu.name):'Name'}</div><div class="sfl" style="left:.8in;top:1.12in;width:1.6in">Date</div><div class="sfl" style="left:2.5in;top:1.12in;width:1.9in">Class</div>`;
+  h+=`<div class="sht2" style="left:.8in;top:1.42in;width:3.6in">Fill each bubble completely with dark pen or pencil. Keep all four black squares clear and flat. Do not fold.</div>`;
+  const sid=stu&&stu.idx?String(stu.idx).padStart(3,'0'):'';
+  h+=txt(4.55,.18,'Student number','lb');
+  for(let r=0;r<3;r++)for(let d=0;d<10;d++){const p=idPos(r,d);h+=bub(p.x,p.y,sid&&sid[r]==String(d))+(r===0?txt(p.x-.04,.34,d,'dg'):'')}
+  h+=txt(4.55,1.05,'Version','lb')+txt(5.75,1.05,'Sheet','lb');
+  for(let i=0;i<4;i++){const p=verPos(i),q=pgPos(i);h+=bub(p.x,p.y,i===(ver||0))+txt(p.x-.04,1.4,LET[i],'dg')+bub(q.x,q.y,i===page)+txt(q.x-.03,1.4,i+1,'dg')}
+  for(let c=0;c<g.cols;c++){const x0=.3+c*CW;for(let i=0;i<5;i++)h+=txt(x0+.45+BP*i-.04,GY-.3,LET[i],'dg')}
+  g.rows.forEach(r=>{h+=txt(r.x0+.05,r.y-.07,r.n,'nn');r.opts.forEach((p,i)=>{h+=bub(p.x,p.y,false,`data-n="${r.n}" data-p="${i}"`)});});
+  if(g.rows.length&&g.rows.some(r=>r.opts.length>5)){const x0=.3;h+=''}
+  return h+'</div>';}
 function bubbleSheet(t,o,ver){
-  const its=items(t).filter(x=>['mc','ms'].includes(x.q.type));const mx=Math.max(4,...its.map(x=>(x.q.options||[]).length));
-  let n=0;const all=items(t);const rows=[];all.forEach(x=>{n++;if(['mc','ms'].includes(x.q.type)){const k=(x.q.options||[]).length;rows.push(`<div class="r"><b>${n}</b>${Array.from({length:mx},(_,i)=>`<span class="bub ${x.q.type==='ms'?'sq':''}" style="${i>=k?'opacity:.15':''}">${LET[i]}</span>`).join('')}</div>`)}});
-  const nonmc=all.length-rows.length;
-  return `<div class="hd"><div><h1>Answer sheet</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div><div class="fld"><div>Name</div><div class="s">Date</div><div class="s">Class</div></div><div class="ins">Fill in one bubble per question. Fill completely with dark pen or pencil. Select all that apply where the question says so.</div><div class="bs" style="grid-template-columns:repeat(${rows.length>40?3:rows.length>20?2:1},1fr)">${rows.join('')}</div>${nonmc?`<p class="sm">Questions that are not multiple choice are answered in the test booklet.</p>`:''}`;}
-function keyBody(t,o,ver){
-  const its=items(t);let n=0;
-  return `<div class="hd"><div><h1>Answer key</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div></div>`+
-  `<table><thead><tr><th class="c" style="width:30pt">#</th><th>Answer</th><th class="c" style="width:40pt">Pts</th></tr></thead><tbody>${its.map(x=>{n++;return `<tr><td class="c">${n}</td><td>${keyText(x.q,ver,x.key)}</td><td class="c">${fmt(x.q.points||1)}</td></tr>`}).join('')}</tbody></table>`;}
-/* a version shuffles questions, so its key must follow the shuffled order */
+  const g=sheetGeom(t,o,ver,0);let out='';
+  const stus=o.sheetStudents&&o.sheetStudents.length?o.sheetStudents:[null];
+  stus.forEach(st=>{for(let p=0;p<g.pages;p++)out+=`<div class="pg">${sheetHtml(t,o,ver,p,st)}</div>`});
+  return out;}
 function keyBodyV(t,o,ver){
-  const its=items(t);let order=its;
-  if(ver&&o.shuffleQ!==false){const groups=[];t.questions.forEach((q,i)=>groups.push(its.filter(x=>x.idx===i)));order=shuf(groups,'g'+ver+t.id).flat();}
-  let n=0;return `<div class="hd"><div><h1>Answer key</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div><table><thead><tr><th class="c" style="width:30pt">#</th><th>Answer</th><th class="c" style="width:40pt">Pts</th></tr></thead><tbody>${order.map(x=>{n++;return `<tr><td class="c">${n}</td><td>${keyText(x.q,ver,x.key)}</td><td class="c">${fmt(x.q.points||1)}</td></tr>`}).join('')}</tbody></table>`;}
+  let h=`<div class="hd"><div><h1>Answer key</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div>`;
+  const rows=numbered(t,o,ver);
+  return h+`<table><thead><tr><th class="c" style="width:30pt">#</th><th>Answer</th><th class="c" style="width:40pt">Pts</th></tr></thead><tbody>${rows.map((x,i)=>{const hd=x.sec&&(i===0||rows[i-1].sec!==x.sec)?`<tr><th colspan="3" style="background:#ddd">${e(x.sec.title||'Section')}</th></tr>`:'';return hd+`<tr><td class="c">${x.n}</td><td>${keyText(x.q,ver,x.key)}</td><td class="c">${fmt(x.q.points||1)}</td></tr>`}).join('')}</tbody></table>`;}
 function paperTest(t,o){
   const V=Math.max(1,o.versions||1);let out=[];
   for(let v=0;v<V;v++){
     out.push(`<div class="pg">${paperBody(t,o,v)}</div>`);
-    if(o.sheet)out.push(`<div class="pg">${bubbleSheet(t,o,v)}</div>`);}
+    if(o.sheet)out.push(bubbleSheet(t,Object.assign({},o,{sheetStudents:null}),v));}
   if(o.key)for(let v=0;v<V;v++)out.push(`<div class="pg">${keyBodyV(t,o,v)}</div>`);
   return out.join('');}
 function answerKeyDoc(t,o){const V=Math.max(1,o.versions||1);let out=[];for(let v=0;v<V;v++)out.push(`<div class="pg">${keyBodyV(t,o,v)}</div>`);return out.join('');}
@@ -14311,6 +14374,23 @@ function surveyResults(t,o){
     else b=A.length?`<ul style="margin:3pt 0 0 14pt;padding:0">${A.slice(0,40).map(a=>`<li>${e(typeof a==='string'?pl(a):(QT[q.type]&&QT[q.type].text?QT[q.type].text(q,a):''))}</li>`).join('')}</ul>`:'<div class="muted">No responses</div>';
     return `<div class="res" style="border-left-color:#111"><div class="top"><span>${n}. ${e(pl(q.stem).slice(0,120))}</span><span class="tag">${e(tl(q))}</span></div>${b}</div>`}).join('');}
 
+/* Chromium ignores break-before:right, so odd pages are made by measuring each section and inserting blank pages. */
+async function paginate(html,o){
+  if(html.indexOf('data-odd')<0)return html;
+  const A4=o.paper==='A4',M=o.margin||0.6,W=(A4?8.27:8.5)-2*M,Hh=(A4?11.69:11)-2*M;
+  const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.style.cssText=`position:fixed;left:-9999px;top:0;width:${W}in;height:${Hh}in;border:0`;document.body.appendChild(f);
+  f.srcdoc=html;await new Promise(r=>{f.onload=r});const d=f.contentDocument;
+  await Promise.all([].slice.call(d.images).map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,3000)})));
+  try{await d.fonts.ready}catch(x){}
+  const meas=el=>{const m=d.createElement('div');m.style.cssText=`position:absolute;left:0;top:0;visibility:hidden;width:${W}in;height:${Hh}in;column-width:${W}in;column-gap:0;column-fill:auto`;const c=el.cloneNode(true);c.removeAttribute('data-odd');c.style.breakBefore='auto';m.appendChild(c);d.body.appendChild(m);
+    const px=W*96,n=Math.max(1,Math.ceil((m.scrollWidth-2)/px));m.remove();return n};
+  let page=1;const pgs=[].slice.call(d.body.querySelectorAll(':scope>.pg'));
+  const blank=()=>{const b=d.createElement('div');b.className='blankpg';b.textContent='This page is intentionally left blank.';return b};
+  pgs.forEach((pg,pi)=>{
+    if(pi>0&&page%2===0){pg.parentNode.insertBefore(blank(),pg);page++}
+    const us=[].slice.call(pg.querySelectorAll(':scope>.un'));const L=us.length?us:[pg];
+    L.forEach(u=>{if(u.hasAttribute&&u.hasAttribute('data-odd')&&page%2===0){u.parentNode.insertBefore(blank(),u);page++}page+=meas(u)})});
+  const out='<!doctype html>'+d.documentElement.outerHTML;f.remove();return out}
 /* ───────── output: print, preview ───────── */
 function printHtml(html){
   const old=$('ea-pr-frame');if(old)old.remove();
@@ -14323,11 +14403,12 @@ function printHtml(html){
 function openTab(html){const b=new Blob([html],{type:'text/html'}),u=URL.createObjectURL(b);const w=window.open(u,'_blank');if(!w)toast('Your browser blocked the new tab.','error');setTimeout(()=>URL.revokeObjectURL(u),60000)}
 
 /* ───────── Print Center ───────── */
-const PR={kind:'paper',tid:null,sid:'all',cid:null,cls:'all',o:{points:true,name:true,score:true,key:false,sheet:false,versions:1,lines:6,size:11,paper:'letter',cols:1,instructions:'',boxes:false,correct:true,comment:true,rubric:true,summary:true,explain:false,margin:0.6,pts:false,blank:5}};
+const PR={kind:'paper',tid:null,sid:'all',cid:null,cls:'all',o:{points:true,name:true,score:true,key:false,sheet:false,versions:1,lines:6,size:11,paper:'letter',cols:1,instructions:'',boxes:false,correct:true,comment:true,rubric:true,summary:true,explain:false,margin:0.6,pts:false,blank:5,stops:true,secIns:{},stopText:'',sheetCls:''}};
 const KINDS=[
  ['paper','Test on paper','Printable test with name line, bubbles and ruled lines',1],
  ['key','Answer key','Correct answers for every question',1],
- ['sheet','Bubble answer sheet','One page of bubbles for multiple choice',1],
+ ['sheet','Bubble answer sheet','Scannable sheets, one per student if you like',1],
+ ['scan','Scan bubble sheets','Take photos, multiple choice scores itself',1],
  ['results','Student results','One report, or every student, one per page',1],
  ['summary','Class summary','Mean, median, distribution, per question accuracy',1],
  ['gradebook','Gradebook','Every student by every assignment',2],
@@ -14346,11 +14427,11 @@ function build(){
     o.land=k==='gradebook'&&((APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id)).length>6);
     return{title:c.name,html:wrap(c.name,k==='gradebook'?gradebook(c,o):roster(c,o),o)};}
   const t=curTest();if(!t)return{title:'Print',html:wrap('Print','<p>Nothing to print yet. Create an assessment first.</p>',o)};
-  o.foot=(t.title||'')+' · EdAssess';
+  o.foot=(t.title||'')+' · EdAssess';o.dbl=k==='paper'&&secOn(t)&&o.stops!==false;
   let body='';
   if(k==='paper')body=paperTest(t,o);
   else if(k==='key')body=answerKeyDoc(t,o);
-  else if(k==='sheet'){const V=Math.max(1,o.versions||1);for(let v=0;v<V;v++)body+=`<div class="pg">${bubbleSheet(t,o,v)}</div>`}
+  else if(k==='sheet'){const V=Math.max(1,o.versions||1);const c=(APP.classes||[]).find(x=>x.id===o.sheetCls);o.sheetStudents=c?(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map((x,i)=>({name:x.name,idx:i+1})):null;for(let v=0;v<V;v++)body+=bubbleSheet(t,o,v)}
   else if(k==='results'){const subs=resultSubs(t);if(PR.sid!=='all'){const s=subs.find(x=>x.id===PR.sid)||(APP.submissions||[]).find(x=>x.id===PR.sid);body=s?`<div class="pg">${studentReport(t,s,o)}</div>`:'<p>No submission selected.</p>'}else body=subs.length?massResults(t,subs,o):'<p>No submitted work yet.</p>'}
   else if(k==='summary'){const subs=resultSubs(t);body=subs.length?`<div class="pg">${classSummary(t,subs,o)}</div>`:'<p>No submitted work yet.</p>'}
   else if(k==='rubric')body=blankRubric(t,o);
@@ -14358,6 +14439,9 @@ function build(){
   return{title:t.title||'Print',html:wrap(t.title||'Print',body,o)};}
 const sel=(id,opts,val,on)=>`<select class="form-control" id="${id}" onchange="${on}">${opts.map(([v,l])=>`<option value="${e(v)}" ${String(v)===String(val)?'selected':''}>${e(l)}</option>`).join('')}</select>`;
 const chk=(k,l)=>`<label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" ${PR.o[k]?'checked':''} onchange="prSet('${k}',this.checked)"><span>${l}</span></label>`;
+function secPanel(){const t=curTest();if(!t||!secOn(t))return'';
+  return `<div class="pr-sec"><b>Sections</b>${chk('stops','Add a STOP page after each section (starts on an odd page)')}<label class="form-label">STOP page message</label><textarea class="form-control" rows="2" placeholder="If you finish early, check this section only. Do not turn the page." oninput="prSet('stopText',this.value,1)">${e(PR.o.stopText)}</textarea>${t.sections.map((sc,i)=>`<label class="form-label" style="margin-top:6px">Special instructions: ${e(sc.title||'Section '+(i+1))}</label><textarea class="form-control" rows="2" placeholder="Optional, printed at the top of this section" oninput="prSecIns('${e(sc.id)}',this.value)">${e((PR.o.secIns||{})[sc.id]||'')}</textarea>`).join('')}</div>`;}
+window.prSecIns=(id,v)=>{PR.o.secIns=PR.o.secIns||{};PR.o.secIns[id]=v;preview()};
 function panel(){
   const k=PR.kind,K=kindOf(k);let h='';
   const needT=['paper','key','sheet','results','summary','rubric','survey'].includes(k),needC=['gradebook','roster'].includes(k);
@@ -14367,7 +14451,8 @@ function panel(){
   if(needC){const l=APP.classes||[];h+=`<label class="form-label">Class</label>${sel('pr-c',l.map(c=>[c.id,c.name]),PR.cid||(l[0]&&l[0].id),"prPick('cid',this.value)")}`;}
   if(k==='paper'){h+=`<div class="pr-g"><div><label class="form-label">Paper</label>${sel('pr-p',[['letter','US Letter'],['A4','A4']],PR.o.paper,"prSet('paper',this.value)")}</div><div><label class="form-label">Text size</label>${sel('pr-s',[[10,'Small'],[11,'Normal'],[12.5,'Large'],[14,'Extra large']],PR.o.size,"prSet('size',+this.value)")}</div><div><label class="form-label">Answer lines (essay)</label>${sel('pr-l',[2,4,6,8,10,14,18].map(n=>[n,n+' lines']),PR.o.lines,"prSet('lines',+this.value)")}</div><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>
     <label class="form-label" style="margin-top:8px">Instructions (optional)</label><textarea class="form-control" rows="3" placeholder="Use a pen. No calculators." oninput="prSet('instructions',this.value,1)">${e(PR.o.instructions)}</textarea>
-    ${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
+    ${secPanel()}${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
+  if(k==='sheet')h+=`<label class="form-label" style="margin-top:8px">Personalize for a class</label>${sel('pr-sc',[['','Blank sheets'],...(APP.classes||[]).map(c=>[c.id,c.name+' ('+(c.students||[]).length+' students, one each)'])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}<div class="sm" style="margin:4px 0">Personalized sheets print the name and pre-fill a student number so scanning can match each photo to the right student.</div>`;
   if(k==='key'||k==='sheet')h+=`<div class="pr-g"><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>`;
   if(k==='results'||k==='summary'){const t=curTest(),subs=t?subsOf(t):[];const cl=[...new Set(subs.flatMap(classOfSub))];const sl=t?resultSubs(t).slice().sort((a,b)=>(a.studentName||'').localeCompare(b.studentName||'')):[];
     if(cl.length>1||PR.cls!=='all')h+=`<label class="form-label" style="margin-top:8px">Class</label>${sel('pr-cl',[['all','All classes'],...cl.map(i=>[i,clsName(i)||i])],PR.cls,"prPick('cls',this.value)")}`;
@@ -14381,12 +14466,12 @@ function render(){
   const m=$('pr-root');if(!m)return;
   $('pr-list').innerHTML=KINDS.map(x=>`<button type="button" class="pr-k${x[0]===PR.kind?' on':''}" onclick="prKind('${x[0]}')"><b>${x[1]}</b><span>${x[2]}</span></button>`).join('');
   $('pr-opts').innerHTML=panel();preview();}
-function preview(){clearTimeout(tmr);tmr=setTimeout(()=>{const b=build(),f=$('pr-prev');if(!f)return;const on=!!b;$('pr-act').style.display=on?'':'none';f.style.display=on?'':'none';$('pr-none').style.display=on?'none':'';if(b)f.srcdoc=b.html},120)}
-window.prKind=k=>{PR.kind=k;if(k==='results'||k==='summary')PR.sid='all';render()};
+function preview(){clearTimeout(tmr);tmr=setTimeout(()=>{const b=build(),f=$('pr-prev');if(!f)return;const on=!!b;$('pr-act').style.display=on?'':'none';f.style.display=on?'':'none';$('pr-none').style.display=on?'none':'';if(b)paginate(b.html,PR.o).then(h=>{if(f.isConnected)f.srcdoc=h}).catch(()=>{f.srcdoc=b.html})},120)}
+window.prKind=k=>{if(k==='scan'){closeModal();return scanCenter(PR.tid)}PR.kind=k;if(k==='results'||k==='summary')PR.sid='all';render()};
 window.prSet=(k,v,quiet)=>{PR.o[k]=v;if(quiet)preview();else render()};
 window.prPick=(k,v)=>{PR[k]=v;if(k==='tid'||k==='cls')PR.sid='all';render()};
-window.prDo=()=>{const b=build();if(b)printHtml(b.html)};
-window.prTab=()=>{const b=build();if(b)openTab(wrap(b.title,b.html.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))};
+window.prDo=async()=>{const b=build();if(b)printHtml(await paginate(b.html,PR.o))};
+window.prTab=async()=>{const b=build();if(b){const h=await paginate(b.html,PR.o);openTab(wrap(b.title,h.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))}};
 window.prPage=()=>{try{closeModal()}catch(x){}setTimeout(()=>window.print(),300)};
 window.prCenter=function(kind,tid,sid,cid){
   if(kind)PR.kind=kind;if(tid)PR.tid=tid;if(sid)PR.sid=sid;else if(kind==='results')PR.sid='all';if(cid)PR.cid=cid;
@@ -14396,12 +14481,136 @@ window.prCenter=function(kind,tid,sid,cid){
   render();};
 window.eaPrintHtml=printHtml;
 
+/* ───────── bubble scanner: reads a photo of the printed answer sheet ───────── */
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('That file is not an image the browser can open.'));i.src=u})}
+function solve(A,b){const n=b.length;for(let i=0;i<n;i++){let m=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;[A[i],A[m]]=[A[m],A[i]];[b[i],b[m]]=[b[m],b[i]];
+  for(let r=i+1;r<n;r++){const f=A[r][i]/A[i][i];for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}
+  const x=Array(n).fill(0);for(let i=n-1;i>=0;i--){let s=b[i];for(let c=i+1;c<n;c++)s-=A[i][c]*x[c];x[i]=s/A[i][i]}return x}
+function homog(src,dst){const A=[],b=[];for(let i=0;i<4;i++){const[x,y]=src[i],[u,v]=dst[i];A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v)}const h=solve(A,b);return h.concat(1)}
+const proj=(H,x,y)=>{const w=H[6]*x+H[7]*y+1;return[(H[0]*x+H[1]*y+H[2])/w,(H[3]*x+H[4]*y+H[5])/w]};
+function prep(img,maxd){maxd=maxd||1700;const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,sc=Math.min(1,maxd/Math.max(iw,ih));
+  const W=Math.round(iw*sc),H=Math.round(ih*sc),cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,W,H);
+  const d=cx.getImageData(0,0,W,H).data,g=new Uint8ClampedArray(W*H);for(let i=0,j=0;j<g.length;i+=4,j++)g[j]=(d[i]*299+d[i+1]*587+d[i+2]*114)/1000;
+  /* integral image for local means */
+  const I=new Float64Array((W+1)*(H+1));for(let y=0;y<H;y++){let r=0;for(let x=0;x<W;x++){r+=g[y*W+x];I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+r}}
+  const mean=(x,y,r)=>{const x0=Math.max(0,x-r),x1=Math.min(W,x+r+1),y0=Math.max(0,y-r),y1=Math.min(H,y+r+1);return(I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0))};
+  return{W,H,g,mean,cv,sc}}
+function findAnchors(P){
+  const{W,H,g,mean}=P,r=Math.round(Math.max(W,H)/18),bin=new Uint8Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=g[y*W+x];if(v<150&&v<mean(x,y,r)*.78)bin[y*W+x]=1}
+  const seen=new Uint8Array(W*H),C=[],st=[];
+  for(let i=0;i<bin.length;i++){if(!bin[i]||seen[i])continue;let n=0,x0=1e9,x1=-1,y0=1e9,y1=-1,sx=0,sy=0;st.push(i);seen[i]=1;
+    while(st.length){const p=st.pop(),x=p%W,y=(p/W)|0;n++;sx+=x;sy+=y;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+      if(x>0&&bin[p-1]&&!seen[p-1]){seen[p-1]=1;st.push(p-1)}if(x<W-1&&bin[p+1]&&!seen[p+1]){seen[p+1]=1;st.push(p+1)}if(y>0&&bin[p-W]&&!seen[p-W]){seen[p-W]=1;st.push(p-W)}if(y<H-1&&bin[p+W]&&!seen[p+W]){seen[p+W]=1;st.push(p+W)}}
+    const bw=x1-x0+1,bh=y1-y0+1,mn=Math.max(W,H)*.009;
+    if(bw<mn||bh<mn||bw>Math.max(W,H)*.14||bh>Math.max(W,H)*.14)continue;
+    if(bw/bh<.7||bw/bh>1.43||n/(bw*bh)<.5)continue;C.push({x:sx/n,y:sy/n,a:n,s:Math.sqrt(n)})}
+  if(C.length<4)return null;
+  const mxs=Math.max(...C.map(c=>c.a)),K=C.filter(c=>c.a>=mxs*.3);if(K.length<4)return null;
+  const by=f=>K.reduce((b,c)=>f(c)>f(b)?c:b),cr=[by(c=>-(c.x+c.y)),by(c=>c.x-c.y),by(c=>c.x+c.y),by(c=>c.y-c.x)];
+  if(new Set(cr).size<4)return null;
+  let bi=0;cr.forEach((c,i)=>{if(c.a>cr[bi].a)bi=i});const o=cr.slice(bi).concat(cr.slice(0,bi));
+  const others=o.slice(1).map(c=>c.s).sort((a,b)=>a-b);const ok=o[0].s>others[1]*1.25;
+  return{pts:o,oriented:ok}}
+function readSheet(img,t,opt){
+  opt=opt||{};const P=prep(img),A=findAnchors(P);if(!A)return{ok:false,err:'The four black squares were not all found. Lay the sheet flat, include all four corners, and use good light.',P};
+  const H=homog(ANC,A.pts.map(c=>[c.x,c.y])),pxin=Math.hypot(A.pts[1].x-A.pts[0].x,A.pts[1].y-A.pts[0].y)/(SHW-.4);
+  const pw=Math.hypot(A.pts[2].x-A.pts[3].x,A.pts[2].y-A.pts[3].y)/(SHW-.4);if(pxin<45||Math.abs(pw/pxin-1)>.3)return{ok:false,err:'The photo is too small or too skewed. Hold the camera directly above the sheet.',P};
+  const r=.04*pxin,offs=[[0,0],[.015,0],[-.015,0],[0,.015],[0,-.015]].map(o=>[o[0]*pxin,o[1]*pxin]);
+  const dark=(x,y)=>{const[u,v]=proj(H,x,y);let best=0;const ref=Math.max(40,P.mean(Math.round(u),Math.round(v),Math.round(pxin*.35)));
+    offs.forEach(([ox,oy])=>{let s=0,n=0;const R=Math.ceil(r);for(let dy=-R;dy<=R;dy+=1)for(let dx=-R;dx<=R;dx+=1){if(dx*dx+dy*dy>r*r)continue;const px=Math.round(u+ox+dx),py=Math.round(v+oy+dy);if(px<0||py<0||px>=P.W||py>=P.H)continue;s+=P.g[py*P.W+px];n++}
+      if(n){const d=1-(s/n)/ref;if(d>best)best=d}});
+    return{d:Math.max(0,best),u,v}};
+  const pick=(list,th)=>{const m=list.map(p=>dark(p.x,p.y));const mx=Math.max(...m.map(x=>x.d));if(mx<th)return{i:-1,m};return{i:m.findIndex(x=>x.d===mx),m}};
+  const idd=[0,1,2].map(r=>pick(Array.from({length:10},(_,d)=>idPos(r,d)),.35));const sid=idd.every(x=>x.i>=0)?+idd.map(x=>x.i).join(''):null;
+  const vv=pick([0,1,2,3].map(verPos),.35),pg=pick([0,1,2,3].map(pgPos),.35);
+  const ver=vv.i>=0?vv.i:(opt.ver||0),page=pg.i>=0?pg.i:(opt.page||0);
+  const geo=sheetGeom(t,opt.o||{},ver,page),marks=[],ans=[];
+  geo.rows.forEach(rw=>{const m=rw.opts.map(p=>dark(p.x,p.y)),mx=Math.max(...m.map(x=>x.d));const th=Math.max(.28,mx*.6);
+    const on=m.map((x,i)=>x.d>=th&&mx>=.28?i:-1).filter(i=>i>=0);let status='ok';
+    if(!on.length)status=mx>.16?'faint':'blank';else if(rw.type==='mc'&&on.length>1)status='multi';
+    ans.push({n:rw.n,key:rw.key,type:rw.type,ord:rw.ord,on,status,d:m.map(x=>x.d)});
+    m.forEach((x,i)=>marks.push({u:x.u,v:x.v,on:on.includes(i),bad:status!=='ok'}));});
+  [idd,[vv],[pg]].forEach(l=>0);
+  return{ok:true,ver,page,sid,pages:geo.pages,ans,marks,P,pxin,oriented:A.oriented,anchors:A.pts}}
+/* turn what was read into answers keyed like the app does */
+function toAnswers(res){const out={};res.ans.forEach(a=>{if(a.status==='blank'||a.status==='faint'||a.status==='multi'){return}
+  if(a.type==='mc')out[a.key]=a.ord[a.on[0]];else out[a.key]=a.on.map(i=>a.ord[i]).sort((x,y)=>x-y)});return out}
+function drawOverlay(res,cv,w){const P=res.P,c=cv,s=w/P.W;c.width=w;c.height=Math.round(P.H*s);const x=c.getContext('2d');x.drawImage(P.cv,0,0,c.width,c.height);
+  res.marks.forEach(m=>{x.beginPath();x.arc(m.u*s,m.v*s,Math.max(2,res.pxin*.07*s),0,7);x.lineWidth=2;x.strokeStyle=m.bad?'#e5484d':m.on?'#1a9d4b':'rgba(80,120,255,.35)';x.stroke()});
+  res.anchors.forEach(a=>{x.fillStyle='#2f6bff';x.fillRect(a.x*s-3,a.y*s-3,6,6)})}
+
+/* ───────── scanner window (teacher) ───────── */
+const SC={tid:null,cid:'',items:[]};
+const scTest=()=>{const l=tests().filter(t=>t.kind!=='survey');let t=l.find(x=>x.id===SC.tid);if(!t){t=l[0];SC.tid=t&&t.id}return t};
+const scRoster=()=>{const c=(APP.classes||[]).find(x=>x.id===SC.cid);return c?(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')):[]};
+function scScore(it){const t=scTest();const sub={answers:Object.assign({},it.edits),testId:t.id};try{autoScore(sub,t)}catch(x){}
+  const rows=it.res.ok?it.res.ans.filter(a=>a.type):[];let got=0,max=0;rows.forEach(a=>{const q=numbered(t,{},it.res.ver).find(x=>x.key===a.key);if(!q)return;max+=q.q.points||1;got+=qAward(q.q,a.key,sub)});return{got,max}}
+function scCard(it,i){
+  const t=scTest(),r=it.res,ro=scRoster();
+  if(!r.ok)return `<div class="sc-card bad"><b>${e(it.name)}</b><div>${e(r.err)}</div><button class="btn btn-ghost" onclick="scDrop(${i})">Remove</button></div>`;
+  const flag=r.ans.filter(a=>a.status!=='ok'),sc=scScore(it);
+  const stu=it.stu||'';
+  return `<div class="sc-card"><div class="sc-top"><canvas id="sc-cv-${i}" class="sc-cv"></canvas><div class="sc-info"><b>${e(it.name)}</b>
+  <div class="sm">Version ${LET[r.ver]}${r.pages>1?' · Sheet '+(r.page+1)+' of '+r.pages:''}${r.oriented?'':' · orientation mark unclear'}</div>
+  <label class="form-label">Student</label>${ro.length?`<select class="form-control" onchange="scStu(${i},this.value)"><option value="">Choose a student</option>${ro.map((s,k)=>`<option value="${e(s.id)}" ${stu===s.id?'selected':''}>${e(s.name)}</option>`).join('')}</select>`:`<input class="form-control" placeholder="Student name" value="${e(it.free||'')}" oninput="scFree(${i},this.value)">`}
+  <div class="sc-sc"><b>${fmt(sc.got)} / ${fmt(sc.max)}</b> <span class="sm">on the multiple choice questions</span></div>
+  <div class="sm">${flag.length?flag.length+' question'+(flag.length===1?'':'s')+' need a look':'Every question was read clearly'}</div></div></div>
+  ${flag.length?`<div class="sc-fl">${flag.map(a=>{const cur=it.fix[a.key];return `<label class="sc-f"><b>${a.n}</b> <span class="tag">${a.status==='multi'?'two marks':a.status==='faint'?'faint':'blank'}</span><select onchange="scFix(${i},'${a.key}',this.value)"><option value="">No answer</option>${a.ord.slice(0,6).map((_,k)=>`<option value="${k}" ${cur!==undefined&&String(cur)===String(k)?'selected':''}>${LET[k]}</option>`).join('')}</select></label>`}).join('')}</div>`:''}
+  <button class="btn btn-ghost" onclick="scDrop(${i})">Remove</button></div>`;}
+function scRender(){
+  const t=scTest(),l=$('sc-list');if(!l)return;
+  l.innerHTML=SC.items.length?SC.items.map(scCard).join(''):'<div class="sm" style="padding:14px 4px">Add photos of completed answer sheets. Each photo needs all four black corner squares in view.</div>';
+  SC.items.forEach((it,i)=>{const c=$('sc-cv-'+i);if(c&&it.res.ok)drawOverlay(it.res,c,220)});
+  const ready=SC.items.filter(x=>x.res.ok&&(x.stu||x.free));$('sc-go').disabled=!ready.length;$('sc-go').textContent=ready.length?'Record '+ready.length+' result'+(ready.length===1?'':'s'):'Record results';}
+function scApply(it){it.edits=toAnswers(it.res);Object.keys(it.fix).forEach(k=>{const v=it.fix[k],a=it.res.ans.find(x=>x.key===k);if(v===''){delete it.edits[k]}else if(a)it.edits[k]=a.type==='mc'?a.ord[+v]:[a.ord[+v]]})}
+window.scStu=(i,v)=>{SC.items[i].stu=v;scRender()};window.scFree=(i,v)=>{SC.items[i].free=v;$('sc-go').disabled=!SC.items.some(x=>x.res.ok&&(x.stu||x.free))};
+window.scFix=(i,k,v)=>{SC.items[i].fix[k]=v;scApply(SC.items[i]);scRender()};
+window.scDrop=i=>{SC.items.splice(i,1);scRender()};
+window.scTestPick=v=>{SC.tid=v;SC.items=[];scRender()};window.scClassPick=v=>{SC.cid=v;SC.items.forEach(it=>{it.stu=''});if(v&&SC.items.length)scAuto();scRender()};
+function scAuto(){const ro=scRoster();SC.items.forEach(it=>{if(it.res.ok&&it.res.sid&&ro[it.res.sid-1])it.stu=ro[it.res.sid-1].id})}
+window.scFiles=async files=>{const t=scTest();if(!t)return;const busy=$('sc-busy');busy.style.display='';
+  for(const f of [].slice.call(files)){await new Promise(r=>setTimeout(r,20));let res;try{const img=await loadImg(f);res=readSheet(img,t,{o:{}})}catch(x){res={ok:false,err:x.message}}
+    const it={name:f.name||'Photo',res,fix:{},edits:{},stu:''};if(res.ok){scApply(it);if(res.sid){const ro=scRoster();if(ro[res.sid-1])it.stu=ro[res.sid-1].id}}SC.items.push(it);scRender()}
+  busy.style.display='none'};
+window.scGo=()=>{const t=scTest();let done=0,names=[];const iso=new Date().toISOString();
+  const a=(APP.assignments||[]).find(x=>x.testId===t.id&&(!SC.cid||(x.classIds||[]).includes(SC.cid)));
+  SC.items.filter(x=>x.res.ok&&(x.stu||x.free)).forEach(it=>{const stu=scRoster().find(s=>s.id===it.stu),name=stu?stu.name:(it.free||'').trim();if(!name)return;
+    let sub=(APP.submissions||[]).find(s=>s.testId===t.id&&!s.sample&&s.status==='submitted'&&(stu?s.studentId===stu.id:s.studentName===name)&&(!a||!s.assignmentId||s.assignmentId===a.id));
+    if(!sub){sub={id:uid(),testId:t.id,assignmentId:a?a.id:undefined,studentId:stu?stu.id:undefined,studentName:name,status:'submitted',startedAt:iso,submittedAt:iso,answers:{},scanned:true};APP.submissions.push(sub)}
+    sub.answers=Object.assign(sub.answers||{},it.edits);sub.scanned=true;try{autoScore(sub,t)}catch(x){}done++;names.push(name)});
+  try{save()}catch(x){}closeModal();toast(done+' result'+(done===1?'':'s')+' recorded. Written questions are waiting in grading.','success');try{window.showPage&&APP.currentPage==='grading'&&showPage('grading')}catch(x){}};
+window.scanCenter=function(tid,cid){SC.items=[];if(tid)SC.tid=tid;if(cid)SC.cid=cid;const l=tests().filter(t=>t.kind!=='survey'),cl=APP.classes||[];
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px;margin:0">Scan bubble sheets</h2><button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button></div>
+  <div class="modal-body sc-body"><p class="sm" style="margin:0 0 10px">Print answer sheets from the Print Center, let students fill them in, then photograph each one. Multiple choice is scored automatically. Written questions go to grading as usual.</p>
+  <div class="pr-g"><div><label class="form-label">Assessment</label><select class="form-control" onchange="scTestPick(this.value)">${l.map(t=>`<option value="${e(t.id)}" ${t.id===SC.tid?'selected':''}>${e(t.title||'Untitled')}</option>`).join('')}</select></div>
+  <div><label class="form-label">Class</label><select class="form-control" onchange="scClassPick(this.value)"><option value="">No class (type names)</option>${cl.map(c=>`<option value="${e(c.id)}" ${c.id===SC.cid?'selected':''}>${e(c.name)}</option>`).join('')}</select></div></div>
+  <div class="pr-act"><label class="btn btn-primary" style="cursor:pointer">Take photo<input id="sc-cam" type="file" accept="image/*" capture="environment" style="display:none" onchange="scFiles(this.files);this.value=''"></label><label class="btn btn-secondary" style="cursor:pointer">Choose photos<input id="sc-file" type="file" accept="image/*" multiple style="display:none" onchange="scFiles(this.files);this.value=''"></label><span id="sc-busy" class="sm" style="display:none;align-self:center">Reading...</span></div>
+  <div id="sc-list" class="sc-list"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button id="sc-go" class="btn btn-primary" onclick="scGo()" disabled>Record results</button></div>`,760);
+  if(!SC.tid&&l[0])SC.tid=l[0].id;scRender();};
+
+/* student side: fill the open exam from a photo of their own sheet */
+window.scanForStudent=function(){const E0=APP.currentStudentExam;if(!E0||!E0.t)return;const t=E0.t;
+  openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px;margin:0">Scan my answer sheet</h2><button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button></div><div class="modal-body"><p class="sm" style="margin:0 0 10px">Take a photo of your filled in answer sheet with all four black squares in view. Your multiple choice answers will be filled in below. You can change any of them before you submit.</p><div class="pr-act"><label class="btn btn-primary" style="cursor:pointer">Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="scStu2(this.files);this.value=''"></label><label class="btn btn-secondary" style="cursor:pointer">Choose photo<input type="file" accept="image/*" style="display:none" onchange="scStu2(this.files);this.value=''"></label></div><div id="sc-st" style="margin-top:12px"></div></div>`,520);};
+window.scStu2=async files=>{const E0=APP.currentStudentExam,box=$('sc-st');if(!E0||!files[0])return;box.innerHTML='<div class="sm">Reading...</div>';
+  try{const img=await loadImg(files[0]),res=readSheet(img,E0.t,{o:{}});if(!res.ok){box.innerHTML=`<div style="color:var(--rust,#b3261e)">${e(res.err)}</div>`;return}
+    const ans=toAnswers(res),flag=res.ans.filter(a=>a.status!=='ok');
+    box.innerHTML=`<canvas id="sc-sv" style="width:100%;border-radius:8px"></canvas><p><b>${Object.keys(ans).length}</b> answers read${flag.length?', <b>'+flag.length+'</b> need a second look: '+flag.map(a=>a.n).join(', '):''}.</p><button class="btn btn-primary" id="sc-use">Use these answers</button>`;
+    drawOverlay(res,$('sc-sv'),480);
+    $('sc-use').onclick=()=>{const sub=E0.sub;sub.answers=sub.answers||{};Object.keys(ans).forEach(k=>{sub.answers[k]=ans[k]});try{save();saveLocalResume()}catch(x){}closeModal();try{renderStudentExam()}catch(x){}toast('Answers filled in from your sheet.','success')}}
+  catch(x){box.innerHTML=`<div style="color:var(--rust,#b3261e)">${e(x.message)}</div>`}};
+window.eaScan={prep,findAnchors,readSheet,sheetGeom,sheetHtml,toAnswers,loadImg,numbered};
+
 /* ───────── entry points ───────── */
 function nav(){
   if(document.querySelector('.nav-item[data-page="print"]'))return;const b=document.querySelector('.nav-item[data-page="backup"]');if(!b)return;
   const a=document.createElement('a');a.className='nav-item';a.dataset.page='print';a.onclick=()=>prCenter();
   a.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 14h12v7H6z"/></svg>Print';b.parentNode.insertBefore(a,b);}
 function ctx(){
+  const sw=$('student-wrapper');
+  if(sw&&window.APP&&APP.currentStudentExam&&APP.currentStudentExam.t&&sw.querySelector('.student-q,.student-timer-center,.sx-note,[class*=student]')&&!document.getElementById('sc-stu-btn')&&!document.getElementById('sc-st')&&APP.currentStudentExam.t.questions.some(q=>q.type==='mc'||q.type==='ms')){
+    const b=document.createElement('button');b.id='sc-stu-btn';b.type='button';b.className='btn btn-secondary';b.textContent='Scan my answer sheet';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:50';b.onclick=()=>scanForStudent();document.body.appendChild(b);}
+  else if(document.getElementById('sc-stu-btn')&&!(APP.currentStudentExam&&APP.currentStudentExam.t))document.getElementById('sc-stu-btn').remove();
   /* builder header */
   const bp=$('page-builder');
   if(bp&&!bp.classList.contains('hidden')&&APP.currentTest&&!bp.querySelector('.pr-quick')){
@@ -14415,8 +14624,8 @@ try{new MutationObserver(()=>{nav();ctx()}).observe(document.body,{childList:tru
 setTimeout(nav,800);
 
 /* shell hooks: palette and grader */
-window.eaPrintItems=function(){const a=[{l:'Print Center',s:'Action',f:()=>prCenter()}];
-  KINDS.slice(0,9).forEach(k=>a.push({l:'Print: '+k[1],s:'Print',f:()=>prCenter(k[0])}));
+window.eaPrintItems=function(){const a=[{l:'Print Center',s:'Action',f:()=>prCenter()},{l:'Scan bubble sheets',s:'Action',f:()=>scanCenter()}];
+  KINDS.slice(0,10).filter(k=>k[0]!=='scan').forEach(k=>a.push({l:'Print: '+k[1],s:'Print',f:()=>prCenter(k[0])}));
   tests().filter(t=>t.kind!=='survey').forEach(t=>a.push({l:'Print: '+(t.title||'Untitled')+' on paper',s:'Print',f:()=>prCenter('paper',t.id)}));return a};
 document.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&(ev.key==='P'||ev.key==='p')){if(!document.querySelector('#app,.app-shell,#main'))return;ev.preventDefault();prCenter()}});
 })();
