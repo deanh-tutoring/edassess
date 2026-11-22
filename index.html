@@ -14170,10 +14170,11 @@ td.c,th.c{text-align:center}tr{break-inside:avoid}thead{display:table-header-gro
 .sm{font-size:${sz-2}pt;color:#555}.muted{color:#666}
 .bs{display:grid;grid-template-columns:repeat(${o.bscols||3},1fr);gap:0 18pt}.bs .r{display:flex;align-items:center;gap:5pt;padding:2.2pt 0;border-bottom:.5pt solid #ddd}.bs .r b{min-width:20pt;text-align:right;font-size:${sz-2}pt}
 .tb{position:sticky;top:0;background:#111;color:#fff;padding:8px 14px;font:13px Helvetica,Arial;display:flex;justify-content:space-between}.tb button{background:#2f6bff;color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer}
-.sf{position:relative;width:7in;height:9.6in;margin:0 auto}.an{position:absolute;background:#000;display:block}
-.sb{position:absolute;width:.15in;height:.15in;border:1.3pt solid #000;border-radius:50%;box-sizing:border-box;display:block}.sb.on{background:#000}
-.st2{position:absolute;font-size:7pt;line-height:1;color:#222;white-space:nowrap}.st2.lb{font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}.st2.dg{font-size:6.5pt;width:.1in;text-align:center;margin-left:-.01in}.st2.nn{font-size:8pt;font-weight:700;width:.3in;text-align:right;margin-left:-.05in}
-.sht{position:absolute;font-size:13pt;line-height:1.25}.sht span{font-size:9pt;color:#444}.sht2{position:absolute;font-size:7.5pt;color:#444;line-height:1.3}.sfl{position:absolute;border-bottom:1pt solid #000;font-size:9pt;color:#444;padding-bottom:1pt;height:.22in;display:flex;align-items:flex-end}
+.sf{position:relative;width:7in;height:9.6in;margin:0 auto;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif}.an{position:absolute;background:#000;display:block;transform:translate(-50%,-50%)}
+.sb{position:absolute;border:1.3pt solid #000;box-sizing:border-box;display:block;background:transparent}.sb.on{background:#000}.bd{position:absolute;background:#efefef;display:block;border-radius:.05in}.idb{position:absolute;border:1pt solid #000;border-radius:.1in;display:block}
+.cx{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;line-height:1;font-size:7pt;color:#222}.cx.lb{font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}.cx.dg{font-size:6.5pt;color:#444}.cx.rn{font-size:8.5pt;font-weight:700;transform:translate(-100%,-50%)}.cx.il{font-size:5.5pt;color:#999}
+.sht{position:absolute;font-size:13pt;font-weight:800;line-height:1.15;max-height:.4in;overflow:hidden}.shs{position:absolute;font-size:8.5pt;color:#555}.sht2{position:absolute;font-size:7pt;color:#555;line-height:1.25;max-height:.24in;overflow:hidden}
+.sfl{position:absolute;border-bottom:1pt solid #000;font-size:9.5pt;height:.26in;display:flex;align-items:flex-end;gap:5pt;padding-bottom:1pt}.sfl span{font-size:6.5pt;color:#666;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 .sech{border-top:3pt solid #111;padding-top:6pt;margin:2pt 0 10pt}.sl2{font-size:${sz-2}pt;text-transform:uppercase;letter-spacing:.12em;color:#555;font-weight:700}.ins.sp{border-width:2pt}
 .un[data-odd]{break-before:page;page-break-before:page}.blankpg{break-before:page;page-break-before:page;min-height:2in;display:flex;align-items:flex-end;justify-content:center;color:#999;font-size:8pt;padding-bottom:4in}.stop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:7.6in;border:7pt solid #111;border-radius:12pt;padding:30pt;break-inside:avoid}
 .stop h1{font-size:110pt;letter-spacing:.12em;margin:0;line-height:1}.stl{font-size:${sz+7}pt;font-weight:800;margin:6pt 0 14pt;text-transform:uppercase;letter-spacing:.08em}.stop p{font-size:${sz+3}pt;max-width:5in;margin:0 0 10pt}.stop .dn{font-weight:800}
@@ -14262,31 +14263,53 @@ function paperBody(t,o,ver){
   return units.map(u=>`<div class="un"${u.odd?' data-odd="1"':''}>${u.h}</div>`).join('');}
 
 /* ───────── bubble sheet: fixed geometry shared by the printer and the scanner ───────── */
-const SHW=7,SHH=9.6,ANC=[[.2,.2],[SHW-.2,.2],[SHW-.2,SHH-.2],[.2,SHH-.2]],PER=24,CW=1.62,RP=0.3,GY=1.95,BP=0.215;
-const idPos=(r,d)=>({x:4.55+.22*d,y:.5+.25*r}),verPos=i=>({x:4.55+.22*i,y:1.3}),pgPos=i=>({x:5.75+.22*i,y:1.3});
+const SHW=7,SHH=9.6,ANC=[[.2,.2],[SHW-.2,.2],[SHW-.2,SHH-.2],[.2,SHH-.2]],GY=2.25,GYMAX=9.0;
+const SDEF={opts:0,cols:0,pitch:.3,bsize:.15,shape:'circle',labels:'A',band:true,inside:false,name:true,date:true,cls:true,showId:true,title:'',note:'',extra:'',studentScan:true};
+const cfgOf=(t,o)=>Object.assign({},SDEF,(t&&t.sheetCfg)||{},(o&&o.sheetCfg)||{});
+const idPos=(r,d)=>({x:4.62+.205*d,y:.86+.25*r}),verPos=i=>({x:1.3+.22*i,y:9.3}),pgPos=i=>({x:3.45+.22*i,y:9.3});
+const lab=(c,i)=>c.labels==='a'?'abcdef'[i]:c.labels==='1'?String(i+1):LET[i];
 function sheetRows(t,o,ver){return numbered(t,o,ver).filter(x=>x.q.type==='mc'||x.q.type==='ms')}
+function perCol(c){let n=0;while(GY+n*c.pitch+Math.floor(n/5)*.06<=GYMAX)n++;return n}
 function sheetGeom(t,o,ver,page){
-  const all=sheetRows(t,o,ver),pages=Math.max(1,Math.ceil(all.length/(PER*4)));const ch=all.slice(page*PER*4,(page+1)*PER*4);
-  const rows=ch.map((x,k)=>{const c=Math.floor(k/PER),r=k%PER,x0=.3+c*CW,ord=orderFor(x.q,ver,x.key),m=Math.min(6,ord.length);
-    return{n:x.n,key:x.key,type:x.q.type,ord,x0,y:GY+RP*r,opts:Array.from({length:m},(_,i)=>({x:x0+.45+BP*i,y:GY+RP*r}))}});
-  return{rows,pages,cols:Math.max(1,Math.ceil(ch.length/PER)),over:all.some(x=>(x.q.options||[]).length>6)};}
+  const c=cfgOf(t,o),all=sheetRows(t,o,ver),PER=perCol(c);
+  const mxo=Math.min(6,Math.max(2,c.opts||Math.max(2,...all.map(x=>(x.q.options||[]).length))));
+  const need=mxo*(c.bsize+.05)+.5,maxCols=Math.max(1,Math.min(4,Math.floor(6.4/need)));
+  let cols=c.cols?Math.min(c.cols,maxCols):Math.min(maxCols,Math.max(Math.ceil(all.length/PER),all.length>=16?2:1));
+  const cap=PER*cols,pages=Math.max(1,Math.ceil(all.length/cap)),ch=all.slice(page*cap,(page+1)*cap);
+  const useCols=Math.max(1,Math.min(cols,Math.ceil(ch.length/Math.max(1,Math.min(PER,Math.ceil(ch.length/cols))))));
+  const rpc=Math.min(PER,Math.ceil(ch.length/useCols));
+  const colW=6.4/cols,bp=Math.min(.27,(colW-.55)/mxo),bw=mxo*bp,rows=[],bands=[];
+  ch.forEach((x,k)=>{const cc=Math.floor(k/rpc),r=k%rpc,x0=.3+cc*colW+(colW-(.42+bw))/2,y=GY+r*c.pitch+Math.floor(r/5)*.06,ord=orderFor(x.q,ver,x.key),m=Math.min(mxo,ord.length);
+    rows.push({n:x.n,key:x.key,type:x.q.type,ord,x0,y,col:cc,r,opts:Array.from({length:m},(_,i)=>({x:x0+.42+bp*(i+.5),y}))})});
+  if(c.band)for(let cc=0;cc<useCols;cc++){const rs=rows.filter(r=>r.col===cc);for(let g=0;g*5<rpc;g++){if(g%2)continue;const a=rs.filter(r=>Math.floor(r.r/5)===g);if(a.length)bands.push({x:a[0].x0-.08,y:a[0].y-c.pitch/2,w:.42+bw+.16,h:a.length*c.pitch})}}
+  return{rows,pages,cols,colW,bp,mxo,bands,cfg:c,over:all.some(x=>(x.q.options||[]).length>6),cap,PER};}
 function sheetHtml(t,o,ver,page,stu){
-  const g=sheetGeom(t,o,ver,page),pos=(x,y,r)=>`left:${(x-r).toFixed(3)}in;top:${(y-r).toFixed(3)}in`;
-  const bub=(x,y,on,at)=>`<i class="sb${on?' on':''}" ${at||''} style="${pos(x,y,.075)}"></i>`;
-  const txt=(x,y,s,c)=>`<span class="st2 ${c||''}" style="left:${x}in;top:${y}in">${s}</span>`;
+  const g=sheetGeom(t,o,ver,page),c=g.cfg,f=v=>v.toFixed(3);
+  const at=(x,y,s,cls,st)=>`<span class="cx ${cls||''}" style="left:${f(x)}in;top:${f(y)}in;${st||''}">${s}</span>`;
+  const bs=c.bsize,shape=c.shape==='oval'?`width:${f(bs*1.35)}in;height:${f(bs*.9)}in;border-radius:50%`:c.shape==='square'?`width:${f(bs)}in;height:${f(bs)}in;border-radius:.03in`:`width:${f(bs)}in;height:${f(bs)}in;border-radius:50%`;
+  const bub=(x,y,on,a,sz)=>`<i class="sb${on?' on':''}" ${a||''} style="left:${f(x)}in;top:${f(y)}in;${sz||shape}"></i>`;
+  const sm=`width:.15in;height:.15in;border-radius:50%`;
   let h=`<div class="sf">`;
-  [.18,.12,.12,.12].forEach((s,i)=>{h+=`<i class="an" style="${pos(ANC[i][0],ANC[i][1],s)};width:${s*2}in;height:${s*2}in"></i>`});
-  h+=`<div class="sht" style="left:.8in;top:.12in;width:3.6in"><b>${e(t.title||'Answer sheet')}</b><br><span>Answer sheet${o.versions>1||ver?' · Version '+LET[ver||0]:''}${g.pages>1?' · Sheet '+(page+1)+' of '+g.pages:''}</span></div>`;
-  h+=`<div class="sfl" style="left:.8in;top:.78in;width:3.6in">${stu?e(stu.name):'Name'}</div><div class="sfl" style="left:.8in;top:1.12in;width:1.6in">Date</div><div class="sfl" style="left:2.5in;top:1.12in;width:1.9in">Class</div>`;
-  h+=`<div class="sht2" style="left:.8in;top:1.42in;width:3.6in">Fill each bubble completely with dark pen or pencil. Keep all four black squares clear and flat. Do not fold.</div>`;
+  [.18,.12,.12,.12].forEach((s,i)=>{h+=`<i class="an" style="left:${f(ANC[i][0])}in;top:${f(ANC[i][1])}in;width:${f(s*2)}in;height:${f(s*2)}in"></i>`});
+  g.bands.forEach(b=>{h+=`<i class="bd" style="left:${f(b.x)}in;top:${f(b.y)}in;width:${f(b.w)}in;height:${f(b.h)}in"></i>`});
+  h+=`<div class="sht" style="left:.8in;top:.1in;width:3.5in">${e(c.title||t.title||'Answer sheet')}</div><div class="shs" style="left:.8in;top:.5in;width:3.5in">Answer sheet${o.versions>1||ver?' · Version '+LET[ver||0]:''}${g.pages>1?' · Sheet '+(page+1)+' of '+g.pages:''}</div>`;
+  const fields=[];if(c.name)fields.push(['Name',stu?stu.name:'',.8,3.5]);
+  const row2=[];if(c.date)row2.push('Date');if(c.cls)row2.push('Class');
+  let y=.72;
+  if(c.name){h+=`<div class="sfl" style="left:.8in;top:${y+.04}in;width:3.5in"><span>Name</span>${stu?e(stu.name):''}</div>`;y+=.34}
+  else if(stu){h+=`<div class="sfl" style="left:.8in;top:${y+.04}in;width:3.5in"><span>Name</span>${e(stu.name)}</div>`;y+=.34}
+  if(row2.length){const w=row2.length===2?1.68:3.5;row2.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${l}</span></div>`});y+=.34}
+  const ex=String(c.extra||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,2);
+  if(ex.length){const w=ex.length===2?1.68:3.5;ex.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${e(l)}</span></div>`});y+=.34}
+  h+=`<div class="sht2" style="left:.8in;top:1.67in;width:5.9in">${e(c.note||'Fill each bubble completely with dark pen or pencil. Keep the four black squares clear.')}</div>`;
   const sid=stu&&stu.idx?String(stu.idx).padStart(3,'0'):'';
-  h+=txt(4.55,.18,'Student number','lb');
-  for(let r=0;r<3;r++)for(let d=0;d<10;d++){const p=idPos(r,d);h+=bub(p.x,p.y,sid&&sid[r]==String(d))+(r===0?txt(p.x-.04,.34,d,'dg'):'')}
-  h+=txt(4.55,1.05,'Version','lb')+txt(5.75,1.05,'Sheet','lb');
-  for(let i=0;i<4;i++){const p=verPos(i),q=pgPos(i);h+=bub(p.x,p.y,i===(ver||0))+txt(p.x-.04,1.4,LET[i],'dg')+bub(q.x,q.y,i===page)+txt(q.x-.03,1.4,i+1,'dg')}
-  for(let c=0;c<g.cols;c++){const x0=.3+c*CW;for(let i=0;i<5;i++)h+=txt(x0+.45+BP*i-.04,GY-.3,LET[i],'dg')}
-  g.rows.forEach(r=>{h+=txt(r.x0+.05,r.y-.07,r.n,'nn');r.opts.forEach((p,i)=>{h+=bub(p.x,p.y,false,`data-n="${r.n}" data-p="${i}"`)});});
-  if(g.rows.length&&g.rows.some(r=>r.opts.length>5)){const x0=.3;h+=''}
+  if(c.showId){h+=`<i class="idb" style="left:4.4in;top:.38in;width:2.38in;height:1.24in"></i>`+at(4.52,.5,'Student number','lb','transform:translate(0,-50%)');
+    for(let r=0;r<3;r++)for(let d=0;d<10;d++){const p=idPos(r,d);h+=bub(p.x-.075,p.y-.075,sid&&sid[r]==String(d),'',sm)+(r===0?at(p.x,.7,d,'dg'):'')}}
+  else for(let r=0;r<3;r++)for(let d=0;d<10;d++){}
+  h+=at(.5,9.3,'Version','lb','transform:translate(0,-50%)')+at(2.7,9.3,'Sheet','lb','transform:translate(0,-50%)');
+  for(let i=0;i<4;i++){const p=verPos(i),q=pgPos(i);h+=bub(p.x-.075,p.y-.075,i===(ver||0),'',sm)+at(p.x,9.3+.16,LET[i],'dg')+bub(q.x-.075,q.y-.075,i===page,'',sm)+at(q.x,9.3+.16,i+1,'dg')}
+  for(let cc=0;cc<g.cols;cc++){const r0=g.rows.find(r=>r.col===cc);if(!r0)continue;for(let i=0;i<g.mxo;i++)h+=at(r0.x0+.42+g.bp*(i+.5),GY-.27,lab(c,i),'dg')}
+  g.rows.forEach(r=>{h+=at(r.x0+.3,r.y,r.n,'rn');r.opts.forEach((p,i)=>{h+=bub(p.x-(c.shape==='oval'?c.bsize*.675:c.bsize/2),p.y-(c.shape==='oval'?c.bsize*.45:c.bsize/2),false,`data-n="${r.n}" data-p="${i}"`)+(c.inside?at(p.x,p.y,lab(c,i),'il'):'')})});
   return h+'</div>';}
 function bubbleSheet(t,o,ver){
   const g=sheetGeom(t,o,ver,0);let out='';
@@ -14427,7 +14450,7 @@ function build(){
     o.land=k==='gradebook'&&((APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id)).length>6);
     return{title:c.name,html:wrap(c.name,k==='gradebook'?gradebook(c,o):roster(c,o),o)};}
   const t=curTest();if(!t)return{title:'Print',html:wrap('Print','<p>Nothing to print yet. Create an assessment first.</p>',o)};
-  o.foot=(t.title||'')+' · EdAssess';o.dbl=k==='paper'&&secOn(t)&&o.stops!==false;
+  ensureCfg();o.sheetCfg=PR.o.sheetCfg;o.foot=(t.title||'')+' · EdAssess';o.dbl=k==='paper'&&secOn(t)&&o.stops!==false;
   let body='';
   if(k==='paper')body=paperTest(t,o);
   else if(k==='key')body=answerKeyDoc(t,o);
@@ -14439,6 +14462,15 @@ function build(){
   return{title:t.title||'Print',html:wrap(t.title||'Print',body,o)};}
 const sel=(id,opts,val,on)=>`<select class="form-control" id="${id}" onchange="${on}">${opts.map(([v,l])=>`<option value="${e(v)}" ${String(v)===String(val)?'selected':''}>${e(l)}</option>`).join('')}</select>`;
 const chk=(k,l)=>`<label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" ${PR.o[k]?'checked':''} onchange="prSet('${k}',this.checked)"><span>${l}</span></label>`;
+function ensureCfg(){const t=curTest();if(!PR.o.sheetCfg||PR.o.sheetCfgFor!==(t&&t.id)){PR.o.sheetCfg=Object.assign({},SDEF,(t&&t.sheetCfg)||{});PR.o.sheetCfgFor=t&&t.id}return PR.o.sheetCfg}
+window.prCfg=(k,v,quiet)=>{ensureCfg()[k]=v;if(quiet)preview();else render()};
+function sheetPanel(){const c=ensureCfg(),S=(k,l,opts)=>`<div><label class="form-label">${l}</label>${sel('pc-'+k,opts,c[k],`prCfg('${k}',${typeof opts[0][0]==='number'?'+':''}this.value)`)}</div>`,K=(k,l)=>`<label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:5px 0"><input type="checkbox" ${c[k]?'checked':''} onchange="prCfg('${k}',this.checked)"><span>${l}</span></label>`;
+  return `<div class="pr-sec"><b>Sheet design</b>
+  <label class="form-label">Title</label><input class="form-control" placeholder="Defaults to the test title" value="${e(c.title)}" oninput="prCfg('title',this.value,1)">
+  <label class="form-label" style="margin-top:6px">Instructions line</label><textarea class="form-control" rows="2" placeholder="Fill each bubble completely..." oninput="prCfg('note',this.value,1)">${e(c.note)}</textarea>
+  <label class="form-label" style="margin-top:6px">Extra header fields (comma separated, up to 2)</label><input class="form-control" placeholder="Teacher, Period" value="${e(c.extra)}" oninput="prCfg('extra',this.value,1)">
+  <div class="pr-g" style="margin-top:6px">${S('opts','Bubbles per question',[[0,'Auto'],[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']])}${S('labels','Letters',[['A','A B C D'],['a','a b c d'],['1','1 2 3 4']])}${S('shape','Bubble shape',[['circle','Circle'],['oval','Oval'],['square','Rounded square']])}${S('bsize','Bubble size',[[.13,'Small'],[.15,'Medium'],[.18,'Large']])}${S('pitch','Row spacing',[[.26,'Tight'],[.3,'Normal'],[.34,'Roomy']])}${S('cols','Columns',[[0,'Auto'],[1,'1'],[2,'2'],[3,'3'],[4,'4']])}</div>
+  ${K('name','Name line')}${K('date','Date line')}${K('cls','Class line')}${K('showId','Student number block')}${K('band','Shaded row groups')}${K('inside','Letters inside bubbles (light gray)')}${K('studentScan','Let students scan their own sheet during the test')}</div>`;}
 function secPanel(){const t=curTest();if(!t||!secOn(t))return'';
   return `<div class="pr-sec"><b>Sections</b>${chk('stops','Add a STOP page after each section (starts on an odd page)')}<label class="form-label">STOP page message</label><textarea class="form-control" rows="2" placeholder="If you finish early, check this section only. Do not turn the page." oninput="prSet('stopText',this.value,1)">${e(PR.o.stopText)}</textarea>${t.sections.map((sc,i)=>`<label class="form-label" style="margin-top:6px">Special instructions: ${e(sc.title||'Section '+(i+1))}</label><textarea class="form-control" rows="2" placeholder="Optional, printed at the top of this section" oninput="prSecIns('${e(sc.id)}',this.value)">${e((PR.o.secIns||{})[sc.id]||'')}</textarea>`).join('')}</div>`;}
 window.prSecIns=(id,v)=>{PR.o.secIns=PR.o.secIns||{};PR.o.secIns[id]=v;preview()};
@@ -14451,8 +14483,8 @@ function panel(){
   if(needC){const l=APP.classes||[];h+=`<label class="form-label">Class</label>${sel('pr-c',l.map(c=>[c.id,c.name]),PR.cid||(l[0]&&l[0].id),"prPick('cid',this.value)")}`;}
   if(k==='paper'){h+=`<div class="pr-g"><div><label class="form-label">Paper</label>${sel('pr-p',[['letter','US Letter'],['A4','A4']],PR.o.paper,"prSet('paper',this.value)")}</div><div><label class="form-label">Text size</label>${sel('pr-s',[[10,'Small'],[11,'Normal'],[12.5,'Large'],[14,'Extra large']],PR.o.size,"prSet('size',+this.value)")}</div><div><label class="form-label">Answer lines (essay)</label>${sel('pr-l',[2,4,6,8,10,14,18].map(n=>[n,n+' lines']),PR.o.lines,"prSet('lines',+this.value)")}</div><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>
     <label class="form-label" style="margin-top:8px">Instructions (optional)</label><textarea class="form-control" rows="3" placeholder="Use a pen. No calculators." oninput="prSet('instructions',this.value,1)">${e(PR.o.instructions)}</textarea>
-    ${secPanel()}${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
-  if(k==='sheet')h+=`<label class="form-label" style="margin-top:8px">Personalize for a class</label>${sel('pr-sc',[['','Blank sheets'],...(APP.classes||[]).map(c=>[c.id,c.name+' ('+(c.students||[]).length+' students, one each)'])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}<div class="sm" style="margin:4px 0">Personalized sheets print the name and pre-fill a student number so scanning can match each photo to the right student.</div>`;
+    ${secPanel()}${PR.o.sheet?sheetPanel():''}${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
+  if(k==='sheet')h+=sheetPanel()+`<label class="form-label" style="margin-top:8px">Personalize for a class</label>${sel('pr-sc',[['','Blank sheets'],...(APP.classes||[]).map(c=>[c.id,c.name+' ('+(c.students||[]).length+' students, one each)'])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}<div class="sm" style="margin:4px 0">Personalized sheets print the name and pre-fill a student number so scanning can match each photo to the right student.</div>`;
   if(k==='key'||k==='sheet')h+=`<div class="pr-g"><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>`;
   if(k==='results'||k==='summary'){const t=curTest(),subs=t?subsOf(t):[];const cl=[...new Set(subs.flatMap(classOfSub))];const sl=t?resultSubs(t).slice().sort((a,b)=>(a.studentName||'').localeCompare(b.studentName||'')):[];
     if(cl.length>1||PR.cls!=='all')h+=`<label class="form-label" style="margin-top:8px">Class</label>${sel('pr-cl',[['all','All classes'],...cl.map(i=>[i,clsName(i)||i])],PR.cls,"prPick('cls',this.value)")}`;
@@ -14469,9 +14501,10 @@ function render(){
 function preview(){clearTimeout(tmr);tmr=setTimeout(()=>{const b=build(),f=$('pr-prev');if(!f)return;const on=!!b;$('pr-act').style.display=on?'':'none';f.style.display=on?'':'none';$('pr-none').style.display=on?'none':'';if(b)paginate(b.html,PR.o).then(h=>{if(f.isConnected)f.srcdoc=h}).catch(()=>{f.srcdoc=b.html})},120)}
 window.prKind=k=>{if(k==='scan'){closeModal();return scanCenter(PR.tid)}PR.kind=k;if(k==='results'||k==='summary')PR.sid='all';render()};
 window.prSet=(k,v,quiet)=>{PR.o[k]=v;if(quiet)preview();else render()};
-window.prPick=(k,v)=>{PR[k]=v;if(k==='tid'||k==='cls')PR.sid='all';render()};
-window.prDo=async()=>{const b=build();if(b)printHtml(await paginate(b.html,PR.o))};
-window.prTab=async()=>{const b=build();if(b){const h=await paginate(b.html,PR.o);openTab(wrap(b.title,h.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))}};
+window.prPick=(k,v)=>{PR[k]=v;if(k==='tid')PR.o.sheetCfg=null;if(k==='tid'||k==='cls')PR.sid='all';render()};
+function saveCfg(){const t=curTest();if(t&&(PR.kind==='sheet'||(PR.kind==='paper'&&PR.o.sheet))){t.sheetCfg=Object.assign({},ensureCfg());try{save()}catch(x){}}}
+window.prDo=async()=>{saveCfg();const b=build();if(b)printHtml(await paginate(b.html,PR.o))};
+window.prTab=async()=>{saveCfg();const b=build();if(b){const h=await paginate(b.html,PR.o);openTab(wrap(b.title,h.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))}};
 window.prPage=()=>{try{closeModal()}catch(x){}setTimeout(()=>window.print(),300)};
 window.prCenter=function(kind,tid,sid,cid){
   if(kind)PR.kind=kind;if(tid)PR.tid=tid;if(sid)PR.sid=sid;else if(kind==='results')PR.sid='all';if(cid)PR.cid=cid;
@@ -14608,7 +14641,7 @@ function nav(){
   a.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 14h12v7H6z"/></svg>Print';b.parentNode.insertBefore(a,b);}
 function ctx(){
   const sw=$('student-wrapper');
-  if(sw&&window.APP&&APP.currentStudentExam&&APP.currentStudentExam.t&&sw.querySelector('.student-q,.student-timer-center,.sx-note,[class*=student]')&&!document.getElementById('sc-stu-btn')&&!document.getElementById('sc-st')&&APP.currentStudentExam.t.questions.some(q=>q.type==='mc'||q.type==='ms')){
+  if(sw&&window.APP&&APP.currentStudentExam&&APP.currentStudentExam.t&&sw.querySelector('.student-q,.student-timer-center,.sx-note,[class*=student]')&&!document.getElementById('sc-stu-btn')&&!document.getElementById('sc-st')&&APP.currentStudentExam.t.sheetCfg&&APP.currentStudentExam.t.sheetCfg.studentScan!==false&&APP.currentStudentExam.t.questions.some(q=>q.type==='mc'||q.type==='ms')){
     const b=document.createElement('button');b.id='sc-stu-btn';b.type='button';b.className='btn btn-secondary';b.textContent='Scan my answer sheet';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:50';b.onclick=()=>scanForStudent();document.body.appendChild(b);}
   else if(document.getElementById('sc-stu-btn')&&!(APP.currentStudentExam&&APP.currentStudentExam.t))document.getElementById('sc-stu-btn').remove();
   /* builder header */
