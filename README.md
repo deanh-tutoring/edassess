@@ -250,3 +250,15 @@ The Classwork tab works like Google Classroom. Teachers get a Create menu (Assig
 ## Desktop notifications
 
 Students are asked to allow notifications the first time they sign in (and again after a week if they choose Not now). Once allowed, posting an announcement, a material or an assignment sends a notification to every student in that class, even if EdAssess is closed. This uses Web Push through a small service worker (`sw.js`, which must be deployed at the site root next to `index.html`). The push keys are derived from `EA_AUTH_SECRET`, so there is nothing extra to configure. Browsers without push support fall back to checking once a minute while the page is open. Set `EA_PUSH_CONTACT` to a `mailto:` address if you want push services to see a real contact.
+
+## Printing
+
+Everything can go on paper, and it is laid out for paper rather than copied from the screen. Open **Print** in the sidebar (or press Ctrl+Shift+P, or search "Print" in the command palette) to get the Print Center, which shows a live preview of the page before you print.
+
+- **Test on paper:** name, date and class lines, bubbles for multiple choice, ruled lines for essays, blanks for fill in the blank, boxes for ranking and matching. Choose paper size, text size, essay line count, and up to four versions that shuffle questions and options.
+- **Answer key and bubble answer sheet:** each version gets its own key.
+- **Student results:** one student, or the whole class with one report per page and a class summary on top. Rubric breakdowns and comments are included.
+- **Class summary, gradebook, roster and attendance sheet, scoring rubrics, survey results.**
+- **Print this page:** prints what you are looking at with the menus hidden.
+
+The grader also has a Print button for the student you are viewing.

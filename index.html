@@ -1905,6 +1905,15 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 @keyframes nfRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
 .ea-nf-b b{font:800 17px var(--f-display);letter-spacing:-.02em}.ea-nf-b p{margin:4px 0 12px;font-size:13.5px;line-height:1.5;font-weight:500}.ea-nf-a{display:flex;gap:8px}
 .lms-grip.ph{visibility:hidden}
+
+/* ===== Print Center ===== */
+.pr-modal .pr-wrap{display:grid;grid-template-columns:210px 270px 1fr;gap:16px;height:72vh;min-height:420px;padding:14px 18px 18px}
+.pr-side,.pr-mid{overflow:auto}.pr-k{display:block;width:100%;text-align:left;border:2px solid transparent;border-radius:10px;padding:8px 10px;margin-bottom:4px;background:transparent;cursor:pointer;font:inherit;color:inherit;transition:background .15s,border-color .15s}
+.pr-k b{display:block;font-size:14px}.pr-k span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:1px}.pr-k:hover{background:rgba(47,107,255,.07)}.pr-k.on{border-color:var(--slate-blue,#2f6bff);background:rgba(47,107,255,.1)}
+.pr-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pr-act{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pr-pv{border:2px solid var(--line,#d8dce6);border-radius:10px;overflow:hidden;background:#e9ecf2}.pr-pv iframe{width:100%;height:100%;border:0;background:#fff}
+@media(max-width:900px){.pr-modal .pr-wrap{grid-template-columns:1fr;height:auto}.pr-pv{height:60vh}}
+@media print{#sidebar,.sh-bar,.sh-rail,.sh-pn,#sh-pal,.modal-backdrop,#ea-nf,.pr-quick,.cw-menu,.btn{display:none!important}#main,.page-view{height:auto!important;overflow:visible!important;margin:0!important}body{background:#fff!important}}
 </style>
 </head>
 <body>
@@ -14092,6 +14101,327 @@ window.eaNotifyInit=function(){
 })();
 
 </script>
+<script id="ea-print">
+/* EdAssess printables: paper-first documents, not screenshots of the app. */
+(function(){
+if(window.__eaPrint)return;window.__eaPrint=1;
+const e=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=id=>document.getElementById(id);
+const TL={mc:'Multiple choice',ms:'Select all',short:'Short answer',essay:'Essay',passage:'Passage'};const tl=q=>TL[q.type]||(window.QT&&QT[q.type]&&QT[q.type].label)||q.type;
+const LET='ABCDEFGHIJ';
+const pl=h=>{h=String(h==null?'':h);if(!/<[a-z][\s\S]*>/i.test(h))return h;try{return(new DOMParser().parseFromString(h,'text/html').body.textContent||'').trim()}catch(x){return h.replace(/<[^>]+>/g,'')}};
+const rich=h=>{h=String(h==null?'':h);try{return window.rubSafeHtml?rubSafeHtml(h):e(pl(h)).replace(/\n/g,'<br>')}catch(x){return e(pl(h))}};
+const stem=h=>{try{return window.renderStem?renderStem(h):rich(h)}catch(x){return rich(h)}};
+const rng=seed=>{let s=0;for(let i=0;i<seed.length;i++)s=(s*31+seed.charCodeAt(i))>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}};
+const shuf=(a,seed)=>{const r=rng(seed),b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
+const fmt=n=>n==null||isNaN(n)?'0':String(Math.round(n*10)/10);
+const dstr=d=>{try{return new Date(d).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}catch(x){return''}};
+const tests=()=>(APP.tests||[]);
+const subsOf=t=>(APP.submissions||[]).filter(s=>s.testId===t.id&&s.status==='submitted'&&!s.sample);
+const total=(t,s)=>{try{return calcTotalPoints(t,s)}catch(x){return 0}};
+const classOfSub=s=>{const a=(APP.assignments||[]).find(x=>x.id===s.assignmentId);return a?((a.classIds||[])):[]};
+const clsName=id=>{const c=(APP.classes||[]).find(x=>x.id===id);return c?c.name:''};
+const items=t=>{try{return flatQuestions(t)}catch(x){return[]}};
+
+/* ───────── paper CSS ───────── */
+function css(o){o=o||{};const sz=o.size||11;
+return `@page{size:${o.paper||'letter'}${o.land?' landscape':''};margin:${o.margin||0.6}in;@bottom-left{content:"${(o.foot||'').replace(/"/g,'')}";font:8pt Helvetica,Arial,sans-serif;color:#666}@bottom-right{content:"Page " counter(page) " of " counter(pages);font:8pt Helvetica,Arial,sans-serif;color:#666}}
+*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;font:${sz}pt/1.4 "Inter","Helvetica Neue",Helvetica,Arial,sans-serif;color:#111;background:var(--cream)}
+h1{font-size:${sz+9}pt;margin:0 0 2pt;letter-spacing:-.01em;line-height:1.15}h2{font-size:${sz+3}pt;margin:12pt 0 4pt}h3{font-size:${sz}pt;margin:0}
+.sub{color:#555;font-size:${sz-1.5}pt}
+.pg{break-after:page;page-break-after:always}.pg:last-child{break-after:auto;page-break-after:auto}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5pt solid #111;padding-bottom:6pt;margin-bottom:8pt;gap:12pt}
+.ver{font-size:${sz+14}pt;font-weight:800;border:2.5pt solid #111;border-radius:6pt;padding:0 10pt;line-height:1.3}
+.fld{display:flex;gap:14pt;margin:8pt 0 4pt}.fld div{flex:1;border-bottom:1pt solid #111;padding-bottom:1pt;font-size:${sz-2}pt;color:#444;min-height:18pt;display:flex;align-items:flex-end}.fld div.s{flex:.55}
+.ins{border:1pt solid #111;border-radius:4pt;padding:6pt 9pt;margin:8pt 0 10pt;font-size:${sz-1}pt}
+.q{break-inside:avoid;margin:0 0 ${o.gap||11}pt;display:flex;gap:7pt}.q>.n{font-weight:800;min-width:20pt;text-align:right}.q>.b{flex:1;min-width:0}
+.pts{float:right;font-size:${sz-2.5}pt;color:#555;margin-left:8pt}
+.st{margin-bottom:4pt}.st p{margin:0 0 3pt}.st img,.q img{max-width:100%;max-height:2.6in;display:block;margin:4pt 0}
+.op{display:grid;grid-template-columns:1fr;gap:3pt 14pt;margin-top:3pt}.op.c2{grid-template-columns:1fr 1fr}
+.op div{display:flex;gap:6pt;align-items:flex-start;break-inside:avoid}
+.bub{display:inline-flex;width:13pt;height:13pt;min-width:13pt;border:1.2pt solid #111;border-radius:50%;align-items:center;justify-content:center;font-size:7.5pt;font-weight:700;margin-top:1pt}.bub.sq{border-radius:2pt}
+.bub.on{background:#111;color:#fff}.bub.ok{background:#111;color:#fff}
+.rl{border-bottom:.8pt solid #777;height:${o.lh||22}pt}.bx{border:1pt solid #111;border-radius:3pt;height:${(o.lines||6)*(o.lh||22)}pt}
+.ans{display:inline-block;border-bottom:1pt solid #111;min-width:${o.blank||90}pt}
+.pas{border:1pt solid #999;border-radius:4pt;padding:7pt 10pt;margin:0 0 8pt;font-size:${sz-0.5}pt;background:#fafafa}.pas h3{margin-bottom:3pt}
+.mt{display:grid;grid-template-columns:1fr 1fr;gap:3pt 26pt;margin-top:4pt}.mt .l{display:flex;gap:5pt;align-items:flex-end}.mt .l i{display:inline-block;width:26pt;border-bottom:1pt solid #111;height:14pt}
+.rate{display:flex;gap:6pt;margin-top:4pt;flex-wrap:wrap}.rate span{display:inline-flex;flex-direction:column;align-items:center;font-size:8pt;gap:2pt}
+table{border-collapse:collapse;width:100%}th,td{border:.8pt solid #888;padding:3pt 5pt;text-align:left;vertical-align:top;font-size:${sz-1.5}pt}th{background:#eee;font-weight:700}
+td.c,th.c{text-align:center}tr{break-inside:avoid}thead{display:table-header-group}
+.key{border:1pt dashed #111;border-radius:4pt;padding:4pt 8pt;margin-top:5pt;font-size:${sz-1.5}pt;background:#f3f3f3}
+.sc{display:flex;gap:10pt;margin:8pt 0}.sc>div{flex:1;border:1.5pt solid #111;border-radius:6pt;padding:6pt 10pt}.sc b{display:block;font-size:${sz+9}pt;line-height:1.1}.sc span{font-size:${sz-2.5}pt;color:#555;text-transform:uppercase;letter-spacing:.08em}
+.res{break-inside:avoid;border:1pt solid #bbb;border-left:4pt solid #111;border-radius:3pt;padding:6pt 9pt;margin:0 0 7pt}.res.ok{border-left-color:#1a7f37}.res.no{border-left-color:#b3261e}.res.pt{border-left-color:#b7791f}
+.res .top{display:flex;justify-content:space-between;gap:8pt;font-weight:700;font-size:${sz-1.5}pt;margin-bottom:3pt}.tag{font-size:${sz-3}pt;text-transform:uppercase;letter-spacing:.08em;color:#555}
+.cm{margin-top:4pt;padding:4pt 7pt;background:#f3f3f3;border-radius:3pt;font-size:${sz-1.5}pt}
+.bar{display:flex;align-items:center;gap:6pt;font-size:${sz-2}pt;margin:2pt 0}.bar i{display:block;height:9pt;background:#111;min-width:1pt}.bar b{min-width:48pt;font-weight:600}
+.sm{font-size:${sz-2}pt;color:#555}.muted{color:#666}
+.bs{display:grid;grid-template-columns:repeat(${o.bscols||3},1fr);gap:0 18pt}.bs .r{display:flex;align-items:center;gap:5pt;padding:2.2pt 0;border-bottom:.5pt solid #ddd}.bs .r b{min-width:20pt;text-align:right;font-size:${sz-2}pt}
+.tb{position:sticky;top:0;background:#111;color:#fff;padding:8px 14px;font:13px Helvetica,Arial;display:flex;justify-content:space-between}.tb button{background:#2f6bff;color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer}
+@media print{.tb{display:none}}
+@media screen{body{padding:24px;max-width:8.5in;margin:0 auto;background:var(--cream)}.pg{border-bottom:1px dashed #bbb;margin-bottom:24px;padding-bottom:24px}}`;}
+
+function katexLinks(){return[].slice.call(document.querySelectorAll('link[rel=stylesheet]')).filter(l=>/katex/i.test(l.href)).map(l=>`<link rel="stylesheet" href="${l.href}">`).join('')}
+function wrap(title,body,o){return `<!doctype html><html><head><meta charset="utf-8"><title>${e(title)}</title>${katexLinks()}<style>${css(o)}${'<'}/style></head><body>${o&&o.toolbar?'<div class="tb"><span>'+e(title)+'</span><button onclick="window.print()">Print</button></div>':''}${body}</body></html>`}
+
+/* ───────── question rendering (paper) ───────── */
+function orderFor(q,ver,key){const n=(q.options||[]).length,base=[...Array(n).keys()];return ver?shuf(base,'v'+ver+key):base}
+function qBody(q,n,o,ver,key,sh){
+  const t=q.type;let h='';const pts=o.points!==false?`<span class="pts">${fmt(q.points||1)} pt${(q.points||1)===1?'':'s'}</span>`:'';
+  const head=`<div class="st">${pts}${stem(q.stem)||''}</div>${q.image?`<img src="${e(q.image)}" alt="">`:''}`;
+  if(t==='mc'||t==='ms'){const ord=orderFor(q,ver,key),opts=ord.map(i=>pl(q.options[i]));const long=opts.some(x=>x.length>34);
+    h=`<div class="op ${long?'':'c2'}">${ord.map((i,p)=>`<div><span class="bub ${t==='ms'?'sq':''}">${LET[p]}</span><span>${stem(q.options[i])}</span></div>`).join('')}</div>`+(t==='ms'?'<div class="sm" style="margin-top:3pt">Select all that apply.</div>':'');}
+  else if(t==='short'){h=`<div style="margin-top:6pt" class="rl"></div>`;}
+  else if(t==='essay'){const L=o.lines||6;h=o.boxes?`<div class="bx" style="margin-top:4pt"></div>`:Array.from({length:L},()=>'<div class="rl"></div>').join('');}
+  else if(t==='ranking'){const it=shuf((q.items||[]).map((x,i)=>i),'r'+key+(ver||''));h=`<div class="sm">Write the numbers 1 to ${it.length} in the boxes to put these in order.</div><div class="op">${it.map(i=>`<div><span class="bub sq" style="width:18pt;border-radius:2pt"></span><span>${stem(q.items[i])}</span></div>`).join('')}</div>`;}
+  else if(t==='matching'){const p=q.pairs||[],r=shuf(p.map((x,i)=>i),'m'+key+(ver||''));h=`<div class="sm">Write the letter of the matching item on the line.</div><div class="mt"><div>${p.map((x,i)=>`<div class="l" style="margin-bottom:4pt"><i></i><span>${i+1}. ${stem(x.l)}</span></div>`).join('')}</div><div>${r.map((i,k)=>`<div style="margin-bottom:4pt">${LET[k]}. ${stem(p[i].r)}</div>`).join('')}</div></div>`;}
+  else if(t==='cloze'){try{const pr=QT.cloze.parse(q);h=`<div style="line-height:2">${pr.parts.map(x=>x.b!==undefined?`<span class="ans" style="min-width:70pt"></span>`:stem(x.t)).join('')}</div>`;}catch(x){h=''}return `<div class="q"><div class="n">${n}.</div><div class="b"><div class="st">${pts}</div>${h}</div></div>`}
+  else if(t==='numeric'){const u=(q.num&&q.num.unit)||'';h=`<div style="margin-top:6pt">Answer: <span class="ans" style="min-width:110pt"></span> ${e(u)}</div>`;}
+  else if(t==='rating'){const s=q.scale||{max:5,style:'stars'},lo=s.style==='nps'?0:1,hi=s.style==='nps'?10:(s.max||5);h=`<div class="rate">${Array.from({length:hi-lo+1},(_,i)=>`<span><span class="bub">${lo+i}</span></span>`).join('')}</div>${s.low||s.high?`<div class="sm">${e(s.low||'')}${s.high?' to '+e(s.high):''}</div>`:''}`;}
+  else if(t==='matrix'){const cols=q.cols||[];h=`<table style="margin-top:4pt"><thead><tr><th></th>${cols.map(c=>`<th class="c">${e(pl(c))}</th>`).join('')}</tr></thead><tbody>${(q.rows||[]).map(r=>`<tr><td>${e(pl(r))}</td>${cols.map(()=>'<td class="c"><span class="bub">&nbsp;</span></td>').join('')}</tr>`).join('')}</tbody></table>`;}
+  else if(t==='availability'){h='<div class="sm"><i>Availability is collected online. Write your best times below.</i></div><div class="rl"></div><div class="rl"></div>';}
+  else{h='<div class="rl"></div><div class="rl"></div>';}
+  return `<div class="q"><div class="n">${n}.</div><div class="b">${head}${h}</div></div>`;}
+
+/* correct answer text (plain-ish html) */
+function keyText(q,ver,key){const t=q.type;
+  if(t==='mc'||t==='ms'){const ord=orderFor(q,ver,key),ca=q.correctAnswers||[];const ls=ord.map((i,p)=>ca.includes(i)?LET[p]:'').filter(Boolean);return ls.length?`<b>${ls.join(', ')}</b> ${ls.map(l=>e(pl(q.options[ord[LET.indexOf(l)]]))).join('; ').slice(0,160)}`:'(none set)';}
+  if(t==='short')return e((q.correctAnswers||[]).filter(Boolean).join(' / '))||'(open)';
+  if(t==='ranking')return (q.items||[]).map((x,i)=>`${i+1}. ${e(pl(x))}`).join('<br>');
+  if(t==='matching')return (q.pairs||[]).map(p=>`${e(pl(p.l))} → ${e(pl(p.r))}`).join('<br>');
+  if(t==='cloze'){try{return QT.cloze.parse(q).blanks.map((b,i)=>`${i+1}. ${e(b.join(' / '))}`).join(' &nbsp; ')}catch(x){return''}}
+  if(t==='numeric'){const n=q.num||{};return e(n.answer)+(n.unit?' '+e(n.unit):'')+(parseFloat(n.tol)?` (±${e(n.tol)}${n.pct?'%':''})`:'');}
+  if(t==='essay'){const m=q.rubricModel?'<br><span class="sm">'+rich(q.rubricModel).slice(0,500)+'</span>':'';const r=(q.rubric||[]).map(c=>`${e(c.criterion||'Criterion')} (${fmt(c.maxPoints)})`).join('; ');return (r?e(r):'Graded by rubric or teacher')+m;}
+  return '';}
+function ansText(q,a,s,key){const t=q.type;
+  if(a===undefined||a===null||a===''||(Array.isArray(a)&&!a.length))return '<i class="muted">No answer</i>';
+  if(t==='mc')return `<b>${LET[a]||'?'}</b> ${e(pl((q.options||[])[a]))}`;
+  if(t==='ms')return (Array.isArray(a)?a:[]).slice().sort().map(i=>`<b>${LET[i]}</b> ${e(pl((q.options||[])[i]))}`).join('<br>');
+  if(t==='ranking')return Array.isArray(a)?a.map((v,p)=>`${p+1}. ${e(pl((q.items||[])[v]))}`).join('<br>'):'';
+  if(t==='matching')return (q.pairs||[]).map((p,j)=>`${e(pl(p.l))} → ${a[j]!=null&&q.pairs[a[j]]?e(pl(q.pairs[a[j]].r)):'<i class="muted">blank</i>'}`).join('<br>');
+  if(t==='cloze')return Array.isArray(a)?a.map((x,i)=>`${i+1}. ${e(x||'')}`).join(' &nbsp; '):'';
+  if(t==='numeric')return e(a)+((q.num&&q.num.unit)?' '+e(q.num.unit):'');
+  if(typeof a==='string')return rich(a);
+  try{return e(QT[t].text(q,a))}catch(x){return e(JSON.stringify(a))}}
+
+/* ───────── paper test ───────── */
+function paperBody(t,o,ver){
+  const its=items(t);let order=its;
+  if(ver&&o.shuffleQ!==false){/* shuffle top-level questions and keep passage blocks together */
+    const groups=[];t.questions.forEach((q,i)=>groups.push(its.filter(x=>x.idx===i)));
+    order=shuf(groups,'g'+ver+t.id).flat();}
+  const tot=its.reduce((a,x)=>a+(x.q.points||1),0);
+  const nm=o.name!==false?`<div class="fld"><div>Name</div><div class="s">Date</div><div class="s">Class</div>${o.score!==false?'<div class="s">Score / '+fmt(tot)+'</div>':''}</div>`:'';
+  let n=0,lastP=-1,h=`<div class="hd"><div><h1>${e(t.title||'Test')}</h1><div class="sub">${[t.subject,o.teacher,its.length+' questions',fmt(tot)+' points'].filter(Boolean).map(e).join(' · ')}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div>${nm}`;
+  if(o.instructions)h+=`<div class="ins">${e(o.instructions).replace(/\n/g,'<br>')}</div>`;
+  const body=[];
+  order.forEach(it=>{n++;
+    if(it.passageQ&&it.idx!==lastP){lastP=it.idx;const p=it.passageQ;body.push(`<div class="pas">${(p.docs||[]).map(d=>`<h3>${e(d.title||'')}</h3>${rich(d.content||'')}`).join('')}${p.stem?stem(p.stem):''}</div>`);}
+    body.push(qBody(it.q,n,o,ver,it.key,0));});
+  const cols=o.cols===2?`<div style="column-count:2;column-gap:22pt;column-rule:.5pt solid #ccc">${body.join('')}</div>`:body.join('');
+  return h+cols;}
+function bubbleSheet(t,o,ver){
+  const its=items(t).filter(x=>['mc','ms'].includes(x.q.type));const mx=Math.max(4,...its.map(x=>(x.q.options||[]).length));
+  let n=0;const all=items(t);const rows=[];all.forEach(x=>{n++;if(['mc','ms'].includes(x.q.type)){const k=(x.q.options||[]).length;rows.push(`<div class="r"><b>${n}</b>${Array.from({length:mx},(_,i)=>`<span class="bub ${x.q.type==='ms'?'sq':''}" style="${i>=k?'opacity:.15':''}">${LET[i]}</span>`).join('')}</div>`)}});
+  const nonmc=all.length-rows.length;
+  return `<div class="hd"><div><h1>Answer sheet</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div><div class="fld"><div>Name</div><div class="s">Date</div><div class="s">Class</div></div><div class="ins">Fill in one bubble per question. Fill completely with dark pen or pencil. Select all that apply where the question says so.</div><div class="bs" style="grid-template-columns:repeat(${rows.length>40?3:rows.length>20?2:1},1fr)">${rows.join('')}</div>${nonmc?`<p class="sm">Questions that are not multiple choice are answered in the test booklet.</p>`:''}`;}
+function keyBody(t,o,ver){
+  const its=items(t);let n=0;
+  return `<div class="hd"><div><h1>Answer key</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div></div>`+
+  `<table><thead><tr><th class="c" style="width:30pt">#</th><th>Answer</th><th class="c" style="width:40pt">Pts</th></tr></thead><tbody>${its.map(x=>{n++;return `<tr><td class="c">${n}</td><td>${keyText(x.q,ver,x.key)}</td><td class="c">${fmt(x.q.points||1)}</td></tr>`}).join('')}</tbody></table>`;}
+/* a version shuffles questions, so its key must follow the shuffled order */
+function keyBodyV(t,o,ver){
+  const its=items(t);let order=its;
+  if(ver&&o.shuffleQ!==false){const groups=[];t.questions.forEach((q,i)=>groups.push(its.filter(x=>x.idx===i)));order=shuf(groups,'g'+ver+t.id).flat();}
+  let n=0;return `<div class="hd"><div><h1>Answer key</h1><div class="sub">${e(t.title||'')}${o.versions>1?' · Version '+LET[ver||0]:''}</div></div>${o.versions>1?`<div class="ver">${LET[ver||0]}</div>`:''}</div><table><thead><tr><th class="c" style="width:30pt">#</th><th>Answer</th><th class="c" style="width:40pt">Pts</th></tr></thead><tbody>${order.map(x=>{n++;return `<tr><td class="c">${n}</td><td>${keyText(x.q,ver,x.key)}</td><td class="c">${fmt(x.q.points||1)}</td></tr>`}).join('')}</tbody></table>`;}
+function paperTest(t,o){
+  const V=Math.max(1,o.versions||1);let out=[];
+  for(let v=0;v<V;v++){
+    out.push(`<div class="pg">${paperBody(t,o,v)}</div>`);
+    if(o.sheet)out.push(`<div class="pg">${bubbleSheet(t,o,v)}</div>`);}
+  if(o.key)for(let v=0;v<V;v++)out.push(`<div class="pg">${keyBodyV(t,o,v)}</div>`);
+  return out.join('');}
+function answerKeyDoc(t,o){const V=Math.max(1,o.versions||1);let out=[];for(let v=0;v<V;v++)out.push(`<div class="pg">${keyBodyV(t,o,v)}</div>`);return out.join('');}
+
+/* ───────── results ───────── */
+function pctOf(s,t){const T=total(t,s);return T?Math.round(s.score/T*1000)/10:0}
+function letter(s,t){try{if(s.grade&&s.grade.letter)return s.grade.letter}catch(x){}return''}
+function qAward(q,key,s){try{return sxQuestionAward(q,key,s)}catch(x){return 0}}
+function rubricRows(q,key,s){
+  if(!(q.rubric&&q.rubric.length))return'';const sc=(s.rubricScores&&s.rubricScores[key])||{},nt=(s.rubricNotes&&s.rubricNotes[key])||{};
+  return `<table style="margin-top:5pt"><thead><tr><th>Criterion</th><th class="c" style="width:50pt">Score</th><th>Note</th></tr></thead><tbody>${q.rubric.map((r,i)=>{const v=sc[i];const k=r.kind||'std';return `<tr><td>${e(r.criterion||'Criterion')}${k!=='std'?` <span class="tag">${e(k)}</span>`:''}</td><td class="c">${v===undefined?'-':fmt(v)} / ${fmt(r.maxPoints||r.penalty||0)}</td><td>${e(nt[i]||'')}</td></tr>`}).join('')}</tbody></table>`;}
+function studentReport(t,s,o){
+  const its=items(t),T=total(t,s),pc=pctOf(s,t);let n=0;
+  const cl=classOfSub(s).map(clsName).filter(Boolean).join(', ');
+  let h=`<div class="hd"><div><h1>${e(t.title||'Results')}</h1><div class="sub">${e(s.studentName||'Student')}${cl?' · '+e(cl):''}${s.submittedAt?' · Submitted '+e(dstr(s.submittedAt)):''}</div></div></div>`+
+  `<div class="sc"><div><span>Score</span><b>${fmt(s.score)} / ${fmt(T)}</b></div><div><span>Percent</span><b>${pc}%</b></div>${letter(s,t)?`<div><span>Grade</span><b>${e(letter(s,t))}</b></div>`:''}</div>`;
+  if(o.comment!==false&&s.overallComment)h+=`<div class="cm"><b>Teacher comment</b><br>${rich(s.overallComment)}</div>`;
+  h+='<h2>Question by question</h2>';
+  its.forEach(it=>{n++;const q=it.q,k=it.key,a=s.answers?s.answers[k]:undefined,aw=qAward(q,k,s),mx=q.points||1;
+    const cls=aw>=mx?'ok':aw>0?'pt':'no';const need=q.type==='essay'&&!aw&&!(s.manualScores&&s.manualScores[k]!==undefined)&&!(s.rubricScores&&s.rubricScores[k]);
+    h+=`<div class="res ${need?'':cls}"><div class="top"><span>${n}. ${aw>=mx?'Correct':aw>0?'Partial credit':need?'Not graded':'Incorrect'}</span><span>${fmt(aw)} / ${fmt(mx)}</span></div>
+    <div class="st">${stem(q.stem)}</div>${q.image?`<img src="${e(q.image)}" alt="">`:''}
+    <div><span class="tag">Your answer</span><div>${ansText(q,a,s,k)}</div></div>
+    ${o.correct!==false&&aw<mx&&!(q.type==='essay'&&!q.rubricModel&&!(q.rubric&&q.rubric.length))?`<div style="margin-top:3pt"><span class="tag">Correct answer</span><div>${keyText(q)}</div></div>`:''}
+    ${o.rubric!==false?rubricRows(q,k,s):''}
+    ${o.comment!==false&&s.comments&&s.comments[k]?`<div class="cm"><b>Comment:</b> ${rich(s.comments[k])}</div>`:''}
+    ${o.explain&&q.explanation?`<div class="cm"><b>Explanation:</b> ${rich(q.explanation)}</div>`:''}</div>`;});
+  return h;}
+
+function stats(t,subs){
+  const v=subs.map(s=>({s,p:pctOf(s,t),sc:s.score||0})),n=v.length,T=subs.length?total(t,subs[0]):total(t);
+  const sorted=v.map(x=>x.p).sort((a,b)=>a-b);const mean=n?sorted.reduce((a,b)=>a+b,0)/n:0;const med=n?(n%2?sorted[(n-1)/2]:(sorted[n/2-1]+sorted[n/2])/2):0;
+  const bk=[['90 to 100',90,101],['80 to 89',80,90],['70 to 79',70,80],['60 to 69',60,70],['Below 60',-1e9,60]].map(([l,a,b])=>[l,v.filter(x=>x.p>=a&&x.p<b).length]);
+  return{v,n,T,mean,med,hi:n?sorted[n-1]:0,lo:n?sorted[0]:0,bk};}
+function classSummary(t,subs,o){
+  const st=stats(t,subs),its=items(t);const mxb=Math.max(1,...st.bk.map(x=>x[1]));
+  const perQ=its.map((it,i)=>{const q=it.q,mx=q.points||1;let sum=0,c=0;subs.forEach(s=>{if(s.answers&&s.answers[it.key]!==undefined||q.type==='essay'){sum+=qAward(q,it.key,s)/mx;c++}});return{n:i+1,q,pct:c?Math.round(sum/c*100):null}});
+  const sorted=st.v.slice().sort((a,b)=>(a.s.studentName||'').localeCompare(b.s.studentName||''));
+  return `<div class="hd"><div><h1>${e(t.title||'')}: class summary</h1><div class="sub">${st.n} submissions · ${fmt(st.T)} points</div></div></div>
+  <div class="sc"><div><span>Mean</span><b>${fmt(st.mean)}%</b></div><div><span>Median</span><b>${fmt(st.med)}%</b></div><div><span>High</span><b>${fmt(st.hi)}%</b></div><div><span>Low</span><b>${fmt(st.lo)}%</b></div></div>
+  <h2>Grade distribution</h2>${st.bk.map(([l,c])=>`<div class="bar"><b>${l}</b><i style="width:${Math.round(c/mxb*55)}%"></i><span>${c}</span></div>`).join('')}
+  <h2>Percent correct by question</h2><table><thead><tr><th class="c" style="width:28pt">#</th><th>Question</th><th class="c" style="width:48pt">Type</th><th class="c" style="width:50pt">Correct</th></tr></thead><tbody>${perQ.map(x=>`<tr><td class="c">${x.n}</td><td>${e(pl(x.q.stem||x.q.cloze||'').replace(/[{}]/g,'_').slice(0,110))}</td><td class="c">${e(tl(x.q))}</td><td class="c"><b>${x.pct==null?'-':x.pct+'%'}</b></td></tr>`).join('')}</tbody></table>
+  <h2>Scores</h2><table><thead><tr><th>Student</th><th class="c" style="width:70pt">Score</th><th class="c" style="width:50pt">Percent</th></tr></thead><tbody>${sorted.map(x=>`<tr><td>${e(x.s.studentName||'')}</td><td class="c">${fmt(x.sc)} / ${fmt(total(t,x.s))}</td><td class="c">${x.p}%</td></tr>`).join('')}</tbody></table>`;}
+function massResults(t,subs,o){
+  const sorted=subs.slice().sort((a,b)=>(a.studentName||'').localeCompare(b.studentName||''));
+  return (o.summary!==false?`<div class="pg">${classSummary(t,sorted,o)}</div>`:'')+sorted.map(s=>`<div class="pg">${studentReport(t,s,o)}</div>`).join('');}
+
+/* ───────── class documents ───────── */
+function gradebook(c,o){
+  const as=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));const st=(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  const get=(stu,a)=>(APP.submissions||[]).find(s=>s.assignmentId===a.id&&s.status==='submitted'&&(s.studentId===stu.id||s.studentName===stu.name));
+  const rows=st.map(stu=>{let sum=0,cnt=0;const cells=as.map(a=>{const t=tests().find(x=>x.id===a.testId),s=get(stu,a);if(!s||!t)return '<td class="c muted">-</td>';const p=pctOf(s,t);sum+=p;cnt++;return `<td class="c">${o.pts?fmt(s.score)+'/'+fmt(total(t,s)):p+'%'}</td>`});return `<tr><td><b>${e(stu.name)}</b></td>${cells.join('')}<td class="c"><b>${cnt?Math.round(sum/cnt)+'%':'-'}</b></td></tr>`}).join('');
+  const avg=as.map(a=>{const t=tests().find(x=>x.id===a.testId);const ss=st.map(x=>get(x,a)).filter(Boolean);return `<td class="c"><b>${ss.length&&t?Math.round(ss.reduce((q,s)=>q+pctOf(s,t),0)/ss.length)+'%':'-'}</b></td>`}).join('');
+  return `<div class="hd"><div><h1>${e(c.name)}: gradebook</h1><div class="sub">${st.length} students · ${as.length} assignments · printed ${e(dstr(Date.now()))}</div></div></div><table><thead><tr><th>Student</th>${as.map(a=>{const t=tests().find(x=>x.id===a.testId);return `<th class="c" style="font-size:7.5pt">${e((a.name||(t&&t.title)||'').slice(0,26))}</th>`}).join('')}<th class="c">Average</th></tr></thead><tbody>${rows}<tr><th>Class average</th>${avg}<th></th></tr></tbody></table>`;}
+function roster(c,o){
+  const st=(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));const N=o.cols||12;
+  return `<div class="hd"><div><h1>${e(c.name)}: roster</h1><div class="sub">${e([c.subject,c.period].filter(Boolean).join(' · '))}${c.joinCode?' · Join code <b>'+e(c.joinCode)+'</b>':''}</div></div></div><table><thead><tr><th class="c" style="width:22pt">#</th><th style="width:140pt">Student</th>${Array.from({length:N},()=>'<th style="width:22pt"></th>').join('')}</tr></thead><tbody>${st.map((s,i)=>`<tr style="height:22pt"><td class="c">${i+1}</td><td>${e(s.name)}</td>${Array.from({length:N},()=>'<td></td>').join('')}</tr>`).join('')}${Array.from({length:o.blank||0},(_,i)=>`<tr style="height:22pt"><td class="c">${st.length+i+1}</td><td></td>${Array.from({length:N},()=>'<td></td>').join('')}</tr>`).join('')}</tbody></table>`;}
+function blankRubric(t,o){
+  const its=items(t).filter(x=>x.q.rubric&&x.q.rubric.length);let n=0;const all=items(t);
+  if(!its.length)return '<p>No rubrics have been added to this assessment.</p>';
+  return `<div class="hd"><div><h1>${e(t.title||'')}: scoring rubrics</h1><div class="sub">Student: ______________________ &nbsp; Date: __________</div></div></div>`+its.map(x=>{const num=all.indexOf(x)+1,q=x.q;
+    const lv=[...new Set(q.rubric.flatMap(r=>Object.keys(r.levels||{}).map(Number)))].sort((a,b)=>b-a);
+    return `<div style="break-inside:avoid;margin-bottom:12pt"><h3>Question ${num} <span class="sm">(${fmt(q.points||1)} pts)</span></h3><div class="sm" style="margin:2pt 0 4pt">${e(pl(q.stem).slice(0,160))}</div><table><thead><tr><th>Criterion</th>${lv.map(v=>`<th class="c">${fmt(v)}</th>`).join('')}<th class="c" style="width:44pt">Score</th></tr></thead><tbody>${q.rubric.map(r=>`<tr><td><b>${e(r.criterion||'')}</b>${r.description?'<br><span class="sm">'+e(r.description)+'</span>':''}<br><span class="sm">max ${fmt(r.maxPoints)}</span></td>${lv.map(v=>`<td class="sm">${e((r.levels||{})[v]||'')}</td>`).join('')}<td class="c" style="height:30pt"></td></tr>`).join('')}</tbody></table></div>`}).join('');}
+function surveyResults(t,o){
+  const subs=(APP.submissions||[]).filter(s=>s.testId===t.id&&s.status==='submitted');const its=items(t);let n=0;
+  return `<div class="hd"><div><h1>${e(t.title||'Survey')}: results</h1><div class="sub">${subs.length} responses</div></div></div>`+its.map(it=>{n++;const q=it.q,A=subs.map(s=>s.answers&&s.answers[it.key]).filter(x=>x!==undefined&&x!==null&&x!=='');let b='';
+    if(q.type==='mc'||q.type==='ms'){const c=(q.options||[]).map(()=>0);A.forEach(a=>(Array.isArray(a)?a:[a]).forEach(i=>{if(c[i]!==undefined)c[i]++}));const m=Math.max(1,...c);b=(q.options||[]).map((op,i)=>`<div class="bar"><b style="min-width:130pt;font-weight:500">${e(pl(op).slice(0,40))}</b><i style="width:${Math.round(c[i]/m*40)}%"></i><span>${c[i]}</span></div>`).join('')}
+    else if(q.type==='rating'||q.type==='numeric'){const v=A.map(Number).filter(isFinite);b=v.length?`<div>Average <b>${fmt(v.reduce((a,c)=>a+c,0)/v.length)}</b> · ${v.length} responses</div>`:'<div class="muted">No responses</div>'}
+    else if(q.type==='matrix'){b=`<table><thead><tr><th></th>${(q.cols||[]).map(c=>`<th class="c">${e(pl(c))}</th>`).join('')}</tr></thead><tbody>${(q.rows||[]).map((r,ri)=>`<tr><td>${e(pl(r))}</td>${(q.cols||[]).map((c,ci)=>`<td class="c">${A.filter(a=>Array.isArray(a)&&a[ri]===ci).length}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+    else b=A.length?`<ul style="margin:3pt 0 0 14pt;padding:0">${A.slice(0,40).map(a=>`<li>${e(typeof a==='string'?pl(a):(QT[q.type]&&QT[q.type].text?QT[q.type].text(q,a):''))}</li>`).join('')}</ul>`:'<div class="muted">No responses</div>';
+    return `<div class="res" style="border-left-color:#111"><div class="top"><span>${n}. ${e(pl(q.stem).slice(0,120))}</span><span class="tag">${e(tl(q))}</span></div>${b}</div>`}).join('');}
+
+/* ───────── output: print, preview ───────── */
+function printHtml(html){
+  const old=$('ea-pr-frame');if(old)old.remove();
+  const f=document.createElement('iframe');f.id='ea-pr-frame';f.setAttribute('aria-hidden','true');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0';
+  document.body.appendChild(f);const d=f.contentDocument;d.open();d.write(html);d.close();
+  const go=()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(x){toast('Printing was blocked. Use Open in new tab.','error')}};
+  let done=false;const fire=()=>{if(done)return;done=true;setTimeout(go,250)};
+  const imgs=[].slice.call(d.images||[]).filter(i=>!i.complete);
+  if(!imgs.length)fire();else{let k=imgs.length;imgs.forEach(i=>{const r=()=>{if(--k<=0)fire()};i.onload=i.onerror=r});setTimeout(fire,3000)}}
+function openTab(html){const b=new Blob([html],{type:'text/html'}),u=URL.createObjectURL(b);const w=window.open(u,'_blank');if(!w)toast('Your browser blocked the new tab.','error');setTimeout(()=>URL.revokeObjectURL(u),60000)}
+
+/* ───────── Print Center ───────── */
+const PR={kind:'paper',tid:null,sid:'all',cid:null,cls:'all',o:{points:true,name:true,score:true,key:false,sheet:false,versions:1,lines:6,size:11,paper:'letter',cols:1,instructions:'',boxes:false,correct:true,comment:true,rubric:true,summary:true,explain:false,margin:0.6,pts:false,blank:5}};
+const KINDS=[
+ ['paper','Test on paper','Printable test with name line, bubbles and ruled lines',1],
+ ['key','Answer key','Correct answers for every question',1],
+ ['sheet','Bubble answer sheet','One page of bubbles for multiple choice',1],
+ ['results','Student results','One report, or every student, one per page',1],
+ ['summary','Class summary','Mean, median, distribution, per question accuracy',1],
+ ['gradebook','Gradebook','Every student by every assignment',2],
+ ['roster','Roster and attendance','Names with blank columns',2],
+ ['rubric','Scoring rubrics','Blank rubric grids to mark by hand',1],
+ ['survey','Survey results','Charts and responses on paper',3],
+ ['page','Print this page','Whatever you are looking at, without the menus',4]];
+const kindOf=k=>KINDS.find(x=>x[0]===k)||KINDS[0];
+function curTest(){const l=PR.kind==='survey'?tests().filter(t=>t.kind==='survey'):tests().filter(t=>t.kind!=='survey');let t=l.find(x=>x.id===PR.tid);if(!t){t=l[0];PR.tid=t&&t.id}return t}
+function curClass(){const l=APP.classes||[];let c=l.find(x=>x.id===PR.cid);if(!c){c=l[0];PR.cid=c&&c.id}return c}
+function resultSubs(t){let l=subsOf(t);if(PR.cls!=='all')l=l.filter(s=>classOfSub(s).includes(PR.cls));return l}
+function build(){
+  const o=Object.assign({},PR.o),k=PR.kind;o.foot=document.title&&0||'EdAssess';
+  if(k==='page')return null;
+  if(k==='gradebook'||k==='roster'){const c=curClass();if(!c)return{title:'Print',html:wrap('Print','<p>You have no classes yet.</p>',o)};
+    o.land=k==='gradebook'&&((APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id)).length>6);
+    return{title:c.name,html:wrap(c.name,k==='gradebook'?gradebook(c,o):roster(c,o),o)};}
+  const t=curTest();if(!t)return{title:'Print',html:wrap('Print','<p>Nothing to print yet. Create an assessment first.</p>',o)};
+  o.foot=(t.title||'')+' · EdAssess';
+  let body='';
+  if(k==='paper')body=paperTest(t,o);
+  else if(k==='key')body=answerKeyDoc(t,o);
+  else if(k==='sheet'){const V=Math.max(1,o.versions||1);for(let v=0;v<V;v++)body+=`<div class="pg">${bubbleSheet(t,o,v)}</div>`}
+  else if(k==='results'){const subs=resultSubs(t);if(PR.sid!=='all'){const s=subs.find(x=>x.id===PR.sid)||(APP.submissions||[]).find(x=>x.id===PR.sid);body=s?`<div class="pg">${studentReport(t,s,o)}</div>`:'<p>No submission selected.</p>'}else body=subs.length?massResults(t,subs,o):'<p>No submitted work yet.</p>'}
+  else if(k==='summary'){const subs=resultSubs(t);body=subs.length?`<div class="pg">${classSummary(t,subs,o)}</div>`:'<p>No submitted work yet.</p>'}
+  else if(k==='rubric')body=blankRubric(t,o);
+  else if(k==='survey')body=surveyResults(t,o);
+  return{title:t.title||'Print',html:wrap(t.title||'Print',body,o)};}
+const sel=(id,opts,val,on)=>`<select class="form-control" id="${id}" onchange="${on}">${opts.map(([v,l])=>`<option value="${e(v)}" ${String(v)===String(val)?'selected':''}>${e(l)}</option>`).join('')}</select>`;
+const chk=(k,l)=>`<label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" ${PR.o[k]?'checked':''} onchange="prSet('${k}',this.checked)"><span>${l}</span></label>`;
+function panel(){
+  const k=PR.kind,K=kindOf(k);let h='';
+  const needT=['paper','key','sheet','results','summary','rubric','survey'].includes(k),needC=['gradebook','roster'].includes(k);
+  if(k==='page')return `<p style="margin:0 0 10px">Prints the page you are on with the menus hidden. Close this window first if you want the page behind it.</p><button class="btn btn-primary" onclick="prPage()">Print this page</button>`;
+  if(needT){const l=k==='survey'?tests().filter(t=>t.kind==='survey'):tests().filter(t=>t.kind!=='survey');
+    h+=`<label class="form-label">${k==='survey'?'Survey':'Assessment'}</label>${sel('pr-t',l.map(t=>[t.id,t.title||'Untitled']),PR.tid||(l[0]&&l[0].id),"prPick('tid',this.value)")}`;}
+  if(needC){const l=APP.classes||[];h+=`<label class="form-label">Class</label>${sel('pr-c',l.map(c=>[c.id,c.name]),PR.cid||(l[0]&&l[0].id),"prPick('cid',this.value)")}`;}
+  if(k==='paper'){h+=`<div class="pr-g"><div><label class="form-label">Paper</label>${sel('pr-p',[['letter','US Letter'],['A4','A4']],PR.o.paper,"prSet('paper',this.value)")}</div><div><label class="form-label">Text size</label>${sel('pr-s',[[10,'Small'],[11,'Normal'],[12.5,'Large'],[14,'Extra large']],PR.o.size,"prSet('size',+this.value)")}</div><div><label class="form-label">Answer lines (essay)</label>${sel('pr-l',[2,4,6,8,10,14,18].map(n=>[n,n+' lines']),PR.o.lines,"prSet('lines',+this.value)")}</div><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>
+    <label class="form-label" style="margin-top:8px">Instructions (optional)</label><textarea class="form-control" rows="3" placeholder="Use a pen. No calculators." oninput="prSet('instructions',this.value,1)">${e(PR.o.instructions)}</textarea>
+    ${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
+  if(k==='key'||k==='sheet')h+=`<div class="pr-g"><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>`;
+  if(k==='results'||k==='summary'){const t=curTest(),subs=t?subsOf(t):[];const cl=[...new Set(subs.flatMap(classOfSub))];const sl=t?resultSubs(t).slice().sort((a,b)=>(a.studentName||'').localeCompare(b.studentName||'')):[];
+    if(cl.length>1||PR.cls!=='all')h+=`<label class="form-label" style="margin-top:8px">Class</label>${sel('pr-cl',[['all','All classes'],...cl.map(i=>[i,clsName(i)||i])],PR.cls,"prPick('cls',this.value)")}`;
+    if(k==='results')h+=`<label class="form-label" style="margin-top:8px">Student</label>${sel('pr-st',[['all','Everyone, one per page ('+sl.length+')'],...sl.map(s=>[s.id,s.studentName||'Student'])],PR.sid,"prPick('sid',this.value)")}
+      ${chk('correct','Show correct answers')}${chk('rubric','Show rubric breakdown')}${chk('comment','Show teacher comments')}${chk('explain','Show explanations')}${PR.sid==='all'?chk('summary','Start with a class summary page'):''}`;}
+  if(k==='gradebook')h+=chk('pts','Show points instead of percent');
+  if(k==='roster')h+=`<div class="pr-g"><div><label class="form-label">Blank columns</label>${sel('pr-n',[6,8,10,12,15,20].map(n=>[n,n]),PR.o.cols||12,"prSet('cols',+this.value)")}</div><div><label class="form-label">Extra empty rows</label>${sel('pr-b',[0,3,5,10].map(n=>[n,n]),PR.o.blank,"prSet('blank',+this.value)")}</div></div>`;
+  return h;}
+let tmr=0;
+function render(){
+  const m=$('pr-root');if(!m)return;
+  $('pr-list').innerHTML=KINDS.map(x=>`<button type="button" class="pr-k${x[0]===PR.kind?' on':''}" onclick="prKind('${x[0]}')"><b>${x[1]}</b><span>${x[2]}</span></button>`).join('');
+  $('pr-opts').innerHTML=panel();preview();}
+function preview(){clearTimeout(tmr);tmr=setTimeout(()=>{const b=build(),f=$('pr-prev');if(!f)return;const on=!!b;$('pr-act').style.display=on?'':'none';f.style.display=on?'':'none';$('pr-none').style.display=on?'none':'';if(b)f.srcdoc=b.html},120)}
+window.prKind=k=>{PR.kind=k;if(k==='results'||k==='summary')PR.sid='all';render()};
+window.prSet=(k,v,quiet)=>{PR.o[k]=v;if(quiet)preview();else render()};
+window.prPick=(k,v)=>{PR[k]=v;if(k==='tid'||k==='cls')PR.sid='all';render()};
+window.prDo=()=>{const b=build();if(b)printHtml(b.html)};
+window.prTab=()=>{const b=build();if(b)openTab(wrap(b.title,b.html.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))};
+window.prPage=()=>{try{closeModal()}catch(x){}setTimeout(()=>window.print(),300)};
+window.prCenter=function(kind,tid,sid,cid){
+  if(kind)PR.kind=kind;if(tid)PR.tid=tid;if(sid)PR.sid=sid;else if(kind==='results')PR.sid='all';if(cid)PR.cid=cid;
+  if(sid&&!tid){const s=(APP.submissions||[]).find(x=>x.id===sid);if(s)PR.tid=s.testId}
+  openModal(`<div id="pr-root" class="pr-modal"><div class="modal-header"><h2 class="serif" style="font-size:22px;margin:0">Print Center</h2><button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button></div>
+  <div class="pr-wrap"><div class="pr-side"><div id="pr-list"></div></div><div class="pr-mid"><div id="pr-opts"></div><div id="pr-act" class="pr-act"><button class="btn btn-primary" onclick="prDo()">Print</button><button class="btn btn-secondary" onclick="prTab()">Open in new tab</button></div></div><div class="pr-pv"><iframe id="pr-prev" title="Print preview"></iframe><div id="pr-none" class="sm" style="display:none;padding:20px">Nothing to preview for this option.</div></div></div></div>`,1180);
+  render();};
+window.eaPrintHtml=printHtml;
+
+/* ───────── entry points ───────── */
+function nav(){
+  if(document.querySelector('.nav-item[data-page="print"]'))return;const b=document.querySelector('.nav-item[data-page="backup"]');if(!b)return;
+  const a=document.createElement('a');a.className='nav-item';a.dataset.page='print';a.onclick=()=>prCenter();
+  a.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 14h12v7H6z"/></svg>Print';b.parentNode.insertBefore(a,b);}
+function ctx(){
+  /* builder header */
+  const bp=$('page-builder');
+  if(bp&&!bp.classList.contains('hidden')&&APP.currentTest&&!bp.querySelector('.pr-quick')){
+    const bar=bp.querySelector('.topbar,.builder-topbar,.builder-header')||bp.firstElementChild;
+    if(bar){const b=document.createElement('button');b.className='btn btn-secondary pr-quick';b.type='button';b.textContent='Print';b.onclick=()=>prCenter('paper',APP.currentTest.id);
+      const tgt=bar.querySelector('.topbar-actions,.flex,div:last-child')||bar;tgt.appendChild(b);}}
+  const cb=document.querySelector('.fxc-codebar');
+  if(cb&&!cb.querySelector('.pr-quick')){const b=document.createElement('button');b.className='btn btn-secondary pr-quick';b.type='button';b.textContent='Print';b.onclick=()=>prCenter('roster',null,null,FXC.open);const d=cb.lastElementChild||cb;d.appendChild(b);}
+}
+try{new MutationObserver(()=>{nav();ctx()}).observe(document.body,{childList:true,subtree:true})}catch(x){}
+setTimeout(nav,800);
+
+/* shell hooks: palette and grader */
+window.eaPrintItems=function(){const a=[{l:'Print Center',s:'Action',f:()=>prCenter()}];
+  KINDS.slice(0,9).forEach(k=>a.push({l:'Print: '+k[1],s:'Print',f:()=>prCenter(k[0])}));
+  tests().filter(t=>t.kind!=='survey').forEach(t=>a.push({l:'Print: '+(t.title||'Untitled')+' on paper',s:'Print',f:()=>prCenter('paper',t.id)}));return a};
+document.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&(ev.key==='P'||ev.key==='p')){if(!document.querySelector('#app,.app-shell,#main'))return;ev.preventDefault();prCenter()}});
+})();
+
+</script>
 <script id="ea-shell">
 /* EdAssess shell: full-page forms, exact-location routing, grader workspace, command palette */
 (function(){
@@ -14159,8 +14489,8 @@ function grader(m){
   const main=document.createElement('div');main.className='sh-main';kids.forEach(k=>main.appendChild(k));
   wrap.appendChild(rail);wrap.appendChild(main);m.appendChild(wrap);
   const hd=main.querySelector('.modal-header');if(hd){const nav=document.createElement('div');nav.className='sh-pn';
-    nav.innerHTML='<button type="button" class="btn btn-ghost" data-d="-1" title="Previous ([)">&#8249; Previous</button><button type="button" class="btn btn-ghost" data-d="1" title="Next (])">Next &#8250;</button>';
-    nav.onclick=e=>{const b=e.target.closest('button');if(b)step(+b.dataset.d)};hd.appendChild(nav);}
+    nav.innerHTML='<button type="button" class="btn btn-ghost" data-d="-1" title="Previous ([)">&#8249; Previous</button><button type="button" class="btn btn-ghost" data-d="1" title="Next (])">Next &#8250;</button><button type="button" class="btn btn-ghost" data-print="1" title="Print this student">Print</button>';
+    nav.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.print){window.prCenter&&prCenter('results',null,sid);return;}step(+b.dataset.d)};hd.appendChild(nav);}
   if(window.__shRailTop!=null){rail.scrollTop=window.__shRailTop;}else{const on=rail.querySelector('.on');if(on)on.scrollIntoView({block:'nearest'});}
   if(window.__shRailTop!=null)main.classList.add('sh-fade');window.__shRailTop=null;
   document.removeEventListener('keydown',gkeys);document.addEventListener('keydown',gkeys);
@@ -14210,6 +14540,7 @@ function items(){
   a.push({l:'Create assessment',s:'Action',f:()=>window.openCreateTest&&window.openCreateTest()});
   a.push({l:'New class',s:'Action',f:()=>window.fxClassNew&&window.fxClassNew()});
   a.push({l:'Appearance',s:'Action',f:()=>window.openAppearance&&window.openAppearance()});
+  if(window.eaPrintItems)window.eaPrintItems().forEach(x=>a.push(x));
   (APP.tests||[]).forEach(t=>a.push({l:t.title||'Untitled',s:'Assessment',f:()=>window.openBuilder(t.id)}));
   (APP.classes||[]).forEach(c=>a.push({l:c.name||'Class',s:'Class',f:()=>{FXC.open=c.id;FXC.tab='stream';window.showPage('classes');}}));
   return a;
