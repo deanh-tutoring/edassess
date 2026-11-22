@@ -32,6 +32,7 @@ const LEGACY_KEY = 'state';
 const P = {
   test: 'v2/test/', asg: 'v2/asg/', sub: 'v2/sub/', subidx: 'v2/subidx/', peer: 'v2/peer/',
   img: 'v2/img/', hist: 'v2/hist/', trash: 'v2/trash/', meta: 'v2/meta',
+  notif: 'v2/notif/', push: 'v2/push/', pushep: 'v2/pushep/',
 };
 const MAX_BODY = 5.5 * 1024 * 1024;       // stay under the platform's ~6 MB request cap
 const RESP_BUDGET = 4.5 * 1024 * 1024;    // stay under the ~6 MB response cap (headroom for headers)
@@ -404,6 +405,13 @@ async function putSimple(prefix, obj, user) {
     else return AUTH_ERR();
   }
   await putJ(prefix + obj.id, clean);
+  if (prefix === P.asg) {
+    const before = new Set((cur && cur.classIds) || []);
+    for (const cid of (clean.classIds || []).filter((id) => !before.has(id))) {
+      const when = clean.dueAt ? ' Due ' + new Date(clean.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '.' : '';
+      await notifyClass(cid, { title: 'New ' + (clean.survey ? 'survey' : 'assignment') + ': ' + String(clean.title || 'Assessment').slice(0, 60), body: 'Open EdAssess to get started.' + when, url: '/#/class/' + cid, tag: 'asg-' + clean.id });
+    }
+  }
   return reply(200, { ok: true, ...(prefix === P.asg ? { assignment: clean } : {}) });
 }
 
@@ -746,7 +754,7 @@ async function studentHome(s) {
   for (const a of wanted.values()) {
     if (!(a.testId in tcache)) { const r = okId(a.testId) ? await getJ(P.test + a.testId) : null; tcache[a.testId] = r ? r.data : null; }
     const t = tcache[a.testId];
-    assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, survey: !!(a.survey || (t && t.kind === 'survey')), questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
+    assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, survey: !!(a.survey || (t && t.kind === 'survey')), questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, topic: String(a.topic || '').slice(0, 40), createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
   }
   const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, graded: !!x.graded, maxScore: x.maxScore > 0 ? x.maxScore : null, curved: x.curvedScore == null ? null : x.curvedScore }));
   const set = new Set();
@@ -757,7 +765,83 @@ async function studentHome(s) {
   const peer = await peerSummary(s, subs);
   return { peer, student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
+
+/* ═══════════════ PUSH NOTIFICATIONS ═══════════════
+   Web Push without payloads: the server sends an empty, VAPID-signed "tickle" to the browser's push service, and the
+   service worker then asks /pushPending what to show. The VAPID key pair is derived from EA_AUTH_SECRET, so nothing
+   secret is stored in the repository. A student's queue lives under notif/<studentKey>. */
+let _vapid = null;
+function vapid() {
+  if (_vapid) return _vapid;
+  const d = crypto.createHmac('sha256', secret() || 'edassess-unconfigured').update('vapid-v1').digest();
+  const ecdh = crypto.createECDH('prime256v1'); ecdh.setPrivateKey(d);
+  const pub = ecdh.getPublicKey();
+  const key = crypto.createPrivateKey({ key: { kty: 'EC', crv: 'P-256', d: b64u(d), x: b64u(pub.subarray(1, 33)), y: b64u(pub.subarray(33, 65)) }, format: 'jwk' });
+  _vapid = { pub: b64u(pub), key };
+  return _vapid;
+}
+function vapidHeader(endpoint) {
+  const v = vapid();
+  const head = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
+  const body = b64u(JSON.stringify({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: process.env.EA_PUSH_CONTACT || 'mailto:noreply@edassess.app' }));
+  const sig = crypto.sign('sha256', Buffer.from(head + '.' + body), { key: v.key, dsaEncoding: 'ieee-p1363' });
+  return 'vapid t=' + head + '.' + body + '.' + b64u(sig) + ', k=' + v.pub;
+}
+const epHash = (ep) => crypto.createHash('sha256').update(String(ep)).digest('hex').slice(0, 32);
+async function tickle(rec) {
+  try {
+    const r = await fetch(rec.endpoint, { method: 'POST', headers: { Authorization: vapidHeader(rec.endpoint), TTL: '86400', Urgency: 'normal', 'Content-Length': '0' }, signal: AbortSignal.timeout(4000) });
+    if (r.status === 404 || r.status === 410) { await delK(P.push + rec.key + '/' + rec.h); await delK(P.pushep + rec.h); }
+  } catch (e) { /* offline subscribers simply miss the tickle; the queue is still there */ }
+}
+async function notifyStudents(keys, n) {
+  const item = { id: crypto.randomBytes(5).toString('hex'), ts: Date.now(), title: String(n.title || 'EdAssess').slice(0, 90), body: String(n.body || '').slice(0, 160), url: String(n.url || '/').slice(0, 200), tag: n.tag || '' };
+  await mapLimit(keys.slice(0, 400), 8, async (key) => {
+    const q = (await getJ(P.notif + key)) || { items: [] };
+    q.items = (q.items || []).concat(item).slice(-30);
+    await putJ(P.notif + key, q);
+    const subs = await listKeys(P.push + key + '/');
+    await Promise.all((await mapLimit(subs, 4, getJ)).filter(Boolean).map(tickle));
+  });
+}
+async function notifyClass(cid, n, exceptKey) {
+  try {
+    const c = await getJ(C_PREFIX + cid); if (!c) return;
+    const keys = (c.students || []).map((s) => s.key).filter((k) => k && k !== exceptKey);
+    if (keys.length) await Promise.race([notifyStudents(keys, { ...n, url: n.url || '/#/class/' + cid }), new Promise((r) => setTimeout(r, 3500))]);
+  } catch (e) { /* never let a notification problem block a post */ }
+}
+async function pushAction(a, body, student) {
+  if (a === 'pushKey') return reply(200, { ok: true, key: vapid().pub });
+  if (a === 'pushPending') {
+    const ep = String(body.endpoint || ''); if (!ep) return bad('No endpoint.');
+    const h = epHash(ep), m = await getJ(P.pushep + h); if (!m) return reply(200, { ok: true, items: [] });
+    const rec = await getJ(P.push + m.key + '/' + h); if (!rec) return reply(200, { ok: true, items: [] });
+    const q = (await getJ(P.notif + m.key)) || { items: [] };
+    const fresh = (q.items || []).filter((i) => i.ts > (rec.seen || 0)).slice(-4);
+    if (fresh.length) { rec.seen = fresh[fresh.length - 1].ts; await putJ(P.push + m.key + '/' + h, rec); }
+    return reply(200, { ok: true, items: fresh });
+  }
+  if (!student) return STU_ERR();
+  if (a === 'pushSubscribe') {
+    const ep = String((body.subscription && body.subscription.endpoint) || '');
+    if (!/^https:\/\//.test(ep) || ep.length > 900) return bad('That subscription is not valid.');
+    const h = epHash(ep);
+    const old = await getJ(P.pushep + h); if (old && old.key !== student.key) await delK(P.push + old.key + '/' + h);
+    await putJ(P.push + student.key + '/' + h, { key: student.key, endpoint: ep, h, seen: Date.now(), created: new Date().toISOString() });
+    await putJ(P.pushep + h, { key: student.key });
+    return reply(200, { ok: true });
+  }
+  if (a === 'pushUnsubscribe') { const h = epHash(body.endpoint || ''); await delK(P.push + student.key + '/' + h); await delK(P.pushep + h); return reply(200, { ok: true }); }
+  if (a === 'studentNotifs') {
+    const q = (await getJ(P.notif + student.key)) || { items: [] }, since = +body.since || 0;
+    return reply(200, { ok: true, now: Date.now(), items: since ? (q.items || []).filter((i) => i.ts > since).slice(-5) : [] });
+  }
+  return null;
+}
+
 async function studentAction(body, student) {
+  if (['pushKey', 'pushPending', 'pushSubscribe', 'pushUnsubscribe', 'studentNotifs'].includes(body.action)) return pushAction(body.action, body, student);
   const a = body.action;
   if (a === 'studentSignup' || a === 'studentLogin') {
     if (!secret()) return bad('Accounts are not configured yet: the site owner must set EA_AUTH_SECRET.', 500);
@@ -904,7 +988,8 @@ async function classAction(body, user) {
     c.announcements = c.announcements || [];
     c.announcements.push({ id: crypto.randomBytes(6).toString('hex'), text, by: lc(user.username), at: new Date().toISOString() });
     c.announcements = c.announcements.slice(-40);
-    await saveClass(c); return reply(200, { ok: true });
+    await saveClass(c); await notifyClass(c.id, { title: c.name + ': new announcement', body: text, tag: 'ann-' + c.id });
+    return reply(200, { ok: true });
   }
   if (a === 'postMaterial') {
     const title = String(body.title || '').trim().slice(0, 120);
@@ -923,7 +1008,8 @@ async function classAction(body, user) {
     const old = body.matId ? c.materials.find((m) => m.id === body.matId) : null;
     if (old) Object.assign(old, base, { editedAt: new Date().toISOString() });
     else { if (base.topic) { c.topics = c.topics || []; if (!c.topics.includes(base.topic)) c.topics.push(base.topic); } c.materials.push({ id: crypto.randomBytes(6).toString('hex'), ...base, by: lc(user.username), at: new Date().toISOString() }); c.materials = c.materials.slice(-100); }
-    await saveClass(c); return reply(200, { ok: true });
+    await saveClass(c); if (!old) await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id });
+    return reply(200, { ok: true });
   }
   if (a === 'setClasswork') {
     const names = [];

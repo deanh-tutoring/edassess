@@ -242,3 +242,11 @@ Peer reviewers now grade with the same components teachers use: the same rubric 
 ## Motion
 
 Pages and lists ease in when you navigate (never when data refreshes in the background), buttons and rubric levels give a small press response, a thin progress bar shows while the app talks to the server, dashboard numbers count up, and finishing a grading list or a review gets a short confetti burst. All of it switches off for people who ask their device to reduce motion.
+
+## Classwork
+
+The Classwork tab works like Google Classroom. Teachers get a Create menu (Assignment, Material, Topic), a topic list on the left, and one stack of items per topic. Assignments and materials show a round icon, open to show details, and can be moved between topics. Students see the same layout with their own status on each assignment (Assigned, Turned in, Missing).
+
+## Desktop notifications
+
+Students are asked to allow notifications the first time they sign in (and again after a week if they choose Not now). Once allowed, posting an announcement, a material or an assignment sends a notification to every student in that class, even if EdAssess is closed. This uses Web Push through a small service worker (`sw.js`, which must be deployed at the site root next to `index.html`). The push keys are derived from `EA_AUTH_SECRET`, so there is nothing extra to configure. Browsers without push support fall back to checking once a minute while the page is open. Set `EA_PUSH_CONTACT` to a `mailto:` address if you want push services to see a real contact.

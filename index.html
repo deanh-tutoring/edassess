@@ -1852,6 +1852,59 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 #ea-prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:3000;background:linear-gradient(90deg,var(--accent),#7C9BFF,#FFC93C);box-shadow:0 0 10px rgba(47,91,234,.6);opacity:0;transition:width .22s ease-out,opacity .25s;pointer-events:none;border-radius:0 3px 3px 0}
 .ea-conf{position:fixed;inset:0;z-index:4000;pointer-events:none;overflow:hidden}.ea-conf i{position:absolute;top:62%;border-radius:2px;display:block}
 .lms-rv-wrap{margin-top:14px}
+
+/* ── Classwork, Google Classroom style ── */
+.cw{margin-top:6px}
+.cw-create{position:relative;display:inline-block;margin-bottom:18px}
+.cw-cbtn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;border-radius:999px;padding:12px 22px 12px 16px;font:700 15px var(--f-body);cursor:pointer;box-shadow:0 6px 16px -8px rgba(30,60,180,.7);transition:transform .15s,box-shadow .2s}
+.cw-cbtn:hover{transform:translateY(-1px);box-shadow:0 10px 22px -8px rgba(30,60,180,.75)}
+.cw-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;z-index:30;background:#fff;border:1.5px solid var(--border-dark);border-radius:12px;padding:6px;box-shadow:0 16px 40px -14px rgba(12,36,60,.45)}
+.cw-menu.open{display:block;animation:cwMenu .16s ease-out}@keyframes cwMenu{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.cw-menu a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:var(--ink)}
+.cw-menu a:hover{background:var(--hl-soft)}.cw-menu a.del{color:var(--rust)}
+.cw-cols{display:grid;grid-template-columns:220px 1fr;gap:28px;align-items:start}
+.cw-side{position:sticky;top:12px;display:flex;flex-direction:column;gap:2px}
+.cw-tp{text-align:left;border:0;background:transparent;border-radius:0 999px 999px 0;padding:11px 16px;font:600 14px var(--f-body);color:var(--ink);cursor:pointer;transition:background .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cw-tp:hover{background:var(--hl-soft)}.cw-tp.on{background:var(--hl-soft);color:var(--accent);font-weight:800;box-shadow:inset 4px 0 0 var(--accent)}
+.cw-tp.add{color:var(--accent);margin-top:6px}
+.cw-main{min-width:0}
+.cw-sec{margin-bottom:34px}.cw-sec.drop-in{outline:2px dashed var(--accent);outline-offset:6px;border-radius:12px}
+.cw-th{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:2.5px solid var(--accent);margin-bottom:6px}
+.cw-th h3{flex:1;margin:0;font:800 28px var(--f-display)!important;letter-spacing:-.025em;color:var(--accent);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cw-tm{position:relative}.cw-dots{border:0;background:transparent;font-size:22px;font-weight:800;line-height:1;width:36px;height:36px;border-radius:50%;cursor:pointer;color:var(--ink)}.cw-dots:hover{background:var(--hl-soft)}
+.cw-tm .cw-menu{left:auto;right:0}
+.cw-list{display:flex;flex-direction:column}
+.cw-item{border-bottom:1.5px solid var(--border);background:#fff;transition:background .15s}
+.cw-item:first-child{border-top:0}
+.cw-item.dragging{opacity:.4}.cw-item.drop-before{box-shadow:0 -3px 0 var(--accent)}.cw-item.drop-after{box-shadow:0 3px 0 var(--accent)}
+.cw-h{display:flex;align-items:center;gap:14px;padding:14px 8px;cursor:pointer;border-radius:10px}
+.cw-h:hover{background:var(--hl-soft)}
+.cw-ico{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.cw-ico.asg{background:var(--accent)}.cw-ico.svy{background:#7C5CFF}.cw-ico.mat{background:#0F2A30}.cw-ico.top{background:#FFC93C;color:#0F2A30}
+.cw-ico.sm{width:34px;height:34px}.cw-ico.sm svg{width:18px;height:18px}
+.cw-t{flex:1;min-width:0;font-weight:700;font-size:16px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cw-m{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.cw-pill{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--hl-soft);color:var(--accent);white-space:nowrap}
+.cw-pill.done{background:#DDF5E8;color:#146B3A}.cw-pill.closed,.cw-pill.late{background:#FFE3DE;color:#B3261E}
+.cw-caret{width:10px;height:10px;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg);transition:transform .22s var(--spring,ease);flex:none;margin:0 6px 4px 2px}
+.cw-item.open .cw-caret{transform:rotate(225deg);margin-bottom:-2px}
+.cw-fold{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease}.cw-item.open .cw-fold{grid-template-rows:1fr}
+.cw-fold>.cw-in{overflow:hidden;min-height:0;padding:0 8px 0 64px}.cw-item.open .cw-fold>.cw-in{padding-bottom:16px}
+.cw-in>*+*{margin-top:12px}
+.cw-body{white-space:pre-wrap;line-height:1.6;font-size:15px}
+.cw-meta{font-size:13.5px;font-weight:600;color:var(--muted)}
+.cw-stats{display:flex;gap:34px;padding-top:4px}.cw-stats>div{display:flex;flex-direction:column}.cw-stats b{font:800 32px var(--f-display);letter-spacing:-.03em;color:var(--ink);line-height:1}.cw-stats span{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}.cw-stats .warn b{color:var(--rust)}
+.cw-acts{display:flex;gap:8px;flex-wrap:wrap}.cw-del{color:var(--rust)!important}
+.cw-empty{padding:18px 8px;color:var(--muted);font-size:14px;font-weight:600}
+.cw-blank{text-align:center;padding:70px 20px}.cw-blank-i{width:72px;height:72px;border-radius:50%;background:var(--hl-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 16px}.cw-blank-i svg{width:34px;height:34px}
+.cw-blank h3{font:800 24px var(--f-display);margin:0 0 6px}.cw-blank p{color:var(--muted);font-weight:600;margin:0}
+@media(max-width:820px){.cw-cols{grid-template-columns:1fr}.cw-side{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}.cw-tp{border-radius:999px;flex:none;border:1.5px solid var(--border)}.cw-tp.on{box-shadow:none;border-color:var(--accent)}.cw-fold>.cw-in{padding-left:8px}.cw-m{display:none}}
+#ea-nf{position:fixed;right:24px;bottom:24px;z-index:3500;width:min(400px,calc(100vw - 32px));display:flex;gap:14px;background:#fff;border:1.5px solid var(--border-dark);border-radius:16px;padding:18px;box-shadow:0 24px 60px -16px rgba(12,36,80,.5);animation:nfIn .45s cubic-bezier(.34,1.56,.64,1) both}
+#ea-nf.out{animation:nfOut .22s ease both}@keyframes nfIn{from{opacity:0;transform:translateY(24px) scale(.95)}to{opacity:1;transform:none}}@keyframes nfOut{to{opacity:0;transform:translateY(12px)}}
+.ea-nf-i{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none;animation:nfRing 1.6s ease .6s 2}
+@keyframes nfRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
+.ea-nf-b b{font:800 17px var(--f-display);letter-spacing:-.02em}.ea-nf-b p{margin:4px 0 12px;font-size:13.5px;line-height:1.5;font-weight:500}.ea-nf-a{display:flex;gap:8px}
+.lms-grip.ph{visibility:hidden}
 </style>
 </head>
 <body>
@@ -12404,6 +12457,7 @@ async function fxStuEnter(){
   stuRoute();
   document.body.classList.add('stu-mode');
   stuPaint();await stuRefresh();
+  try{if(window.eaNotifyInit)eaNotifyInit();}catch(e){}
   try{const code=localStorage.getItem('ea_pending_join');if(code){localStorage.removeItem('ea_pending_join');await fxStuJoinCode(code);}}catch(e){}
   if(STU.data&&STU.data.student.mustChange)stuPwModal(true);
   if(!STU.timer){STU.timer=setInterval(()=>{if(!document.hidden)stuRefresh(true);},45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)stuRefresh(true);});}
@@ -12527,7 +12581,7 @@ function stuPaint(){
 }
 function stuMenu(e){
   e.stopPropagation();document.getElementById('stu-menu')?.remove();
-  const m=document.createElement('div');m.id='stu-menu';m.innerHTML=`<a onclick="stuPwModal()">Change password</a><a onclick="fxUi.dark=!fxUi.dark;fxUiSave();document.getElementById('stu-menu').remove()">${document.body.classList.contains('fx-ui-dark')?'Light mode':'Night mode'}</a><a onclick="fxPrivacyOpen()">Privacy policy</a><a onclick="fxStuLogout()">Sign out</a>`;
+  const m=document.createElement('div');m.id='stu-menu';m.innerHTML=`<a onclick="stuPwModal()">Change password</a>${(window.Notification&&Notification.permission!=='granted'&&Notification.permission!=='denied')?'<a onclick="document.getElementById(\'stu-menu\').remove();eaNotifyEnable()">Turn on notifications</a>':''}<a onclick="fxUi.dark=!fxUi.dark;fxUiSave();document.getElementById('stu-menu').remove()">${document.body.classList.contains('fx-ui-dark')?'Light mode':'Night mode'}</a><a onclick="fxPrivacyOpen()">Privacy policy</a><a onclick="fxStuLogout()">Sign out</a>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 async function fxStuJoinCode(code){
@@ -13293,8 +13347,7 @@ function lmsClassView(){
     const open=asg.filter(a=>['todo','progress'].includes(stuState(a,stuSubFor(a.id)))).sort((x,y)=>new Date(x.dueAt||'2999')-new Date(y.dueAt||'2999'));
     body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${open.length?open.slice(0,4).map(a=>`<a class="lms-up" href="?exam=${E(a.id)}"><small>${E(stuWhen(a.dueAt)||'No due date')}</small>${E(a.title)}</a>`).join(''):'<p class="lms-empty">Nothing due soon.</p>'}</div></aside><div>${lmsStream(c,asg,false)}</div></div>`;
   }else if(tab==='classwork'){
-    const g=[['Assigned',asg.filter(a=>['todo','progress','scheduled'].includes(stuState(a,stuSubFor(a.id))))],['Missing',asg.filter(a=>stuState(a,stuSubFor(a.id))==='closed')],['Done',asg.filter(a=>stuState(a,stuSubFor(a.id))==='done')]];
-    const _as=g.filter(x=>x[1].length).map(([t,l])=>`<div class="lms-h">${t}</div><div class="lms-panel">${l.map(a=>stuRow(a,{noClass:true})).join('')}</div>`).join('');body=_as+lmsMatGroups(c,false);if(!body)body='<div class="lms-panel lms-empty">Nothing posted yet.</div>';
+    body=lmsClasswork(c,false,asg);
   }else{
     const r=asg.map(a=>({a,s:stuSubFor(a.id)})).filter(x=>x.s&&x.s.status==='submitted');
     const v=r.filter(x=>stuReleased(x.a,x.s)).map(x=>stuPct(x.a,x.s)).filter(x=>x!=null),avg=v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;
@@ -13379,8 +13432,8 @@ window.fxTopicMove=function(cid,t,dir){
   const [x]=secs.splice(i,1);secs.splice(j,0,x);fxCwApply(c,secs);
 };
 window.fxTopicAdd=function(cid){const n=(prompt('Topic name (for example, Unit 3)')||'').trim().slice(0,40);if(!n)return;const c=fxCwCls(cid);if(fxCwTopicList(c).includes(n)){toast('That topic already exists.','error');return;}const secs=fxCwSecs(c);secs.push({t:n,items:[]});fxCwApply(c,secs);};
-window.fxTopicRename=function(cid,t){const n=(prompt('Rename topic',t)||'').trim().slice(0,40);if(!n||n===t)return;const c=fxCwCls(cid);if(fxCwTopicList(c).includes(n)){toast('That topic already exists.','error');return;}const secs=fxCwSecs(c);secs.find(s=>s.t===t).t=n;fxCwApply(c,secs);};
-window.fxTopicDelete=function(cid,t){const c=fxCwCls(cid);const secs=fxCwSecs(c);const i=secs.findIndex(s=>s.t===t);if(i<1)return;if(secs[i].items.length&&!confirm('Delete the topic “'+t+'”? Its '+secs[i].items.length+' item(s) move to No topic.'))return;secs[0].items.push(...secs[i].items);secs.splice(i,1);fxCwApply(c,secs);};
+window.fxTopicRename=function(cid,t){const n=(prompt('Rename topic',t)||'').trim().slice(0,40);if(!n||n===t)return;const c=fxCwCls(cid);if(fxCwTopicList(c).includes(n)){toast('That topic already exists.','error');return;}const secs=fxCwSecs(c);secs.find(s=>s.t===t).t=n;(APP.assignments||[]).forEach(a=>{if(a.topic===t)a.topic=n;});save();fxCwApply(c,secs);};
+window.fxTopicDelete=function(cid,t){const c=fxCwCls(cid);const secs=fxCwSecs(c);const i=secs.findIndex(s=>s.t===t);if(i<1)return;if(secs[i].items.length&&!confirm('Delete the topic “'+t+'”? Its '+secs[i].items.length+' item(s) move to No topic.'))return;secs[0].items.push(...secs[i].items);secs.splice(i,1);(APP.assignments||[]).forEach(a=>{if(a.topic===t)a.topic='';});save();fxCwApply(c,secs);};
 /* drag and drop */
 let fxDnd=null;
 const fxHalf=e=>{const r=e.currentTarget.getBoundingClientRect();return (e.clientY-r.top)<r.height/2?'before':'after';};
@@ -13518,9 +13571,7 @@ window.fxClassDetail=function(c){
      <div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${asg.filter(a=>a.dueAt&&new Date(a.dueAt)>new Date()).sort((x,y)=>new Date(x.dueAt)-new Date(y.dueAt)).slice(0,4).map(a=>`<div class="lms-up"><small>${E(stuWhen(a.dueAt))}</small>${E(a.title||'Assessment')}</div>`).join('')||'<p class="lms-empty">Nothing due soon.</p>'}</div></aside>
      <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><span style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${c.id}')">Post material</button><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></span><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
   }else if(tab==='classwork'){
-    const _asg=`<div class="lms-panel fxc-asgpanel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="lms-h" style="margin:0;flex:1;margin-right:12px">Assignments <span class="lms-count">${asg.length}</span></div><button class="btn btn-primary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></div>
-     ${asg.slice().sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0)).map(a=>{const t=APP.tests.find(x=>x.id===a.testId);const subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted');const need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length;
-      return `<div class="fxc-asg"><div><b>${E(a.title||(t&&t.title)||'Assessment')}</b><div class="fxc-sub">${a.createdAt?'Posted '+E(fxPosted(a.createdAt))+' · ':''}${a.dueAt?E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'account required':'link also works'}</div></div><div class="fxc-asg-r"><span><b>${subs.length}</b>/${c.students.length} turned in${need?` · <span class="lms-late">${need} to grade</span>`:''}</span><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${a.id}')">Settings</button><button class="btn btn-secondary btn-sm" onclick="showPage('grading')">Grade</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${a.id}')">Monitor</button></div></div>`;}).join('')||'<div class="fxc-none">Nothing assigned yet.</div>'}</div>`;body=_asg+lmsMatGroups(c,true);
+    body=lmsClasswork(c,true,asgView);
   }else if(tab==='grades'){
     const cols=asg.map(a=>({...a,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'})).sort((x,y)=>new Date(x.createdAt||0)-new Date(y.createdAt||0));
     const pctOf=(s)=>{const t=APP.tests.find(t=>t.id===s.testId);if(!t||s.score==null)return null;const tot=calcTotalPoints(t,s);return tot>0?Math.round(s.score/tot*100):null;};
@@ -13898,6 +13949,145 @@ startPeerSession=async function(){
   const btn=document.getElementById('start-peer-session-btn');setBtnSaving(btn,true,'Starting…');
   APP.peerSessions.push(ps);save();await new Promise(r=>setTimeout(r,400));setBtnSaving(btn,false);
   toast(`Peer review started with ${reviewers.length} reviewer${reviewers.length===1?'':'s'}, ${actual||N} review${(actual||N)===1?'':'s'} each.`,'success');renderPeerPage();
+};
+})();
+
+</script>
+<script id="ea-classwork">
+/* Classwork, in the style of Google Classroom: topic sidebar, Create menu, icon rows that expand */
+(function(){
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const OPEN=window.CW_OPEN=window.CW_OPEN||new Set();
+const ICO={asg:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>',
+ mat:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 7h6"/></svg>',
+ svy:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
+const st=isT=>isT?FXC:STU;
+const sel=(isT)=>{const o=st(isT);return o.cwTopic||'';};
+function topicsOf(c,asg){const t=(typeof fxCwTopicList==='function'?fxCwTopicList(c):(c.topics||[]).slice());asg.forEach(a=>{if(a.topic&&!t.includes(a.topic))t.push(a.topic);});return t;}
+function posted(d){return d?(typeof fxPosted==='function'?fxPosted(d):new Date(d).toLocaleDateString()):'';}
+function asgRow(a,c,isT){
+  const open=OPEN.has(a.id),title=a.title||'Assessment',svy=a.survey;
+  let right='',fold='';
+  if(isT){
+    const t=APP.tests.find(x=>x.id===a.testId),subs=(APP.submissions||[]).filter(x=>x.assignmentId===a.id&&x.status==='submitted'),
+      need=subs.filter(x=>!x.graded&&typeof needsGrading==='function'&&needsGrading(x,t)).length,n=(c.students||[]).length;
+    right=`<span class="cw-m">${a.dueAt?E(stuWhen(a.dueAt)):'Posted '+E(posted(a.createdAt))}</span>`;
+    fold=`<div class="cw-stats"><div><b>${subs.length}</b><span>Turned in</span></div><div><b>${Math.max(0,n-subs.length)}</b><span>Assigned</span></div>${svy?'':`<div class="${need?'warn':''}"><b>${need}</b><span>To grade</span></div>`}</div>
+     <div class="cw-meta">${a.createdAt?'Posted '+E(posted(a.createdAt))+' · ':''}${a.dueAt?'Due '+E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'Account required':'Link also works'}</div>
+     <div class="cw-acts"><button class="btn btn-primary btn-sm" onclick="${svy?`showPage('analytics')`:`showPage('grading')`}">${svy?'View results':'Grade'}</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${E(a.id)}')">Monitor</button><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${E(a.id)}')">Settings</button><button class="btn btn-ghost btn-sm" onclick="cwMoveTopic('${E(c.id)}','${E(a.id)}')">Move to topic</button></div>`;
+  }else{
+    const sub=stuSubFor(a.id),s=stuState(a,sub),pct=stuPct(a,sub);
+    const late=a.dueAt&&s!=='done'&&new Date(a.dueAt)<new Date();
+    const lab={todo:'Assigned',progress:'In progress',done:'Turned in',closed:'Missing',scheduled:'Not open yet'}[s];
+    right=`<span class="cw-pill ${s}${late?' late':''}">${E(s==='closed'?'Missing':late?'Past due':lab)}${s==='done'&&a.releaseScores&&pct!=null?' · '+pct+'%':''}</span><span class="cw-m">${a.dueAt&&s!=='done'?E(stuWhen(a.dueAt)):'Posted '+E(posted(a.createdAt))}</span>`;
+    let btn='';
+    if(s==='todo')btn=`<a class="btn btn-primary btn-sm" href="?exam=${E(a.id)}">Start</a>`;
+    else if(s==='progress')btn=`<a class="btn btn-primary btn-sm" href="?exam=${E(a.id)}">Resume</a>`;
+    else if(s==='done')btn=a.releaseScores?`<a class="btn btn-secondary btn-sm" href="?results=${E(sub.id)}">View results</a>`:'<span class="cw-meta">Waiting for your teacher to release results.</span>';
+    else if(s==='scheduled')btn=`<span class="cw-meta">Opens ${E(new Date(a.opensAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span>`;
+    fold=`<div class="cw-meta">${[a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' minutes':'',a.dueAt?'Due '+stuWhen(a.dueAt):'No due date'].filter(Boolean).map(E).join(' · ')}</div><div class="cw-acts">${btn}</div>`;
+  }
+  return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
+}
+function matRow(m,c,isT){
+  const open=OPEN.has(m.id),nl=(m.links||[]).length;
+  const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">⋮⋮</span>`:'';
+  const acts=isT?`<div class="cw-acts"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
+  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span><span class="cw-m">Posted ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
+  const body=`<div class="cw-fold"><div class="cw-in">${m.body?`<div class="cw-body">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}${(!m.body&&!nl)?'<div class="cw-meta">No description.</div>':''}${acts}</div></div>`;
+  const cls='cw-item cw-mat'+(open?' open':'');
+  return isT?`<div class="${cls}" data-cw="${E(m.id)}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-cw="${E(m.id)}">${head}${body}</div>`;
+}
+window.cwToggle=function(h){const it=h.closest('.cw-item');if(!it)return;const on=!it.classList.contains('open');it.classList.toggle('open',on);h.setAttribute('aria-expanded',on?'true':'false');const id=it.getAttribute('data-cw');if(on)OPEN.add(id);else OPEN.delete(id);};
+window.cwFilter=function(isT,t){st(isT).cwTopic=t||'';if(isT)fxRenderClasses();else stuPaint();};
+window.cwMenu=function(btn){const m=btn.nextElementSibling;const on=!m.classList.contains('open');document.querySelectorAll('.cw-menu.open').forEach(x=>x.classList.remove('open'));m.classList.toggle('open',on);};
+document.addEventListener('click',e=>{if(!e.target.closest||e.target.closest('.cw-create'))return;document.querySelectorAll('.cw-menu.open').forEach(x=>x.classList.remove('open'));});
+window.cwMoveTopic=function(cid,aid){
+  const c=(APP.classes||[]).find(x=>x.id===cid),a=(APP.assignments||[]).find(x=>x.id===aid);if(!c||!a)return;
+  const ts=topicsOf(c,(APP.assignments||[]).filter(x=>(x.classIds||[]).includes(cid)));
+  openModal(`<div class="modal-header"><h2 class="serif">Move to topic</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><div class="form-group"><label class="form-label">Topic</label><select class="form-control" id="cw-topic-sel"><option value="">No topic</option>${ts.map(t=>`<option ${a.topic===t?'selected':''} value="${E(t)}">${E(t)}</option>`).join('')}<option value="__new">New topic…</option></select></div><div class="form-group hidden" id="cw-new-g"><label class="form-label">New topic name</label><input class="form-control" id="cw-new" maxlength="40" placeholder="For example, Unit 3"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cwMoveSave('${E(cid)}','${E(aid)}')">Move</button></div>`,'460px');
+  document.getElementById('cw-topic-sel').onchange=function(){document.getElementById('cw-new-g').classList.toggle('hidden',this.value!=='__new');};
+};
+window.cwMoveSave=function(cid,aid){
+  const c=(APP.classes||[]).find(x=>x.id===cid),a=(APP.assignments||[]).find(x=>x.id===aid);let v=document.getElementById('cw-topic-sel').value;
+  if(v==='__new')v=(document.getElementById('cw-new').value||'').trim().slice(0,40);
+  a.topic=v;if(v){c.topics=c.topics||[];if(!c.topics.includes(v)){c.topics.push(v);}}
+  save();closeModal();
+  if(v&&typeof fxCwSave==='function')fxCwSave(c);else fxRenderClasses();
+};
+window.lmsClasswork=function(c,isT,asg){
+  const topics=topicsOf(c,asg),secs=typeof fxCwSecs==='function'?fxCwSecs(c):[{t:'',items:c.materials||[]}];
+  let cur=sel(isT);if(cur&&!topics.includes(cur)){cur='';st(isT).cwTopic='';}
+  const total=asg.length+(c.materials||[]).length;
+  const sorted=asg.slice().sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
+  const blocks=[{t:'',label:''}].concat(topics.map(t=>({t,label:t}))).map(b=>{
+    const A=sorted.filter(a=>(a.topic||'')===b.t),M=((secs.find(s=>s.t===b.t)||{}).items)||[];
+    if(cur&&b.t!==cur)return '';
+    const n=A.length+M.length;
+    if(!isT&&!n)return '';
+    if(!b.t&&!n&&(isT?topics.length:1))return '';
+    const head=b.t?`<div class="cw-th">${isT?`<span class="lms-grip" draggable="true" title="Drag to reorder topic" ondragstart="fxDragTopic(event,'${E(c.id)}','${E(b.t)}')" ondragend="fxDragEnd()">⋮⋮</span>`:''}<h3>${E(b.t)}</h3>${isT?`<span class="cw-tm"><button class="cw-dots" aria-label="Topic options" onclick="cwMenu(this)">⋮</button><div class="cw-menu"><a onclick="fxTopicRename('${E(c.id)}','${E(b.t)}')">Rename</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',-1)">Move up</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',1)">Move down</a><a class="del" onclick="fxTopicDelete('${E(c.id)}','${E(b.t)}')">Delete</a></div></span>`:''}</div>`:'';
+    const rows=A.map(a=>asgRow(a,c,isT)).join('')+M.map(m=>matRow(m,c,isT)).join('');
+    return `<section class="cw-sec"${isT?` data-t="${E(b.t)}" ondragover="fxOverSec(event)" ondrop="fxDropSec(event,'${E(b.t)}')"`:''}>${head}<div class="cw-list">${rows||`<p class="cw-empty">${isT?'Nothing in this topic yet. Drag a material here or use Create.':''}</p>`}</div></section>`;
+  }).join('');
+  const side=`<aside class="cw-side"><button class="cw-tp${!cur?' on':''}" onclick="cwFilter(${isT},'')">All topics</button>${topics.map(t=>`<button class="cw-tp${cur===t?' on':''}" onclick="cwFilter(${isT},this.dataset.t)" data-t="${E(t)}">${E(t)}</button>`).join('')}${isT?`<button class="cw-tp add" onclick="fxTopicAdd('${E(c.id)}')">+ Add topic</button>`:''}</aside>`;
+  const create=isT?`<div class="cw-create"><button class="cw-cbtn" onclick="cwMenu(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Create</button><div class="cw-menu"><a onclick="fxClassAssign('${E(c.id)}')"><span class="cw-ico asg sm">${ICO.asg}</span>Assignment</a><a onclick="fxMatModal('${E(c.id)}')"><span class="cw-ico mat sm">${ICO.mat}</span>Material</a><a onclick="fxTopicAdd('${E(c.id)}')"><span class="cw-ico top sm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>Topic</a></div></div>`:'';
+  return `<div class="cw">${create}<div class="cw-cols">${side}<div class="cw-main">${blocks||''}${!total?`<div class="cw-blank"><div class="cw-blank-i">${ICO.asg}</div><h3>${isT?'Add classwork':'No classwork yet'}</h3><p>${isT?'Use Create to post an assignment, share a material or organize things into topics.':'Assignments and materials from your teacher will show up here.'}</p></div>`:''}</div></div></div>`;
+};
+})();
+
+</script>
+<script id="ea-notify">
+/* Desktop notifications for students: asked for by default, delivered through Web Push when supported */
+(function(){
+const ASK='ea_notif_ask_v1',SINCE='ea_notif_since';
+const can=()=>'Notification' in window;
+const push=()=>can()&&'serviceWorker' in navigator&&'PushManager' in window;
+const u8=s=>{const p='='.repeat((4-s.length%4)%4),b=(s+p).replace(/-/g,'+').replace(/_/g,'/'),r=atob(b);return Uint8Array.from([...r].map(c=>c.charCodeAt(0)));};
+const imp=()=>{try{return typeof IMP!=='undefined'&&!!IMP;}catch(e){return false;}};
+async function subscribe(){
+  const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;
+  const k=await apiPost({action:'pushKey'});if(!k||!k.key)throw new Error('no key');
+  let s=await reg.pushManager.getSubscription();
+  if(s){const cur=s.options&&s.options.applicationServerKey&&new Uint8Array(s.options.applicationServerKey),want=u8(k.key);
+    if(cur&&(cur.length!==want.length||cur.some((v,i)=>v!==want[i]))){await s.unsubscribe();s=null;}}
+  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(k.key)});
+  await apiPost({action:'pushSubscribe',subscription:s.toJSON()});
+  return true;
+}
+let pollT=null;
+function poll(){
+  if(pollT)return;
+  const tick=async()=>{if(Notification.permission!=='granted')return;
+    const since=+localStorage.getItem(SINCE)||0;const r=await apiPost({action:'studentNotifs',since});
+    if(r&&r.ok){localStorage.setItem(SINCE,String(r.now));(r.items||[]).forEach(i=>{try{const n=new Notification(i.title,{body:i.body,tag:i.tag||i.id,icon:'/icon-192.png'});n.onclick=()=>{window.focus();if(i.url)location.href=i.url;};}catch(e){}});}};
+  tick();pollT=setInterval(()=>{if(!document.hidden||true)tick();},60000);
+}
+async function enable(){
+  if(!can()){toast('This browser does not support notifications.','error');return false;}
+  let p=Notification.permission;if(p==='default')p=await Notification.requestPermission();
+  try{localStorage.setItem(ASK,String(Date.now()));}catch(e){}
+  if(p!=='granted'){toast('Notifications are off. You can allow them in your browser settings.','error');return false;}
+  try{if(push())await subscribe();else poll();}catch(e){poll();}
+  toast('Notifications are on.','success');return true;
+}
+function card(){
+  if(document.getElementById('ea-nf'))return;
+  const d=document.createElement('div');d.id='ea-nf';d.setAttribute('role','dialog');d.setAttribute('aria-label','Notifications');
+  d.innerHTML='<div class="ea-nf-i"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><div class="ea-nf-b"><b>Get notified</b><p>Allow desktop notifications and EdAssess will tell you when your teacher posts an assignment, material or announcement, even when this tab is closed.</p><div class="ea-nf-a"><button class="btn btn-primary btn-sm" id="ea-nf-y">Turn on notifications</button><button class="btn btn-ghost btn-sm" id="ea-nf-n">Not now</button></div></div>';
+  document.body.appendChild(d);
+  const close=()=>{d.classList.add('out');setTimeout(()=>d.remove(),220);};
+  d.querySelector('#ea-nf-y').onclick=async()=>{await enable();close();};
+  d.querySelector('#ea-nf-n').onclick=()=>{try{localStorage.setItem(ASK,String(Date.now()));}catch(e){}close();};
+}
+window.eaNotifyEnable=enable;
+window.eaNotifyInit=function(){
+  if(!can()||imp())return;
+  const p=Notification.permission;
+  if(p==='granted'){(push()?subscribe().catch(poll):Promise.resolve(poll()));return;}
+  if(p==='denied')return;
+  let last=0;try{last=+localStorage.getItem(ASK)||0;}catch(e){}
+  if(!last||Date.now()-last>7*864e5)setTimeout(card,1200);   // ask on the first visit, and again after a week if they said not now
 };
 })();
 
