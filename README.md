@@ -274,3 +274,5 @@ Answer sheets are fully customizable in the Print Center: title, instruction lin
 ### Students turning in a paper sheet
 
 Students do not have to open the test at all. Once you have printed a sheet for a test, a **Scan sheet** button appears next to Start on their assignment list (and a "turn it in by photo" link on the test start screen). They photograph their sheet, check every answer against their paper, fix anything flagged, tick the confirmation box and submit. Nothing is scored or shown to them until they confirm, and results appear afterward only if you have released them.
+
+Every printed answer sheet can carry a **turn-in QR code** (pick the assignment in the Print Center, or leave it on Automatic). Students scan it with their phone camera, or open **Scan answer sheet** from the EdAssess login page or their home screen, and photograph the sheet. EdAssess reads the QR from the photo itself, finds the right assignment, reads the bubbles and lets the student confirm every answer. No test screen and no sign in are needed unless the assignment requires an account. If the QR is damaged, the student can type the assignment code printed beside it.
