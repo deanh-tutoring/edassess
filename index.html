@@ -5015,7 +5015,7 @@ async function createAssignment(testId){
     return;
   }
   closeModal();
-  const link=`${(location.origin+location.pathname)}?exam=${a.id}`;
+  const link=`${(location.origin+'/')}?exam=${a.id}`;
   openModal(`
   <div class="modal-header">
     <h2 class="serif" style="font-size:22px">Assignment created</h2>
@@ -5103,7 +5103,7 @@ function renderLive(){
       <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;font-family:var(--f-body)">Select Assignment</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="live-assignment-btn ${!activeAssignmentFilter?'active':''}" onclick="setLiveFilter(null)">All Assignments</button>
-        ${APP.assignments.map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);const link=(location.origin+location.pathname)+'?exam='+a.id;return`
+        ${APP.assignments.map(a=>{const t=APP.tests.find(tt=>tt.id===a.testId);const link=(location.origin+'/')+'?exam='+a.id;return`
         <div style="display:flex;gap:4px;align-items:center">
           <button class="live-assignment-btn ${activeAssignmentFilter===a.id?'active':''}" onclick="setLiveFilter('${a.id}')">${t?t.title:'Unknown'} <span style="opacity:.6;font-size:9px;margin-left:4px">${formatDate(a.createdAt)}</span></button>
           <button class="btn btn-ghost btn-sm btn-icon" onclick="copyToClipboard('${link}')" title="Copy student link" style="padding:6px">
@@ -5256,7 +5256,7 @@ function openStudentControl(sid){
   const s=APP.submissions.find(ss=>ss.id===sid);
   if(!s) return;
   const a=APP.assignments.find(aa=>aa.id===s.assignmentId)||{};
-  const link=(location.origin+location.pathname)+'?exam='+s.assignmentId;
+  const link=(location.origin+'/')+'?exam='+s.assignmentId;
   openModal(`
   <div class="modal-header">
     <h2 class="serif" style="font-size:22px">Control: ${s.studentName}</h2>
@@ -5950,7 +5950,7 @@ function setManualScore(sid,qKey,val,max){
 }
 
 function copyResultsLink(sid){
-  const link=`${(location.origin+location.pathname)}?results=${sid}`;
+  const link=`${(location.origin+'/')}?results=${sid}`;
   navigator.clipboard.writeText(link).then(()=>toast('Results link copied.','success')).catch(()=>{
     openModal(`<div class="modal-header"><h2 class="serif" style="font-size:20px">Share Results</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body"><label class="form-label">Student Results Link</label><div class="flex gap-2"><input type="text" class="form-control" value="${link}" readonly style="font-size:11px;font-family:var(--f-mono)"><button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${link}');toast('Copied.','success')">Copy</button></div></div>`,'500px');
   });
@@ -8107,7 +8107,7 @@ function renderSubmittedScreen(sub,a,t){
         <div class="ea-done-big">${sub.score}<span> / ${totalPts}</span></div>
         <div class="ea-done-pct" style="color:${scoreColor(totalPts>0?sub.score/totalPts:0)}">${pct}%</div>
         ${sxSubmittedExtras(sub,t)}
-        <a class="ea-btn-line" href="${(location.origin+location.pathname)}?results=${sub.id}">View full results →</a>
+        <a class="ea-btn-line" href="${(location.origin+'/')}?results=${sub.id}">View full results →</a>
       </div>`:`<div class="ea-done-score" style="font-size:16px">Your instructor will release your results when available.</div>`}
     <p class="ea-done-foot">You may close this window.</p>
   </div></div>`;
@@ -8409,7 +8409,7 @@ function deletePeerSessionRemote(id){
 }
 
 function peerSessionLink(sessionId){
-  return `${(location.origin+location.pathname)}?peerreview=${sessionId}`;
+  return `${(location.origin+'/')}?peerreview=${sessionId}`;
 }
 
 function calcTotalPoints(t,s){
@@ -8722,7 +8722,7 @@ function loadStudentResults(sid){
       ${t.satSubject?`
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)">Practice Recommendations</div>
-        <a href="${(location.origin+location.pathname)}?portal=${encodeURIComponent(s.studentName)}" style="font-size:12px;color:var(--slate-blue);font-weight:600;text-decoration:none">View combined portal across all your SAT tests →</a>
+        <a href="${(location.origin+'/')}?portal=${encodeURIComponent(s.studentName)}" style="font-size:12px;color:var(--slate-blue);font-weight:600;text-decoration:none">View combined portal across all your SAT tests →</a>
       </div>
       ${renderSkillPanel('results-'+s.id,t.satSubject,computeSkillStats([s],t.satSubject),1)}
       `:''}
@@ -9746,7 +9746,7 @@ async function sxSaveAndExit(){
 }
 function sxRenderSavedScreen(){
   const {t,a,sub}=APP.currentStudentExam;const st=sub.sectionState;
-  const link=`${(location.origin+location.pathname)}?exam=${a.id}`;
+  const link=`${(location.origin+'/')}?exam=${a.id}`;
   const where=st&&sxOn(t)?`You’re in <strong>${escapeHtml((sxById(t,st.current)||{}).title||'')}</strong>${st.phase==='active'&&sub.ui?`, question ${(sub.ui.currentQ||0)+1}`:''}.`:'';
   const clock=sub.pauseClock?'Your timer is paused.':'Your timer is still running while you’re away.';
   const anyTimer=(sxOn(t)&&st&&st.phase==='active'&&sxLimitSecs(t,a,sxById(t,st.current),st.status[st.current])!==null)||(!sxOn(t)&&a.timed);
@@ -10726,7 +10726,7 @@ function fxQrListHtml(key){const l=fxUpList(APP.currentStudentExam.sub,key);retu
 function fxUpOpenQr(key){
   const ex=APP.currentStudentExam;const sub=ex.sub;fxUpOpen=true;
   const n=examItems().findIndex(f=>f.key===key)+1;
-  const link=(location.origin+location.pathname)+'?upload='+encodeURIComponent(sub.id)+'&k='+encodeURIComponent(key)+'&n='+n;
+  const link=(location.origin+'/')+'?upload='+encodeURIComponent(sub.id)+'&k='+encodeURIComponent(key)+'&n='+n;
   let img='<div style="padding:20px;font-size:12px;word-break:break-all">'+sxE(link)+'</div>';
   try{if(window.qrcode){const qr=qrcode(0,'M');qr.addData(link);qr.make();img=`<img class="fx-qr" src="${qr.createDataURL(6,2)}" alt="QR code">`;}}catch(e){}
   const el=document.createElement('div');el.className='fx-qr-back';el.id='fx-qr';
@@ -11139,7 +11139,7 @@ function renderLive(){
   if(!APP.assignments.length&&!APP.submissions.length){el.innerHTML=top+`<div class="page-content"><div style="text-align:center;padding:80px 40px"><h2 class="serif" style="font-size:32px;margin:16px 0 8px">No active sessions</h2><p style="color:var(--ink-soft);font-size:18px">Assign a test to start monitoring students</p></div></div>`;return;}
   el.innerHTML=top+`<div class="page-content" id="live-root">
     <div class="fx-lv-bar"><button class="btn btn-ghost btn-sm fxa-back" onclick="fxLiveBack()">← All assignments</button><span class="fxa-ttl">${sxE((fxAsgInfo(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{})).title)}</span>${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code?`<span class="fx-codechip big" onclick="fxCopyCode('${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}')" title="Students join with this code">${(APP.assignments.find(x=>x.id===activeAssignmentFilter)||{}).code}</span>`:''}
-      ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard((location.origin+location.pathname)+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
+      ${activeAssignmentFilter?`<button class="btn btn-secondary btn-sm" onclick="copyToClipboard((location.origin+'/')+'?exam=${activeAssignmentFilter}')">Copy student link</button><button class="btn btn-secondary btn-sm" onclick="fxExportCsv('${activeAssignmentFilter}')">CSV</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteAllSubmissionsForAssignment('${activeAssignmentFilter}')">Delete responses</button><button class="btn btn-ghost btn-sm" style="color:var(--rust)" onclick="deleteSession('${activeAssignmentFilter}')">Delete session</button>`:''}</div>
     <div id="live-control"></div>
     <div class="grid-4 mb-6" id="live-stats"></div>
     <div class="card"><div class="card-header" style="flex-wrap:wrap;gap:10px"><div class="fx-tabs" id="live-tabs"></div><div id="live-tools" class="flex gap-2 items-center"></div></div><div id="live-list"></div></div></div>`;
@@ -11940,7 +11940,7 @@ async function fxJoin(){
   btn.disabled=true;btn.textContent='Joining…';
   let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0;
   if(!id){const r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
-  if(id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(id);return;}
+  if(id){location.href=(location.origin+'/')+'?exam='+encodeURIComponent(id);return;}
   btn.disabled=false;btn.textContent='Join';
   err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';
   inp.select();
@@ -12386,10 +12386,10 @@ window.fxSelfStudent=async function(){
   const r=await apiPost({action:'teacherStudentSession'});
   if(!(r&&r.ok&&r.token)){try{w.close();}catch(e){}toast((r&&r.error)||'Could not open student mode.','error');return;}
   try{localStorage.setItem('ea_imp_handoff',JSON.stringify({token:r.token,student:r.student,self:true,exp:Date.now()+30000}));}catch(e){try{w.close();}catch(_){}return toast('Your browser blocked student mode (storage).','error');}
-  w.location.href=location.origin+location.pathname+'?imp=1';
+  w.location.href=location.origin+'/'+'?imp=1';
 };
 document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector('.sidebar-footer');if(f&&!IMP)f.insertAdjacentHTML('afterbegin','<a class="nav-item" onclick="fxSelfStudent()" title="Join classes and do work as a student" style="margin-bottom:6px"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg>Student mode</a>');});
-window.fxImpExit=function(){try{sessionStorage.removeItem('ea_imp');}catch(e){}window.close();setTimeout(()=>{location.href=location.origin+location.pathname;},150);};
+window.fxImpExit=function(){try{sessionStorage.removeItem('ea_imp');}catch(e){}window.close();setTimeout(()=>{location.href=location.origin+'/';},150);};
 if(IMP){document.addEventListener('DOMContentLoaded',()=>{
   document.body.classList.add('imp-on');document.title=(IMP.self?'Student mode · ':'Student view · ')+(IMP.preview?(IMP.className||'class'):IMP.student.name);
   const b=document.createElement('div');b.id='imp-bar';b.setAttribute('role','status');
@@ -12433,7 +12433,7 @@ async function fxStuAuth(){
   const prev=stuLoad();if(prev&&prev.student&&prev.student.key!==r.student.key)await fxWipeCaches();
   stuSave({token:r.token,student:r.student});
   const ret=new URLSearchParams(location.search).get('return');
-  if(ret&&/^[A-Za-z0-9_-]{4,40}$/.test(ret)){location.href=(location.origin+location.pathname)+'?exam='+ret;return;}
+  if(ret&&/^[A-Za-z0-9_-]{4,40}$/.test(ret)){location.href=(location.origin+'/')+'?exam='+ret;return;}
   location.reload();
 }
 function fxClassCodeFound(code,r){
@@ -12450,7 +12450,7 @@ window.fxJoin=async function(){
   let id=(APP.assignments.find(a=>a.code===code)||{}).id||null,status=0,r=null;
   if(!id){r=await eaGet({code},10000);if(r&&r.id)id=r.id;else status=(r&&r.status)||0;}
   btn.disabled=false;btn.textContent='Join';
-  if(id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(id);return;}
+  if(id){location.href=(location.origin+'/')+'?exam='+encodeURIComponent(id);return;}
   if(r&&r.classCode){if(stuToken()){fxStuEnter().then(()=>fxStuJoinCode(code));}else fxClassCodeFound(code,r);return;}
   err.textContent=status===404?'That code was not found. Check it and try again.':'Could not reach the server. Check your connection and try again.';inp.select();
 };
@@ -12466,7 +12466,7 @@ const STU={page:'home',data:null,tab:'all',cls:'all',loading:false};
 function fxStuLogout(silent){
   if(IMP){fxImpExit();return;}
   try{localStorage.setItem(EA_STU_KEY,JSON.stringify({token:'',student:null}));}catch(e){}
-  fxWipeCaches();location.href=(location.origin+location.pathname);
+  fxWipeCaches();location.href=(location.origin+'/');
 }
 async function fxStuEnter(){
   const s=stuLoad();if(!s||!s.token)return;
@@ -12641,7 +12641,7 @@ async function stuPwSave(){const r=await apiPost({action:'studentChangePassword'
   return o.apply(this,arguments);};}
 function fxExamGate(kind){
   const id=new URLSearchParams(location.search).get('exam');
-  const home=(location.origin+location.pathname);
+  const home=(location.origin+'/');
   document.getElementById('login-page').classList.add('hidden');document.getElementById('app').classList.add('hidden');const w=document.getElementById('student-wrapper');w.classList.remove('hidden');
   w.innerHTML=kind==='class'
    ?`<div class="ea-done"><div class="ea-done-card"><h2 class="ea-done-h" style="font-size:36px"><u>Not your class.</u></h2><p class="ea-done-p">This assessment is assigned to a class you haven’t joined. Ask your teacher for the class code, then join from your home page.</p><a class="ea-btn-line" href="${home}">Go to my home →</a></div></div>`
@@ -12743,7 +12743,7 @@ window.fxViewAs=async function(cid,key){
   const r=await apiPost({action:'impersonateStudent',classId:cid,studentKey:key||undefined});
   if(!(r&&r.ok&&r.token)){try{w.close();}catch(e){}toast((r&&r.error)||'Could not open student view.','error');return;}
   try{localStorage.setItem('ea_imp_handoff',JSON.stringify({token:r.token,student:r.student,preview:!!r.preview,className:r.className||'',exp:Date.now()+30000}));}catch(e){try{w.close();}catch(_){}return toast('Your browser blocked student view (storage).','error');}
-  w.location.href=location.origin+location.pathname+'?imp=1#/class/'+encodeURIComponent(cid);
+  w.location.href=location.origin+'/'+'?imp=1#/class/'+encodeURIComponent(cid);
 };
 window.fxViewAsModal=function(cid){
   const c=(APP.classes||[]).find(x=>x.id===cid),st=((c&&c.students)||[]).slice().sort((a,b)=>a.name.localeCompare(b.name));
@@ -13396,13 +13396,13 @@ window.fxStuJoinCode=async function(code){
   if(code.length<4){toast('Enter the code from your teacher.','error');return;}
   const r=await apiPost({action:'joinClass',code});
   if(r&&r.ok){closeModal();toast('Joined '+r.name+'.','success');await stuRefresh();return;}
-  if(r&&r.status===404){const g=await eaGet({code},10000);if(g&&g.id){location.href=(location.origin+location.pathname)+'?exam='+encodeURIComponent(g.id);return;}}
+  if(r&&r.status===404){const g=await eaGet({code},10000);if(g&&g.id){location.href=(location.origin+'/')+'?exam='+encodeURIComponent(g.id);return;}}
   toast((r&&r.error)||'That code was not found.','error');
 };
 window.stuLeave=async function(id){if(!confirm('Leave this class? Your past work stays on your account.'))return;const r=await apiPost({action:'leaveClass',classId:id});if(r&&r.ok){closeModal();await stuRefresh();stuGo('home');}};
 /* ── back to dashboard (exam, submitted, results, gate) ── */
-function fxBackBtn(){return stuToken()?`<a class="ea-btn-line fx-back-l" href="${(location.origin+location.pathname)}">← Back to my dashboard</a>`:'';}
-function fxBackBar(){return stuToken()?`<a class="fx-back" href="${(location.origin+location.pathname)}">← Dashboard</a>`:'';}
+function fxBackBtn(){return stuToken()?`<a class="ea-btn-line fx-back-l" href="${(location.origin+'/')}">← Back to my dashboard</a>`:'';}
+function fxBackBar(){return stuToken()?`<a class="fx-back" href="${(location.origin+'/')}">← Dashboard</a>`:'';}
 {const o=window.renderNameEntry;window.renderNameEntry=function(a,t){return fxBackBar()+o(a,t);};}
 {const o=window.renderSubmittedScreen;window.renderSubmittedScreen=function(sub,a,t){o(sub,a,t);const c=document.querySelector('#student-wrapper .ea-done-card');if(c&&stuToken()){const f=c.querySelector('.ea-done-foot');if(f)f.outerHTML=fxBackBtn();else c.insertAdjacentHTML('beforeend',fxBackBtn());}
   if(c&&stuToken()&&a.releaseScores===false&&!sub.graded){const p=c.querySelector('.ea-done-score');if(p)p.innerHTML='Your teacher will release your results after grading.';}};}
@@ -14478,7 +14478,7 @@ function asgOf(t){return(APP.assignments||[]).filter(a=>a.testId===t.id)}
 function qrSel(){const t=curTest();if(!t)return'';const as=asgOf(t);
   return `<div class="pr-sec"><b>Turn-in QR code</b><div class="sm" style="margin-bottom:4px">Students scan it with a phone camera and land on the photo turn-in page. No test screen needed.</div>${as.length?sel('pr-qa',[['','Automatic'],...as.map(a=>[a.id,(a.title||t.title||'Assignment')+(a.code?' ('+a.code+')':'')]),['none','No QR code']],PR.o.sheetAsg||'',"prSet('sheetAsg',this.value)"):'<div class="sm">Create an assignment for this test to add a QR code.</div>'}</div>`}
 function qrApply(t,o){const as=asgOf(t);let a=o.sheetAsg==='none'?null:(as.find(x=>x.id===o.sheetAsg)||(o.sheetCls&&as.find(x=>(x.classIds||[]).includes(o.sheetCls)))||as[0]);
-  o.qrUrl=a?location.origin+location.pathname+'?scan='+a.id:'';o.qrCode=a&&a.code?a.code:''}
+  o.qrUrl=a?location.origin+'/'+'?scan='+a.id:'';o.qrCode=a&&a.code?a.code:''}
 function idPanel(){const cl=APP.classes||[],c=cl.find(x=>x.id===PR.o.sheetCls),n=c?(c.students||[]).length:0,noSid=c?(c.students||[]).filter(x=>!x.sid).length:0;
   return `<div class="pr-sec"><b>Pre-printed IDs</b><label class="form-label">Class</label>${sel('pr-sc',[['','Not pre-printed (students fill it in)'],...cl.map(c=>[c.id,c.name+(c.no?' · ID '+c.no:'')])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}
   <div class="sm" style="margin:4px 0">Pre-printing a class puts the class name and class ID on the sheet. Otherwise students write and bubble it themselves.</div>
@@ -14710,7 +14710,7 @@ window.loadStudentScan=function(aid){
   if(!a||!t){sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>One moment</h1><p class="sub">Checking this assignment...</p></div></div></div>';
     fetch(API_URL+'?exam='+encodeURIComponent(aid),{cache:'no-store'}).then(async r=>{let j={};try{j=await r.json()}catch(x){}
       const msg=r.status===401&&j.needAccount?'This assignment needs your EdAssess account. Sign in, then tap Scan sheet on your assignment list.':r.status===403&&j.notInClass?'This assignment is only for students in the class.':'Check the link your teacher gave you.';
-      sw.innerHTML=`<div class="ss"><div class="ss-w"><div class="ss-c"><h1>${r.status===401||r.status===403?'Sign in needed':'Assignment not found'}</h1><p class="sub">${e(msg)}</p><a class="ss-b" href="${location.pathname}">Go to EdAssess</a></div></div></div>`}).catch(()=>{sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>Could not load</h1><p class="sub">Check your connection and try again.</p></div></div></div>'});return}
+      sw.innerHTML=`<div class="ss"><div class="ss-w"><div class="ss-c"><h1>${r.status===401||r.status===403?'Sign in needed':'Assignment not found'}</h1><p class="sub">${e(msg)}</p><a class="ss-b" href="/">Go to EdAssess</a></div></div></div>`}).catch(()=>{sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>Could not load</h1><p class="sub">Check your connection and try again.</p></div></div></div>'});return}
   Object.assign(SS,{a,t,name:ssWho(),mySid:ssSid(),needVer:false,idWarn:'',readSid:'',pages:{},cur:{},ack:{},ver:null,need:1,err:''});ssDraw();
   try{const pe=JSON.parse(sessionStorage.getItem('ea_scan_pending')||'null');sessionStorage.removeItem('ea_scan_pending');
     if(pe&&pe.aid===aid&&Date.now()-pe.ts<5*60000){fetch(pe.img).then(r=>r.blob()).then(b=>ssFile([b]))}}catch(x){}};
@@ -14721,16 +14721,16 @@ window.ssRows=ssRows;function ssHome(){
   <div class="ss-c"><h2>1. Take a photo</h2><ol><li>Lay the sheet flat in good light.</li><li>Keep all four black squares and the QR code in the picture.</li><li>Hold the camera straight above the sheet.</li></ol>
   <label class="ss-b" style="margin-right:8px">Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="ssHomeFile(this.files);this.value=''"></label><label class="ss-b g">Choose photo<input type="file" accept="image/*" style="display:none" onchange="ssHomeFile(this.files);this.value=''"></label>${busy?'<span class="sub" style="margin-left:10px">Reading...</span>':''}${err?`<div class="ss-er">${e(err)}</div>`:''}</div>
   <div class="ss-c"><h2>No QR code?</h2><p class="sub" style="margin-top:0">Type the assignment code your teacher gave you.</p><div style="display:flex;gap:8px"><input class="ss-in" id="ss-code" maxlength="10" placeholder="CODE" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"><button class="ss-b" onclick="ssCode()">Go</button></div></div>
-  <p class="sub"><a href="${location.pathname}">Back to EdAssess</a></p></div></div>`}
+  <p class="sub"><a href="/">Back to EdAssess</a></p></div></div>`}
 window.ssHomeFile=async files=>{const f0=files[0];if(!f0)return;SS.homeErr='';SS.homeBusy=true;ssHome();await new Promise(r=>setTimeout(r,30));
   try{const img=await loadImg(f0),r=await readQr(img);
     if(!r.ok){SS.homeErr=r.err}
     else{const m=String(r.data).match(/[?&]scan=([A-Za-z0-9_-]{4,40})/);if(!m){SS.homeErr='That QR code is not an EdAssess turn-in code.'}
       else{try{sessionStorage.setItem('ea_scan_pending',JSON.stringify({aid:m[1],ts:Date.now(),img:r.P.cv.toDataURL('image/jpeg',.88)}))}catch(x){}
-        location.replace(location.pathname+'?scan='+m[1]);return}}}
+        location.replace("/"+'?scan='+m[1]);return}}}
   catch(x){SS.homeErr=x.message}
   SS.homeBusy=false;ssHome()};
-window.ssCode=async()=>{const c=($('ss-code').value||'').trim();if(c.length<3)return;SS.homeErr='';try{const g=await eaGet({code:c},10000);if(g&&g.id){location.href=location.pathname+'?scan='+encodeURIComponent(g.id);return}SS.homeErr='That code was not found.'}catch(x){SS.homeErr='That code was not found.'}ssHome()};
+window.ssCode=async()=>{const c=($('ss-code').value||'').trim();if(c.length<3)return;SS.homeErr='';try{const g=await eaGet({code:c},10000);if(g&&g.id){location.href="/"+'?scan='+encodeURIComponent(g.id);return}SS.homeErr='That code was not found.'}catch(x){SS.homeErr='That code was not found.'}ssHome()};
 window.ssHome=ssHome;
 function ssRows(){const out=[];Object.keys(SS.pages).sort().forEach(p=>SS.pages[p].ans.forEach(r=>out.push(r)));return out}
 function ssPos(r){return SS.cur[r.key]||[]}
