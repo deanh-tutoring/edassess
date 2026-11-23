@@ -14175,7 +14175,7 @@ td.c,th.c{text-align:center}tr{break-inside:avoid}thead{display:table-header-gro
 .tb{position:sticky;top:0;background:#111;color:#fff;padding:8px 14px;font:13px Helvetica,Arial;display:flex;justify-content:space-between}.tb button{background:#2f6bff;color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer}
 .sf{position:relative;width:7in;height:9.6in;margin:0 auto;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif}.an{position:absolute;background:#000;display:block;transform:translate(-50%,-50%)}
 .sb{position:absolute;border:1.3pt solid #000;box-sizing:border-box;display:block;background:transparent}.sb.on{background:#000}.bd{position:absolute;background:#efefef;display:block;border-radius:.05in}.idb{position:absolute;border:1pt solid #000;border-radius:.1in;display:block}
-.cx{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;line-height:1;font-size:7pt;color:#222}.cx.lb{font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}.cx.dg{font-size:6.5pt;color:#444}.cx.rn{font-size:8.5pt;font-weight:700;transform:translate(-100%,-50%)}.cx.il{font-size:5.5pt;color:#999}.cx.lb2{font-size:7pt;font-weight:700}.cx.qc{font-size:6.5pt;color:#444}.qrb{position:absolute;background:var(--cream)}.qrb svg{width:100%;height:100%;display:block}
+.cx{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;line-height:1;font-size:7pt;color:#222}.cx.lb{font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase}.cx.dg{font-size:6.5pt;color:#444}.cx.rn{font-size:8.5pt;font-weight:700;transform:translate(-100%,-50%)}.cx.il{font-size:5.5pt;color:#999}.cx.ig{font-size:5pt;color:#999}.cx.wd{font-size:10pt;font-weight:700;color:#111}.cx.cn{font-size:7pt;font-weight:800;max-width:1.2in;overflow:hidden;text-overflow:ellipsis}.tm{position:absolute;width:.1in;height:.05in;background:#000;display:block}.wb{position:absolute;width:.17in;height:.17in;border:1pt solid #000;display:block;box-sizing:border-box;background:var(--cream)}.cx.lb2{font-size:7pt;font-weight:700}.cx.qc{font-size:6.5pt;color:#444}.qrb{position:absolute;background:var(--cream)}.qrb svg{width:100%;height:100%;display:block}
 .sht{position:absolute;font-size:13pt;font-weight:800;line-height:1.15;max-height:.4in;overflow:hidden}.shs{position:absolute;font-size:8.5pt;color:#555}.sht2{position:absolute;font-size:7pt;color:#555;line-height:1.25;max-height:.24in;overflow:hidden}
 .sfl{position:absolute;border-bottom:1pt solid #000;font-size:9.5pt;height:.26in;display:flex;align-items:flex-end;gap:5pt;padding-bottom:1pt}.sfl span{font-size:6.5pt;color:#666;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 .sech{border-top:3pt solid #111;padding-top:6pt;margin:2pt 0 10pt}.sl2{font-size:${sz-2}pt;text-transform:uppercase;letter-spacing:.12em;color:#555;font-weight:700}.ins.sp{border-width:2pt}
@@ -14266,53 +14266,58 @@ function paperBody(t,o,ver){
   return units.map(u=>`<div class="un"${u.odd?' data-odd="1"':''}>${u.h}</div>`).join('');}
 
 /* ───────── bubble sheet: fixed geometry shared by the printer and the scanner ───────── */
-const SHW=7,SHH=9.6,ANC=[[.2,.2],[SHW-.2,.2],[SHW-.2,SHH-.2],[.2,SHH-.2]],GY=2.25,GYMAX=8.6,QRB={x:5.62,y:8.74,s:.86};
-const SDEF={opts:0,cols:0,pitch:.3,bsize:.15,shape:'circle',labels:'A',band:true,inside:false,name:true,date:true,cls:true,showId:true,title:'',note:'',extra:'',studentScan:true};
+const SHW=7,SHH=9.6,ANC=[[.2,.2],[SHW-.2,.2],[SHW-.2,SHH-.2],[.2,SHH-.2]],GY=2.6,GYMAX=8.6,QRB={x:5.62,y:8.74,s:.86};
+const SDEF={opts:0,cols:0,pitch:.3,bsize:.15,shape:'circle',labels:'A',band:true,inside:false,name:true,date:true,cls:true,showId:true,showCls:true,title:'',note:'',extra:'',studentScan:true,versions:1};
 const cfgOf=(t,o)=>Object.assign({},SDEF,(t&&t.sheetCfg)||{},(o&&o.sheetCfg)||{});
-const idPos=(r,d)=>({x:4.62+.205*d,y:.86+.25*r}),verPos=i=>({x:1.3+.22*i,y:9.3}),pgPos=i=>({x:3.45+.22*i,y:9.3});
+/* ID blocks: digits run down each column. Student ID is 6 digits, class ID is 4. */
+const IDY=d=>.9+.165*d,SIDX=k=>4.2+.2*k,CIDX=k=>5.5+.2*k,IDMARK=4.0;
+const idPos=(r,d)=>({x:SIDX(r),y:IDY(d)}),cidPos=(r,d)=>({x:CIDX(r),y:IDY(d)}),verPos=i=>({x:1.3+.22*i,y:9.3}),pgPos=i=>({x:3.45+.22*i,y:9.3});
 const lab=(c,i)=>c.labels==='a'?'abcdef'[i]:c.labels==='1'?String(i+1):LET[i];
 function sheetRows(t,o,ver){return numbered(t,o,ver).filter(x=>x.q.type==='mc'||x.q.type==='ms')}
 function perCol(c){let n=0;while(GY+n*c.pitch+Math.floor(n/5)*.06<=GYMAX)n++;return n}
 function sheetGeom(t,o,ver,page){
   const c=cfgOf(t,o),all=sheetRows(t,o,ver),PER=perCol(c);
   const mxo=Math.min(6,Math.max(2,c.opts||Math.max(2,...all.map(x=>(x.q.options||[]).length))));
-  const need=mxo*(c.bsize+.05)+.5,maxCols=Math.max(1,Math.min(4,Math.floor(6.4/need)));
+  const need=mxo*(c.bsize+.05)+.55,maxCols=Math.max(1,Math.min(4,Math.floor(6.4/need)));
   let cols=c.cols?Math.min(c.cols,maxCols):Math.min(maxCols,Math.max(Math.ceil(all.length/PER),all.length>=16?2:1));
   const cap=PER*cols,pages=Math.max(1,Math.ceil(all.length/cap)),ch=all.slice(page*cap,(page+1)*cap);
   const useCols=Math.max(1,Math.min(cols,Math.ceil(ch.length/Math.max(1,Math.min(PER,Math.ceil(ch.length/cols))))));
   const rpc=Math.min(PER,Math.ceil(ch.length/useCols));
-  const colW=6.4/cols,bp=Math.min(.27,(colW-.55)/mxo),bw=mxo*bp,rows=[],bands=[];
-  ch.forEach((x,k)=>{const cc=Math.floor(k/rpc),r=k%rpc,x0=.3+cc*colW+(colW-(.42+bw))/2,y=GY+r*c.pitch+Math.floor(r/5)*.06,ord=orderFor(x.q,ver,x.key),m=Math.min(mxo,ord.length);
-    rows.push({n:x.n,key:x.key,type:x.q.type,ord,x0,y,col:cc,r,opts:Array.from({length:m},(_,i)=>({x:x0+.42+bp*(i+.5),y}))})});
-  if(c.band)for(let cc=0;cc<useCols;cc++){const rs=rows.filter(r=>r.col===cc);for(let g=0;g*5<rpc;g++){if(g%2)continue;const a=rs.filter(r=>Math.floor(r.r/5)===g);if(a.length)bands.push({x:a[0].x0-.08,y:a[0].y-c.pitch/2,w:.42+bw+.16,h:a.length*c.pitch})}}
+  const colW=6.4/cols,bp=Math.min(.27,(colW-.6)/mxo),bw=mxo*bp,rows=[],bands=[];
+  ch.forEach((x,k)=>{const cc=Math.floor(k/rpc),r=k%rpc,x0=.3+cc*colW+(colW-(.5+bw))/2,y=GY+r*c.pitch+Math.floor(r/5)*.06,ord=orderFor(x.q,ver,x.key),m=Math.min(mxo,ord.length);
+    rows.push({n:x.n,key:x.key,type:x.q.type,ord,x0,y,col:cc,r,mark:{x:x0,y},opts:Array.from({length:m},(_,i)=>({x:x0+.5+bp*(i+.5),y}))})});
+  if(c.band)for(let cc=0;cc<useCols;cc++){const rs=rows.filter(r=>r.col===cc);for(let g=0;g*5<rpc;g++){if(g%2)continue;const a=rs.filter(r=>Math.floor(r.r/5)===g);if(a.length)bands.push({x:a[0].x0+.1,y:a[0].y-c.pitch/2,w:.4+bw+.1,h:a.length*c.pitch})}}
   return{rows,pages,cols,colW,bp,mxo,bands,cfg:c,over:all.some(x=>(x.q.options||[]).length>6),cap,PER};}
 function sheetHtml(t,o,ver,page,stu){
   const g=sheetGeom(t,o,ver,page),c=g.cfg,f=v=>v.toFixed(3);
   const at=(x,y,s,cls,st)=>`<span class="cx ${cls||''}" style="left:${f(x)}in;top:${f(y)}in;${st||''}">${s}</span>`;
   const bs=c.bsize,shape=c.shape==='oval'?`width:${f(bs*1.35)}in;height:${f(bs*.9)}in;border-radius:50%`:c.shape==='square'?`width:${f(bs)}in;height:${f(bs)}in;border-radius:.03in`:`width:${f(bs)}in;height:${f(bs)}in;border-radius:50%`;
   const bub=(x,y,on,a,sz)=>`<i class="sb${on?' on':''}" ${a||''} style="left:${f(x)}in;top:${f(y)}in;${sz||shape}"></i>`;
-  const sm=`width:.15in;height:.15in;border-radius:50%`;
+  const sm=`width:.15in;height:.15in;border-radius:50%`,sid=`width:.13in;height:.13in;border-radius:50%`;
+  const tm=(x,y)=>`<i class="tm" style="left:${f(x-.05)}in;top:${f(y-.025)}in"></i>`;
   let h=`<div class="sf">`;
   [.18,.12,.12,.12].forEach((s,i)=>{h+=`<i class="an" style="left:${f(ANC[i][0])}in;top:${f(ANC[i][1])}in;width:${f(s*2)}in;height:${f(s*2)}in"></i>`});
   g.bands.forEach(b=>{h+=`<i class="bd" style="left:${f(b.x)}in;top:${f(b.y)}in;width:${f(b.w)}in;height:${f(b.h)}in"></i>`});
-  h+=`<div class="sht" style="left:.8in;top:.1in;width:3.5in">${e(c.title||t.title||'Answer sheet')}</div><div class="shs" style="left:.8in;top:.5in;width:3.5in">Answer sheet${o.versions>1||ver?' · Version '+LET[ver||0]:''}${g.pages>1?' · Sheet '+(page+1)+' of '+g.pages:''}</div>`;
-  const fields=[];if(c.name)fields.push(['Name',stu?stu.name:'',.8,3.5]);
-  const row2=[];if(c.date)row2.push('Date');if(c.cls)row2.push('Class');
+  h+=`<div class="sht" style="left:.8in;top:.1in;width:2.9in">${e(c.title||t.title||'Answer sheet')}</div><div class="shs" style="left:.8in;top:.5in;width:2.9in">Answer sheet${g.pages>1?' · Sheet '+(page+1)+' of '+g.pages:''}</div>`;
   let y=.72;
-  if(c.name){h+=`<div class="sfl" style="left:.8in;top:${y+.04}in;width:3.5in"><span>Name</span>${stu?e(stu.name):''}</div>`;y+=.34}
-  else if(stu){h+=`<div class="sfl" style="left:.8in;top:${y+.04}in;width:3.5in"><span>Name</span>${e(stu.name)}</div>`;y+=.34}
-  if(row2.length){const w=row2.length===2?1.68:3.5;row2.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${l}</span></div>`});y+=.34}
+  if(c.name||stu){h+=`<div class="sfl" style="left:.8in;top:${y+.04}in;width:2.9in"><span>Name</span>${stu?e(stu.name):''}</div>`;y+=.34}
+  const row2=[];if(c.date)row2.push('Date');if(c.cls)row2.push('Class');
+  if(row2.length){const w=row2.length===2?1.38:2.9;row2.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${l}</span>${l==='Class'&&o.className?e(o.className):''}</div>`});y+=.34}
   const ex=String(c.extra||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,2);
-  if(ex.length){const w=ex.length===2?1.68:3.5;ex.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${e(l)}</span></div>`});y+=.34}
-  h+=`<div class="sht2" style="left:.8in;top:1.67in;width:5.9in">${e(c.note||'Fill each bubble completely with dark pen or pencil. Keep the four black squares clear.')}</div>`;
-  const sid=stu&&stu.idx?String(stu.idx).padStart(3,'0'):'';
-  if(c.showId){h+=`<i class="idb" style="left:4.4in;top:.38in;width:2.38in;height:1.24in"></i>`+at(4.52,.5,'Student number','lb','transform:translate(0,-50%)');
-    for(let r=0;r<3;r++)for(let d=0;d<10;d++){const p=idPos(r,d);h+=bub(p.x-.075,p.y-.075,sid&&sid[r]==String(d),'',sm)+(r===0?at(p.x,.7,d,'dg'):'')}}
-  else for(let r=0;r<3;r++)for(let d=0;d<10;d++){}
-  h+=at(.5,9.3,'Version','lb','transform:translate(0,-50%)')+at(2.7,9.3,'Sheet','lb','transform:translate(0,-50%)');
-  for(let i=0;i<4;i++){const p=verPos(i),q=pgPos(i);h+=bub(p.x-.075,p.y-.075,i===(ver||0),'',sm)+at(p.x,9.3+.16,LET[i],'dg')+bub(q.x-.075,q.y-.075,i===page,'',sm)+at(q.x,9.3+.16,i+1,'dg')}
-  for(let cc=0;cc<g.cols;cc++){const r0=g.rows.find(r=>r.col===cc);if(!r0)continue;for(let i=0;i<g.mxo;i++)h+=at(r0.x0+.42+g.bp*(i+.5),GY-.27,lab(c,i),'dg')}
-  g.rows.forEach(r=>{h+=at(r.x0+.3,r.y,r.n,'rn');r.opts.forEach((p,i)=>{h+=bub(p.x-(c.shape==='oval'?c.bsize*.675:c.bsize/2),p.y-(c.shape==='oval'?c.bsize*.45:c.bsize/2),false,`data-n="${r.n}" data-p="${i}"`)+(c.inside?at(p.x,p.y,lab(c,i),'il'):'')})});
+  if(ex.length){const w=ex.length===2?1.38:2.9;ex.forEach((l,i)=>{h+=`<div class="sfl" style="left:${.8+i*(w+.14)}in;top:${y+.04}in;width:${w}in"><span>${e(l)}</span></div>`});y+=.34}
+  h+=`<div class="sht2" style="left:.8in;top:${Math.max(1.72,y+.02)}in;width:2.9in">${e(c.note||'Fill each bubble completely with dark pen or pencil. Write your ID digits in the boxes, then fill the matching bubbles. Fill in your version. Keep the four black squares clear.')}</div>`;
+  /* student ID and class ID blocks, each with write-in boxes above the bubbles */
+  const blk=(x0,n,lbl,digits,posf,pre)=>{let s=`<i class="idb" style="left:${f(x0-.12)}in;top:.4in;width:${f(.2*n+.04)}in;height:2.08in"></i>`+at(x0-.07,.5,lbl,'lb','transform:translate(0,-50%)');
+    for(let k=0;k<n;k++){const p=posf(k,0);s+=`<i class="wb" style="left:${f(p.x-.085)}in;top:.6in"></i>`;if(pre&&pre[k]!==undefined)s+=at(p.x,.6+.085,pre[k],'wd');
+      for(let d=0;d<10;d++){const q=posf(k,d);s+=bub(q.x-.065,q.y-.065,pre&&pre[k]===String(d),'',sid)+at(q.x,q.y,d,'ig')}}return s};
+  if(c.showId!==false)h+=blk(SIDX(0),6,'Student ID',10,idPos,stu&&stu.sid?String(stu.sid).padStart(6,'0'):null);
+  if(c.showCls!==false){h+=blk(CIDX(0),4,'Class ID',10,cidPos,o.classNo?String(o.classNo).padStart(4,'0'):null);
+    if(o.className)h+=at(CIDX(0)-.07,.24,e(String(o.className).slice(0,26)),'cn','transform:translate(0,-50%)');}
+  for(let d=0;d<10;d++)h+=tm(IDMARK,IDY(d));
+  h+=at(1.225,9.09,'Version (fill one)','lb','transform:translate(0,-50%)')+at(3.375,9.09,'Sheet','lb','transform:translate(0,-50%)');
+  for(let i=0;i<4;i++){const p=verPos(i),q=pgPos(i);h+=bub(p.x-.075,p.y-.075,false,'',sm)+at(p.x,9.3+.16,LET[i],'dg')+bub(q.x-.075,q.y-.075,i===page,'',sm)+at(q.x,9.3+.16,i+1,'dg')}
+  for(let cc=0;cc<g.cols;cc++){const r0=g.rows.find(r=>r.col===cc);if(!r0)continue;for(let i=0;i<g.mxo;i++)h+=at(r0.x0+.5+g.bp*(i+.5),GY-.27,lab(c,i),'dg')}
+  g.rows.forEach(r=>{h+=tm(r.mark.x,r.y)+at(r.x0+.38,r.y,r.n,'rn');r.opts.forEach((p,i)=>{h+=bub(p.x-(c.shape==='oval'?c.bsize*.675:c.bsize/2),p.y-(c.shape==='oval'?c.bsize*.45:c.bsize/2),false,`data-n="${r.n}" data-p="${i}"`)+(c.inside?at(p.x,p.y,lab(c,i),'il'):'')})});
   if(o.qrUrl){let svg='';try{const q=qrcode(0,'L');q.addData(o.qrUrl);q.make();svg=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(x){}
     if(svg)h+=`<div class="qrb" style="left:${QRB.x}in;top:${QRB.y}in;width:${QRB.s}in;height:${QRB.s}in">${svg}</div>`+at(QRB.x-.08,QRB.y+.25,'Scan to turn in','lb2','transform:translate(-100%,-50%)')+(o.qrCode?at(QRB.x-.08,QRB.y+.42,'or enter code <b>'+e(o.qrCode)+'</b>','qc','transform:translate(-100%,-50%)'):'');}
   return h+'</div>';}
@@ -14380,7 +14385,7 @@ function massResults(t,subs,o){
 /* ───────── class documents ───────── */
 function gradebook(c,o){
   const as=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));const st=(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-  const get=(stu,a)=>(APP.submissions||[]).find(s=>s.assignmentId===a.id&&s.status==='submitted'&&(s.studentId===stu.id||s.studentName===stu.name));
+  const get=(stu,a)=>(APP.submissions||[]).find(s=>s.assignmentId===a.id&&s.status==='submitted'&&(s.studentKey===(stu.key||stu.id)||s.studentName===stu.name));
   const rows=st.map(stu=>{let sum=0,cnt=0;const cells=as.map(a=>{const t=tests().find(x=>x.id===a.testId),s=get(stu,a);if(!s||!t)return '<td class="c muted">-</td>';const p=pctOf(s,t);sum+=p;cnt++;return `<td class="c">${o.pts?fmt(s.score)+'/'+fmt(total(t,s)):p+'%'}</td>`});return `<tr><td><b>${e(stu.name)}</b></td>${cells.join('')}<td class="c"><b>${cnt?Math.round(sum/cnt)+'%':'-'}</b></td></tr>`}).join('');
   const avg=as.map(a=>{const t=tests().find(x=>x.id===a.testId);const ss=st.map(x=>get(x,a)).filter(Boolean);return `<td class="c"><b>${ss.length&&t?Math.round(ss.reduce((q,s)=>q+pctOf(s,t),0)/ss.length)+'%':'-'}</b></td>`}).join('');
   return `<div class="hd"><div><h1>${e(c.name)}: gradebook</h1><div class="sub">${st.length} students · ${as.length} assignments · printed ${e(dstr(Date.now()))}</div></div></div><table><thead><tr><th>Student</th>${as.map(a=>{const t=tests().find(x=>x.id===a.testId);return `<th class="c" style="font-size:7.5pt">${e((a.name||(t&&t.title)||'').slice(0,26))}</th>`}).join('')}<th class="c">Average</th></tr></thead><tbody>${rows}<tr><th>Class average</th>${avg}<th></th></tr></tbody></table>`;}
@@ -14431,7 +14436,7 @@ function printHtml(html){
 function openTab(html){const b=new Blob([html],{type:'text/html'}),u=URL.createObjectURL(b);const w=window.open(u,'_blank');if(!w)toast('Your browser blocked the new tab.','error');setTimeout(()=>URL.revokeObjectURL(u),60000)}
 
 /* ───────── Print Center ───────── */
-const PR={kind:'paper',tid:null,sid:'all',cid:null,cls:'all',o:{points:true,name:true,score:true,key:false,sheet:false,versions:1,lines:6,size:11,paper:'letter',cols:1,instructions:'',boxes:false,correct:true,comment:true,rubric:true,summary:true,explain:false,margin:0.6,pts:false,blank:5,stops:true,secIns:{},stopText:'',sheetCls:''}};
+const PR={kind:'paper',tid:null,sid:'all',cid:null,cls:'all',o:{points:true,name:true,score:true,key:false,sheet:false,versions:1,lines:6,size:11,paper:'letter',cols:1,instructions:'',boxes:false,correct:true,comment:true,rubric:true,summary:true,explain:false,margin:0.6,pts:false,blank:5,stops:true,secIns:{},stopText:'',sheetCls:'',sheetEach:false}};
 const KINDS=[
  ['paper','Test on paper','Printable test with name line, bubbles and ruled lines',1],
  ['key','Answer key','Correct answers for every question',1],
@@ -14455,11 +14460,11 @@ function build(){
     o.land=k==='gradebook'&&((APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id)).length>6);
     return{title:c.name,html:wrap(c.name,k==='gradebook'?gradebook(c,o):roster(c,o),o)};}
   const t=curTest();if(!t)return{title:'Print',html:wrap('Print','<p>Nothing to print yet. Create an assessment first.</p>',o)};
-  ensureCfg();o.sheetCfg=PR.o.sheetCfg;qrApply(t,o);o.foot=(t.title||'')+' · EdAssess';o.dbl=k==='paper'&&secOn(t)&&o.stops!==false;
+  ensureCfg();o.sheetCfg=PR.o.sheetCfg;qrApply(t,o);{const c=(APP.classes||[]).find(x=>x.id===o.sheetCls);o.className=c?c.name:'';o.classNo=c&&c.no?c.no:''}o.foot=(t.title||'')+' · EdAssess';o.dbl=k==='paper'&&secOn(t)&&o.stops!==false;
   let body='';
   if(k==='paper')body=paperTest(t,o);
   else if(k==='key')body=answerKeyDoc(t,o);
-  else if(k==='sheet'){const V=Math.max(1,o.versions||1);const c=(APP.classes||[]).find(x=>x.id===o.sheetCls);o.sheetStudents=c?(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map((x,i)=>({name:x.name,idx:i+1})):null;for(let v=0;v<V;v++)body+=bubbleSheet(t,o,v)}
+  else if(k==='sheet'){const V=Math.max(1,o.versions||1);o.sheetStudents=o.sheetEach&&o.sheetCls?((APP.classes||[]).find(x=>x.id===o.sheetCls)||{students:[]}).students.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(x=>({name:x.name,sid:x.sid})):null;for(let v=0;v<V;v++)body+=bubbleSheet(t,o,v)}
   else if(k==='results'){const subs=resultSubs(t);if(PR.sid!=='all'){const s=subs.find(x=>x.id===PR.sid)||(APP.submissions||[]).find(x=>x.id===PR.sid);body=s?`<div class="pg">${studentReport(t,s,o)}</div>`:'<p>No submission selected.</p>'}else body=subs.length?massResults(t,subs,o):'<p>No submitted work yet.</p>'}
   else if(k==='summary'){const subs=resultSubs(t);body=subs.length?`<div class="pg">${classSummary(t,subs,o)}</div>`:'<p>No submitted work yet.</p>'}
   else if(k==='rubric')body=blankRubric(t,o);
@@ -14474,6 +14479,12 @@ function qrSel(){const t=curTest();if(!t)return'';const as=asgOf(t);
   return `<div class="pr-sec"><b>Turn-in QR code</b><div class="sm" style="margin-bottom:4px">Students scan it with a phone camera and land on the photo turn-in page. No test screen needed.</div>${as.length?sel('pr-qa',[['','Automatic'],...as.map(a=>[a.id,(a.title||t.title||'Assignment')+(a.code?' ('+a.code+')':'')]),['none','No QR code']],PR.o.sheetAsg||'',"prSet('sheetAsg',this.value)"):'<div class="sm">Create an assignment for this test to add a QR code.</div>'}</div>`}
 function qrApply(t,o){const as=asgOf(t);let a=o.sheetAsg==='none'?null:(as.find(x=>x.id===o.sheetAsg)||(o.sheetCls&&as.find(x=>(x.classIds||[]).includes(o.sheetCls)))||as[0]);
   o.qrUrl=a?location.origin+location.pathname+'?scan='+a.id:'';o.qrCode=a&&a.code?a.code:''}
+function idPanel(){const cl=APP.classes||[],c=cl.find(x=>x.id===PR.o.sheetCls),n=c?(c.students||[]).length:0,noSid=c?(c.students||[]).filter(x=>!x.sid).length:0;
+  return `<div class="pr-sec"><b>Pre-printed IDs</b><label class="form-label">Class</label>${sel('pr-sc',[['','Not pre-printed (students fill it in)'],...cl.map(c=>[c.id,c.name+(c.no?' · ID '+c.no:'')])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}
+  <div class="sm" style="margin:4px 0">Pre-printing a class puts the class name and class ID on the sheet. Otherwise students write and bubble it themselves.</div>
+  <label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:6px 0;${c?'':'opacity:.45'}"><input type="checkbox" ${PR.o.sheetEach?'checked':''} ${c?'':'disabled'} onchange="prSet('sheetEach',this.checked)"><span>One sheet per student with name and student ID pre-printed${c?' ('+n+' sheets)':''}</span></label>
+  ${noSid&&PR.o.sheetEach?'<div class="sm" style="color:var(--rust,#b3261e)">'+noSid+' student'+(noSid===1?' has':'s have')+' no ID yet. IDs are created when a student first signs in. Those sheets print with the ID left blank.</div>':''}
+  <div class="sm">Every student's ID is on their EdAssess home screen. The version is never pre-printed: students fill in their own.</div></div>`}
 function sheetPanel(){const c=ensureCfg(),S=(k,l,opts)=>`<div><label class="form-label">${l}</label>${sel('pc-'+k,opts,c[k],`prCfg('${k}',${typeof opts[0][0]==='number'?'+':''}this.value)`)}</div>`,K=(k,l)=>`<label class="checkbox-wrap" style="display:flex;gap:8px;align-items:center;margin:5px 0"><input type="checkbox" ${c[k]?'checked':''} onchange="prCfg('${k}',this.checked)"><span>${l}</span></label>`;
   return `<div class="pr-sec"><b>Sheet design</b>
   <label class="form-label">Title</label><input class="form-control" placeholder="Defaults to the test title" value="${e(c.title)}" oninput="prCfg('title',this.value,1)">
@@ -14494,7 +14505,7 @@ function panel(){
   if(k==='paper'){h+=`<div class="pr-g"><div><label class="form-label">Paper</label>${sel('pr-p',[['letter','US Letter'],['A4','A4']],PR.o.paper,"prSet('paper',this.value)")}</div><div><label class="form-label">Text size</label>${sel('pr-s',[[10,'Small'],[11,'Normal'],[12.5,'Large'],[14,'Extra large']],PR.o.size,"prSet('size',+this.value)")}</div><div><label class="form-label">Answer lines (essay)</label>${sel('pr-l',[2,4,6,8,10,14,18].map(n=>[n,n+' lines']),PR.o.lines,"prSet('lines',+this.value)")}</div><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>
     <label class="form-label" style="margin-top:8px">Instructions (optional)</label><textarea class="form-control" rows="3" placeholder="Use a pen. No calculators." oninput="prSet('instructions',this.value,1)">${e(PR.o.instructions)}</textarea>
     ${secPanel()}${PR.o.sheet?sheetPanel():''}${chk('points','Show points on each question')}${chk('name','Name, date and class lines')}${chk('boxes','Use a writing box instead of lines for essays')}${chk('sheet','Add a bubble answer sheet after each version')}${chk('key','Add answer key pages at the end')}${PR.o.versions>1?'<div class="sm" style="color:var(--ink-soft)">Versions shuffle the question order and the multiple choice options. Each answer key follows its version.</div>':''}`;}
-  if(k==='sheet')h+=sheetPanel()+`<label class="form-label" style="margin-top:8px">Personalize for a class</label>${sel('pr-sc',[['','Blank sheets'],...(APP.classes||[]).map(c=>[c.id,c.name+' ('+(c.students||[]).length+' students, one each)'])],PR.o.sheetCls,"prSet('sheetCls',this.value)")}<div class="sm" style="margin:4px 0">Personalized sheets print the name and pre-fill a student number so scanning can match each photo to the right student.</div>`;
+  if(k==='sheet')h+=sheetPanel()+idPanel();
   if(k==='key'||k==='sheet')h+=`<div class="pr-g"><div><label class="form-label">Versions</label>${sel('pr-v',[[1,'One'],[2,'A and B'],[3,'A, B and C'],[4,'A to D']],PR.o.versions,"prSet('versions',+this.value)")}</div></div>`;
   if(k==='results'||k==='summary'){const t=curTest(),subs=t?subsOf(t):[];const cl=[...new Set(subs.flatMap(classOfSub))];const sl=t?resultSubs(t).slice().sort((a,b)=>(a.studentName||'').localeCompare(b.studentName||'')):[];
     if(cl.length>1||PR.cls!=='all')h+=`<label class="form-label" style="margin-top:8px">Class</label>${sel('pr-cl',[['all','All classes'],...cl.map(i=>[i,clsName(i)||i])],PR.cls,"prPick('cls',this.value)")}`;
@@ -14512,7 +14523,7 @@ function preview(){clearTimeout(tmr);tmr=setTimeout(()=>{const b=build(),f=$('pr
 window.prKind=k=>{if(k==='scan'){closeModal();return scanCenter(PR.tid)}PR.kind=k;if(k==='results'||k==='summary')PR.sid='all';render()};
 window.prSet=(k,v,quiet)=>{PR.o[k]=v;if(quiet)preview();else render()};
 window.prPick=(k,v)=>{PR[k]=v;if(k==='tid')PR.o.sheetCfg=null;if(k==='tid'||k==='cls')PR.sid='all';render()};
-function saveCfg(){const t=curTest();if(t&&(PR.kind==='sheet'||(PR.kind==='paper'&&PR.o.sheet))){t.sheetCfg=Object.assign({},ensureCfg());try{save()}catch(x){}}}
+function saveCfg(){const t=curTest();if(t&&(PR.kind==='sheet'||(PR.kind==='paper'&&PR.o.sheet))){t.sheetCfg=Object.assign({},ensureCfg(),{versions:Math.max(1,PR.o.versions||1)});try{save()}catch(x){}}}
 window.prDo=async()=>{saveCfg();const b=build();if(b)printHtml(await paginate(b.html,PR.o))};
 window.prTab=async()=>{saveCfg();const b=build();if(b){const h=await paginate(b.html,PR.o);openTab(wrap(b.title,h.replace(/^[\s\S]*<body>|<\/body>[\s\S]*$/g,''),Object.assign({},PR.o,{toolbar:true})))}};
 window.prPage=()=>{try{closeModal()}catch(x){}setTimeout(()=>window.print(),300)};
@@ -14557,26 +14568,45 @@ function findAnchors(P){
   const others=o.slice(1).map(c=>c.s).sort((a,b)=>a-b);const ok=o[0].s>others[1]*1.25;
   return{pts:o,oriented:ok}}
 function readSheet(img,t,opt){
-  opt=opt||{};const P=prep(img),A=findAnchors(P);if(!A)return{ok:false,err:'The four black squares were not all found. Lay the sheet flat, include all four corners, and use good light.',P};
+  opt=opt||{};const P=opt.P||prep(img),A=findAnchors(P);if(!A)return{ok:false,err:'The four black squares were not all found. Lay the sheet flat, include all four corners, and use good light.',P};
   const H=homog(ANC,A.pts.map(c=>[c.x,c.y])),pxin=Math.hypot(A.pts[1].x-A.pts[0].x,A.pts[1].y-A.pts[0].y)/(SHW-.4);
   const pw=Math.hypot(A.pts[2].x-A.pts[3].x,A.pts[2].y-A.pts[3].y)/(SHW-.4);if(pxin<45||Math.abs(pw/pxin-1)>.3)return{ok:false,err:'The photo is too small or too skewed. Hold the camera directly above the sheet.',P};
   const r=.04*pxin,offs=[[0,0],[.015,0],[-.015,0],[0,.015],[0,-.015]].map(o=>[o[0]*pxin,o[1]*pxin]);
-  const dark=(x,y)=>{const[u,v]=proj(H,x,y);let best=0;const ref=Math.max(40,P.mean(Math.round(u),Math.round(v),Math.round(pxin*.35)));
+  const dark=(x,y,off)=>{let[u,v]=proj(H,x,y);if(off){u+=off[0];v+=off[1]}let best=0;const ref=Math.max(40,P.mean(Math.round(u),Math.round(v),Math.round(pxin*.35)));
     offs.forEach(([ox,oy])=>{let s=0,n=0;const R=Math.ceil(r);for(let dy=-R;dy<=R;dy+=1)for(let dx=-R;dx<=R;dx+=1){if(dx*dx+dy*dy>r*r)continue;const px=Math.round(u+ox+dx),py=Math.round(v+oy+dy);if(px<0||py<0||px>=P.W||py>=P.H)continue;s+=P.g[py*P.W+px];n++}
       if(n){const d=1-(s/n)/ref;if(d>best)best=d}});
     return{d:Math.max(0,best),u,v}};
-  const pick=(list,th)=>{const m=list.map(p=>dark(p.x,p.y));const mx=Math.max(...m.map(x=>x.d));if(mx<th)return{i:-1,m};return{i:m.findIndex(x=>x.d===mx),m}};
-  const idd=[0,1,2].map(r=>pick(Array.from({length:10},(_,d)=>idPos(r,d)),.35));const sid=idd.every(x=>x.i>=0)?+idd.map(x=>x.i).join(''):null;
-  const vv=pick([0,1,2,3].map(verPos),.35),pg=pick([0,1,2,3].map(pgPos),.35);
-  const ver=vv.i>=0?vv.i:(opt.ver||0),page=pg.i>=0?pg.i:(opt.page||0);
-  const geo=sheetGeom(t,opt.o||{},ver,page),marks=[],ans=[];
-  geo.rows.forEach(rw=>{const m=rw.opts.map(p=>dark(p.x,p.y)),mx=Math.max(...m.map(x=>x.d));const th=Math.max(.28,mx*.6);
+  /* timing rectangles next to each row give a local fix for curl and lens distortion */
+  const findMark=(fx,fy,o0,wx,wy)=>{if(opt.noMarks)return null;o0=o0||[0,0];const[u,v]=proj(H,fx,fy),cu=u+o0[0],cv=v+o0[1],uu=Math.round(cu),vv=Math.round(cv),rx=Math.round(pxin*(wx||.085)),ry=Math.round(pxin*(wy||.07)),ref=Math.max(40,P.mean(uu,vv,Math.round(pxin*.35)));
+    let sw=0,su=0,sv=0;for(let dy=-ry;dy<=ry;dy++)for(let dx=-rx;dx<=rx;dx++){const px=uu+dx,py=vv+dy;if(px<0||py<0||px>=P.W||py>=P.H)continue;if(P.g[py*P.W+px]<ref*.55){sw++;su+=px;sv+=py}}
+    const ex=.1*.05*pxin*pxin;if(sw<ex*.35||sw>ex*2.4)return null;const o=[su/sw-u,sv/sw-v];return Math.hypot(o[0],o[1])<=.16*pxin?o:null};
+  const med=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
+  /* marks found far from the bubble row can be a neighbor's: fill gaps from the nearest found marks in the same column, then look again close to that guess */
+  const track=(pts,wx,wy,retry)=>{const m=pts.map(p=>findMark(p.x,p.y,[0,0],wx,wy));
+    const fnd=m.map((o,i)=>o?i:-1).filter(i=>i>=0);
+    return m.map((o,i)=>{if(o)return o;let pr=null,nx=null;for(const j of fnd){if(j<i)pr=j;else if(j>i&&nx==null)nx=j}
+      let g=pr!=null&&nx!=null?m[pr].map((v,k)=>v+(m[nx][k]-v)*(i-pr)/(nx-pr)):pr!=null?m[pr]:nx!=null?m[nx]:[0,0];
+      const r2=findMark(pts[i].x,pts[i].y,g,retry,retry);return r2||g})};
+  const idPts=Array.from({length:10},(_,d)=>({x:IDMARK,y:IDY(d)}));
+  const idM=track(idPts,.07,.06,.05);
+  const gOff=[med(idM.map(o=>o[0])),med(idM.map(o=>o[1]))];
+  const pick=(list,th,offf)=>{const m=list.map((p,i)=>dark(p.x,p.y,offf?offf(i):gOff));const sorted=m.map(x=>x.d).sort((a,b)=>b-a),mx=sorted[0];if(mx<th)return{i:-1,m};if(sorted[1]>=mx*.6&&sorted[1]>=th)return{i:-2,m};return{i:m.findIndex(x=>x.d===mx),m}};
+  const readId=(n,posf)=>{let s='',ok=true;for(let k=0;k<n;k++){const p=pick(Array.from({length:10},(_,d)=>posf(k,d)),.3,d=>idM[d]);if(p.i<0){s+='?';ok=false}else s+=p.i}return{str:s,val:ok?s:null}};
+  const sidR=readId(6,idPos),cnoR=readId(4,cidPos);
+  const cfg=cfgOf(t,opt.o||{}),vv=pick([0,1,2,3].map(verPos),.35),pg=pick([0,1,2,3].map(pgPos),.35);
+  let ver=vv.i>=0?vv.i:(opt.ver!=null?opt.ver:null);
+  if(ver==null){if((cfg.versions||1)>1)return{ok:false,needVer:true,err:'The version bubble was not filled in.',P,sid:sidR.val,sidRead:sidR.str,cno:cnoR.val};ver=0}
+  const page=pg.i>=0?pg.i:(opt.page||0);
+  const geo=sheetGeom(t,opt.o||{},ver,page),marks=[],ans=[],tm=[];
+  const rowM=[],byCol={};geo.rows.forEach((rw,i)=>{(byCol[rw.col]=byCol[rw.col]||[]).push(i)});
+  Object.keys(byCol).forEach(k=>{const idx=byCol[k];const res=track(idx.map(i=>({x:geo.rows[i].mark.x,y:geo.rows[i].y})),.12,.11,.06);idx.forEach((ri,j)=>{rowM[ri]=res[j]})});
+  geo.rows.forEach((rw,ri)=>{const off=rowM[ri];tm.push({u:proj(H,rw.mark.x,rw.y)[0]+off[0],v:proj(H,rw.mark.x,rw.y)[1]+off[1],f:true});
+    const m=rw.opts.map(p=>dark(p.x,p.y,off)),mx=Math.max(...m.map(x=>x.d));const th=Math.max(.28,mx*.6);
     const on=m.map((x,i)=>x.d>=th&&mx>=.28?i:-1).filter(i=>i>=0);let status='ok';
     if(!on.length)status=mx>.16?'faint':'blank';else if(rw.type==='mc'&&on.length>1)status='multi';
     ans.push({n:rw.n,key:rw.key,type:rw.type,ord:rw.ord,on,status,d:m.map(x=>x.d)});
     m.forEach((x,i)=>marks.push({u:x.u,v:x.v,on:on.includes(i),bad:status!=='ok'}));});
-  [idd,[vv],[pg]].forEach(l=>0);
-  return{ok:true,ver,page,sid,pages:geo.pages,ans,marks,P,pxin,oriented:A.oriented,anchors:A.pts}}
+  return{ok:true,ver,verMarked:vv.i>=0,page,sid:sidR.val,sidRead:sidR.str,cno:cnoR.val,cnoRead:cnoR.str,pages:geo.pages,ans,marks,tm,P,pxin,oriented:A.oriented,anchors:A.pts,markHits:rowM.length,markTotal:rowM.length}}
 /* QR on the sheet: warp the known QR box flat, then decode it */
 function ensureJsQR(){return new Promise((res,rej)=>{if(window.jsQR)return res();const urls=['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];const next=i=>{if(i>=urls.length)return rej(new Error('Could not load the QR reader. Check your connection.'));const sc=document.createElement('script');sc.src=urls[i];sc.onload=()=>res();sc.onerror=()=>{sc.remove();next(i+1)};document.head.appendChild(sc)};next(0)})}
 async function readQr(img){
@@ -14599,16 +14629,18 @@ function drawOverlay(res,cv,w){const P=res.P,c=cv,s=w/P.W;c.width=w;c.height=Mat
 const SC={tid:null,cid:'',items:[]};
 const scTest=()=>{const l=tests().filter(t=>t.kind!=='survey');let t=l.find(x=>x.id===SC.tid);if(!t){t=l[0];SC.tid=t&&t.id}return t};
 const scRoster=()=>{const c=(APP.classes||[]).find(x=>x.id===SC.cid);return c?(c.students||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')):[]};
+const scKey=s=>s.key||s.id;
 function scScore(it){const t=scTest();const sub={answers:Object.assign({},it.edits),testId:t.id};try{autoScore(sub,t)}catch(x){}
   const rows=it.res.ok?it.res.ans.filter(a=>a.type):[];let got=0,max=0;rows.forEach(a=>{const q=numbered(t,{},it.res.ver).find(x=>x.key===a.key);if(!q)return;max+=q.q.points||1;got+=qAward(q.q,a.key,sub)});return{got,max}}
 function scCard(it,i){
   const t=scTest(),r=it.res,ro=scRoster();
+  if(r.needVer)return `<div class="sc-card bad"><b>${e(it.name)}</b><div>The version bubble was not filled in. Which version is this?</div><div class="pr-act">${[0,1,2,3].map(v=>`<button class="btn btn-secondary" onclick="scVer(${i},${v})">Version ${LET[v]}</button>`).join('')}</div><button class="btn btn-ghost" onclick="scDrop(${i})">Remove</button></div>`;
   if(!r.ok)return `<div class="sc-card bad"><b>${e(it.name)}</b><div>${e(r.err)}</div><button class="btn btn-ghost" onclick="scDrop(${i})">Remove</button></div>`;
   const flag=r.ans.filter(a=>a.status!=='ok'),sc=scScore(it);
   const stu=it.stu||'';
   return `<div class="sc-card"><div class="sc-top"><canvas id="sc-cv-${i}" class="sc-cv"></canvas><div class="sc-info"><b>${e(it.name)}</b>
-  <div class="sm">Version ${LET[r.ver]}${r.pages>1?' · Sheet '+(r.page+1)+' of '+r.pages:''}${r.oriented?'':' · orientation mark unclear'}</div>
-  <label class="form-label">Student</label>${ro.length?`<select class="form-control" onchange="scStu(${i},this.value)"><option value="">Choose a student</option>${ro.map((s,k)=>`<option value="${e(s.id)}" ${stu===s.id?'selected':''}>${e(s.name)}</option>`).join('')}</select>`:`<input class="form-control" placeholder="Student name" value="${e(it.free||'')}" oninput="scFree(${i},this.value)">`}
+  <div class="sm">Version ${LET[r.ver]}${r.verMarked?'':' (chosen by you)'}${r.sid?' · Student ID '+e(r.sid):r.sidRead&&/[0-9]/.test(r.sidRead)?' · ID read as '+e(r.sidRead)+' (unclear)':' · no student ID marked'}${r.pages>1?' · Sheet '+(r.page+1)+' of '+r.pages:''}${r.oriented?'':' · orientation mark unclear'}</div>
+  <label class="form-label">Student</label>${ro.length?`<select class="form-control" onchange="scStu(${i},this.value)"><option value="">Choose a student</option>${ro.map((s,k)=>`<option value="${e(scKey(s))}" ${stu===scKey(s)?'selected':''}>${e(s.name)}${s.sid?' · '+e(s.sid):''}</option>`).join('')}</select>`:`<input class="form-control" placeholder="Student name" value="${e(it.free||'')}" oninput="scFree(${i},this.value)">`}
   <div class="sc-sc"><b>${fmt(sc.got)} / ${fmt(sc.max)}</b> <span class="sm">on the multiple choice questions</span></div>
   <div class="sm">${flag.length?flag.length+' question'+(flag.length===1?'':'s')+' need a look':'Every question was read clearly'}</div></div></div>
   ${flag.length?`<div class="sc-fl">${flag.map(a=>{const cur=it.fix[a.key];return `<label class="sc-f"><b>${a.n}</b> <span class="tag">${a.status==='multi'?'two marks':a.status==='faint'?'faint':'blank'}</span><select onchange="scFix(${i},'${a.key}',this.value)"><option value="">No answer</option>${a.ord.slice(0,6).map((_,k)=>`<option value="${k}" ${cur!==undefined&&String(cur)===String(k)?'selected':''}>${LET[k]}</option>`).join('')}</select></label>`}).join('')}</div>`:''}
@@ -14622,17 +14654,21 @@ function scApply(it){it.edits=toAnswers(it.res);Object.keys(it.fix).forEach(k=>{
 window.scStu=(i,v)=>{SC.items[i].stu=v;scRender()};window.scFree=(i,v)=>{SC.items[i].free=v;$('sc-go').disabled=!SC.items.some(x=>x.res.ok&&(x.stu||x.free))};
 window.scFix=(i,k,v)=>{SC.items[i].fix[k]=v;scApply(SC.items[i]);scRender()};
 window.scDrop=i=>{SC.items.splice(i,1);scRender()};
-window.scTestPick=v=>{SC.tid=v;SC.items=[];scRender()};window.scClassPick=v=>{SC.cid=v;SC.items.forEach(it=>{it.stu=''});if(v&&SC.items.length)scAuto();scRender()};
+window.scTestPick=v=>{SC.tid=v;SC.items=[];scRender()};window.scClassPick=v=>{SC.cid=v;SC.items.forEach(it=>{it.stu='';scMatch(it)});scRender()};
+function scMatch(it){const r=it.res;if(!r.ok)return;const cl=APP.classes||[];
+  let c=cl.find(x=>x.id===SC.cid)||(r.cno&&cl.find(x=>x.no===r.cno))||null;if(c&&!SC.cid&&r.cno&&c.no===r.cno)SC.cid=c.id;
+  const pool=c?[c]:cl;for(const k of pool){const st=(k.students||[]).find(x=>x.sid&&r.sid&&x.sid===r.sid);if(st){if(!SC.cid)SC.cid=k.id;it.stu=scKey(st);return}}}
+window.scVer=(i,v)=>{const it=SC.items[i];it.res=readSheet(it.img,scTest(),{o:{},ver:v,P:it.res.P});if(it.res.ok){it.res.verMarked=false;it.fix={};scApply(it);scMatch(it)}scRender()};
 function scAuto(){const ro=scRoster();SC.items.forEach(it=>{if(it.res.ok&&it.res.sid&&ro[it.res.sid-1])it.stu=ro[it.res.sid-1].id})}
 window.scFiles=async files=>{const t=scTest();if(!t)return;const busy=$('sc-busy');busy.style.display='';
-  for(const f of [].slice.call(files)){await new Promise(r=>setTimeout(r,20));let res;try{const img=await loadImg(f);res=readSheet(img,t,{o:{}})}catch(x){res={ok:false,err:x.message}}
-    const it={name:f.name||'Photo',res,fix:{},edits:{},stu:''};if(res.ok){scApply(it);if(res.sid){const ro=scRoster();if(ro[res.sid-1])it.stu=ro[res.sid-1].id}}SC.items.push(it);scRender()}
+  for(const f of [].slice.call(files)){await new Promise(r=>setTimeout(r,20));let res,img;try{img=await loadImg(f);res=readSheet(img,t,{o:{}})}catch(x){res={ok:false,err:x.message}}
+    const it={name:f.name||'Photo',res,img,fix:{},edits:{},stu:''};if(res.ok){scApply(it);scMatch(it)}else if(res.needVer)scMatch(it);SC.items.push(it);scRender()}
   busy.style.display='none'};
 window.scGo=()=>{const t=scTest();let done=0,names=[];const iso=new Date().toISOString();
   const a=(APP.assignments||[]).find(x=>x.testId===t.id&&(!SC.cid||(x.classIds||[]).includes(SC.cid)));
-  SC.items.filter(x=>x.res.ok&&(x.stu||x.free)).forEach(it=>{const stu=scRoster().find(s=>s.id===it.stu),name=stu?stu.name:(it.free||'').trim();if(!name)return;
-    let sub=(APP.submissions||[]).find(s=>s.testId===t.id&&!s.sample&&s.status==='submitted'&&(stu?s.studentId===stu.id:s.studentName===name)&&(!a||!s.assignmentId||s.assignmentId===a.id));
-    if(!sub){sub={id:uid(),testId:t.id,assignmentId:a?a.id:undefined,studentId:stu?stu.id:undefined,studentName:name,status:'submitted',startedAt:iso,submittedAt:iso,answers:{},scanned:true};APP.submissions.push(sub)}
+  SC.items.filter(x=>x.res.ok&&(x.stu||x.free)).forEach(it=>{const stu=scRoster().find(s=>scKey(s)===it.stu),name=stu?stu.name:(it.free||'').trim();if(!name)return;
+    let sub=(APP.submissions||[]).find(s=>s.testId===t.id&&!s.sample&&s.status==='submitted'&&(stu?(s.studentKey===scKey(stu)||s.studentId===scKey(stu)):s.studentName===name)&&(!a||!s.assignmentId||s.assignmentId===a.id));
+    if(!sub){sub={id:uid(),testId:t.id,assignmentId:a?a.id:undefined,studentKey:stu?scKey(stu):undefined,scanStudentKey:stu?scKey(stu):undefined,studentName:name,scanSid:it.res.sid||undefined,status:'submitted',startedAt:iso,submittedAt:iso,answers:{},scanned:true};APP.submissions.push(sub)}
     sub.answers=Object.assign(sub.answers||{},it.edits);sub.scanned=true;try{autoScore(sub,t)}catch(x){}done++;names.push(name)});
   try{save()}catch(x){}closeModal();toast(done+' result'+(done===1?'':'s')+' recorded. Written questions are waiting in grading.','success');try{window.showPage&&APP.currentPage==='grading'&&showPage('grading')}catch(x){}};
 window.scanCenter=function(tid,cid){SC.items=[];if(tid)SC.tid=tid;if(cid)SC.cid=cid;const l=tests().filter(t=>t.kind!=='survey'),cl=APP.classes||[];
@@ -14666,6 +14702,7 @@ function ssCss(){if($('ss-css'))return;const s=document.createElement('style');s
 .ss-r{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:10px;border:2px solid transparent;margin:2px 0;flex-wrap:wrap}.ss-r.f{border-color:#e5484d;background:var(--cream)4f4}.ss-r.d{border-color:#1a9d4b;background:#f2fbf5}.ss-n{font-weight:800;min-width:34px;text-align:right}
 .ss-ch{min-width:42px;height:42px;border:2px solid #111;border-radius:50%;background:var(--cream);font:700 15px Inter,sans-serif;cursor:pointer;padding:0 6px}.ss-ch.on{background:#111;color:#fff}.ss-ch.bl{border-radius:21px;font-size:12px;border-style:dashed;min-width:58px}.ss-ch.bl.on{background:#555}
 .ss-t{font-size:12px;color:#b3261e;font-weight:700;flex-basis:100%;margin-left:44px}.ss-ok{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:10px 0}.ss-ok input{width:22px;height:22px;margin-top:2px}.ss-er{color:#b3261e;font-weight:600;margin:8px 0}`;document.head.appendChild(s)}
+function ssSid(){try{const a=stuLoad();return(a&&a.student&&a.student.sid)||''}catch(x){return''}}
 function ssWho(){try{const a=stuLoad();return(a&&a.student&&a.student.name)||''}catch(x){return''}}
 window.loadStudentScan=function(aid){
   ssCss();if(aid==='new')return ssHome();const a=(APP.assignments||[]).find(x=>x.id===aid),t=a&&(APP.tests||[]).find(x=>x.id===a.testId),sw=$('student-wrapper');
@@ -14674,7 +14711,7 @@ window.loadStudentScan=function(aid){
     fetch(API_URL+'?exam='+encodeURIComponent(aid),{cache:'no-store'}).then(async r=>{let j={};try{j=await r.json()}catch(x){}
       const msg=r.status===401&&j.needAccount?'This assignment needs your EdAssess account. Sign in, then tap Scan sheet on your assignment list.':r.status===403&&j.notInClass?'This assignment is only for students in the class.':'Check the link your teacher gave you.';
       sw.innerHTML=`<div class="ss"><div class="ss-w"><div class="ss-c"><h1>${r.status===401||r.status===403?'Sign in needed':'Assignment not found'}</h1><p class="sub">${e(msg)}</p><a class="ss-b" href="${location.pathname}">Go to EdAssess</a></div></div></div>`}).catch(()=>{sw.innerHTML='<div class="ss"><div class="ss-w"><div class="ss-c"><h1>Could not load</h1><p class="sub">Check your connection and try again.</p></div></div></div>'});return}
-  Object.assign(SS,{a,t,name:ssWho(),pages:{},cur:{},ack:{},ver:null,need:1,err:''});ssDraw();
+  Object.assign(SS,{a,t,name:ssWho(),mySid:ssSid(),needVer:false,idWarn:'',readSid:'',pages:{},cur:{},ack:{},ver:null,need:1,err:''});ssDraw();
   try{const pe=JSON.parse(sessionStorage.getItem('ea_scan_pending')||'null');sessionStorage.removeItem('ea_scan_pending');
     if(pe&&pe.aid===aid&&Date.now()-pe.ts<5*60000){fetch(pe.img).then(r=>r.blob()).then(b=>ssFile([b]))}}catch(x){}};
 window.ssRows=ssRows;function ssHome(){
@@ -14704,7 +14741,7 @@ function ssDraw(){
   sw.innerHTML=`<div class="ss"><div class="ss-w"><h1>${e(a.title||t.title||'Assessment')}</h1><p class="sub">Turn in your paper answer sheet. You do not need to take the test on screen.</p>
   <div class="ss-c"><h2>Your name</h2><input class="ss-in" id="ss-name" placeholder="First name and last initial" value="${e(SS.name)}" ${ssWho()?'readonly':''} oninput="SS_name(this.value)"></div>
   <div class="ss-c"><h2>${n?'Add another photo':'Photograph your sheet'}</h2>${n?'':'<ol><li>Lay the sheet flat in good light.</li><li>Keep all four black squares in the picture.</li><li>Take the photo from straight above.</li></ol>'}
-  <label class="ss-b" style="margin-right:8px">Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="ssFile(this.files);this.value=''"></label><label class="ss-b g">Choose photo<input type="file" accept="image/*" style="display:none" onchange="ssFile(this.files);this.value=''"></label>${SS.busy?'<span class="sub" style="margin-left:10px">Reading...</span>':''}${SS.err?`<div class="ss-er">${e(SS.err)}</div>`:''}</div>
+  <label class="ss-b" style="margin-right:8px">Take photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="ssFile(this.files);this.value=''"></label><label class="ss-b g">Choose photo<input type="file" accept="image/*" style="display:none" onchange="ssFile(this.files);this.value=''"></label>${SS.busy?'<span class="sub" style="margin-left:10px">Reading...</span>':''}${SS.err?`<div class="ss-er">${e(SS.err)}</div>`:''}${SS.needVer?`<div class="ss-er">The version bubble was not filled in. Which version is your sheet?<div style="margin-top:8px">${[0,1,2,3].map(v=>`<button type="button" class="ss-ch" onclick="ssVer(${v})">${LET[v]}</button>`).join('')}</div></div>`:''}${SS.idWarn?`<div class="ss-er">${e(SS.idWarn)}</div>`:''}</div>
   ${n?`<div class="ss-c"><h2>Check every answer</h2><p class="sub" style="margin-top:0">Compare each row with your paper sheet. Tap a letter to change it. Rows in red could not be read clearly, so choose what you marked.${missing?` <b>Your sheet has ${pages} pages and ${missing} still need${missing===1?'s':''} a photo.</b>`:''}</p>
    ${Object.keys(SS.pages).sort().map(p=>`<canvas class="ss-cv" id="ss-cv-${p}"></canvas>`).join('')}
    ${rows.map(ssRow).join('')}</div>
@@ -14718,23 +14755,27 @@ function ssRow(r){const q=r.type==='ms',pos=ssPos(r),fl=r.status!=='ok',done=!fl
 window.ssDraw=ssDraw;window.SS=SS;window.SS_name=v=>{SS.name=v;const b=document.querySelector('.ss-b:not(.g)[onclick^=ssSubmit]');if(b)b.disabled=!(Object.keys(SS.pages).length&&!Math.max(0,SS.need-Object.keys(SS.pages).length)&&SS.conf&&v.trim().length>1&&!ssRows().filter(r=>r.status!=='ok'&&!SS.ack[r.key]).length)};
 window.ssSet=(k,i)=>{const r=ssRows().find(x=>x.key===k);if(!r)return;let p=ssPos(r).slice();if(i<0)p=[];else if(r.type==='ms'){const x=p.indexOf(i);if(x>=0)p.splice(x,1);else p.push(i)}else p=p[0]===i?[]:[i];SS.cur[k]=p;SS.ack[k]=true;SS.conf=false;ssDraw()};
 window.ssFile=async files=>{const f0=files[0];if(!f0)return;SS.busy=true;SS.err='';ssDraw();await new Promise(r=>setTimeout(r,30));
-  try{const img=await loadImg(f0),res=readSheet(img,SS.t,{o:{}});
+  try{const img=await loadImg(f0);let res=readSheet(img,SS.t,{o:{}});
+    if(!res.ok&&res.needVer){if(SS.ver==null){SS.pendImg=img;SS.pendP=res.P;SS.needVer=true;SS.busy=false;ssDraw();return}res=readSheet(img,SS.t,{o:{},ver:SS.ver,P:res.P})}
+    if(res.ok&&res.sid&&SS.mySid&&res.sid!==SS.mySid)SS.idWarn='The ID on this sheet ('+res.sid+') is not the ID on your profile ('+SS.mySid+'). Check that you wrote your own ID.';else if(res.ok)SS.idWarn='';
+    if(res.ok)SS.readSid=res.sid||'';
     if(!res.ok){SS.err=res.err}
     else if(SS.ver!==null&&res.ver!==SS.ver){SS.err='This photo is from a different version of the sheet. Use pages from the same sheet.'}
     else if(!SS.t.sheetCfg){SS.err='Your teacher has not set up sheet scanning for this test yet.'}
     else{SS.ver=res.ver;SS.need=res.pages;SS.pages[res.page]=res;res.ans.forEach(r=>{SS.cur[r.key]=r.status==='ok'?r.on.slice():[];delete SS.ack[r.key]});SS.conf=false}}
   catch(x){SS.err=x.message}
   SS.busy=false;ssDraw()};
+window.ssVer=function(v){SS.needVer=false;const img=SS.pendImg;SS.pendImg=null;if(!img)return ssDraw();SS.busy=true;ssDraw();setTimeout(()=>{try{const res=readSheet(img,SS.t,{o:{},ver:v,P:SS.pendP});if(!res.ok)SS.err=res.err;else{SS.ver=res.ver;SS.need=res.pages;SS.pages[res.page]=res;SS.readSid=res.sid||'';SS.idWarn=res.sid&&SS.mySid&&res.sid!==SS.mySid?'The ID on this sheet ('+res.sid+') is not the ID on your profile ('+SS.mySid+'). Check that you wrote your own ID.':'';res.ans.forEach(r=>{SS.cur[r.key]=r.status==='ok'?r.on.slice():[];delete SS.ack[r.key]});SS.conf=false}}catch(x){SS.err=x.message}SS.busy=false;ssDraw()},30)};
 window.ssSubmit=function(){
   const{a,t}=SS,name=(SS.name||'').trim(),rows=ssRows();if(!name||!rows.length)return;
   const answers={};rows.forEach(r=>{const p=ssPos(r);if(!p.length)return;answers[r.key]=r.type==='mc'?r.ord[p[0]]:p.map(i=>r.ord[i]).sort((x,y)=>x-y)});
   const iso=new Date().toISOString(),nm=ssWho()?name:formatStudentName(name);
-  const sub={id:uid(),testId:t.id,assignmentId:a.id,studentName:nm,status:'submitted',startedAt:iso,submittedAt:iso,answers,flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,scanned:true,scanConfirmed:true,sheetVersion:SS.ver};
+  const sub={id:uid(),testId:t.id,assignmentId:a.id,studentName:nm,status:'submitted',startedAt:iso,submittedAt:iso,answers,flags:{},score:0,rubricScores:{},manualScores:{},strikes:0,scanned:true,scanConfirmed:true,sheetVersion:SS.ver,scanSid:SS.readSid||''};
   APP.submissions.push(sub);try{autoScore(sub,t)}catch(x){}try{save()}catch(x){}
   renderSubmittedScreen(sub,a,t)};
 /* open it from the assignment list and from the exam start screen */
-(function(){const card='<div class="stu-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Have a paper answer sheet?</b><div class="stu-row-meta">Photograph it and turn it in. No need to open the test.</div></div><a class="stu-btn" href="?scan=new">Scan answer sheet</a></div>';
-  ['stuHome','stuAssignments'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){const h=o.apply(this,arguments);return typeof h==='string'?h.replace(/(<div class="stu-hero">[\s\S]*?<\/div>)/,'$1'+card):h}});
+(function(){const idc=()=>{const s=ssSid();return s?`<div class="stu-card"><b>Your student ID</b><div style="font:800 28px/1.2 Inter,sans-serif;letter-spacing:.18em;margin:4px 0">${e(s)}</div><div class="stu-row-meta">Write this in the Student ID boxes on paper answer sheets and fill in the bubbles. Your score is then matched to you automatically.</div></div>`:''};const card0='<div class="stu-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Have a paper answer sheet?</b><div class="stu-row-meta">Photograph it and turn it in. No need to open the test.</div></div><a class="stu-btn" href="?scan=new">Scan answer sheet</a></div>';
+  ['stuHome','stuAssignments'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){const h=o.apply(this,arguments);return typeof h==='string'?h.replace(/(<div class="stu-hero">[\s\S]*?<\/div>)/,'$1'+idc()+card0):h}});
   const lp=$('login-page');if(lp&&!$('ea-scan-link')){const a=document.createElement('a');a.id='ea-scan-link';a.href='?scan=new';a.textContent='Turn in a paper answer sheet';a.style.cssText='position:absolute;left:0;right:0;bottom:16px;text-align:center;color:#fff;font:600 14px Inter,sans-serif;text-decoration:underline;z-index:5';lp.appendChild(a)}})();
 (function(){const o=window.stuRow;if(typeof o==='function')window.stuRow=function(a){const h=o(a);if(!a||!a.sheet)return h;return h.replace(/(<a class="stu-btn" href="\?exam=)/,`<a class="stu-btn ghost" href="?scan=${e(a.id)}">Scan sheet</a>$1`)};})();
 (function(){const o=window.loadStudentExam;if(typeof o==='function')window.loadStudentExam=function(){const r=o.apply(this,arguments);try{const a=APP.assignments.find(x=>x.id===new URLSearchParams(location.search).get('exam')),t=a&&APP.tests.find(x=>x.id===a.testId);

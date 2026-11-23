@@ -335,6 +335,8 @@ async function upsertSubmission(sub, user, student) {
     if (student && student._imp) clean.viaTeacher = student._imp;
     if (student) { clean.studentKey = student.key; if (asg0 && asg0.requireAccount) clean.studentName = student.name; }
   } else if (prev && prev.studentKey) clean.studentKey = prev.studentKey;
+  else if (user && typeof sub.scanStudentKey === 'string' && sub.scanStudentKey.length < 80) { const sk = String(sub.scanStudentKey); if ((await allClasses()).some((c) => classRole(c, user) && (c.students || []).some((x) => x.key === sk))) clean.studentKey = sk; }
+  delete clean.scanStudentKey;
   if (user) {
     if (!(await canTouchSub(clean, user)) && !(prev && (await canTouchSub(prev, user)))) return bad('You do not have access to this assignment.', 403);
     const me = lc(user.username);
@@ -603,7 +605,7 @@ async function cleanCoTeachers(list, owner) {
 /* ═══════════════ STUDENT ACCOUNTS & CLASSES ═══════════════
    A student account is just "First L" (first name + last initial) and a password.
    Teachers own classes; students join with a code or accept a teacher's invite by name.          */
-const S_PREFIX = 'v2/stu/', C_PREFIX = 'v2/class/', SS_PREFIX = 'v2/stusub/';
+const S_PREFIX = 'v2/stu/', C_PREFIX = 'v2/class/', SS_PREFIX = 'v2/stusub/', SID_PREFIX = 'v2/sid/', CNO_PREFIX = 'v2/cno/';
 const capWord = (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
 function normStudentName(raw) {
   const m = /^([A-Za-z][A-Za-z'’-]{0,23})\s+([A-Za-z])\.?([2-9]?)$/.exec(String(raw || '').trim().replace(/\s+/g, ' '));
@@ -613,7 +615,15 @@ function normStudentName(raw) {
   return { name, key: name.toLowerCase().replace(/[’']/g, '').replace(/\s/g, '_') };
 }
 const NAME_HELP = 'Use your first name and last initial, like “Sam K”. If a classmate has the same name, add a number after your initial (Sam K2).';
-const pubStudent = (s) => ({ key: s.key, name: s.name, mustChange: !!s.mustChange, role: 'student' });
+const pubStudent = (s) => ({ key: s.key, name: s.name, mustChange: !!s.mustChange, role: 'student', sid: s.sid || null });
+/* every student gets a permanent 6 digit ID for answer sheets; every class gets a 4 digit number */
+async function newSid(key) { for (let i = 0; i < 60; i++) { const n = String(crypto.randomInt(100000, 1000000)); if (!(await getJ(SID_PREFIX + n))) { await putJ(SID_PREFIX + n, { key }); return n; } } throw new Error('Could not allocate a student ID'); }
+async function ensureSid(s) {
+  if (!s || s.preview || !s.key) return null; if (s.sid) return s.sid;
+  const r = await getJ(S_PREFIX + s.key); if (!r) return null;
+  if (!r.sid) { r.sid = await newSid(r.key); await putJ(S_PREFIX + r.key, r); }
+  s.sid = r.sid; return r.sid;
+}
 async function setStudentPw(s, pw, mustChange) {
   s.salt = crypto.randomBytes(16).toString('hex'); s.hash = hashPw(pw, s.salt); s.mustChange = !!mustChange;
   s.fails = 0; s.lockUntil = 0; s.pwAt = new Date().toISOString();
@@ -658,12 +668,14 @@ function classRole(c, user) {
   if (ownerOf(c) === me) return 'owner';
   return (c.coTeachers || []).map(lc).includes(me) ? 'edit' : null;
 }
-const clsClean = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [], topics: c.topics || [] });
+const clsClean = (c) => ({ id: c.id, no: c.no || null, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [], topics: c.topics || [] });
 async function classesForTeacher(user) {
   const mine = (await allClasses()).filter((c) => classRole(c, user));
   const out = [];
   for (const c of mine) {
+    try { if (!c.no) { for (let i = 0; i < 60 && !c.no; i++) { const n = String(crypto.randomInt(1000, 10000)); if (!(await getJ(CNO_PREFIX + n))) { await putJ(CNO_PREFIX + n, { id: c.id }); c.no = n; await saveClass(c); } } } } catch (e) { /* optional */ }
     const x = clsClean(c);
+    x.students = await Promise.all((c.students || []).map(async (st) => { const r = { ...st }; try { if (st.key) { const rec = await getJ(S_PREFIX + st.key); if (rec) { if (!rec.sid) { rec.sid = await newSid(rec.key); await putJ(S_PREFIX + rec.key, rec); } r.sid = rec.sid; } } } catch (e) { /* optional */ } return r; }));
     x.invites = await Promise.all((c.invites || []).map(async (i) => ({ ...i, registered: !!(await getJ(S_PREFIX + i.key)) })));
     out.push(x);
   }
@@ -738,6 +750,7 @@ async function studentPeerSave(body, s) {
 const TERMS_V = '2026-11-17';
 const testMax = (t) => (t && t.kind === 'survey') ? 0 : ((t && t.questions) || []).reduce((a, q) => a + (Number(q.points) || 1), 0);
 async function studentHome(s) {
+  try { await ensureSid(s); } catch (e) { /* the ID is a convenience, never block the home page */ }
   const classes = (await allClasses()).filter((c) => !c.archived || s.preview || (c.students || []).some((x) => x.key === s.key));
   const mine = s.preview ? classes.filter((c) => (ownerOf(c) === s.owner || (c.coTeachers || []).map(lc).includes(s.owner)) && (!s.cid || c.id === s.cid)) : classes.filter((c) => (c.students || []).some((x) => x.key === s.key));
   const invites = classes.filter((c) => !c.archived && (c.invites || []).some((i) => i.key === s.key));
@@ -853,6 +866,7 @@ async function studentAction(body, student) {
       if (pw.length < 6) return bad('Choose a password with at least 6 characters.');
       if (await getJ(S_PREFIX + n.key)) return bad('There is already an account named ' + n.name + '. Sign in instead — or, if you are a different student, add a number after your initial (for example ' + n.name.replace(/\d*$/, '') + '2).', 409);
       const s = { key: n.key, name: n.name, createdAt: new Date().toISOString(), termsAt: new Date().toISOString(), termsV: TERMS_V };
+      s.sid = await newSid(n.key);
       await setStudentPw(s, pw, false);
       return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s), created: true });
     }
@@ -866,6 +880,7 @@ async function studentAction(body, student) {
       return bad('Wrong name or password. Forgot it? Ask your teacher to have the administrator reset it.', 401);
     }
     s.fails = 0; s.lockUntil = 0; s.lastLogin = new Date().toISOString();
+    if (!s.sid) s.sid = await newSid(s.key);
     await putJ(S_PREFIX + s.key, s);
     return reply(200, { token: signToken('s:' + s.key), student: pubStudent(s) });
   }
