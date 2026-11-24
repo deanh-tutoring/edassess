@@ -12085,8 +12085,8 @@ function fxAccountModal(forced){
   const me=fxMe();
   openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">${forced?'Set your password':'Account'}</h2>${forced?'':'<button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button>'}</div>
   <div class="modal-body">
-   ${forced?'<p style="margin-bottom:12px">Choose a new password to continue.</p>':`<div class="form-group"><label class="form-label">Name students see</label><div style="display:flex;gap:8px"><input id="ac-name" class="form-control" value="${sxA(me.name)}" maxlength="60"><button class="btn btn-secondary" onclick="fxSaveName()">Save</button></div></div>`}
-   <div class="form-group"><label class="form-label">Current password</label><input id="ac-old" type="password" class="form-control" autocomplete="current-password"></div>
+   ${forced?'<p style="margin-bottom:12px">Your password was reset. You are signed in with the temporary one, so just choose a new password to continue.</p>':`<div class="form-group"><label class="form-label">Name students see</label><div style="display:flex;gap:8px"><input id="ac-name" class="form-control" value="${sxA(me.name)}" maxlength="60"><button class="btn btn-secondary" onclick="fxSaveName()">Save</button></div></div>`}
+   ${forced?'':'<div class="form-group"><label class="form-label">Current password</label><input id="ac-old" type="password" class="form-control" autocomplete="off"></div>'}
    <div class="form-group"><label class="form-label">New password (8+ characters)</label><input id="ac-new" type="password" class="form-control" autocomplete="new-password"></div>
    <div id="ac-err" class="hidden" style="color:var(--rust);font-size:13px;margin-bottom:8px"></div>
    <div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="fxChangePw()">Change password</button>${me.role==='admin'&&!forced?'<button class="btn btn-secondary" onclick="fxUsersModal()">Manage teachers</button>':''}</div>
@@ -12094,7 +12094,7 @@ function fxAccountModal(forced){
 }
 async function fxSaveName(){const r=await apiPost({action:'updateProfile',name:document.getElementById('ac-name').value});if(r&&r.user){const a=eaAuthLoad();a.user=r.user;localStorage.setItem(EA_AUTH_KEY,JSON.stringify(a));EA_ME=r.user;document.getElementById('fx-me-name').textContent=r.user.name;toast('Name updated.','success');}else fxShowErr('ac-err',(r&&r.error)||'Failed');}
 async function fxChangePw(){
-  const r=await apiPost({action:'changePassword',oldPassword:document.getElementById('ac-old').value,newPassword:document.getElementById('ac-new').value});
+  const r=await apiPost({action:'changePassword',oldPassword:(document.getElementById('ac-old')||{}).value||'',newPassword:document.getElementById('ac-new').value});
   if(r&&r.user){const a=eaAuthLoad();a.user=r.user;localStorage.setItem(EA_AUTH_KEY,JSON.stringify(a));EA_ME=r.user;closeModal();toast('Password changed.','success');}
   else fxShowErr('ac-err',(r&&r.error)||'Failed');
 }
@@ -12662,12 +12662,12 @@ function stuClassModal(id){
 async function stuLeave(id){if(!confirm('Leave this class? Your past work stays on your account.'))return;const r=await apiPost({action:'leaveClass',classId:id});if(r&&r.ok){closeModal();await stuRefresh();}}
 function stuPwModal(forced){
   openModal(`<div class="modal-header"><h2 class="serif" style="font-size:22px">${forced?'Choose a new password':'Change password'}</h2>${forced?'':'<button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button>'}</div>
-  <div class="modal-body">${forced?'<p style="margin-bottom:12px">Your password was reset. Choose a new one to continue.</p>':''}
-  <div class="form-group"><label class="form-label">${forced?'Temporary password':'Current password'}</label><input id="sp-old" type="password" class="form-control"></div>
+  <div class="modal-body">${forced?'<p style="margin-bottom:12px">Your password was reset. You are signed in with the temporary one, so just choose a new password to continue.</p>':''}
+  ${forced?'':'<div class="form-group"><label class="form-label">Current password</label><input id="sp-old" type="password" class="form-control" autocomplete="off"></div>'}
   <div class="form-group"><label class="form-label">New password (6+ characters)</label><input id="sp-new" type="password" class="form-control"></div>
   <div id="sp-err" class="hidden fx-autherr"></div><button class="btn btn-primary" onclick="stuPwSave()">Save password</button></div>`,'420px');
 }
-async function stuPwSave(){const r=await apiPost({action:'studentChangePassword',oldPassword:document.getElementById('sp-old').value,newPassword:document.getElementById('sp-new').value});
+async function stuPwSave(){const r=await apiPost({action:'studentChangePassword',oldPassword:(document.getElementById('sp-old')||{}).value||'',newPassword:document.getElementById('sp-new').value});
   if(r&&r.ok){closeModal();toast('Password changed.','success');if(STU.data)STU.data.student.mustChange=false;}else{const e=document.getElementById('sp-err');e.textContent=(r&&r.error)||'Failed';e.classList.remove('hidden');}}
 /* ── exam page: account gate + signed-in name ── */
 {const o=window.loadStudentExam;window.loadStudentExam=function(){
@@ -14051,10 +14051,11 @@ function asgRow(a,c,isT){
   return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${window.cbChip?cbChip(a):''}${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
 }
 function matRow(m,c,isT){
+  const wu=m.by||c.ownerId||'',who=wu?(isT?(typeof fxTName==='function'?fxTName(wu):wu):(typeof tN==='function'?tN(wu):wu)):'your teacher';
   const open=OPEN.has(m.id),nl=(m.links||[]).length;
   const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">⋮⋮</span>`:'';
   const acts=isT?`<div class="cw-acts">${m.state&&m.state!=='live'?`<button class="btn btn-primary btn-sm" onclick="cbPublishMat('${E(c.id)}','${E(m.id)}')">Publish now</button>`:''}<button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
-  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span>${window.cbChip?cbChip(m):''}<span class="cw-m">Posted ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
+  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span>${window.cbChip?cbChip(m):''}<span class="cw-m">Posted by ${E(who)} · ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
   const body=`<div class="cw-fold"><div class="cw-in">${m.body?`<div class="cw-body">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}${(!m.body&&!nl)?'<div class="cw-meta">No description.</div>':''}${acts}</div></div>`;
   const cls='cw-item cw-mat'+(open?' open':'');
   return isT?`<div class="${cls}" data-cw="${E(m.id)}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-cw="${E(m.id)}">${head}${body}</div>`;

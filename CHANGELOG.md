@@ -4,6 +4,12 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Added
+- Every material shows who posted it, for teachers and students.
+
+### Fixed
+- After an administrator resets a password, the new password screen no longer asks for the temporary password again. You are already signed in with it, so you just choose a new one.
+
 ## 1.5.0 (2026-11-23)
 
 ### Added

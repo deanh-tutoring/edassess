@@ -255,8 +255,9 @@ async function readCore(user) {
   const tests = t.vals.filter(Boolean).filter((r) => testRole(r.data, user) || viaAsg.has(r.data.id)).map(unwrapTest);
   const ids = new Set(tests.map((x) => x.id));
   const peers = p.vals.filter(Boolean).filter((x) => ownerOf(x) === lc(user.username) || (ids.has(x.testId) && asgs.some((g) => g.testId === x.testId)));
-  const names = await namesFor(new Set([...tests.map((x) => ownerOf(x)), ...tests.flatMap((x) => (x.sharedWith || []).map((s) => s.u)), ...asgs.map(ownerOf), ...asgs.flatMap((x) => x.coTeachers || [])]));
-  return { tests, assignments: asgs, peerSessions: peers, teachers: names, classes: await classesForTeacher(user) };
+  const _cls = await classesForTeacher(user);
+  const names = await namesFor(new Set([...tests.map((x) => ownerOf(x)), ...tests.flatMap((x) => (x.sharedWith || []).map((s) => s.u)), ...asgs.map(ownerOf), ...asgs.flatMap((x) => x.coTeachers || []), ...(_cls || []).flatMap((c) => [c.ownerId, ...(c.coTeachers || []), ...(c.materials || []).map((m) => m.by)])]));
+  return { tests, assignments: asgs, peerSessions: peers, teachers: names, classes: _cls };
 }
 // Submissions come in pages that respect the response-size cap.
 async function readSubsPage(prefix, after, keyOk) {
@@ -524,7 +525,7 @@ async function authAction(body, user) {
   if (a === 'me') return reply(200, { user: pubUser(user) });
   if (a === 'changePassword') {
     if (String(body.newPassword || '').length < 8) return bad('New password needs at least 8 characters.');
-    if (!sameStr(hashPw(body.oldPassword || '', user.salt), user.hash)) return bad('Current password is wrong.', 403);
+    if (!user.mustChange && !sameStr(hashPw(body.oldPassword || '', user.salt), user.hash)) return bad('Current password is wrong.', 403);   // after a reset the sign-in itself proved the temporary password
     await setPassword(user, body.newPassword, false);
     return reply(200, { ok: true, user: pubUser(user) });
   }
@@ -772,7 +773,7 @@ async function studentHome(s) {
   }
   const subOut = subs.map((x) => ({ id: x.id, assignmentId: x.assignmentId, status: x.status, score: x.score == null ? null : x.score, submittedAt: x.submittedAt || null, startedAt: x.startedAt || null, gradedBy: x.gradedBy || null, graded: !!x.graded, maxScore: x.maxScore > 0 ? x.maxScore : null, curved: x.curvedScore == null ? null : x.curvedScore }));
   const set = new Set();
-  for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); }
+  for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); (c.materials || []).forEach((m) => m.by && set.add(lc(m.by))); }
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
   const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive), topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
@@ -895,7 +896,7 @@ async function studentAction(body, student) {
   if (a === 'studentPeerSave') return studentPeerSave(body, student);
   if (a === 'studentChangePassword') {
     if (String(body.newPassword || '').length < 6) return bad('Choose a password with at least 6 characters.');
-    if (!sameStr(hashPw(body.oldPassword || '', student.salt), student.hash)) return bad('Current password is wrong.', 403);
+    if (!student.mustChange && !sameStr(hashPw(body.oldPassword || '', student.salt), student.hash)) return bad('Current password is wrong.', 403);
     await setStudentPw(student, body.newPassword, false);
     return reply(200, { ok: true, student: pubStudent(student) });
   }
