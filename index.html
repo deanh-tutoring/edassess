@@ -1920,6 +1920,47 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .sc-sc{margin:6px 0;font-size:16px}.sc-fl{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0}.sc-f{display:flex;gap:6px;align-items:center;font-size:13px}.sc-f select{border:1px solid var(--line,#ccc);border-radius:6px;padding:2px 4px}
 @media(max-width:560px){.sc-top{flex-direction:column}.sc-cv{width:100%}}
 @media print{#sc-stu-btn{display:none!important}}
+/* collaboration tab + publish options */
+.cb{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cb-top{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.cb-ttl{flex:1 1 260px;min-width:0}.cb-ttl h3{margin:0 0 4px;font-size:22px;font-weight:800}
+.cb-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cb-hint{font-size:13px;color:var(--ink-soft,#4a5568);line-height:1.5}
+.cb-create{position:relative;display:inline-block}
+.cb-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:170px;background:var(--paper,#fff);border:2px solid var(--ink,#111);border-radius:12px;padding:6px;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.cb-menu.hidden{display:none}
+.cb-menu button{background:none;border:0;text-align:left;padding:9px 12px;font:600 14px Inter,sans-serif;color:var(--ink,#111);border-radius:8px;cursor:pointer}
+.cb-menu button:hover{background:rgba(37,99,235,.12)}
+.cb-card{border:2px solid var(--ink,#111);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.cb-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cb-add .form-control{flex:1 1 200px;min-width:0}
+.cb-msg{border:2px solid #2563eb;border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
+.cb-msg.bad{border-color:#b3261e;color:#b3261e}
+.cb-files{display:flex;flex-direction:column;gap:10px;min-width:0}
+.cb-file{border:2px solid var(--ink,#111);border-radius:14px;padding:12px 14px;min-width:0}
+.cb-fr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;min-width:0}
+.cb-k{flex:none;font:800 11px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--k,#2563eb);border-radius:8px;padding:4px 8px}
+.cb-name{flex:1 1 180px;min-width:0;font-weight:700;font-size:16px;color:var(--ink,#111);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-by{flex:none;font-size:12px;color:var(--ink-soft,#4a5568)}
+.cb-acts{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 100%;justify-content:flex-end}
+.cb-notes{margin-top:10px;padding-top:10px;border-top:2px solid rgba(0,0,0,.12);display:flex;flex-direction:column;gap:8px}
+.cb-note{font-size:14px;line-height:1.5;overflow-wrap:anywhere}.cb-note small{color:var(--ink-soft,#4a5568)}
+.cb-noteadd{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.cb-noteadd textarea{flex:1 1 220px;min-width:0}
+.cb-empty{border:2px dashed var(--ink,#111);border-radius:14px;padding:22px;text-align:center;font-weight:600}
+.cb-chip{flex:none;display:inline-block;font:800 11px Inter,sans-serif;border-radius:999px;padding:3px 9px;margin-left:8px;white-space:nowrap;vertical-align:middle}
+.cb-chip.d{background:#111;color:#fff}.cb-chip.s{background:#2563eb;color:#fff}
+.cb-pub{margin:12px 0}.cb-pubrow{display:flex;gap:8px;flex-wrap:wrap}.cb-pubrow .form-control{flex:1 1 200px;min-width:0}
+.cb-mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.cb-tests{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto}
+@media(max-width:600px){.cb-acts{justify-content:flex-start}}
+@media(max-width:860px){
+  .lms-t-top{padding:58px 16px 0!important;flex-wrap:wrap;gap:8px}
+  .lms-t-top>div{flex-wrap:wrap}
+  .lms-tabs{overflow-x:auto;gap:20px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .lms-tabs::-webkit-scrollbar{display:none}
+  .lms-tabs button{flex:none;white-space:nowrap}
+}
+.cb-pub .cb-hint{margin-top:8px}
 </style>
 </head>
 <body>
@@ -12692,7 +12733,7 @@ function fxRenderClasses(){
   <div class="page-body">${cs.length?`<div class="fxc-grid">${cs.map(c=>`<div class="fxc-card ${c.archived?'arch':''}" onclick="FXC.open='${c.id}';FXC.tab='stream';fxRenderClasses()">
      <div class="fxc-name">${E(c.name)}</div><div class="fxc-sub">${E([c.subject,c.period].filter(Boolean).join(' · '))||'&nbsp;'}</div>
      <div class="fxc-meta"><span><b>${c.students.length}</b> students</span>${c.invites.length?`<span><b>${c.invites.length}</b> invited</span>`:''}${c.archived?'<span>archived</span>':''}</div>
-     <div class="fxc-code">${E(c.joinCode)}</div></div>`).join('')}</div>`
+     <div class="fxc-code">${E(c.joinCode)}</div>${c.no?`<div class="text-muted" style="font-size:12px;margin-top:4px">Class ID <b>${E(c.no)}</b></div>`:''}</div>`).join('')}</div>`
     :`<div class="fxc-empty"><h2>No classes yet.</h2><p>Create a class, then invite students by name or hand out its join code.</p><button class="btn btn-primary" onclick="fxClassNew()">+ New class</button></div>`}</div>`;
 }
 function fxClassDetail(c){
@@ -12715,7 +12756,7 @@ function fxClassDetail(c){
   }
   return `<div class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← Classes</button><h1 class="page-title">${E(c.name)}</h1></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="fxViewAsModal('${c.id}')">Student view</button><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
-   <div class="page-body"><div class="fxc-codebar"><div><div class="fxc-h" style="margin:0">Class join code</div><div class="fxc-bigcode">${E(c.joinCode)}</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
+   <div class="page-body"><div class="fxc-codebar"><div><div class="fxc-h" style="margin:0">Class join code</div><div class="fxc-bigcode">${E(c.joinCode)}</div>${c.no?`<div style="margin-top:6px;font-weight:700">Class ID ${E(c.no)} <span class="text-muted" style="font-weight:400">(bubbled on answer sheets)</span></div>`:''}</div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
    <div class="fxc-tabs">${tabs.map(([k,l])=>`<button class="${FXC.tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
 }
 function fxCopyText(t){try{navigator.clipboard.writeText(t);toast('Copied.','success');}catch(e){toast(t,'info');}}
@@ -13549,8 +13590,8 @@ window.fxMatSave=async function(){
   const links=[...document.querySelectorAll('#fm-links .fm-link')].map(r=>({url:r.querySelector('.fm-url').value.trim(),label:r.querySelector('.fm-lab').value.trim(),embed:!!(r.querySelector('.fm-emb input')&&r.querySelector('.fm-emb input').checked&&r.querySelector('.fm-emb').style.display!=='none')})).filter(l=>l.url);
   const err=document.getElementById('fm-err');
   for(const l of links){let u=l.url;if(!/^https?:\/\//i.test(u))u='https://'+u;try{const x=new URL(u);if(!x.hostname.includes('.'))throw 0;}catch(e){err.textContent='“'+l.url+'” isn’t a valid link.';err.classList.remove('hidden');return;}}
-  const r=await apiPost({action:'postMaterial',classId:fxMatState.cid,matId:fxMatState.id,title:document.getElementById('fm-title').value,body:document.getElementById('fm-body').value,topic:document.getElementById('fm-topic').value,links});
-  if(r&&r.ok){closeModal();toast(fxMatState.id?'Material updated.':'Material posted.','success');fxClsReload();}else{err.textContent=(r&&r.error)||'Could not post.';err.classList.remove('hidden');}
+  const r=await apiPost({action:'postMaterial',classId:fxMatState.cid,matId:fxMatState.id,title:document.getElementById('fm-title').value,body:document.getElementById('fm-body').value,topic:document.getElementById('fm-topic').value,links,...(window.cbMatPub?cbMatPub():{})});
+  if(r&&r.ok){if(window.cbAfterMat)cbAfterMat(fxMatState.cid,links);closeModal();toast(fxMatState.id?'Material updated.':'Material posted.','success');fxClsReload();}else{err.textContent=(r&&r.error)||'Could not post.';err.classList.remove('hidden');}
 };
 window.fxMatDelete=async function(cid,id){if(!confirm('Delete this material? Students will no longer see it.'))return;await apiPost({action:'deleteMaterial',classId:cid,matId:id});fxClsReload();};
 /* ── routing: every teacher page and class tab has its own address; back/forward and refresh work ── */
@@ -13580,14 +13621,16 @@ window.addEventListener('popstate',()=>{if(!eaStudentPage()&&window.__fxRouted)f
 /* ── TEACHER class page ── */
 window.fxClassDetail=function(c){
   const me=fxMe().username.toLowerCase(),owner=c.ownerId===me;
-  let tab=FXC.tab;if(tab==='roster'||tab==='assignments'||!['stream','classwork','grades','people'].includes(tab))tab=FXC.tab=(tab==='roster'?'people':tab==='assignments'?'classwork':'stream');
+  let tab=FXC.tab;if(tab==='roster'||tab==='assignments'||!['stream','classwork','grades','people','collab'].includes(tab))tab=FXC.tab=(tab==='roster'?'people':tab==='assignments'?'classwork':'stream');
   const asg=(APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id));
   const asgView=asg.map(a=>({...a,ownerId:a.ownerId||me,title:a.title||((APP.tests.find(t=>t.id===a.testId)||{}).title)||'Assessment'}));
   let body='';
   if(tab==='stream'){
-    body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Class code</div><div class="fxc-bigcode" style="font-size:26px">${E(c.joinCode)}</div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
+    body=`<div class="lms-cols c"><aside><div class="lms-panel"><div class="lms-h" style="margin-top:0">Class code</div><div class="fxc-bigcode" style="font-size:26px">${E(c.joinCode)}</div>${c.no?`<div style="margin-top:6px;font-weight:700">Class ID ${E(c.no)}</div>`:''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="fxCopyText('${E(c.joinCode)}')">Copy</button><button class="btn btn-secondary btn-sm" onclick="fxClassRegen('${c.id}')">New code</button></div></div>
      <div class="lms-panel"><div class="lms-h" style="margin-top:0">Upcoming</div>${asg.filter(a=>a.dueAt&&new Date(a.dueAt)>new Date()).sort((x,y)=>new Date(x.dueAt)-new Date(y.dueAt)).slice(0,4).map(a=>`<div class="lms-up"><small>${E(stuWhen(a.dueAt))}</small>${E(a.title||'Assessment')}</div>`).join('')||'<p class="lms-empty">Nothing due soon.</p>'}</div></aside>
      <div><div class="lms-panel lms-compose"><textarea id="fxc-ann" rows="2" placeholder="Announce something to your class"></textarea><div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px"><span style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${c.id}')">Post material</button><button class="btn btn-secondary btn-sm" onclick="fxClassAssign('${c.id}')">Assign a test</button></span><button class="btn btn-primary btn-sm" onclick="fxClassPost('${c.id}')">Post</button></div></div>${lmsStream(c,asgView,true)}</div></div>`;
+  }else if(tab==='collab'){
+    body=window.collabTab?collabTab(c):'';
   }else if(tab==='classwork'){
     body=lmsClasswork(c,true,asgView);
   }else if(tab==='grades'){
@@ -13610,7 +13653,7 @@ window.fxClassDetail=function(c){
   }
   return `<div class="lms-t-top"><button class="btn btn-secondary btn-sm" onclick="FXC.open=null;fxRenderClasses()">← All classes</button><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="fxViewAsModal('${c.id}')">Student view</button><button class="btn btn-secondary btn-sm" onclick="fxClassEdit('${c.id}')">Edit</button>${owner?`<button class="btn btn-secondary btn-sm" onclick="fxClassCo('${c.id}')">Co-teachers</button>`:''}</div></div>
   <div class="page-body" style="padding-top:8px;max-width:1040px"><header class="lms-head"><div><h1>${E(c.name)}</h1><p class="lms-sub">${E([c.subject,c.period,c.students.length+(c.students.length===1?' student':' students')].filter(Boolean).join(' · '))}</p></div></header>
-  <div class="lms-tabs">${[['stream','Stream'],['classwork','Classwork'],['grades','Grades'],['people','People']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
+  <div class="lms-tabs">${[['stream','Stream'],['classwork','Classwork'],['collab','Collaboration'],['grades','Grades'],['people','People']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="FXC.tab='${k}';fxRenderClasses()">${l}</button>`).join('')}</div>${body}</div>`;
 };
 {const o=window.fxClassPost;window.fxClassPost=async function(id){await o(id);};}
 /* ── scores: stamp the real maximum on every submission so students and teachers see the same percentage ── */
@@ -14005,13 +14048,13 @@ function asgRow(a,c,isT){
     else if(s==='scheduled')btn=`<span class="cw-meta">Opens ${E(new Date(a.opensAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span>`;
     fold=`<div class="cw-meta">${[a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' minutes':'',a.dueAt?'Due '+stuWhen(a.dueAt):'No due date'].filter(Boolean).map(E).join(' · ')}</div><div class="cw-acts">${btn}</div>`;
   }
-  return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
+  return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${window.cbChip?cbChip(a):''}${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
 }
 function matRow(m,c,isT){
   const open=OPEN.has(m.id),nl=(m.links||[]).length;
   const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">⋮⋮</span>`:'';
-  const acts=isT?`<div class="cw-acts"><button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
-  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span><span class="cw-m">Posted ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
+  const acts=isT?`<div class="cw-acts">${m.state&&m.state!=='live'?`<button class="btn btn-primary btn-sm" onclick="cbPublishMat('${E(c.id)}','${E(m.id)}')">Publish now</button>`:''}<button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
+  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span>${window.cbChip?cbChip(m):''}<span class="cw-m">Posted ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
   const body=`<div class="cw-fold"><div class="cw-in">${m.body?`<div class="cw-body">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}${(!m.body&&!nl)?'<div class="cw-meta">No description.</div>':''}${acts}</div></div>`;
   const cls='cw-item cw-mat'+(open?' open':'');
   return isT?`<div class="${cls}" data-cw="${E(m.id)}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-cw="${E(m.id)}">${head}${body}</div>`;
@@ -14702,7 +14745,7 @@ function ssCss(){if($('ss-css'))return;const s=document.createElement('style');s
 .ss-r{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:10px;border:2px solid transparent;margin:2px 0;flex-wrap:wrap}.ss-r.f{border-color:#e5484d;background:var(--cream)4f4}.ss-r.d{border-color:#1a9d4b;background:#f2fbf5}.ss-n{font-weight:800;min-width:34px;text-align:right}
 .ss-ch{min-width:42px;height:42px;border:2px solid #111;border-radius:50%;background:var(--cream);font:700 15px Inter,sans-serif;cursor:pointer;padding:0 6px}.ss-ch.on{background:#111;color:#fff}.ss-ch.bl{border-radius:21px;font-size:12px;border-style:dashed;min-width:58px}.ss-ch.bl.on{background:#555}
 .ss-t{font-size:12px;color:#b3261e;font-weight:700;flex-basis:100%;margin-left:44px}.ss-ok{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:10px 0}.ss-ok input{width:22px;height:22px;margin-top:2px}.ss-er{color:#b3261e;font-weight:600;margin:8px 0}`;document.head.appendChild(s)}
-function ssSid(){try{const a=stuLoad();return(a&&a.student&&a.student.sid)||''}catch(x){return''}}
+function ssSid(){try{if(window.STU&&STU.data&&STU.data.student&&STU.data.student.sid)return STU.data.student.sid;const a=stuLoad();return(a&&a.student&&a.student.sid)||''}catch(x){return''}}
 function ssWho(){try{const a=stuLoad();return(a&&a.student&&a.student.name)||''}catch(x){return''}}
 window.loadStudentScan=function(aid){
   ssCss();if(aid==='new')return ssHome();const a=(APP.assignments||[]).find(x=>x.id===aid),t=a&&(APP.tests||[]).find(x=>x.id===a.testId),sw=$('student-wrapper');
@@ -14775,7 +14818,7 @@ window.ssSubmit=function(){
   renderSubmittedScreen(sub,a,t)};
 /* open it from the assignment list and from the exam start screen */
 (function(){const idc=()=>{const s=ssSid();return s?`<div class="stu-card"><b>Your student ID</b><div style="font:800 28px/1.2 Inter,sans-serif;letter-spacing:.18em;margin:4px 0">${e(s)}</div><div class="stu-row-meta">Write this in the Student ID boxes on paper answer sheets and fill in the bubbles. Your score is then matched to you automatically.</div></div>`:''};const card0='<div class="stu-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Have a paper answer sheet?</b><div class="stu-row-meta">Photograph it and turn it in. No need to open the test.</div></div><a class="stu-btn" href="?scan=new">Scan answer sheet</a></div>';
-  ['stuHome','stuAssignments'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){const h=o.apply(this,arguments);return typeof h==='string'?h.replace(/(<div class="stu-hero">[\s\S]*?<\/div>)/,'$1'+idc()+card0):h}});
+  ['stuHome','stuAssignments'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){const h=o.apply(this,arguments);return typeof h==='string'?h.replace(/(<div class="stu-hero">[\s\S]*?<\/h1><\/div>)/,'$1'+idc()+card0):h}});
   const lp=$('login-page');if(lp&&!$('ea-scan-link')){const a=document.createElement('a');a.id='ea-scan-link';a.href='?scan=new';a.textContent='Turn in a paper answer sheet';a.style.cssText='position:absolute;left:0;right:0;bottom:16px;text-align:center;color:#fff;font:600 14px Inter,sans-serif;text-decoration:underline;z-index:5';lp.appendChild(a)}})();
 (function(){const o=window.stuRow;if(typeof o==='function')window.stuRow=function(a){const h=o(a);if(!a||!a.sheet)return h;return h.replace(/(<a class="stu-btn" href="\?exam=)/,`<a class="stu-btn ghost" href="?scan=${e(a.id)}">Scan sheet</a>$1`)};})();
 (function(){const o=window.loadStudentExam;if(typeof o==='function')window.loadStudentExam=function(){const r=o.apply(this,arguments);try{const a=APP.assignments.find(x=>x.id===new URLSearchParams(location.search).get('exam')),t=a&&APP.tests.find(x=>x.id===a.testId);
@@ -14805,6 +14848,146 @@ window.eaPrintItems=function(){const a=[{l:'Print Center',s:'Action',f:()=>prCen
   KINDS.slice(0,10).filter(k=>k[0]!=='scan').forEach(k=>a.push({l:'Print: '+k[1],s:'Print',f:()=>prCenter(k[0])}));
   tests().filter(t=>t.kind!=='survey').forEach(t=>a.push({l:'Print: '+(t.title||'Untitled')+' on paper',s:'Print',f:()=>prCenter('paper',t.id)}));return a};
 document.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKey&&(ev.key==='P'||ev.key==='p')){if(!document.querySelector('#app,.app-shell,#main'))return;ev.preventDefault();prCenter()}});
+})();
+
+</script>
+<script id="ea-collab">
+/* EdAssess collaboration: class folders in Google Drive, co-teacher notes, drafts and scheduled posting */
+(function(){
+const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CB={open:{},msg:{},busy:'',email:null,err:''};
+const me=()=>{try{return String(fxMe().username||'').toLowerCase()}catch(x){return''}};
+const cls=id=>(APP.classes||[]).find(x=>x.id===id);
+const when=d=>{try{return new Date(d).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(x){return''}};
+const KIND={document:['Doc','#2A6BF2'],spreadsheets:['Sheet','#17803D'],presentation:['Slides','#B8791A'],forms:['Form','#6B4FC8'],file:['File','#5B6770'],folder:['Folder','#5B6770'],link:['Link','#5B6770']};
+const MIME={document:'application/vnd.google-apps.document',spreadsheets:'application/vnd.google-apps.spreadsheet',presentation:'application/vnd.google-apps.presentation'};
+const NEWURL={document:'https://docs.new',spreadsheets:'https://sheets.new',presentation:'https://slides.new'};
+const localInput=d=>{if(!d)return'';const x=new Date(d);return new Date(x-x.getTimezoneOffset()*6e4).toISOString().slice(0,16)};
+
+/* ───── draft and scheduled chips ───── */
+window.cbChip=function(x){
+  const f=x.state==='draft'||x.draft===true,sch=(x.state==='scheduled'&&x.publishAt&&new Date(x.publishAt)>new Date())||(x.publishAt&&x.draft!==true&&new Date(x.publishAt)>new Date()&&!x.state);
+  if(f)return '<span class="cb-chip d">Draft</span>';
+  if(sch)return '<span class="cb-chip s">Shows '+esc(when(x.publishAt))+'</span>';
+  return '';
+};
+window.cbPublishMat=async function(cid,id){const r=await apiPost({action:'publishMaterial',classId:cid,matId:id});if(r&&r.ok){toast('Published to students.','success');fxClsReload()}else toast((r&&r.error)||'Could not publish.','error')};
+
+/* publish choice shared by materials and assignments */
+function pubBlock(p,state,at,hint){return `<div class="cb-pub"><label class="form-label">When students see it</label><div class="cb-pubrow"><select id="${p}-state" class="form-control" onchange="cbPubChange('${p}')"><option value="live" ${state==='live'?'selected':''}>Publish now</option><option value="draft" ${state==='draft'?'selected':''}>Save as draft (hidden from students)</option><option value="scheduled" ${state==='scheduled'?'selected':''}>Schedule</option></select><input id="${p}-at" type="datetime-local" class="form-control" value="${esc(localInput(at))}" style="${state==='scheduled'?'':'display:none'}"></div>${hint?`<div class="cb-hint">${hint}</div>`:''}</div>`}
+window.cbPubChange=p=>{const s=$(p+'-state'),a=$(p+'-at');if(a)a.style.display=s.value==='scheduled'?'':'none'};
+window.cbMatPub=function(){const s=$('fm-state');if(!s)return{};const st=s.value,at=$('fm-at').value;return{state:st,publishAt:st==='scheduled'&&at?new Date(at).toISOString():null}};
+{const o=window.fxMatModal;if(typeof o==='function')window.fxMatModal=function(cid,id){const r=o.apply(this,arguments);const c=cls(cid),m=id&&c?(c.materials||[]).find(x=>x.id===id):null;
+  const err=$('fm-err');if(err)err.insertAdjacentHTML('beforebegin',pubBlock('fm',(m&&m.state)||'live',m&&m.publishAt,'Drafts and scheduled posts stay in the class Collaboration folder view for teachers.'));
+  const b=document.querySelector('#modal-container .btn-primary');return r}}
+/* assignments */
+{const f=window.fxAsgFields;if(typeof f==='function')window.fxAsgFields=function(sel,access,due,a){const h=f.apply(this,arguments);return h.replace(/<\/div>\s*$/,'')+pubBlock('as-pub',a&&a.draft?'draft':(a&&a.publishAt&&new Date(a.publishAt)>new Date()?'scheduled':'live'),a&&a.publishAt,'A draft or scheduled assignment is hidden from students and its link will not open yet.')+'</div>'}}
+{const f=window.fxAsgExtras;if(typeof f==='function')window.fxAsgExtras=function(){const r=f.apply(this,arguments),s=$('as-pub-state');if(!s)return r;const st=s.value,at=$('as-pub-at').value;
+  return Object.assign(r,{draft:st==='draft',publishAt:st==='scheduled'&&at?new Date(at).toISOString():null})}}
+{const f=window.fxAsgAccessModal;if(typeof f==='function')window.fxAsgAccessModal=function(aid){const a=APP.assignments.find(x=>x.id===aid);const g=window.fxAsgFields;window.fxAsgFields=function(s,ac,d){return g.call(this,s,ac,d,a)};try{return f.apply(this,arguments)}finally{window.fxAsgFields=g}}}
+
+/* ───── Google Drive helpers (the teacher signs in once; students never touch Drive) ───── */
+const DRV='https://www.googleapis.com/drive/v3/';
+const gOn=()=>!!(window.GD_cfg_ok);
+async function cfg(){try{if(typeof GD!=='undefined'&&!GD.cfg){const r=await fetch('/.netlify/functions/data?gcfg=1');GD.cfg=r.ok?await r.json():{}}window.GD_cfg_ok=!!(typeof GD!=='undefined'&&GD.cfg&&GD.cfg.clientId)}catch(x){window.GD_cfg_ok=false}return window.GD_cfg_ok}
+async function dcall(path,opt){const tok=await gToken();const r=await fetch(DRV+path,Object.assign({},opt,{headers:Object.assign({Authorization:'Bearer '+tok,'Content-Type':'application/json'},(opt&&opt.headers)||{})}));
+  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(x){}throw new Error(m||'Google Drive said no ('+r.status+').')}return r.status===204?{}:r.json()}
+async function rootFolder(){
+  const key='ea_gd_root_'+me();let id='';try{id=localStorage.getItem(key)||''}catch(x){}
+  if(id){try{const f=await dcall('files/'+id+'?fields=id,trashed');if(f&&!f.trashed)return id}catch(x){}}
+  const q=encodeURIComponent("name='EdAssess' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  const l=await dcall('files?q='+q+'&fields=files(id)&spaces=drive');id=l.files&&l.files[0]&&l.files[0].id;
+  if(!id){const f=await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:'EdAssess',mimeType:'application/vnd.google-apps.folder'})});id=f.id}
+  try{localStorage.setItem(key,id)}catch(x){}return id}
+async function shareWithTeam(c){
+  const col=c.collab||{};if(!col.folderId)return 0;
+  const r=await apiPost({action:'collabEmails',classId:c.id});const em=(r&&r.emails)||{};let n=0,miss=[];
+  const team=[c.ownerId,...(c.coTeachers||[])].map(x=>String(x).toLowerCase()).filter(u=>u!==me());
+  for(const u of team){const e=em[u];if(!e){miss.push(u);continue}
+    try{await dcall('files/'+col.folderId+'/permissions?sendNotificationEmail=false',{method:'POST',body:JSON.stringify({role:'writer',type:'user',emailAddress:e})});n++}catch(x){miss.push(u)}}
+  return {n,miss}}
+async function ensureFolder(c){
+  const col=c.collab||{};if(col.folderId)return col.folderId;
+  if(c.ownerId!==me())throw new Error('The class owner needs to open this tab once to create the shared folder.');
+  const root=await rootFolder();
+  const f=await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:c.name+(c.no?' ('+c.no+')':''),mimeType:'application/vnd.google-apps.folder',parents:[root]})});
+  const r=await apiPost({action:'collabSetup',classId:c.id,folderId:f.id});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not save the folder.');
+  c.collab=r.collab;try{await shareWithTeam(c)}catch(x){}return f.id}
+async function addShortcut(c){
+  const col=c.collab||{};if(!col.folderId||c.ownerId===me())return;
+  const root=await rootFolder();
+  await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:c.name,mimeType:'application/vnd.google-apps.shortcut',parents:[root],shortcutDetails:{targetId:col.folderId}})});
+  const r=await apiPost({action:'collabSetup',classId:c.id,shortcut:true});if(r&&r.ok)c.collab=r.collab}
+
+/* every file posted as class material also lands in the class folder, even when published to students */
+window.cbAfterMat=async function(cid,links){
+  try{const c=cls(cid);if(!c)return;const g=(links||[]).map(l=>{let u=l.url;if(!/^https?:\/\//i.test(u))u='https://'+u;const i=window.gInfo&&gInfo(u);return i?{id:i.id,name:l.label||(KIND[i.kind]||['File'])[0],url:u}:null}).filter(Boolean);
+    if(!g.length)return;const r=await apiPost({action:'collabAdd',classId:cid,files:g});if(r&&r.collab)c.collab=r.collab;
+    const col=c.collab||{};if(col.folderId&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){
+      for(const f of g){try{const cur=await dcall('files/'+f.id+'?fields=parents');const rm=(cur.parents||[]).filter(p=>p!==col.folderId).join(',');
+        await dcall('files/'+f.id+'?addParents='+col.folderId+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}catch(x){}}}
+  }catch(x){}};
+
+/* ───── the Collaboration tab ───── */
+function msg(c,t,bad){CB.msg[c.id]={t,bad:!!bad};paint()}
+function paint(){if(typeof fxRenderClasses==='function')fxRenderClasses()}
+function fileRow(c,f){
+  const k=KIND[f.kind]||KIND.link,open=CB.open[f.id],n=(f.notes||[]).length;
+  return `<div class="cb-file"><div class="cb-fr"><span class="cb-k" style="--k:${k[1]}">${k[0]}</span><a class="cb-name" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a><span class="cb-by">${esc(f.by||'')} · ${esc(when(f.at))}</span>${f.pushedAt?'<span class="cb-chip s">In classwork</span>':''}
+   <span class="cb-acts"><button class="btn btn-ghost btn-sm" onclick="cbToggle('${esc(f.id)}')">Notes${n?' ('+n+')':''}</button><button class="btn btn-secondary btn-sm" onclick="cbPushModal('${esc(c.id)}','${esc(f.id)}')">Push to classwork</button><button class="btn btn-ghost btn-sm cw-del" onclick="cbRemove('${esc(c.id)}','${esc(f.id)}')">Remove</button></span></div>
+   ${open?`<div class="cb-notes">${(f.notes||[]).map(x=>`<div class="cb-note"><b>${esc(x.by)}</b> <small>${esc(when(x.at))}</small>${x.by===me()||c.ownerId===me()?` <a class="fxc-x" onclick="cbNoteDel('${esc(c.id)}','${esc(f.id)}','${esc(x.id)}')">Delete</a>`:''}<div>${esc(x.text)}</div></div>`).join('')||'<div class="cb-hint">No notes yet.</div>'}
+   <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Add a note for your co-teachers"></textarea><button class="btn btn-primary btn-sm" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Add note</button></div></div>`:''}</div>`}
+window.collabTab=function(c){
+  const col=c.collab||{files:[]},files=(col.files||[]).slice().reverse(),owner=c.ownerId===me(),m=CB.msg[c.id];
+  if(CB.email===null){CB.email='';apiPost({action:'getGoogleEmail'}).then(r=>{CB.email=(r&&r.email)||'';paint()}).catch(()=>{})}
+  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;paint()}});
+  const g=!!CB.cfg,hasF=!!col.folderId,needShort=hasF&&!owner&&!(col.shortcuts||{})[me()];
+  const status=hasF?`<a class="btn btn-secondary btn-sm" href="${esc(col.folderUrl)}" target="_blank" rel="noopener noreferrer">Open folder in Drive</a>`:owner?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbSetup('${esc(c.id)}')">${g?'Create the class folder':'Folders need Google Drive'}</button>`:`<span class="cb-hint">The class owner has not created the shared folder yet.</span>`;
+  return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Everything lives in the class folder inside your EdAssess folder in Google Drive.</div></div><div class="cb-bar">${status}
+    <span class="cb-create"><button class="btn btn-primary btn-sm" onclick="cbMenu(event)">+ Create</button><span class="cb-menu hidden" id="cb-menu"><button onclick="cbNew('${esc(c.id)}','document')">Blank Doc</button><button onclick="cbNew('${esc(c.id)}','presentation')">Blank Slides</button><button onclick="cbNew('${esc(c.id)}','spreadsheets')">Blank Sheet</button></span></span></div></div>
+  ${m?`<div class="cb-msg ${m.bad?'bad':''}">${esc(m.t)}</div>`:''}
+  ${needShort?`<div class="cb-card"><b>Add this class to your Drive</b><div class="cb-hint">Puts a shortcut to the class folder inside your own EdAssess folder.</div><button class="btn btn-secondary btn-sm" onclick="cbShortcut('${esc(c.id)}')">Add shortcut</button></div>`:''}
+  <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm" onclick="cbAddLink('${esc(c.id)}')">Add</button>${g?`<button class="btn btn-secondary btn-sm" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
+  <div class="cb-files">${files.map(f=>fileRow(c,f)).join('')||'<div class="cb-empty">No files yet. Create one, or post a material with a Google link and it appears here automatically.</div>'}</div>
+  <div class="cb-card"><b>Sharing</b><div class="cb-hint">Co-teachers get access to the folder when you add them and share it from here. Google needs each teacher's Google email to share a folder. It is used only for that.</div>
+   <div class="cb-add"><input id="cb-em" class="form-control" type="email" placeholder="Your Google email" value="${esc(CB.email||'')}"><button class="btn btn-secondary btn-sm" onclick="cbSaveEmail()">Save my email</button>${owner&&hasF&&g?`<button class="btn btn-secondary btn-sm" onclick="cbShare('${esc(c.id)}')">Share folder with co-teachers</button>`:''}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div>`};
+document.addEventListener('click',e=>{const m=$('cb-menu');if(m&&!e.target.closest('.cb-create'))m.classList.add('hidden')});
+window.cbMenu=e=>{e.stopPropagation();const m=$('cb-menu');if(m)m.classList.toggle('hidden')};
+window.cbToggle=id=>{CB.open[id]=!CB.open[id];paint()};
+window.cbSaveEmail=async()=>{const v=($('cb-em').value||'').trim();const r=await apiPost({action:'setGoogleEmail',email:v});if(r&&r.ok){CB.email=r.email;toast(v?'Saved.':'Removed.','success')}else toast((r&&r.error)||'Could not save.','error')};
+window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google Drive is not connected for this site yet. You can still add files by pasting links. The README explains how to turn it on.',true);
+  CB.busy=1;try{await ensureFolder(c);msg(c,'The class folder is ready in your EdAssess folder.')}catch(e){msg(c,e.message,true)}CB.busy=''};
+window.cbShortcut=async id=>{const c=cls(id);try{await addShortcut(c);msg(c,'Added to your EdAssess folder.')}catch(e){msg(c,'Google would not let this account create the shortcut automatically ('+e.message+'). Use Open folder in Drive, then choose Add shortcut to Drive.',true)}};
+window.cbShare=async id=>{const c=cls(id);try{const r=await shareWithTeam(c);msg(c,r.n?'Shared with '+r.n+' co-teacher'+(r.n===1?'':'s')+'.'+(r.miss.length?' Missing a Google email for: '+r.miss.join(', ')+'.':''):'Nobody was shared. '+(r.miss.length?'These teachers need to save their Google email first: '+r.miss.join(', ')+'.':''),!r.n)}catch(e){msg(c,e.message,true)}};
+window.cbNew=async(id,kind)=>{const c=cls(id);const nm={document:'Untitled document',presentation:'Untitled presentation',spreadsheets:'Untitled spreadsheet'}[kind];
+  if(!(await cfg())){window.open(NEWURL[kind],'_blank','noopener');return msg(c,'Google opened a new file in another tab. Paste its link below to add it to this class.')}
+  try{const fid=await ensureFolder(c);const f=await dcall('files?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name:nm,mimeType:MIME[kind],parents:[fid]})});
+    const r=await apiPost({action:'collabAdd',classId:id,files:[{id:f.id,name:f.name,url:f.webViewLink}]});if(r&&r.collab)c.collab=r.collab;window.open(f.webViewLink,'_blank','noopener');paint()}catch(e){msg(c,e.message,true)}};
+window.cbAddLink=async id=>{const c=cls(id),u=($('cb-url').value||'').trim();if(!u)return;const r=await apiPost({action:'collabAdd',classId:id,files:[{url:/^https?:\/\//i.test(u)?u:'https://'+u,name:$('cb-nm').value.trim()||undefined,id:(window.gInfo&&gInfo(/^https?:\/\//i.test(u)?u:'https://'+u)||{}).id}]});
+  if(r&&r.ok){c.collab=r.collab;if(!r.added)return msg(c,'That file is already here.');paint()}else msg(c,(r&&r.error)||'Could not add.',true)};
+window.cbPick=async id=>{const c=cls(id);try{if(!(await cfg()))return;const tok=await gToken();await gLoad('https://apis.google.com/js/api.js');await new Promise(ok=>gapi.load('picker',ok));
+  const pick=await new Promise(ok=>{new google.picker.PickerBuilder().addView(new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true)).enableFeature(google.picker.Feature.MULTISELECT_ENABLED).setOAuthToken(tok).setDeveloperKey(GD.cfg.apiKey).setAppId(GD.cfg.appId||'').setCallback(d=>{if(d.action==='picked')ok(d.docs);else if(d.action==='cancel')ok(null)}).build().setVisible(true)});
+  if(!pick)return;const fid=(c.collab||{}).folderId;
+  if(fid)for(const f of pick){try{const cur=await dcall('files/'+f.id+'?fields=parents');const rm=(cur.parents||[]).filter(p=>p!==fid).join(',');await dcall('files/'+f.id+'?addParents='+fid+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}catch(x){}}
+  const r=await apiPost({action:'collabAdd',classId:id,files:pick.map(f=>({id:f.id,name:f.name,url:f.url}))});if(r&&r.ok){c.collab=r.collab;paint()}}catch(e){msg(c,e.message,true)}};
+window.cbRemove=async(cid,fid)=>{if(!confirm('Remove this from the list? The file stays in Google Drive.'))return;const c=cls(cid),r=await apiPost({action:'collabRemove',classId:cid,fileId:fid});if(r&&r.ok){c.collab=r.collab;paint()}};
+window.cbNote=async(cid,fid)=>{const c=cls(cid),t=$('cb-nt-'+fid);if(!t||!t.value.trim())return;const r=await apiPost({action:'collabNote',classId:cid,fileId:fid,text:t.value});if(r&&r.ok){c.collab=r.collab;paint()}else toast((r&&r.error)||'Could not add.','error')};
+window.cbNoteDel=async(cid,fid,nid)=>{const c=cls(cid),r=await apiPost({action:'collabNoteDelete',classId:cid,fileId:fid,noteId:nid});if(r&&r.ok){c.collab=r.collab;paint()}};
+window.cbPushModal=function(cid,fid){const c=cls(cid),f=((c.collab||{}).files||[]).find(x=>x.id===fid);if(!f)return;
+  const topics=[...new Set((c.materials||[]).map(x=>x.topic).filter(Boolean))];
+  openModal(`<div class="modal-header"><h2 style="font-size:22px">Push to classwork</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="margin:0 0 12px"><b>${esc(f.name)}</b> becomes a material in the Classwork tab.</p>
+  <div class="form-group"><label class="form-label">Topic (optional)</label><input id="cbp-topic" class="form-control" maxlength="40" list="cbp-topics"><datalist id="cbp-topics">${topics.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>${pubBlock('cbp','live','',' ')}
+  <div id="cbp-err" class="hidden fx-autherr"></div><div class="cb-mfoot"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cbPush('${esc(cid)}','${esc(fid)}')">Push</button></div></div>`,'520px')};
+window.cbPush=async(cid,fid)=>{const st=$('cbp-state').value,at=$('cbp-at').value;const r=await apiPost({action:'collabPush',classId:cid,fileId:fid,topic:$('cbp-topic').value,state:st,publishAt:st==='scheduled'&&at?new Date(at).toISOString():null});
+  if(r&&r.ok){cls(cid).collab=r.collab;closeModal();toast(st==='live'?'Pushed to classwork.':'Saved to classwork as '+(st==='draft'?'a draft':'scheduled')+'.','success');fxClsReload()}else{const e=$('cbp-err');e.textContent=(r&&r.error)||'Could not push.';e.classList.remove('hidden')}};
+window.cbShareTests=function(cid){const mine=(APP.tests||[]).filter(t=>!t.ownerId||String(t.ownerId).toLowerCase()===me());
+  openModal(`<div class="modal-header"><h2 style="font-size:22px">Share tests with co-teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="margin:0 0 10px">Everyone teaching this class gets edit access to the tests you tick.</p>
+  <div class="cb-tests">${mine.map(t=>`<label class="checkbox-wrap"><input type="checkbox" class="cb-tchk" value="${esc(t.id)}"><span>${esc(t.title||'Untitled')}</span></label>`).join('')||'<div class="cb-hint">You have no tests yet.</div>'}</div>
+  <div class="cb-mfoot"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cbShareTestsGo('${esc(cid)}')">Share</button></div></div>`,'520px')};
+window.cbShareTestsGo=async cid=>{const ids=[...document.querySelectorAll('.cb-tchk:checked')].map(x=>x.value);if(!ids.length)return closeModal();const r=await apiPost({action:'shareTestsToClass',classId:cid,testIds:ids});closeModal();
+  toast(r&&r.ok?(r.with.length?'Shared '+r.shared+' test'+(r.shared===1?'':'s')+' with '+r.with.length+' teacher'+(r.with.length===1?'':'s')+'.':'This class has no other teachers yet.'):((r&&r.error)||'Could not share.'),r&&r.ok?'success':'error')};
+/* when the owner adds co-teachers, share the folder right away if it exists */
+{const o=window.fxClassCoTeachersSave||null;}
 })();
 
 </script>

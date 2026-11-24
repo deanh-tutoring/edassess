@@ -280,3 +280,11 @@ Every printed answer sheet can carry a **turn-in QR code** (pick the assignment 
 ## Student IDs, class IDs and cleaner scanning
 
 Every student has a permanent six digit ID on their home screen. Students write it in the ID boxes on a paper answer sheet and fill in the bubbles, and the scan matches the sheet to the right student and fills in the score on its own. Each class also has a four digit class ID. Both can be pre-printed from the Print Center, with the class name shown above the class ID, or left blank for students to fill in. The version is never pre-printed, because students bubble their own. If they forget, the scanner asks which version it was. Small timing rectangles beside every column of bubbles help the scanner stay lined up even when the photo is a little curved or tilted.
+
+## Drafts, scheduling and the Collaboration tab
+
+Materials and assignments can be published now, saved as a draft, or scheduled for later. Students never see drafts or scheduled items, and a draft assignment's link will not open until it goes live.
+
+Every class has a Collaboration tab that only its teachers can see. It lists every file in the class folder, with a Create button for a blank Doc, Slides or Sheet, and lets any teacher leave notes on a file. Any file can be pushed to Classwork, live, as a draft, or on a schedule. Files you attach to class materials are added to the list automatically. Tests can be shared with every co-teacher of a class in one step.
+
+With Google Drive connected (the same GOOGLE_CLIENT_ID, GOOGLE_API_KEY and GOOGLE_APP_ID settings the file picker uses), each teacher gets an EdAssess folder, the class owner gets a class folder inside it, and co-teachers get a shortcut to it. Sharing a folder needs each teacher's Google email, which they save on the Collaboration tab and which is used for nothing else. Without those settings, the tab still works with pasted links.
