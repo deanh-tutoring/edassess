@@ -6,7 +6,7 @@
 
 Write a test, hand your students a short code, watch the room fill up, and grade it all without leaving the page.
 
-[**Open EdAssess**](https://edassess.netlify.app)
+[**Open EdAssess**](https://edassess.netlify.app) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [MIT License](LICENSE)
 
 <br>
 
@@ -20,137 +20,133 @@ Write a test, hand your students a short code, watch the room fill up, and grade
 
 EdAssess started as a tool for online tutoring. I kept bouncing between one app for quizzes, another for rosters, a folder of links for materials and a spreadsheet for grades, and none of it talked to the rest. So this puts it all in one spot.
 
-A teacher writes a test, shares a code or posts it to a class, watches students work in real time, grades the results and sends scores back. Students open a link, type a name and start. There is nothing to install, and if the Wi-Fi drops halfway through, their answers are kept on their device and sent when the connection comes back.
+A teacher writes a test, shares a code or posts it to a class, watches students work in real time, grades the results and sends scores back. It also prints: paper tests, answer sheets that students or teachers can photograph for instant scoring, and reports for every kind of result. Students open a link, type a name and start. There is nothing to install, and if the Wi-Fi drops halfway through, their answers are kept on their device and sent when the connection comes back.
 
 Three ideas shaped it:
 
 - **It should be calm.** Light and night themes, gentle motion, and nothing shouting for your attention.
-- **It should be one place.** Tests, surveys, classes, materials, live monitoring, grading, peer review and analytics all live together.
+- **It should be one place.** Tests, surveys, classes, materials, live monitoring, grading, peer review, printing and analytics all live together.
 - **The exam room should feel like a real exam.** Students get a focused screen modeled on AP Classroom, with the tools they actually need.
+
+EdAssess is free and open source under the MIT License. You can use the hosted version, or run your own copy (see [Hosting your own](#hosting-your-own)).
 
 ---
 
-## If you teach
+## What's inside
 
-### The front door
-When you open EdAssess you land on a river of floating lanterns. Type a code to join something right away, or pick the Students or Staff lantern to sign in or make an account. It opens in light mode, with night mode one tap away. The lanterns only live on this page, so they never get in your way while you work.
+### For teachers
 
-### Your dashboard
-<img src="docs/01-dashboard.png" alt="The teacher dashboard" width="880">
-
-Here you can see what's live, what's waiting to be graded and what came in most recently.
-
-### Building a test
+#### Tests and surveys
 <img src="docs/03-builder.png" alt="The test builder" width="880">
 
-You can use multiple choice, multi-select, short answer, essays, passages with sub-questions, and upload-your-work questions. Add rubrics to essays, put images and reading passages beside questions, and build sectioned SAT-style tests with scaled scoring. You can also pull in questions from your other tests, preview everything exactly as a student will see it, and rely on autosave, which tells you plainly when everything is saved.
+Build tests with multiple choice, multi-select, short answer, essays, passages with sub-questions and upload-your-work questions. Add rubrics to essays, put images and reading passages beside questions, and make sectioned SAT-style tests with scaled scoring. You can pull in questions from your other tests, preview everything exactly as a student will see it, and rely on autosave, which tells you plainly when everything is saved.
 
 <img src="docs/02-tests.png" alt="My Tests list" width="880">
 
-Your tests are searchable and sortable, so a busy term stays easy to scan.
+More question types are available for assessments and surveys:
 
-### Surveys, for when there are no right answers
-Sometimes you just want to ask people things. When you create something new, choose **Survey** instead of **Assessment**.
+- **Ranking:** students put items in order, with optional partial credit.
+- **Matching:** students pair items from a shuffled menu.
+- **Fill in the blanks:** write a sentence and put answers in double curly braces, like `{{Paris}}` or `{{color|colour}}` for more than one accepted answer.
+- **Number:** graded within a tolerance you choose.
+- **Rating:** stars, numbers, or a 0 to 10 recommend scale.
+- **Grid:** rows of statements against a scale such as Strongly disagree to Strongly agree.
+- **Availability calendar:** pick a date range, weekdays, a daily window and a slot length. Each student sees the grid in their own time zone and drags across the times they can do. Your results show a heat map and a list of best times.
 
-A survey uses the same question types, but there are no points, no answer keys, no rubrics and no lockdown. Students answer and see a simple thank-you. Nothing is ever scored, and surveys stay out of the Grade Center and your averages.
+Choose **Survey** instead of **Assessment** when you just want to ask people things. A survey has no points, keys, rubrics or lockdown, and it stays out of the Grade Center and your averages. Results show response counts and rates, a chart for every choice question, averages for rating scales, written answers with common words pulled out, every individual response and a CSV export. A **Hide names** switch shows "Respondent 1, 2, 3" on screen. Students still type a name to get in, so for truly anonymous answers tell them to keep it generic.
 
-The results are built for reading patterns, not grading:
-
-- how many people responded, the response rate for a class, and how long it usually takes
-- a bar chart for every choice question, with counts and percentages
-- an average and median for rating scales such as 1 to 5 or Strongly disagree to Strongly agree
-- written answers in one place, with the most common words pulled out
-- every individual response, plus a CSV you can open in a spreadsheet
-- a **Hide names** switch if you would rather see "Respondent 1, 2, 3"
-
-One honest note: hiding names changes what you see on screen. Students still type a name to get in, so if you need truly anonymous answers, tell them to leave it generic.
-
-### More ways to ask
-Besides multiple choice, multi-select, short answer and essays, you can now add:
-
-- **Ranking:** students put items in order. In an assessment it's scored (with optional partial credit). In a survey you see each item's average rank.
-- **Matching:** students pair items from a shuffled menu. Scored, with optional partial credit.
-- **Fill in the blanks:** write a sentence and put answers in double curly braces, like `{{Paris}}` or `{{color|colour}}` for more than one accepted answer. Each blank can earn partial credit.
-- **Number:** a typed number, graded within a tolerance you choose (or just collected in a survey, with the average, median and spread).
-- **Rating:** stars, numbers, or a 0 to 10 recommend scale (surveys). You get the distribution, the average and a recommend score.
-- **Grid:** rows of statements against a scale such as Strongly disagree to Strongly agree (surveys), with a heat-mapped summary.
-- **Availability calendar (surveys):** pick a date range, weekdays, a daily window, a slot length and your own time zone. Each student sees the grid in their own time zone (they can change it) and clicks or drags across the times they can do. Your results show a heat map and a "best times" list, and you can switch the time zone you view them in.
-
-### Running it live
+#### Running it live
 <img src="docs/04-live.png" alt="The Live Monitor" width="880">
 
-Hand out a join code or post the test to a class. The Live Monitor shows each assignment moving from Not open to In progress to In grading to Done, and you can sort, filter by class and group things so a heavy week stays readable. Students can message you from inside the exam, and you can reply with more than one line when a quick answer won't do.
+Hand out a join code or post the test to a class. The Live Monitor shows each assignment moving from Not open to In progress to In grading to Done, and you can sort, filter by class and group things so a heavy week stays readable. Students can message you from inside the exam, and you can reply with more than one line.
 
-### Classes that feel like a classroom
+Assignments can be **published now, saved as a draft, or scheduled**. Students never see a draft, and a draft assignment's link will not open until it goes live.
+
+#### Grading with the full picture
+<img src="docs/09-grading.png" alt="Grading a submission" width="880">
+
+Objective questions are graded automatically and essays by hand. Rubrics support several scoring models at once: scored criteria with performance levels, checklist items, deductions with a cap, and bonuses. There are more than twenty ready-made templates, a personal library, JSON copy and paste, a scoring guide, a model answer and a comment bank. Clicking a level updates the score on the spot without redrawing the page, and each criterion can carry its own feedback. You can override a score, leave multi-line comments, or apply a curve. Peer feedback appears next to your grading, and one switch hides it from the student. Release scores when you're ready.
+
+<img src="docs/07-grades.png" alt="The class grade grid" width="880">
+
+The class gradebook is one grid. Click any score to open that student's work. Averages are calculated for you, and anything that still needs a look is flagged.
+
+#### Classes that feel like a classroom
 <img src="docs/05-class-stream.png" alt="A class stream" width="880">
 
-Every class has a Stream, Classwork, Grades and People tab. You can post announcements and materials, assign a test in a click, invite students by name and share a class code you can regenerate whenever you like.
-
-Assignments are pinned to the top of Classwork, and everything below is compact so you can see more at once. Each post shows when it went up.
+Every class has Stream, Classwork, Collaboration, Grades and People tabs. Post announcements and materials, assign a test in a click, invite students by name and share a class code you can regenerate whenever you like. Every class also gets a four digit **class ID**, and every student has a permanent six digit **student ID** (used on answer sheets, see Printing and scanning).
 
 <img src="docs/06-classwork.png" alt="Classwork sorted into topics" width="880">
 
-Group materials into topics and drag them into order. Each item stays folded until you open it.
+Classwork works like Google Classroom: a Create menu (Assignment, Material, Topic), a topic list, and one stack of items per topic that you can drag into order. Materials can be published now, saved as drafts or scheduled, and each item carries a chip showing its state. Posting sends a push notification to students (see Notifications).
 
-### Google Drive
-In **Post material** you can press **Add from Google Drive**, sign in with Google once, and pick Docs, Sheets, Slides, Forms, PDFs, folders or uploads. Choose **Embed** and students can preview the file right on the page. Students never have to sign in to Google or anything else. They just click a link or press Preview. By default EdAssess marks picked files as "anyone with the link can view" so students can open them.
+#### Collaboration and Google Drive
 
-Any Google link you paste into the Links box is recognized automatically, so this works even before the picker is set up.
+Teachers sign in with Google once. EdAssess then creates an **EdAssess** folder in their Drive and a folder for every class they own. Co-teachers receive the class folder as an automatic shortcut inside their own EdAssess folder, and everything already attached to class materials is moved or listed there.
 
-**Turning on the picker (once, about ten minutes)**
-1. In Google Cloud Console, create a project and enable the Google Picker API and the Google Drive API.
-2. Create an OAuth client ID (Web application) and add your site address under Authorized JavaScript origins.
-3. Create an API key and restrict it to your site and the Picker API.
-4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
+The **Collaboration** tab is visible only to a class's teachers. It lists every file in the class folder, whoever added it, and offers:
 
-EdAssess only asks for the `drive.file` permission, which covers the files you pick and nothing else in your Drive.
+- a **Create** menu for a blank Doc, Slides or Sheet in the folder
+- notes on each file, so co-teachers can talk about it in place
+- **Push to classwork**, live, as a draft or scheduled
+- a one-step **Share my tests with co-teachers** for everyone teaching the class
 
-### Student view
-Inside any class, **Student view** opens the student side in a new tab, so your own tab stays signed in as you.
+Files you attach to materials land in the class folder by default, even when they are published to students, so everything is in one place. Pasted Google links work too: any Docs, Sheets, Slides, Forms or Drive link is recognized, and **Embed** lets students preview the file on the page without signing in to Google. In **Post material** you can also press **Add from Google Drive** to pick files.
 
-- **Preview this class** shows the stream, classwork and grades exactly as students see them. It's read-only, so nothing you click gets saved.
-- **View as a student** lets you pick one student (or use the button on the People tab) and use the app as them, including taking or submitting an assignment. The work is saved to their account and marked as done by you. Changing their password and joining or leaving classes are switched off.
+Without the Google settings below, all of this still works with pasted links. See [Turning on Google Drive](#turning-on-google-drive).
 
-A bar across the top always tells you who you are viewing as, with an **Exit student view** button. These sessions last two hours.
+#### Peer review
+Pair students up for anonymous, rubric-based feedback. You choose two lists: the responses to review (real submissions and sample responses you write) and the reviewers (students who took the test, whole classes, or names you type). Reviewers who never took the test see the work with no author shown. It shows up in each student's account the moment it is assigned, and teachers and students use the same review screen. Grader-only material such as the scoring guide and model answer is never sent to a student's browser.
 
-### Teachers can be students too
-Sometimes a teacher joins someone else's class to learn, not to teach. To invite a colleague, type `@theirusername` in the invite box. They press **Student mode** in their sidebar, which opens a new tab as their own student identity. From there they accept the invite or enter a class code, do the work and see their grades. Their teaching account is never touched, and **Back to teacher mode** closes the tab.
+#### Student view and student mode
+Inside any class, **Student view** opens the student side in a new tab. **Preview this class** is read-only, while **View as a student** lets you use the app as one student, including taking or submitting an assignment (it is marked as done by you). A bar across the top always shows who you are viewing as, and these sessions last two hours.
 
-### Grading with the full picture
-<img src="docs/07-grades.png" alt="The class grade grid" width="880">
+To join a colleague's class as a learner, they invite you with `@yourusername`, and you press **Student mode** in your sidebar. Your teaching account is never touched.
 
-The class gradebook is one grid. Click any score to open that student's work. Averages are worked out for you, and anything that still needs a look is flagged.
+#### Printing and scanning
+Everything can go on paper, laid out for paper rather than copied from the screen. Open **Print** in the sidebar, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, or search "Print" in the command palette to get the Print Center with a live preview.
 
-<img src="docs/09-grading.png" alt="Grading a submission" width="880">
+- **Test on paper** with name, date and class lines, bubbles, ruled lines for essays and boxes for ranking and matching. Choose paper size, text size and up to four versions that shuffle questions and options. Images print too.
+- **Sections** print as booklets, each with its own header, time limit and special instructions. A **STOP page** follows every section, and EdAssess adds blank pages so every STOP page and new section lands on an odd page and cannot be peeked at.
+- **Answer keys** for each version, and **bubble answer sheets**.
+- **Results** for one student or the whole class (one report per page with a class summary), plus class summaries, gradebooks, roster and attendance sheets, scoring rubrics and survey results.
+- **Print this page** prints what you are looking at with the menus hidden.
 
-Objective questions are graded automatically and essays by hand, with rubric buttons to speed that up. You can override a score, leave comments (line breaks and all), or apply a curve. Peer feedback appears right next to your grading, and one switch hides it from the student if you prefer. Release scores when you're ready.
+**Answer sheets** are fully customizable and saved with the test: title, instruction line, extra header fields, bubbles per question, letters (A, a or 1), bubble shape and size, row spacing, columns, shaded row groups and which header lines appear. Text never overlaps. Each sheet has four corner squares and small timing rectangles beside every column of bubbles, which keep the scanner accurate even on curved or tilted photos.
 
-### Peer review
-Pair students up for anonymous, rubric-based feedback on essays. The review shows up in each student's own account the moment it's assigned, so there are no links to pass around. Finished feedback reaches the author automatically unless you have hidden it.
+Every sheet has a **Student ID** block and a **Class ID** block, and each can be pre-printed or left blank:
 
-### And a few more things
+- Choose a class in the Print Center to pre-print the class name (above the ID) and class ID, or leave it blank for students to write and bubble.
+- Print one sheet per student with their name and student ID already filled in.
+- The **version is never pre-printed**. Students bubble their own. If they forget, the scanner asks which version it was.
+
+**Scanning:** open **Scan bubble sheets**, then take or upload a photo of each sheet. The scanner finds the corner squares, straightens the page, reads the ID blocks, the version and every bubble, and scores multiple choice right away. It matches the sheet to the student by their ID, fills in the score, and flags anything faint or double marked for you to fix before you record it.
+
+**Students can turn in a paper sheet themselves,** without opening the test. A **Scan sheet** button appears beside Start on their assignment list, and every sheet can carry a **turn-in QR code**. Students scan the QR with their phone camera (or open **Scan answer sheet** from the login page or their home screen), photograph the sheet, check every answer against their paper, fix anything flagged, tick the confirmation and submit. If the QR is damaged, they can type the assignment code printed beside it. No sign-in is needed unless the assignment requires an account. Nothing is scored or shown to the student until they confirm every answer, and results appear afterward only if you have released them. You can turn student scanning off per test.
+
+#### And a few more things
 - **Grade Center** and **Analytics** for results across assignments
 - **Backup and History**, so a careless delete is never permanent
-- **Co-teachers** who can share a class with you
+- **Co-teachers** who share a class with you
+- A **command palette** (<kbd>Ctrl</kbd>+<kbd>K</kbd> or <kbd>/</kbd>) to search for anything, and <kbd>?</kbd> to see every shortcut
+- Every screen has its own address, so Back, Forward and Refresh return you to the same place
 
----
+### For students
 
-## If you're a student
-
-### Your own home
+#### Your own home
 <img src="docs/10-student-home.png" alt="Student home" width="880">
 
-Sign in with a first name and last initial. Your classes, what's due, your grades and any peer reviews waiting for you are all on one page. An account is optional for many assessments. If your teacher gave you a code, you can usually just type it in.
+Sign in with a first name and last initial. Your classes, what's due, your grades, any peer reviews waiting for you and your **student ID** are on one page. An account is optional for many assessments. If your teacher gave you a code, you can usually just type it in. Students are asked to allow notifications the first time they sign in so new posts reach them even when EdAssess is closed.
 
-### Peer review
+#### Peer review
 <img src="docs/11-peer-review.png" alt="Student peer review" width="880">
 
 When a review is assigned to you, it simply appears. You read a classmate's response (they won't know it's you, and you won't know it's them), score the rubric and leave feedback.
 
-### The exam room
+#### The exam room
 <img src="docs/12-exam.png" alt="The exam screen" width="880">
 
-The exam screen is calm and navy and stays out of your way, in the spirit of AP Classroom:
+The exam screen is calm and navy and stays out of your way:
 
 - a timer in the top bar that you can hide
 - a question navigator, Mark for Review and an answer eliminator
@@ -158,7 +154,6 @@ The exam screen is calm and navy and stays out of your way, in the spirit of AP 
 - passages beside the questions, with a divider you can drag
 - autosave on every answer, with a clear "All changes saved"
 
-### Tools that help
 <table>
 <tr>
 <td width="50%"><img src="docs/13-line-reader.png" alt="Line Reader"></td>
@@ -170,123 +165,73 @@ The exam screen is calm and navy and stays out of your way, in the spirit of AP 
 </tr>
 </table>
 
-You also get **Highlights and Notes** for marking up passages, and **Text size** for a bigger reading area.
+You also get **Highlights and Notes** for marking up passages and **Text size** for a bigger reading area. Shortcuts: the left and right arrows change question, <kbd>A</kbd> to <kbd>D</kbd> pick an answer, and <kbd>N</kbd> opens the Notepad. If your teacher sends you a survey, there is nothing to prepare for. Answer honestly and submit. Nothing is graded.
 
-**Shortcuts:** the left and right arrows change question, <kbd>A</kbd> to <kbd>D</kbd> pick an answer, and <kbd>N</kbd> opens the Notepad.
-
-### Surveys
-If your teacher sends you a survey, there is nothing to prepare for. Answer honestly, submit, and you will see a thank-you. Nothing is graded.
-
----
-
-## Comfortable on purpose
+### Comfortable on purpose
 
 <img src="docs/15-night.png" alt="Night theme" width="880">
 
 - Light by default, night on request. Switch from **Appearance** in the sidebar.
 - Text is checked for contrast in both themes, including hover and selected states.
-- Text size is adjustable, and motion stays gentle and respects your reduce-motion setting.
+- Text size is adjustable. Motion stays gentle (pages ease in, buttons respond, dashboard numbers count up) and switches off entirely if your device asks for reduced motion.
 - If the connection drops, your work is kept on the device and retried automatically.
+- The layout adapts to phones, and nothing overlaps or runs off the screen.
 
 ---
 
-## Fair use and age rules
+## Terms and privacy
 
 EdAssess has a plain-language **Terms of Service** (look for **Terms** on the front page, the sign-in screens and the sidebar, or add `?terms=1` to the site address). The big points:
 
-- Teachers must be at least 13. You confirm your age when you sign up.
-- Students who are 12 or under need a parent or guardian's permission before making an account, and they confirm that when they create it.
-- Cheating, harassment, scraping, trying to break the sign-in or exam protections, and using EdAssess for things that aren't teaching are not allowed. Teachers also agree to use Student view only to help students and not to collect sensitive information in surveys.
-- If something breaks the rules, we start with a message when we can, and you can always appeal by email.
+- Teachers must be at least 13. Students who are 12 or under need a parent or guardian's permission before making an account.
+- Cheating, harassment, scraping, trying to break the sign-in or exam protections, and using EdAssess for things that aren't teaching are not allowed.
+- The hosted service is provided as is, without liability, under Texas law.
+- The source code is open source under the MIT License. The Terms cover the hosted service at edassess.netlify.app, and the license covers the code.
 
-## Your privacy
-
-We keep the data collection small. Students don't need an email address, there are no ads and no tracking, and passwords are stored only as salted hashes. The full policy is built into the app (look for **Privacy policy** on the sign-in page and in the sidebar, or add `?privacy=1` to the site address). It explains what we store, who can see it, which outside services are involved, how long things are kept and how to ask for something to be deleted.
+The privacy policy is built into the app too (look for **Privacy policy** or add `?privacy=1` to the site address). We keep data collection small: students don't need an email address, there are no ads and no tracking, and passwords are stored only as salted hashes. Teachers who connect Google Drive share their Google account email with EdAssess for folder sharing and nothing else. The policy explains what is stored, who can see it, which outside services are involved, how long things are kept and how to ask for deletion.
 
 ---
 
-## Getting started
+## Hosting your own
 
-1. **Teachers:** open the app, create an account and press **New Test**. Choose Survey if you only want to collect answers.
-2. Add your questions, press **Assign**, and share the code or post it to a class.
-3. **Students:** open the link or type the code, add a first name and last initial, and begin.
-4. Watch the Live Monitor, grade, and release scores.
+EdAssess is one page (`index.html`), one service worker (`sw.js`) and one serverless function (`netlify/functions/data.js`). Deploy the folder to Netlify as it is. Data lives in Netlify Blobs, so there is no database to set up.
 
-### Hosting your own
+| Setting | What it does |
+| --- | --- |
+| `EA_AUTH_SECRET` | Any long random phrase. Signs sessions and derives the push notification keys. Required. |
+| `EA_TEACHER_KEYWORD` | The secret word teachers type to create an account. Required. |
+| `EA_PUSH_CONTACT` | A `mailto:` address push services can see. Optional. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY`, `GOOGLE_APP_ID` | Turn on Google Drive. Optional. |
 
-EdAssess is one page (`index.html`) and one serverless function (`netlify/functions/data.js`). Deploy the folder to Netlify as it is. Data lives in Netlify Blobs, so there's no database to set up. In your Netlify site settings, add two variables: `EA_AUTH_SECRET` (any long random phrase) and `EA_TEACHER_KEYWORD` (the secret word teachers type to create an account). Google Drive is optional and uses the three extra variables described above.
+Notifications use Web Push through `sw.js`, which must be deployed at the site root next to `index.html`.
+
+### Turning on Google Drive
+
+This takes about ten minutes, and without it everything else still works.
+
+1. In Google Cloud Console, create a project and enable the Google Picker API and the Google Drive API.
+2. Configure the OAuth consent screen and add your site address under Authorized JavaScript origins for a new OAuth client ID (Web application).
+3. Create an API key and restrict it to your site and the Picker API.
+4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
+
+Sign-in asks for full Drive access plus the account email. That is what lets EdAssess add each co-teacher's shortcut for them and list everything inside a class folder. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
+
+### Running it locally
+
+Install the dependencies with `npm install`, add the two required settings to a local `.env` file, and run `netlify dev`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project layout and how to run the tests.
 
 ---
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains the layout and the house rules, and every change gets a line in [CHANGELOG.md](CHANGELOG.md).
+
+## License and credits
+
+EdAssess is released under the [MIT License](LICENSE). Anyone may use, copy, change and share it, including in schools and businesses.
+
+It was designed and directed by its maintainer and built with the help of [Claude](https://claude.ai), Anthropic's AI assistant.
 
 <div align="center">
 <sub>Made with care for classrooms. Questions or ideas? Open an issue.</sub>
 </div>
-
-
-## Moving around
-
-Every screen has its own address, so Back, Forward and Refresh return you to the same place. Setup forms such as creating a test, assigning it, or editing a class open as full pages. The grading screen has a list of submissions on the left and Previous and Next buttons (or the [ and ] keys). Press Ctrl+K, or /, to search for anything. Press ? to see every shortcut.
-
-## Rubrics
-
-Rubrics now support several scoring models in one place. Each criterion can be a scored criterion with performance levels, a checklist item, a deduction (points removed per occurrence, with a cap), or a bonus. Descriptions and level descriptors can run to as many lines as you like. There are more than twenty ready-made templates (analytic, holistic, single point, checklist, deductions and subject specific ones), plus a personal library, JSON copy and paste, a scoring guide, a model answer and a comment bank. While grading, clicking a level updates the score on the spot without redrawing the page, each criterion can carry its own feedback, and students see the level they earned with your notes.
-
-## Peer review for students who did not take the test
-
-When you start a peer review session you choose two lists. The first is the responses to be reviewed: real submissions and any sample responses you write yourself. The second is the reviewers: students who took the test, whole classes you pick from your rosters, or names you type in. Reviewers who never took the test see the work with no author shown, exactly like everyone else. Students with accounts find the review on their Home page. Anyone added by name uses the session link.
-
-## One review screen everywhere
-
-Peer reviewers now grade with the same components teachers use: the same rubric level cards, running totals and checklist or deduction controls. The screen is identical whether a student reviews from their class or from the session link, and line breaks in the work being reviewed are kept in both. Grader-only material such as the scoring guide, model answer and comment bank is never sent to a student's browser.
-
-## Motion
-
-Pages and lists ease in when you navigate (never when data refreshes in the background), buttons and rubric levels give a small press response, a thin progress bar shows while the app talks to the server, dashboard numbers count up, and finishing a grading list or a review gets a short confetti burst. All of it switches off for people who ask their device to reduce motion.
-
-## Classwork
-
-The Classwork tab works like Google Classroom. Teachers get a Create menu (Assignment, Material, Topic), a topic list on the left, and one stack of items per topic. Assignments and materials show a round icon, open to show details, and can be moved between topics. Students see the same layout with their own status on each assignment (Assigned, Turned in, Missing).
-
-## Desktop notifications
-
-Students are asked to allow notifications the first time they sign in (and again after a week if they choose Not now). Once allowed, posting an announcement, a material or an assignment sends a notification to every student in that class, even if EdAssess is closed. This uses Web Push through a small service worker (`sw.js`, which must be deployed at the site root next to `index.html`). The push keys are derived from `EA_AUTH_SECRET`, so there is nothing extra to configure. Browsers without push support fall back to checking once a minute while the page is open. Set `EA_PUSH_CONTACT` to a `mailto:` address if you want push services to see a real contact.
-
-## Printing
-
-Everything can go on paper, and it is laid out for paper rather than copied from the screen. Open **Print** in the sidebar (or press Ctrl+Shift+P, or search "Print" in the command palette) to get the Print Center, which shows a live preview of the page before you print.
-
-- **Test on paper:** name, date and class lines, bubbles for multiple choice, ruled lines for essays, blanks for fill in the blank, boxes for ranking and matching. Choose paper size, text size, essay line count, and up to four versions that shuffle questions and options.
-- **Answer key and bubble answer sheet:** each version gets its own key.
-- **Student results:** one student, or the whole class with one report per page and a class summary on top. Rubric breakdowns and comments are included.
-- **Class summary, gradebook, roster and attendance sheet, scoring rubrics, survey results.**
-- **Print this page:** prints what you are looking at with the menus hidden.
-
-The grader also has a Print button for the student you are viewing.
-
-### Sections, STOP pages and scannable answer sheets
-
-Tests with sections print as booklets. Each section gets its own header, time limit and any special instructions you type, and a STOP page follows it. EdAssess measures the pages and adds blank pages so every STOP page, and every new section, lands on an odd page and cannot be peeked at. Images in questions, passages and options print too.
-
-The bubble answer sheet has four black corner squares, version and sheet bubbles, and an optional student number. Print one per student for a class and the number comes pre-filled. Then open **Scan bubble sheets** (Print Center, command palette), take or upload a photo of each filled sheet, and multiple choice is scored right away. Anything faint or double marked is flagged for you to fix before you record it. Students can also scan their own sheet while taking a test to fill in their multiple choice answers.
-
-Answer sheets are fully customizable in the Print Center: title, instruction line, extra header fields, bubbles per question, letters (A, a or 1), bubble shape and size, row spacing, columns, shaded row groups, letters inside bubbles, and which header lines appear. The design is saved with the test, so the scanner always reads the sheet the way it was printed. You can also turn off student self-scanning per test.
-
-### Students turning in a paper sheet
-
-Students do not have to open the test at all. Once you have printed a sheet for a test, a **Scan sheet** button appears next to Start on their assignment list (and a "turn it in by photo" link on the test start screen). They photograph their sheet, check every answer against their paper, fix anything flagged, tick the confirmation box and submit. Nothing is scored or shown to them until they confirm, and results appear afterward only if you have released them.
-
-Every printed answer sheet can carry a **turn-in QR code** (pick the assignment in the Print Center, or leave it on Automatic). Students scan it with their phone camera, or open **Scan answer sheet** from the EdAssess login page or their home screen, and photograph the sheet. EdAssess reads the QR from the photo itself, finds the right assignment, reads the bubbles and lets the student confirm every answer. No test screen and no sign in are needed unless the assignment requires an account. If the QR is damaged, the student can type the assignment code printed beside it.
-
-## Student IDs, class IDs and cleaner scanning
-
-Every student has a permanent six digit ID on their home screen. Students write it in the ID boxes on a paper answer sheet and fill in the bubbles, and the scan matches the sheet to the right student and fills in the score on its own. Each class also has a four digit class ID. Both can be pre-printed from the Print Center, with the class name shown above the class ID, or left blank for students to fill in. The version is never pre-printed, because students bubble their own. If they forget, the scanner asks which version it was. Small timing rectangles beside every column of bubbles help the scanner stay lined up even when the photo is a little curved or tilted.
-
-## Drafts, scheduling and the Collaboration tab
-
-Materials and assignments can be published now, saved as a draft, or scheduled for later. Students never see drafts or scheduled items, and a draft assignment's link will not open until it goes live.
-
-Every class has a Collaboration tab that only its teachers can see. It lists every file in the class folder, with a Create button for a blank Doc, Slides or Sheet, and lets any teacher leave notes on a file. Any file can be pushed to Classwork, live, as a draft, or on a schedule. Files you attach to class materials are added to the list automatically. Tests can be shared with every co-teacher of a class in one step.
-
-With Google Drive connected (the same GOOGLE_CLIENT_ID, GOOGLE_API_KEY and GOOGLE_APP_ID settings the file picker uses), each teacher gets an EdAssess folder, the class owner gets a class folder inside it, and co-teachers get a shortcut to it. Teachers sign in with Google once on the Collaboration tab. That creates the EdAssess folder and a folder for each class they own, shares it with co-teachers using the email Google provides, and syncs existing materials into it. Classes created later get their folder automatically while the teacher is signed in. Without those settings, the tab still works with pasted links.
-
-The Google sign-in asks for full Drive access so EdAssess can add each co-teacher's shortcut for them and list everything in the class folder. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
