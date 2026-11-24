@@ -1961,6 +1961,9 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
   .lms-tabs button{flex:none;white-space:nowrap}
 }
 .cb-pub .cb-hint{margin-top:8px}
+.cw-files{display:inline-block;margin:0 0 14px;padding:10px 16px;border:2px solid var(--ink,#111);border-radius:12px;font-weight:700;color:var(--ink,#111);text-decoration:none;max-width:100%}
+.cw-files:hover{background:rgba(37,99,235,.12)}
+.cb{padding-right:16px;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -13548,7 +13551,7 @@ const gLoad=src=>new Promise((ok,no)=>{if(document.querySelector('script[src="'+
 async function gToken(){
   if(GD.token&&Date.now()<GD.exp)return GD.token;
   await gLoad('https://accounts.google.com/gsi/client');
-  return new Promise((ok,no)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email',callback:r=>{if(r.error)return no(new Error(r.error==='access_denied'?'Google access was not granted.':'Google sign-in failed.'));GD.token=r.access_token;GD.exp=Date.now()+(+r.expires_in-60)*1000;ok(GD.token);},error_callback:e=>no(new Error(e&&e.type==='popup_closed'?'Google sign-in was closed.':'Google sign-in failed.'))});tc.requestAccessToken({prompt:GD.token?'':''});});
+  return new Promise((ok,no)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive',callback:r=>{if(r.error)return no(new Error(r.error==='access_denied'?'Google access was not granted.':'Google sign-in failed.'));GD.token=r.access_token;GD.exp=Date.now()+(+r.expires_in-60)*1000;ok(GD.token);},error_callback:e=>no(new Error(e&&e.type==='popup_closed'?'Google sign-in was closed.':'Google sign-in failed.'))});tc.requestAccessToken({prompt:GD.token?'':''});});
 }
 window.gPreload=async function(){try{if(!GD.cfg){const r=await fetch('/.netlify/functions/data?gcfg=1');GD.cfg=r.ok?await r.json():{};}if(GD.cfg.clientId){gLoad('https://accounts.google.com/gsi/client').catch(()=>{});gLoad('https://apis.google.com/js/api.js').catch(()=>{});}}catch(e){}};
 window.fxGDrive=async function(){
@@ -14094,7 +14097,8 @@ window.lmsClasswork=function(c,isT,asg){
   }).join('');
   const side=`<aside class="cw-side"><button class="cw-tp${!cur?' on':''}" onclick="cwFilter(${isT},'')">All topics</button>${topics.map(t=>`<button class="cw-tp${cur===t?' on':''}" onclick="cwFilter(${isT},this.dataset.t)" data-t="${E(t)}">${E(t)}</button>`).join('')}${isT?`<button class="cw-tp add" onclick="fxTopicAdd('${E(c.id)}')">+ Add topic</button>`:''}</aside>`;
   const create=isT?`<div class="cw-create"><button class="cw-cbtn" onclick="cwMenu(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Create</button><div class="cw-menu"><a onclick="fxClassAssign('${E(c.id)}')"><span class="cw-ico asg sm">${ICO.asg}</span>Assignment</a><a onclick="fxMatModal('${E(c.id)}')"><span class="cw-ico mat sm">${ICO.mat}</span>Material</a><a onclick="fxTopicAdd('${E(c.id)}')"><span class="cw-ico top sm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>Topic</a></div></div>`:'';
-  return `<div class="cw">${create}<div class="cw-cols">${side}<div class="cw-main">${blocks||''}${!total?`<div class="cw-blank"><div class="cw-blank-i">${ICO.asg}</div><h3>${isT?'Add classwork':'No classwork yet'}</h3><p>${isT?'Use Create to post an assignment, share a material or organize things into topics.':'Assignments and materials from your teacher will show up here.'}</p></div>`:''}</div></div></div>`;
+  const sf=!isT&&c.studentFolderUrl?`<a class="cw-files" href="${E(c.studentFolderUrl)}" target="_blank" rel="noopener noreferrer">Open the class files folder in Google Drive</a>`:'';
+  return `<div class="cw">${create}${sf}<div class="cw-cols">${side}<div class="cw-main">${blocks||''}${!total?`<div class="cw-blank"><div class="cw-blank-i">${ICO.asg}</div><h3>${isT?'Add classwork':'No classwork yet'}</h3><p>${isT?'Use Create to post an assignment, share a material or organize things into topics.':'Assignments and materials from your teacher will show up here.'}</p></div>`:''}</div></div></div>`;
 };
 })();
 
@@ -14856,7 +14860,8 @@ document.addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.shiftKe
 /* EdAssess collaboration: class folders in Google Drive, co-teacher notes, drafts and scheduled posting */
 (function(){
 const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CB={open:{},msg:{},busy:'',email:null,err:''};
+const CB={open:{},msg:{},busy:'',err:''};
+const GDlive=()=>typeof GD!=='undefined'&&!!GD.token&&Date.now()<GD.exp;
 const me=()=>{try{return String(fxMe().username||'').toLowerCase()}catch(x){return''}};
 const cls=id=>(APP.classes||[]).find(x=>x.id===id);
 const when=d=>{try{return new Date(d).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(x){return''}};
@@ -14900,98 +14905,124 @@ async function rootFolder(){
   const l=await dcall('files?q='+q+'&fields=files(id)&spaces=drive');id=l.files&&l.files[0]&&l.files[0].id;
   if(!id){const f=await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:'EdAssess',mimeType:'application/vnd.google-apps.folder'})});id=f.id}
   try{localStorage.setItem(key,id)}catch(x){}return id}
-async function shareWithTeam(c){
-  const col=c.collab||{};if(!col.folderId)return {n:0,miss:[],why:{}};
-  const r=await apiPost({action:'collabEmails',classId:c.id});const em=(r&&r.emails)||{};let n=0;const miss=[],why={};
-  const team=[c.ownerId,...(c.coTeachers||[])].map(x=>String(x).toLowerCase()).filter(u=>u!==me());
-  for(const u of team){const e=em[u];if(!e){miss.push(u);why[u]='has not signed in with Google yet';continue}
-    try{await dcall('files/'+col.folderId+'/permissions?sendNotificationEmail=false',{method:'POST',body:JSON.stringify({role:'writer',type:'user',emailAddress:e})});n++}catch(x){miss.push(u);why[u]=x.message}}
-  return {n,miss,why}}
-async function ensureFolder(c){
-  const col=c.collab||{};if(col.folderId)return col.folderId;
-  if(c.ownerId!==me())throw new Error('The class owner needs to open this tab once to create the shared folder.');
-  const root=await rootFolder();
-  const f=await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:c.name+(c.no?' ('+c.no+')':''),mimeType:'application/vnd.google-apps.folder',parents:[root]})});
-  const r=await apiPost({action:'collabSetup',classId:c.id,folderId:f.id});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not save the folder.');
-  c.collab=r.collab;try{await shareWithTeam(c)}catch(x){}return f.id}
-async function addShortcut(c){
-  const col=c.collab||{};if(!col.folderId||c.ownerId===me())return false;
-  const root=await rootFolder();
-  const q=encodeURIComponent("mimeType='application/vnd.google-apps.shortcut' and '"+root+"' in parents and trashed=false");
-  let have=false;try{const l=await dcall('files?q='+q+'&fields=files(id,shortcutDetails)');have=(l.files||[]).some(f=>f.shortcutDetails&&f.shortcutDetails.targetId===col.folderId)}catch(x){}
-  if(!have)await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:c.name,mimeType:'application/vnd.google-apps.shortcut',parents:[root],shortcutDetails:{targetId:col.folderId}})});
+/* Nobody is ever shared by name or email. Each class has two Drive folders that work by link:
+   a teacher folder (anyone with the link can edit) and a student folder (anyone with the link can view).
+   Every teacher gets EdAssess / Class name with shortcuts to both. */
+const FOLD='application/vnd.google-apps.folder',SHORT='application/vnd.google-apps.shortcut';
+const T_NAME='Teacher collaboration',S_NAME='Student files';
+async function findIn(parent,name,mime,target){
+  const q=encodeURIComponent("'"+parent+"' in parents and trashed=false and mimeType='"+mime+"'"+(target?'':" and name='"+name.replace(/'/g,"\\'")+"'"));
+  const l=await dcall('files?q='+q+'&fields=files(id,name,shortcutDetails)&pageSize=100');
+  return (l.files||[]).find(f=>target?(f.shortcutDetails&&f.shortcutDetails.targetId===target):true)||null}
+async function classContainer(c){
+  const root=await rootFolder(),key='ea_gd_cls_'+me()+'_'+c.id;let id='';try{id=localStorage.getItem(key)||''}catch(x){}
+  if(id){try{const f=await dcall('files/'+id+'?fields=id,trashed');if(f&&!f.trashed)return id}catch(x){}}
+  const ex=await findIn(root,c.name,FOLD);
+  id=ex?ex.id:(await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:c.name,mimeType:FOLD,parents:[root]})})).id;
+  try{localStorage.setItem(key,id)}catch(x){}return id}
+async function linkPerm(id,role){await dcall('files/'+id+'/permissions',{method:'POST',body:JSON.stringify({type:'anyone',role,allowFileDiscovery:false})})}
+async function ensureFolders(c){
+  const col=c.collab||{};if(col.folderId&&col.studentFolderId)return col.folderId;
+  if(c.ownerId!==me())throw new Error('The class owner needs to sign in with Google once to create the class folders.');
+  const cont=await classContainer(c);
+  let tf=col.folderId,sf=col.studentFolderId;
+  if(!tf){tf=(await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:T_NAME,mimeType:FOLD,parents:[cont]})})).id;await linkPerm(tf,'writer')}
+  if(!sf){sf=(await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:S_NAME,mimeType:FOLD,parents:[cont]})})).id;await linkPerm(sf,'reader')}
+  const r=await apiPost({action:'collabSetup',classId:c.id,folderId:tf,studentFolderId:sf});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not save the folders.');
+  c.collab=r.collab;return tf}
+async function ensureShortcuts(c){
+  const col=c.collab||{};if(!col.folderId||!col.studentFolderId||c.ownerId===me())return false;
+  const cont=await classContainer(c);
+  for(const [id,nm] of [[col.folderId,T_NAME],[col.studentFolderId,S_NAME]]){
+    let have=null;try{have=await findIn(cont,nm,SHORT,id)}catch(x){}
+    if(!have)await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:nm,mimeType:SHORT,parents:[cont],shortcutDetails:{targetId:id}})})}
   const r=await apiPost({action:'collabSetup',classId:c.id,shortcut:true});if(r&&r.ok)c.collab=r.collab;return true}
-/* everything inside the Drive folder shows up in the list, whoever put it there */
+async function setStudentAccess(c,open){
+  const col=c.collab||{};if(!col.studentFolderId)throw new Error('The student folder is not set up yet.');
+  const l=await dcall('files/'+col.studentFolderId+'/permissions?fields=permissions(id,type,role)');
+  const any=(l.permissions||[]).filter(p=>p.type==='anyone');
+  if(open&&!any.length)await linkPerm(col.studentFolderId,'reader');
+  if(!open)for(const p of any)await dcall('files/'+col.studentFolderId+'/permissions/'+p.id,{method:'DELETE'});
+  const r=await apiPost({action:'collabSetup',classId:c.id,studentOpen:!!open});if(r&&r.ok)c.collab=r.collab}
+async function moveFile(id,to,from){
+  const cur=await dcall('files/'+id+'?fields=parents');const rm=(cur.parents||[]).filter(p=>p!==to).join(',');
+  if((cur.parents||[]).includes(to)&&!rm)return;
+  await dcall('files/'+id+'?addParents='+to+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}
+/* everything inside either Drive folder shows up in the list, whoever put it there */
 async function syncFolder(c){
-  const fid=(c.collab||{}).folderId;if(!fid)return 0;
-  const q=encodeURIComponent("'"+fid+"' in parents and trashed=false and mimeType!='application/vnd.google-apps.shortcut'");
-  const l=await dcall('files?q='+q+'&pageSize=200&fields=files(id,name,webViewLink)');
-  const fs=(l.files||[]).filter(f=>f.webViewLink).map(f=>({id:f.id,name:f.name,url:f.webViewLink}));if(!fs.length)return 0;
-  const r=await apiPost({action:'collabAdd',classId:c.id,files:fs});if(r&&r.collab)c.collab=r.collab;return r&&r.added||0}
+  const col=c.collab||{};let added=0;
+  for(const [fid,where] of [[col.folderId,'teachers'],[col.studentFolderId,'students']]){if(!fid)continue;
+    const q=encodeURIComponent("'"+fid+"' in parents and trashed=false and mimeType!='"+SHORT+"'");
+    const l=await dcall('files?q='+q+'&pageSize=200&fields=files(id,name,webViewLink)');
+    const fs=(l.files||[]).filter(f=>f.webViewLink).map(f=>({id:f.id,name:f.name,url:f.webViewLink,where}));if(!fs.length)continue;
+    const r=await apiPost({action:'collabAdd',classId:c.id,files:fs});if(r&&r.collab){c.collab=r.collab;added+=r.added||0}}
+  return added}
 /* every file posted as class material also lands in the class folder, even when published to students */
 window.cbAfterMat=async function(cid,links){
   try{const c=cls(cid);if(!c)return;const g=(links||[]).map(l=>{let u=l.url;if(!/^https?:\/\//i.test(u))u='https://'+u;const i=window.gInfo&&gInfo(u);return i?{id:i.id,name:l.label||(KIND[i.kind]||['File'])[0],url:u}:null}).filter(Boolean);
-    if(!g.length)return;const r=await apiPost({action:'collabAdd',classId:cid,files:g});if(r&&r.collab)c.collab=r.collab;
-    const col=c.collab||{};if(col.folderId&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){
-      for(const f of g){try{const cur=await dcall('files/'+f.id+'?fields=parents');const rm=(cur.parents||[]).filter(p=>p!==col.folderId).join(',');
-        await dcall('files/'+f.id+'?addParents='+col.folderId+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}catch(x){}}}
+    if(!g.length)return;const live=!cbMatPub().state||cbMatPub().state==='live';
+    const col=c.collab||{};const dest=live?col.studentFolderId:col.folderId;
+    g.forEach(f=>f.where=live?'students':'teachers');
+    const r=await apiPost({action:'collabAdd',classId:cid,files:g});if(r&&r.collab)c.collab=r.collab;
+    if(dest&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){for(const f of g){try{await moveFile(f.id,dest)}catch(x){}}}
   }catch(x){}};
 
 /* ───── the Collaboration tab ───── */
 function msg(c,t,bad){CB.msg[c.id]={t,bad:!!bad};paint()}
 function paint(){if(typeof fxRenderClasses==='function')fxRenderClasses()}
 function fileRow(c,f){
-  const k=KIND[f.kind]||KIND.link,open=CB.open[f.id],n=(f.notes||[]).length;
-  return `<div class="cb-file"><div class="cb-fr"><span class="cb-k" style="--k:${k[1]}">${k[0]}</span><a class="cb-name" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a><span class="cb-by">${esc(f.by||'')} · ${esc(when(f.at))}</span>${f.pushedAt?'<span class="cb-chip s">In classwork</span>':''}
-   <span class="cb-acts"><button class="btn btn-ghost btn-sm" onclick="cbToggle('${esc(f.id)}')">Notes${n?' ('+n+')':''}</button><button class="btn btn-secondary btn-sm" onclick="cbPushModal('${esc(c.id)}','${esc(f.id)}')">Push to classwork</button><button class="btn btn-ghost btn-sm cw-del" onclick="cbRemove('${esc(c.id)}','${esc(f.id)}')">Remove</button></span></div>
+  const k=KIND[f.kind]||KIND.link,open=CB.open[f.id],n=(f.notes||[]).length,st=f.where==='students';
+  return `<div class="cb-file"><div class="cb-fr"><span class="cb-k" style="--k:${k[1]}">${k[0]}</span><a class="cb-name" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a><span class="cb-by">${esc(f.by||'')} · ${esc(when(f.at))}</span><span class="cb-chip ${st?'s':'d'}">${st?'Students can view':'Teachers only'}</span>${f.pushedAt?'<span class="cb-chip s">In classwork</span>':''}
+   <span class="cb-acts"><button class="btn btn-ghost btn-sm" onclick="cbToggle('${esc(f.id)}')">Notes${n?' ('+n+')':''}</button>${CB.cfg&&(c.collab||{}).studentFolderId?`<button class="btn btn-secondary btn-sm" onclick="cbMove('${esc(c.id)}','${esc(f.id)}',${st?0:1})">${st?'Back to teachers only':'Move to student folder'}</button>`:''}<button class="btn btn-secondary btn-sm" onclick="cbPushModal('${esc(c.id)}','${esc(f.id)}')">Push to classwork</button><button class="btn btn-ghost btn-sm cw-del" onclick="cbRemove('${esc(c.id)}','${esc(f.id)}')">Remove</button></span></div>
    ${open?`<div class="cb-notes">${(f.notes||[]).map(x=>`<div class="cb-note"><b>${esc(x.by)}</b> <small>${esc(when(x.at))}</small>${x.by===me()||c.ownerId===me()?` <a class="fxc-x" onclick="cbNoteDel('${esc(c.id)}','${esc(f.id)}','${esc(x.id)}')">Delete</a>`:''}<div>${esc(x.text)}</div></div>`).join('')||'<div class="cb-hint">No notes yet.</div>'}
    <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Add a note for your co-teachers"></textarea><button class="btn btn-primary btn-sm" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Add note</button></div></div>`:''}</div>`}
 window.collabTab=function(c){
   const col=c.collab||{files:[]},files=(col.files||[]).slice().reverse(),owner=c.ownerId===me(),m=CB.msg[c.id];
-  if(CB.email===null){CB.email='';apiPost({action:'getGoogleEmail'}).then(r=>{CB.email=(r&&r.email)||'';paint()}).catch(()=>{})}
-  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;paint()}
+  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;try{CB.on=!!localStorage.getItem('ea_gd_on_'+me())}catch(x){}paint()}
     try{if(ok&&!CB.auto&&localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){CB.auto=1;cbGoogle()}}catch(x){}});
-  const g=!!CB.cfg,hasF=!!col.folderId,needShort=hasF&&!owner&&!(col.shortcuts||{})[me()];
-  const status=hasF?`<a class="btn btn-secondary btn-sm" href="${esc(col.folderUrl)}" target="_blank" rel="noopener noreferrer">Open folder in Drive</a>`:owner?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbSetup('${esc(c.id)}')">${g?'Create the class folder':'Folders need Google Drive'}</button>`:`<span class="cb-hint">The class owner has not created the shared folder yet.</span>`;
-  return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Everything lives in the class folder inside your EdAssess folder in Google Drive.</div></div><div class="cb-bar">${status}
+  const g=!!CB.cfg,has=!!(col.folderId&&col.studentFolderId),live=GDlive();
+  const links=has?`<a class="btn btn-secondary btn-sm" href="${esc(col.folderUrl)}" target="_blank" rel="noopener noreferrer">Teacher folder</a><a class="btn btn-secondary btn-sm" href="${esc(col.studentFolderUrl)}" target="_blank" rel="noopener noreferrer">Student folder</a>`:owner?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbSetup('${esc(c.id)}')">${g?'Create the class folders':'Folders need Google Drive'}</button>`:`<span class="cb-hint">The class owner has not created the folders yet.</span>`;
+  const open=col.studentOpen!==false;
+  return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Each teacher finds two folders in Google Drive under EdAssess, then this class's name. Nobody is shared by name or email: the teacher folder is open to editing for anyone with its link, and the student folder is view only.</div></div><div class="cb-bar">${links}
     <span class="cb-create"><button class="btn btn-primary btn-sm" onclick="cbMenu(event)">+ Create</button><span class="cb-menu hidden" id="cb-menu"><button onclick="cbNew('${esc(c.id)}','document')">Blank Doc</button><button onclick="cbNew('${esc(c.id)}','presentation')">Blank Slides</button><button onclick="cbNew('${esc(c.id)}','spreadsheets')">Blank Sheet</button></span></span></div></div>
   ${m?`<div class="cb-msg ${m.bad?'bad':''}">${esc(m.t)}</div>`:''}
-  ${needShort?`<div class="cb-card"><b>Add this class to your Drive</b><div class="cb-hint">Puts a shortcut to the class folder inside your own EdAssess folder.</div><button class="btn btn-secondary btn-sm" onclick="cbShortcut('${esc(c.id)}')">Add shortcut</button></div>`:''}
+  ${has?`<div class="cb-card"><b>Student folder: ${open?'visible to students':'paused'}</b><div class="cb-hint">${open?'Anyone with the student folder link can view it. Pause access while you are editing, then restore it when you are done.':'Students cannot open the student folder right now. Restore access when your edits are finished.'}</div><div class="cb-add"><button class="btn ${open?'btn-secondary':'btn-primary'} btn-sm" ${live?'':'disabled'} onclick="cbAccess('${esc(c.id)}',${open?0:1})">${open?'Pause student access':'Restore student access'}</button>${live?'':'<span class="cb-hint">Sign in with Google below to change this.</span>'}</div></div>`:''}
   <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm" onclick="cbAddLink('${esc(c.id)}')">Add</button>${g?`<button class="btn btn-secondary btn-sm" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
   <div class="cb-files">${files.map(f=>fileRow(c,f)).join('')||'<div class="cb-empty">No files yet. Create one, or post a material with a Google link and it appears here automatically.</div>'}</div>
-  <div class="cb-card"><b>Google account</b>${CB.email?`<div class="cb-hint">Signed in as <b>${esc(CB.email)}</b>. Folders are created and shared for you automatically.</div>`:`<div class="cb-hint">Sign in with Google once. EdAssess then creates your EdAssess folder and class folders, shares them with co-teachers and syncs your existing materials.</div>`}
-   <div class="cb-add">${g?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.email?(typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp?'Sync now':'Reconnect Google'):'Sign in with Google'}</button>`:'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}${owner&&hasF&&g?`<button class="btn btn-secondary btn-sm" onclick="cbShare('${esc(c.id)}')">Share folder with co-teachers</button>`:''}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div></div>`};
+  <div class="cb-card"><b>Google Drive</b><div class="cb-hint">Sign in with Google once. EdAssess then creates your EdAssess folder, the two folders for each class you own, and a shortcut to them for every co-teacher. It never reads or stores anyone's email.</div>
+   <div class="cb-add">${g?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${live?'Sync now':(CB.on?'Reconnect Google':'Sign in with Google')}</button>`:'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div>`};
 document.addEventListener('click',e=>{const m=$('cb-menu');if(m&&!e.target.closest('.cb-create'))m.classList.add('hidden')});
 window.cbMenu=e=>{e.stopPropagation();const m=$('cb-menu');if(m)m.classList.toggle('hidden')};
 window.cbToggle=id=>{CB.open[id]=!CB.open[id];paint()};
 async function syncMaterials(c){
-  const g=[];(c.materials||[]).forEach(m=>(m.links||[]).forEach(l=>{const i=window.gInfo&&gInfo(l.url);if(i)g.push({id:i.id,name:l.label||m.title,url:l.url})}));
-  if(!g.length)return 0;const r=await apiPost({action:'collabAdd',classId:c.id,files:g});if(r&&r.collab)c.collab=r.collab;
-  const fid=(c.collab||{}).folderId;if(fid)for(const f of g){try{const cur=await dcall('files/'+f.id+'?fields=parents');if((cur.parents||[]).includes(fid))continue;const rm=(cur.parents||[]).join(',');await dcall('files/'+f.id+'?addParents='+fid+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}catch(x){}}
-  return r&&r.added||0}
+  const col=c.collab||{},g=[];(c.materials||[]).forEach(m=>(m.links||[]).forEach(l=>{const i=window.gInfo&&gInfo(l.url);if(i)g.push({id:i.id,name:l.label||m.title,url:l.url,live:(!m.state||m.state==='live')})}));
+  if(!g.length)return 0;let n=0;
+  for(const f of g){const dest=f.live?col.studentFolderId:col.folderId;f.where=f.live?'students':'teachers';
+    const r=await apiPost({action:'collabAdd',classId:c.id,files:[f]});if(r&&r.collab){c.collab=r.collab;n+=r.added||0}
+    if(dest){try{await moveFile(f.id,dest)}catch(x){}}}
+  return n}
 window.cbGoogle=async()=>{if(CB.busy)return;CB.busy=1;paint();const note=[];
   try{if(!(await cfg()))throw new Error('Google sign-in is not turned on for this site yet.');
-    const tok=await gToken();let em='';try{const u=await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+tok}})).json();em=String(u.email||'').toLowerCase()}catch(x){}
-    if(em){const r=await apiPost({action:'setGoogleEmail',email:em});if(r&&r.ok)CB.email=em}
-    try{localStorage.setItem('ea_gd_on_'+me(),'1')}catch(x){}
-    await rootFolder();let made=0,synced=0;
-    let short=0;const pend=[];
+    await gToken();try{localStorage.setItem('ea_gd_on_'+me(),'1');CB.on=true}catch(x){}
+    apiPost({action:'forgetGoogleEmail'});
+    await rootFolder();let made=0,synced=0,short=0;
     for(const c of (APP.classes||[]).filter(x=>!x.archived)){
-      try{if(c.ownerId===me()){if(!(c.collab||{}).folderId){await ensureFolder(c);made++}else{const sh=await shareWithTeam(c);if(sh.miss.length)pend.push(c.name+': '+sh.miss.map(u=>u+' '+sh.why[u]).join(', '))}synced+=await syncMaterials(c);synced+=await syncFolder(c)}
-        else if((c.collab||{}).folderId){try{if(await addShortcut(c))short++;synced+=await syncFolder(c)}catch(x){pend.push(c.name+': '+x.message)}}}catch(x){note.push(c.name+' ('+x.message+')')}}
+      try{if(c.ownerId===me()){if(!((c.collab||{}).folderId&&(c.collab||{}).studentFolderId)){await ensureFolders(c);made++}await ensureShortcuts(c);synced+=await syncMaterials(c);synced+=await syncFolder(c)}
+        else if((c.collab||{}).folderId){if(await ensureShortcuts(c))short++;synced+=await syncFolder(c)}}catch(x){note.push(c.name+' ('+x.message+')')}}
     const c0=(APP.classes||[]).find(x=>x.id===FXC.open);
-    if(c0)msg(c0,'Connected'+(em?' as '+em:'')+'. '+(made?made+' class folder'+(made===1?'':'s')+' created. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' shortcut'+(short===1?'':'s')+' added. ':'')+(pend.length?'Waiting on sharing: '+pend.join('; ')+'. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}
+    if(c0)msg(c0,'Connected. '+(made?made+' class'+(made===1?'':'es')+' set up. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' class'+(short===1?'':'es')+' added to your Drive. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}
   catch(e){const c0=(APP.classes||[]).find(x=>x.id===FXC.open);if(c0)msg(c0,e.message,true)}
   CB.busy='';paint()};
-window.cbSaveEmail=async()=>{const v=($('cb-em').value||'').trim();const r=await apiPost({action:'setGoogleEmail',email:v});if(r&&r.ok){CB.email=r.email;toast(v?'Saved.':'Removed.','success')}else toast((r&&r.error)||'Could not save.','error')};
 window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google Drive is not connected for this site yet. You can still add files by pasting links. The README explains how to turn it on.',true);
-  CB.busy=1;try{await ensureFolder(c);msg(c,'The class folder is ready in your EdAssess folder.')}catch(e){msg(c,e.message,true)}CB.busy=''};
-window.cbShortcut=async id=>{const c=cls(id);try{await addShortcut(c);msg(c,'Added to your EdAssess folder.')}catch(e){msg(c,'Could not add the shortcut yet: '+e.message+'. The class owner may not have shared the folder with your Google account. It retries each time you open this tab.',true)}};
-window.cbShare=async id=>{const c=cls(id);try{const r=await shareWithTeam(c);msg(c,r.n?'Shared with '+r.n+' co-teacher'+(r.n===1?'':'s')+'.'+(r.miss.length?' Not shared with: '+r.miss.map(u=>u+' ('+r.why[u]+')').join(', ')+'.':''):'Nobody was shared. '+(r.miss.length?'Not shared with: '+r.miss.map(u=>u+' ('+r.why[u]+')').join(', ')+'.':'Nothing to share.'),!r.n)}catch(e){msg(c,e.message,true)}};
+  CB.busy=1;try{await ensureFolders(c);await ensureShortcuts(c);msg(c,'The teacher and student folders are ready in EdAssess, then '+c.name+'.')}catch(e){msg(c,e.message,true)}CB.busy='';paint()};
+window.cbAccess=async(id,open)=>{const c=cls(id);try{await setStudentAccess(c,!!open);msg(c,open?'Student access restored.':'Student access paused. Students cannot open the student folder until you restore it.')}catch(e){msg(c,e.message,true)}};
+window.cbMove=async(cid,fid,toStudents)=>{const c=cls(cid),col=c.collab||{},f=(col.files||[]).find(x=>x.id===fid);if(!f)return;
+  try{await moveFile(f.id,toStudents?col.studentFolderId:col.folderId);const r=await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where:toStudents?'students':'teachers'}]});if(r&&r.collab)c.collab=r.collab;
+    msg(c,toStudents?'Moved to the student folder. Students with the folder link can view it.':'Moved back to the teacher folder. Anyone with the teacher link can edit it.')}catch(e){msg(c,'Could not move the file: '+e.message,true)}};
 window.cbNew=async(id,kind)=>{const c=cls(id);const nm={document:'Untitled document',presentation:'Untitled presentation',spreadsheets:'Untitled spreadsheet'}[kind];
   if(!(await cfg())){window.open(NEWURL[kind],'_blank','noopener');return msg(c,'Google opened a new file in another tab. Paste its link below to add it to this class.')}
-  try{const fid=await ensureFolder(c);const f=await dcall('files?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name:nm,mimeType:MIME[kind],parents:[fid]})});
-    const r=await apiPost({action:'collabAdd',classId:id,files:[{id:f.id,name:f.name,url:f.webViewLink}]});if(r&&r.collab)c.collab=r.collab;window.open(f.webViewLink,'_blank','noopener');paint()}catch(e){msg(c,e.message,true)}};
+  try{const fid=await ensureFolders(c);await ensureShortcuts(c);const f=await dcall('files?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name:nm,mimeType:MIME[kind],parents:[fid]})});
+    const r=await apiPost({action:'collabAdd',classId:id,files:[{id:f.id,name:f.name,url:f.webViewLink,where:'teachers'}]});if(r&&r.collab)c.collab=r.collab;window.open(f.webViewLink,'_blank','noopener');paint()}catch(e){msg(c,e.message,true)}};
 window.cbAddLink=async id=>{const c=cls(id),u=($('cb-url').value||'').trim();if(!u)return;const r=await apiPost({action:'collabAdd',classId:id,files:[{url:/^https?:\/\//i.test(u)?u:'https://'+u,name:$('cb-nm').value.trim()||undefined,id:(window.gInfo&&gInfo(/^https?:\/\//i.test(u)?u:'https://'+u)||{}).id}]});
   if(r&&r.ok){c.collab=r.collab;if(!r.added)return msg(c,'That file is already here.');paint()}else msg(c,(r&&r.error)||'Could not add.',true)};
 window.cbPick=async id=>{const c=cls(id);try{if(!(await cfg()))return;const tok=await gToken();await gLoad('https://apis.google.com/js/api.js');await new Promise(ok=>gapi.load('picker',ok));
@@ -15008,7 +15039,7 @@ window.cbPushModal=function(cid,fid){const c=cls(cid),f=((c.collab||{}).files||[
   <div class="form-group"><label class="form-label">Topic (optional)</label><input id="cbp-topic" class="form-control" maxlength="40" list="cbp-topics"><datalist id="cbp-topics">${topics.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>${pubBlock('cbp','live','',' ')}
   <div id="cbp-err" class="hidden fx-autherr"></div><div class="cb-mfoot"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cbPush('${esc(cid)}','${esc(fid)}')">Push</button></div></div>`,'520px')};
 window.cbPush=async(cid,fid)=>{const st=$('cbp-state').value,at=$('cbp-at').value;const r=await apiPost({action:'collabPush',classId:cid,fileId:fid,topic:$('cbp-topic').value,state:st,publishAt:st==='scheduled'&&at?new Date(at).toISOString():null});
-  if(r&&r.ok){cls(cid).collab=r.collab;closeModal();toast(st==='live'?'Pushed to classwork.':'Saved to classwork as '+(st==='draft'?'a draft':'scheduled')+'.','success');fxClsReload()}else{const e=$('cbp-err');e.textContent=(r&&r.error)||'Could not push.';e.classList.remove('hidden')}};
+  if(r&&r.ok){const c=cls(cid);c.collab=r.collab;try{const col=c.collab||{},f=(col.files||[]).find(x=>x.id===fid);if(f&&GDlive()){const dest=st==='live'?col.studentFolderId:col.folderId;if(dest){await moveFile(f.id,dest);await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where:st==='live'?'students':'teachers'}]})}}}catch(x){}closeModal();toast(st==='live'?'Pushed to classwork.':'Saved to classwork as '+(st==='draft'?'a draft':'scheduled')+'.','success');fxClsReload()}else{const e=$('cbp-err');e.textContent=(r&&r.error)||'Could not push.';e.classList.remove('hidden')}};
 window.cbShareTests=function(cid){const mine=(APP.tests||[]).filter(t=>!t.ownerId||String(t.ownerId).toLowerCase()===me());
   openModal(`<div class="modal-header"><h2 style="font-size:22px">Share tests with co-teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="margin:0 0 10px">Everyone teaching this class gets edit access to the tests you tick.</p>
   <div class="cb-tests">${mine.map(t=>`<label class="checkbox-wrap"><input type="checkbox" class="cb-tchk" value="${esc(t.id)}"><span>${esc(t.title||'Untitled')}</span></label>`).join('')||'<div class="cb-hint">You have no tests yet.</div>'}</div>
@@ -15016,9 +15047,7 @@ window.cbShareTests=function(cid){const mine=(APP.tests||[]).filter(t=>!t.ownerI
 window.cbShareTestsGo=async cid=>{const ids=[...document.querySelectorAll('.cb-tchk:checked')].map(x=>x.value);if(!ids.length)return closeModal();const r=await apiPost({action:'shareTestsToClass',classId:cid,testIds:ids});closeModal();
   toast(r&&r.ok?(r.with.length?'Shared '+r.shared+' test'+(r.shared===1?'':'s')+' with '+r.with.length+' teacher'+(r.with.length===1?'':'s')+'.':'This class has no other teachers yet.'):((r&&r.error)||'Could not share.'),r&&r.ok?'success':'error')};
 {const o=window.fxClassCreate;if(typeof o==='function')window.fxClassCreate=async function(){const before=new Set((APP.classes||[]).map(c=>c.id));const r=await o.apply(this,arguments);
-  try{await fxClsReload();if(localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp)for(const c of (APP.classes||[]))if(!before.has(c.id)&&c.ownerId===me())await ensureFolder(c)}catch(x){}return r}}
-/* when the owner adds co-teachers, share the folder right away if it exists */
-{const o=window.fxClassCoTeachersSave||null;}
+  try{await fxClsReload();if(localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp)for(const c of (APP.classes||[]))if(!before.has(c.id)&&c.ownerId===me()){await ensureFolders(c);await ensureShortcuts(c)}}catch(x){}return r}}
 })();
 
 </script>

@@ -4,6 +4,13 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Changed
+- Class folders no longer share with anyone by name or email. Each class has a teacher folder (anyone with the link can edit) and a student folder (anyone with the link can view), shown as shortcuts under EdAssess, then the class name, for every teacher. Google sign-in no longer asks for the account email, and any email saved earlier is deleted.
+
+### Added
+- Move files between the teacher folder and the student folder, and pause or restore student access while editing.
+- Students see a link to the class files folder in Classwork while access is on.
+
 ### Added
 - Every material shows who posted it, for teachers and students.
 

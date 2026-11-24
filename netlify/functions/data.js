@@ -776,7 +776,7 @@ async function studentHome(s) {
   for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); (c.materials || []).forEach((m) => m.by && set.add(lc(m.by))); }
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
-  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive), topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
+  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive), studentFolderUrl: c.collab && c.collab.studentOpen && c.collab.studentFolderUrl ? c.collab.studentFolderUrl : '', topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
   const peer = await peerSummary(s, subs);
   return { peer, student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
@@ -928,11 +928,11 @@ const gmailOk = (e) => /^[^\s@]{1,64}@[^\s@]{1,120}\.[A-Za-z]{2,}$/.test(e);
 const cleanFile = (f) => {
   let u = String((f && f.url) || '').trim().slice(0, 600); try { const x = new URL(u); if (!/^https?:$/.test(x.protocol)) return null; u = x.href; } catch (e) { return null; }
   const g = googleInfo(u); const kind = g ? g.kind : 'link';
-  return { id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
+  return { where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
 };
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'collabEmails', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1023,7 +1023,12 @@ async function classAction(body, user) {
   }
   if (a === 'collabSetup') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
-    if (body.folderId && ownerOf(c) === lc(user.username)) { col.folderId = String(body.folderId).replace(/[^\w-]/g, '').slice(0, 120); col.folderUrl = 'https://drive.google.com/drive/folders/' + col.folderId; }
+    const gid = (v) => String(v || '').replace(/[^\w-]/g, '').slice(0, 120);
+    if (ownerOf(c) === lc(user.username)) {
+      if (body.folderId) { col.folderId = gid(body.folderId); col.folderUrl = 'https://drive.google.com/drive/folders/' + col.folderId; }
+      if (body.studentFolderId) { col.studentFolderId = gid(body.studentFolderId); col.studentFolderUrl = 'https://drive.google.com/drive/folders/' + col.studentFolderId; col.studentOpen = true; }
+    }
+    if (typeof body.studentOpen === 'boolean') col.studentOpen = body.studentOpen;
     if (body.shortcut === true) col.shortcuts[lc(user.username)] = true;
     await saveClass(c); return reply(200, { ok: true, collab: col });
   }
@@ -1032,7 +1037,8 @@ async function classAction(body, user) {
     let added = 0;
     for (const f of (Array.isArray(body.files) ? body.files : []).slice(0, 25)) {
       const cf = cleanFile(f); if (!cf) continue;
-      if (col.files.some((x) => x.id === cf.id || x.url === cf.url)) continue;
+      const ex = col.files.find((x) => x.id === cf.id || x.url === cf.url);
+      if (ex) { if (f && f.where) ex.where = cf.where; continue; }
       col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null }); added++;
     }
     col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, added, collab: col });
@@ -1063,10 +1069,6 @@ async function classAction(body, user) {
     f.pushedAt = new Date().toISOString(); await saveClass(c);
     if (state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: f.name, tag: 'mat-' + c.id });
     return reply(200, { ok: true, collab: c.collab });
-  }
-  if (a === 'collabEmails') {
-    const out = {}; for (const u of [ownerOf(c), ...(c.coTeachers || []).map(lc)]) { const r = await getJ(U_PREFIX + u); if (r && r.gEmail) out[u] = r.gEmail; }
-    return reply(200, { ok: true, emails: out });
   }
   if (a === 'shareTestsToClass') {
     const team = [ownerOf(c), ...(c.coTeachers || []).map(lc)].filter((u) => u !== lc(user.username));
@@ -1278,13 +1280,7 @@ async function handlePost(body, user, student) {
   const publicOp = body.action === 'instructorOp' && body.op && body.op.type === 'upload';
   if (!user && !PUBLIC.includes(body.action) && !publicOp) return AUTH_ERR();
   switch (body.action) {
-    case 'setGoogleEmail': {
-      const em = String(body.email || '').trim().toLowerCase();
-      if (em && !gmailOk(em)) return bad('Enter a valid email address.');
-      const r = await getJ(U_PREFIX + lc(user.username)); if (!r) return bad('Account not found.', 404);
-      if (em) r.gEmail = em; else delete r.gEmail; await putJ(U_PREFIX + lc(user.username), r); return reply(200, { ok: true, email: em });
-    }
-    case 'getGoogleEmail': { const r = await getJ(U_PREFIX + lc(user.username)); return reply(200, { ok: true, email: (r && r.gEmail) || '' }); }
+    case 'forgetGoogleEmail': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gEmail) { delete r.gEmail; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'putTest': return putTest(body.test, body.baseRev, !!body.force, user);
     case 'putAssignment': return putSimple(P.asg, body.assignment, user);
     case 'putPeerSession':

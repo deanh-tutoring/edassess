@@ -82,16 +82,23 @@ Classwork works like Google Classroom: a Create menu (Assignment, Material, Topi
 
 #### Collaboration and Google Drive
 
-Teachers sign in with Google once. EdAssess then creates an **EdAssess** folder in their Drive and a folder for every class they own. Co-teachers receive the class folder as an automatic shortcut inside their own EdAssess folder, and everything already attached to class materials is moved or listed there.
+Anonymity comes first, so **nothing is ever shared by name or email.** Each class has two Google Drive folders that work by link:
 
-The **Collaboration** tab is visible only to a class's teachers. It lists every file in the class folder, whoever added it, and offers:
+- **Teacher folder:** anyone with the link can edit. This is where co-teachers build materials together.
+- **Student folder:** anyone with the link can view. A file moved here is what students see.
 
-- a **Create** menu for a blank Doc, Slides or Sheet in the folder
+Teachers sign in with Google once. EdAssess then creates an **EdAssess** folder in their Drive with a folder per class inside it. The two class folders appear there for every teacher of the class, as real folders for the owner and as shortcuts for co-teachers. EdAssess never reads or stores anyone's email address.
+
+The **Collaboration** tab is visible only to a class's teachers. It lists every file in both folders, whoever added it, and offers:
+
+- a **Create** menu for a blank Doc, Slides or Sheet in the teacher folder
+- **Move to student folder** and **Back to teachers only** for each file
+- **Pause student access** while you are editing, and **Restore student access** when you are done. Pausing removes the link permission, so students cannot open the folder until you restore it.
 - notes on each file, so co-teachers can talk about it in place
 - **Push to classwork**, live, as a draft or scheduled
 - a one-step **Share my tests with co-teachers** for everyone teaching the class
 
-Files you attach to materials land in the class folder by default, even when they are published to students, so everything is in one place. Pasted Google links work too: any Docs, Sheets, Slides, Forms or Drive link is recognized, and **Embed** lets students preview the file on the page without signing in to Google. In **Post material** you can also press **Add from Google Drive** to pick files.
+Files attached to class materials are moved into the right folder automatically: the student folder once published, and the teacher folder while a draft or scheduled. Students see an **Open the class files folder** link in Classwork while access is on. Pasted Google links work too: any Docs, Sheets, Slides, Forms or Drive link is recognized, and **Embed** lets students preview the file on the page. In **Post material** you can also press **Add from Google Drive** to pick files.
 
 Without the Google settings below, all of this still works with pasted links. See [Turning on Google Drive](#turning-on-google-drive).
 
@@ -188,7 +195,7 @@ EdAssess has a plain-language **Terms of Service** (look for **Terms** on the fr
 - The hosted service is provided as is, without liability, under Texas law.
 - The source code is open source under the MIT License. The Terms cover the hosted service at edassess.netlify.app, and the license covers the code.
 
-The privacy policy is built into the app too (look for **Privacy policy** or add `?privacy=1` to the site address). We keep data collection small: students don't need an email address, there are no ads and no tracking, and passwords are stored only as salted hashes. Teachers who connect Google Drive share their Google account email with EdAssess for folder sharing and nothing else. The policy explains what is stored, who can see it, which outside services are involved, how long things are kept and how to ask for deletion.
+The privacy policy is built into the app too (look for **Privacy policy** or add `?privacy=1` to the site address). We keep data collection small: students don't need an email address, there are no ads and no tracking, and passwords are stored only as salted hashes. Connecting Google Drive does not give EdAssess anyone's email, and folders are never shared with named people. The policy explains what is stored, who can see it, which outside services are involved, how long things are kept and how to ask for deletion.
 
 ---
 
@@ -214,7 +221,7 @@ This takes about ten minutes, and without it everything else still works.
 3. Create an API key and restrict it to your site and the Picker API.
 4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
 
-Sign-in asks for full Drive access plus the account email. That is what lets EdAssess add each co-teacher's shortcut for them and list everything inside a class folder. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
+Sign-in asks for full Drive access. That is what lets EdAssess create the class folders, add each co-teacher's shortcut and list everything inside a class folder. It does not ask for the account email. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
 
 ### Running it locally
 
