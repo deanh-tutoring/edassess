@@ -13548,7 +13548,7 @@ const gLoad=src=>new Promise((ok,no)=>{if(document.querySelector('script[src="'+
 async function gToken(){
   if(GD.token&&Date.now()<GD.exp)return GD.token;
   await gLoad('https://accounts.google.com/gsi/client');
-  return new Promise((ok,no)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive.file',callback:r=>{if(r.error)return no(new Error(r.error==='access_denied'?'Google access was not granted.':'Google sign-in failed.'));GD.token=r.access_token;GD.exp=Date.now()+(+r.expires_in-60)*1000;ok(GD.token);},error_callback:e=>no(new Error(e&&e.type==='popup_closed'?'Google sign-in was closed.':'Google sign-in failed.'))});tc.requestAccessToken({prompt:GD.token?'':''});});
+  return new Promise((ok,no)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',callback:r=>{if(r.error)return no(new Error(r.error==='access_denied'?'Google access was not granted.':'Google sign-in failed.'));GD.token=r.access_token;GD.exp=Date.now()+(+r.expires_in-60)*1000;ok(GD.token);},error_callback:e=>no(new Error(e&&e.type==='popup_closed'?'Google sign-in was closed.':'Google sign-in failed.'))});tc.requestAccessToken({prompt:GD.token?'':''});});
 }
 window.gPreload=async function(){try{if(!GD.cfg){const r=await fetch('/.netlify/functions/data?gcfg=1');GD.cfg=r.ok?await r.json():{};}if(GD.cfg.clientId){gLoad('https://accounts.google.com/gsi/client').catch(()=>{});gLoad('https://apis.google.com/js/api.js').catch(()=>{});}}catch(e){}};
 window.fxGDrive=async function(){
@@ -14940,7 +14940,8 @@ function fileRow(c,f){
 window.collabTab=function(c){
   const col=c.collab||{files:[]},files=(col.files||[]).slice().reverse(),owner=c.ownerId===me(),m=CB.msg[c.id];
   if(CB.email===null){CB.email='';apiPost({action:'getGoogleEmail'}).then(r=>{CB.email=(r&&r.email)||'';paint()}).catch(()=>{})}
-  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;paint()}});
+  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;paint()}
+    try{if(ok&&!CB.auto&&localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){CB.auto=1;cbGoogle()}}catch(x){}});
   const g=!!CB.cfg,hasF=!!col.folderId,needShort=hasF&&!owner&&!(col.shortcuts||{})[me()];
   const status=hasF?`<a class="btn btn-secondary btn-sm" href="${esc(col.folderUrl)}" target="_blank" rel="noopener noreferrer">Open folder in Drive</a>`:owner?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbSetup('${esc(c.id)}')">${g?'Create the class folder':'Folders need Google Drive'}</button>`:`<span class="cb-hint">The class owner has not created the shared folder yet.</span>`;
   return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Everything lives in the class folder inside your EdAssess folder in Google Drive.</div></div><div class="cb-bar">${status}
@@ -14949,11 +14950,29 @@ window.collabTab=function(c){
   ${needShort?`<div class="cb-card"><b>Add this class to your Drive</b><div class="cb-hint">Puts a shortcut to the class folder inside your own EdAssess folder.</div><button class="btn btn-secondary btn-sm" onclick="cbShortcut('${esc(c.id)}')">Add shortcut</button></div>`:''}
   <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm" onclick="cbAddLink('${esc(c.id)}')">Add</button>${g?`<button class="btn btn-secondary btn-sm" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
   <div class="cb-files">${files.map(f=>fileRow(c,f)).join('')||'<div class="cb-empty">No files yet. Create one, or post a material with a Google link and it appears here automatically.</div>'}</div>
-  <div class="cb-card"><b>Sharing</b><div class="cb-hint">Co-teachers get access to the folder when you add them and share it from here. Google needs each teacher's Google email to share a folder. It is used only for that.</div>
-   <div class="cb-add"><input id="cb-em" class="form-control" type="email" placeholder="Your Google email" value="${esc(CB.email||'')}"><button class="btn btn-secondary btn-sm" onclick="cbSaveEmail()">Save my email</button>${owner&&hasF&&g?`<button class="btn btn-secondary btn-sm" onclick="cbShare('${esc(c.id)}')">Share folder with co-teachers</button>`:''}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div>`};
+  <div class="cb-card"><b>Google account</b>${CB.email?`<div class="cb-hint">Signed in as <b>${esc(CB.email)}</b>. Folders are created and shared for you automatically.</div>`:`<div class="cb-hint">Sign in with Google once. EdAssess then creates your EdAssess folder and class folders, shares them with co-teachers and syncs your existing materials.</div>`}
+   <div class="cb-add">${g?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.email?'Sync now':'Sign in with Google'}</button>`:'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}${owner&&hasF&&g?`<button class="btn btn-secondary btn-sm" onclick="cbShare('${esc(c.id)}')">Share folder with co-teachers</button>`:''}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div></div>`};
 document.addEventListener('click',e=>{const m=$('cb-menu');if(m&&!e.target.closest('.cb-create'))m.classList.add('hidden')});
 window.cbMenu=e=>{e.stopPropagation();const m=$('cb-menu');if(m)m.classList.toggle('hidden')};
 window.cbToggle=id=>{CB.open[id]=!CB.open[id];paint()};
+async function syncMaterials(c){
+  const g=[];(c.materials||[]).forEach(m=>(m.links||[]).forEach(l=>{const i=window.gInfo&&gInfo(l.url);if(i)g.push({id:i.id,name:l.label||m.title,url:l.url})}));
+  if(!g.length)return 0;const r=await apiPost({action:'collabAdd',classId:c.id,files:g});if(r&&r.collab)c.collab=r.collab;
+  const fid=(c.collab||{}).folderId;if(fid)for(const f of g){try{const cur=await dcall('files/'+f.id+'?fields=parents');if((cur.parents||[]).includes(fid))continue;const rm=(cur.parents||[]).join(',');await dcall('files/'+f.id+'?addParents='+fid+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}catch(x){}}
+  return r&&r.added||0}
+window.cbGoogle=async()=>{if(CB.busy)return;CB.busy=1;paint();const note=[];
+  try{if(!(await cfg()))throw new Error('Google sign-in is not turned on for this site yet.');
+    const tok=await gToken();let em='';try{const u=await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+tok}})).json();em=String(u.email||'').toLowerCase()}catch(x){}
+    if(em){const r=await apiPost({action:'setGoogleEmail',email:em});if(r&&r.ok)CB.email=em}
+    try{localStorage.setItem('ea_gd_on_'+me(),'1')}catch(x){}
+    await rootFolder();let made=0,synced=0;
+    for(const c of (APP.classes||[]).filter(x=>!x.archived)){
+      try{if(c.ownerId===me()){if(!(c.collab||{}).folderId){await ensureFolder(c);made++}else{try{await shareWithTeam(c)}catch(x){}}synced+=await syncMaterials(c)}
+        else if((c.collab||{}).folderId&&!(c.collab.shortcuts||{})[me()]){try{await addShortcut(c)}catch(x){}}}catch(x){note.push(c.name)}}
+    const c0=(APP.classes||[]).find(x=>x.id===FXC.open);
+    if(c0)msg(c0,'Connected'+(em?' as '+em:'')+'. '+(made?made+' class folder'+(made===1?'':'s')+' created. ':'')+(synced?synced+' existing file'+(synced===1?'':'s')+' synced. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}
+  catch(e){const c0=(APP.classes||[]).find(x=>x.id===FXC.open);if(c0)msg(c0,e.message,true)}
+  CB.busy='';paint()};
 window.cbSaveEmail=async()=>{const v=($('cb-em').value||'').trim();const r=await apiPost({action:'setGoogleEmail',email:v});if(r&&r.ok){CB.email=r.email;toast(v?'Saved.':'Removed.','success')}else toast((r&&r.error)||'Could not save.','error')};
 window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google Drive is not connected for this site yet. You can still add files by pasting links. The README explains how to turn it on.',true);
   CB.busy=1;try{await ensureFolder(c);msg(c,'The class folder is ready in your EdAssess folder.')}catch(e){msg(c,e.message,true)}CB.busy=''};
@@ -14986,6 +15005,8 @@ window.cbShareTests=function(cid){const mine=(APP.tests||[]).filter(t=>!t.ownerI
   <div class="cb-mfoot"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cbShareTestsGo('${esc(cid)}')">Share</button></div></div>`,'520px')};
 window.cbShareTestsGo=async cid=>{const ids=[...document.querySelectorAll('.cb-tchk:checked')].map(x=>x.value);if(!ids.length)return closeModal();const r=await apiPost({action:'shareTestsToClass',classId:cid,testIds:ids});closeModal();
   toast(r&&r.ok?(r.with.length?'Shared '+r.shared+' test'+(r.shared===1?'':'s')+' with '+r.with.length+' teacher'+(r.with.length===1?'':'s')+'.':'This class has no other teachers yet.'):((r&&r.error)||'Could not share.'),r&&r.ok?'success':'error')};
+{const o=window.fxClassCreate;if(typeof o==='function')window.fxClassCreate=async function(){const before=new Set((APP.classes||[]).map(c=>c.id));const r=await o.apply(this,arguments);
+  try{await fxClsReload();if(localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp)for(const c of (APP.classes||[]))if(!before.has(c.id)&&c.ownerId===me())await ensureFolder(c)}catch(x){}return r}}
 /* when the owner adds co-teachers, share the folder right away if it exists */
 {const o=window.fxClassCoTeachersSave||null;}
 })();
