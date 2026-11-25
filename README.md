@@ -87,7 +87,7 @@ Anonymity comes first, so **nothing is ever shared by name or email.** Each clas
 - **Teacher folder:** anyone with the link can edit. This is where co-teachers build materials together.
 - **Student folder:** anyone with the link can view. A file moved here is what students see.
 
-Teachers sign in with Google once. EdAssess then creates an **EdAssess** folder in their Drive with a folder per class inside it. The two class folders appear there for every teacher of the class, as real folders for the owner and as shortcuts for co-teachers. EdAssess never reads or stores anyone's email address.
+Teachers sign in with Google once. After that everything syncs on its own: whenever the Collaboration tab opens, and once a minute while it stays open. EdAssess creates an **EdAssess** folder in their Drive with a folder per class inside it. The two class folders appear there for every teacher of the class, as real folders for the owner and as shortcuts for co-teachers. EdAssess never reads or stores anyone's email address.
 
 The **Collaboration** tab is visible only to a class's teachers. It lists every file in both folders, whoever added it, and offers:
 

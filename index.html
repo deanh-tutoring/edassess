@@ -14991,19 +14991,18 @@ function fileRow(c,f){
    <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Add a note for your co-teachers"></textarea><button class="btn btn-primary btn-sm" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Add note</button></div></div>`:''}</div>`}
 window.collabTab=function(c){
   const col=c.collab||{files:[]},files=(col.files||[]).slice().reverse(),owner=c.ownerId===me(),m=CB.msg[c.id];
-  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;try{CB.on=!!localStorage.getItem('ea_gd_on_'+me())}catch(x){}paint()}
-    try{if(ok&&!CB.auto&&localStorage.getItem('ea_gd_on_'+me())&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){CB.auto=1;cbGoogle()}}catch(x){}});
+  cfg().then(ok=>{if(CB.cfg!==ok){CB.cfg=ok;try{CB.on=!!localStorage.getItem('ea_gd_on_'+me())}catch(x){}paint()}autoSync()});
   const g=!!CB.cfg,has=!!(col.folderId&&col.studentFolderId),live=GDlive();
   const links=has?`<a class="btn btn-secondary btn-sm" href="${esc(col.folderUrl)}" target="_blank" rel="noopener noreferrer">Teacher folder</a><a class="btn btn-secondary btn-sm" href="${esc(col.studentFolderUrl)}" target="_blank" rel="noopener noreferrer">Student folder</a>`:owner?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbSetup('${esc(c.id)}')">${g?'Create the class folders':'Folders need Google Drive'}</button>`:`<span class="cb-hint">The class owner has not created the folders yet.</span>`;
   const open=col.studentOpen!==false;
-  return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Each teacher finds two folders in Google Drive under EdAssess, then this class's name. Nobody is shared by name or email: the teacher folder is open to editing for anyone with its link, and the student folder is view only.</div></div><div class="cb-bar">${g?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.busy?'Syncing...':(live?'Sync':'Sign in and sync')}</button>`:''}${links}
+  return `<div class="cb"><div class="cb-top"><div class="cb-ttl"><h3>Teacher materials</h3><div class="cb-hint">Only teachers of this class see this tab. Each teacher finds two folders in Google Drive under EdAssess, then this class's name. Nobody is shared by name or email: the teacher folder is open to editing for anyone with its link, and the student folder is view only.</div></div><div class="cb-bar">${g&&!live?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.on?'Reconnect Google':'Sign in with Google'}</button>`:''}${links}
     <span class="cb-create"><button class="btn btn-primary btn-sm" onclick="cbMenu(event)">+ Create</button><span class="cb-menu hidden" id="cb-menu"><button onclick="cbNew('${esc(c.id)}','document')">Blank Doc</button><button onclick="cbNew('${esc(c.id)}','presentation')">Blank Slides</button><button onclick="cbNew('${esc(c.id)}','spreadsheets')">Blank Sheet</button></span></span></div></div>
   ${m?`<div class="cb-msg ${m.bad?'bad':''}">${esc(m.t)}</div>`:''}
   ${has?`<div class="cb-card"><b>Student folder: ${open?'visible to students':'paused'}</b><div class="cb-hint">${open?'Anyone with the student folder link can view it. Pause access while you are editing, then restore it when you are done.':'Students cannot open the student folder right now. Restore access when your edits are finished.'}</div><div class="cb-add"><button class="btn ${open?'btn-secondary':'btn-primary'} btn-sm" ${live?'':'disabled'} onclick="cbAccess('${esc(c.id)}',${open?0:1})">${open?'Pause student access':'Restore student access'}</button>${live?'':'<span class="cb-hint">Sign in with Google below to change this.</span>'}</div></div>`:''}
   <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm" onclick="cbAddLink('${esc(c.id)}')">Add</button>${g?`<button class="btn btn-secondary btn-sm" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
   <div class="cb-files">${files.map(f=>fileRow(c,f)).join('')||'<div class="cb-empty">No files yet. Create one, or post a material with a Google link and it appears here automatically.</div>'}</div>
   <div class="cb-card"><b>Google Drive</b><div class="cb-hint">Sign in with Google once. EdAssess then creates your EdAssess folder, the two folders for each class you own, and a shortcut to them for every co-teacher. It never reads or stores anyone's email.</div>
-   <div class="cb-add">${g?`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${live?'Sync now':(CB.on?'Reconnect Google':'Sign in with Google')}</button>`:'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div>`};
+   <div class="cb-add">${g?(live?`<span class="cb-hint">${CB.busy?'Syncing with Google Drive...':'Syncs automatically'+(CB.last?' · last checked '+when(CB.last):'')}</span>`:`<button class="btn btn-primary btn-sm" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.on?'Reconnect Google':'Sign in with Google'}</button>`):'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}<button class="btn btn-secondary btn-sm" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button></div></div></div>`};
 document.addEventListener('click',e=>{const m=$('cb-menu');if(m&&!e.target.closest('.cb-create'))m.classList.add('hidden')});
 window.cbMenu=e=>{e.stopPropagation();const m=$('cb-menu');if(m)m.classList.toggle('hidden')};
 window.cbToggle=id=>{CB.open[id]=!CB.open[id];paint()};
@@ -15014,18 +15013,24 @@ async function syncMaterials(c){
     const r=await apiPost({action:'collabAdd',classId:c.id,files:[f]});if(r&&r.collab){c.collab=r.collab;n+=r.added||0}
     if(dest){try{await moveFile(f.id,dest)}catch(x){}}}
   return n}
-window.cbGoogle=async()=>{if(CB.busy)return;CB.busy=1;paint();const note=[];
+async function autoSync(){
+  try{if(!CB.cfg||CB.busy||!CB.on||typeof GD==='undefined'||(typeof FXC!=='undefined'&&FXC.tab!=='collab'))return;
+    if(CB.last&&Date.now()-CB.last<45000)return;
+    if(!GDlive()){if(CB.silent)return;CB.silent=1;try{await gToken()}catch(x){return}}
+    if(GDlive())cbGoogle(true)}catch(x){}}
+setInterval(()=>{if(!document.hidden)autoSync()},60000);
+window.cbGoogle=async(silent)=>{if(CB.busy)return;CB.busy=1;CB.last=Date.now();const quiet=silent===true;let chg=false;if(!quiet)paint();const note=[];let made=0,synced=0,short=0;
   try{if(!(await cfg()))throw new Error('Google sign-in is not turned on for this site yet.');
     await gToken();try{localStorage.setItem('ea_gd_on_'+me(),'1');CB.on=true}catch(x){}
     apiPost({action:'forgetGoogleEmail'});
-    await rootFolder();let made=0,synced=0,short=0;
+    await rootFolder();made=0;synced=0;short=0;
     for(const c of (APP.classes||[]).filter(x=>!x.archived)){
       try{if(c.ownerId===me()){const had=(c.collab||{}).folderId+(c.collab||{}).studentFolderId;await ensureFolders(c);if(had!==(c.collab||{}).folderId+(c.collab||{}).studentFolderId)made++;await pruneMissing(c);await ensureShortcuts(c);synced+=await syncMaterials(c);synced+=await syncFolder(c)}
         else if((c.collab||{}).folderId){await ensureFolders(c);await pruneMissing(c);if(await ensureShortcuts(c))short++;synced+=await syncFolder(c)}}catch(x){note.push(c.name+' ('+x.message+')')}}
     const c0=(APP.classes||[]).find(x=>x.id===FXC.open);
-    if(c0)msg(c0,'Connected. '+(made?made+' class'+(made===1?' was':'es were')+' set up or rebuilt. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' class'+(short===1?'':'es')+' added to your Drive. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}
+    if(c0&&!(silent===true&&!made&&!synced&&!short&&!note.length)){if(c0)msg(c0,'Synced. '+(made?made+' class'+(made===1?' was':'es were')+' set up or rebuilt. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' class'+(short===1?'':'es')+' added to your Drive. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}}
   catch(e){const c0=(APP.classes||[]).find(x=>x.id===FXC.open);if(c0)msg(c0,e.message,true)}
-  CB.busy='';paint()};
+  CB.busy='';CB.last=Date.now();if(!quiet||made||synced||short||note.length||CB.errShown)paint()};
 window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google Drive is not connected for this site yet. You can still add files by pasting links. The README explains how to turn it on.',true);
   CB.busy=1;try{await ensureFolders(c);await ensureShortcuts(c);msg(c,'The teacher and student folders are ready in EdAssess, then '+c.name+'.')}catch(e){msg(c,e.message,true)}CB.busy='';paint()};
 window.cbAccess=async(id,open)=>{const c=cls(id);try{await setStudentAccess(c,!!open);msg(c,open?'Student access restored.':'Student access paused. Students cannot open the student folder until you restore it.')}catch(e){msg(c,e.message,true)}};
