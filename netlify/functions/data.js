@@ -101,6 +101,7 @@ async function gToken(form) {
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error_description || j.error || 'Google refused the request.'); return j;
 }
 async function ownerDrive(c) {
+  if (c.collab && c.collab.instantOff) return null;
   const rec = await getJ(U_PREFIX + ownerOf(c)); if (!rec || !rec.gRefresh) return null;
   try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(rec.gRefresh) }); return t.access_token || null; } catch (e) { return null; }
 }
@@ -694,7 +695,7 @@ async function classesForTeacher(user) {
   for (const c of mine) {
     try { if (!c.no) { for (let i = 0; i < 60 && !c.no; i++) { const n = String(crypto.randomInt(1000, 10000)); if (!(await getJ(CNO_PREFIX + n))) { await putJ(CNO_PREFIX + n, { id: c.id }); c.no = n; await saveClass(c); } } } } catch (e) { /* optional */ }
     const x = clsClean(c);
-    if (x.collab) { const orec = await getJ(U_PREFIX + ownerOf(c)).catch(() => null); x.collab = { ...x.collab, serverOn: !!(orec && orec.gRefresh) }; }
+    if (x.collab) { const orec = await getJ(U_PREFIX + ownerOf(c)).catch(() => null); x.collab = { ...x.collab, serverOn: !!(orec && orec.gRefresh) && !x.collab.instantOff }; }
     x.students = await Promise.all((c.students || []).map(async (st) => { const r = { ...st }; try { if (st.key) { const rec = await getJ(S_PREFIX + st.key); if (rec) { if (!rec.sid) { rec.sid = await newSid(rec.key); await putJ(S_PREFIX + rec.key, rec); } r.sid = rec.sid; } } } catch (e) { /* optional */ } return r; }));
     x.invites = await Promise.all((c.invites || []).map(async (i) => ({ ...i, registered: !!(await getJ(S_PREFIX + i.key)) })));
     out.push(x);
@@ -958,7 +959,7 @@ const cleanFile = (f) => {
 };
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['collabInstant', 'setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1178,6 +1179,11 @@ async function classAction(body, user) {
     await saveClass(c); if (!old && state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id });
     return reply(200, { ok: true });
   }
+  if (a === 'collabInstant') {
+    if (role !== 'owner') return bad('Only the class owner can change this.', 403);
+    c.collab = c.collab || {}; if (body.on) delete c.collab.instantOff; else c.collab.instantOff = true; await saveClass(c);
+    return reply(200, { ok: true, instantOff: !!c.collab.instantOff });
+  }
   if (a === 'setGroups') {
     const out = [];
     for (const g of (Array.isArray(body.groups) ? body.groups : []).slice(0, 30)) { const name = String((g && g.name) || '').trim().slice(0, 40); if (!name) continue; const have = new Set((c.students || []).map((x) => x.key)); out.push({ id: okId(g.id) ? g.id : crypto.randomBytes(5).toString('hex'), name, keys: [...new Set((g.keys || []).map(String))].filter((k) => have.has(k)) }); }
@@ -1386,6 +1392,11 @@ async function handlePost(body, user, student) {
       if (!t.refresh_token) return bad('Google did not return long-term access. Remove EdAssess from your Google account permissions and try again.');
       const r = await getJ(U_PREFIX + lc(user.username)); if (!r) return bad('Account not found.', 404); r.gRefresh = gEnc(t.refresh_token); await putJ(U_PREFIX + lc(user.username), r);
       return reply(200, { ok: true });
+    }
+    case 'gdToken': {
+      const r = await getJ(U_PREFIX + lc(user.username)); if (!r || !r.gRefresh || !process.env.GOOGLE_CLIENT_SECRET) return reply(200, { ok: false });
+      try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(r.gRefresh) }); return reply(200, { ok: true, token: t.access_token, expires_in: t.expires_in || 3000 }); }
+      catch (e) { delete r.gRefresh; await putJ(U_PREFIX + lc(user.username), r); return reply(200, { ok: false }); }
     }
     case 'gdDisconnect': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gRefresh) { try { await fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(gDec(r.gRefresh)), { method: 'POST' }); } catch (e) {} delete r.gRefresh; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'forgetGoogleEmail': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gEmail) { delete r.gEmail; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }

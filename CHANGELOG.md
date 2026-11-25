@@ -4,6 +4,12 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.6.1 (2026-11-25)
+
+### Changed
+- Instant moves are on by default. The class owner can turn them off with Deny instant moves on the Collaboration tab, and co-teacher moves then wait for the owner again.
+- Google sign-in is remembered. After the first sign-in EdAssess keeps an encrypted long-term grant on the server, so opening the Collaboration tab no longer asks you to sign in again. This needs GOOGLE_CLIENT_SECRET; without it the old popup still works.
+
 ## 1.6.0 (2026-11-25)
 
 ### Added
