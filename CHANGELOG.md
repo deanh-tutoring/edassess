@@ -5,6 +5,9 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 ## Unreleased
 
 ### Fixed
+- Moving a file between the teacher and student folders no longer fails with "Increasing the number of parents is not allowed". If Google still refuses because another teacher owns the file, a copy is placed in the destination folder instead.
+
+### Fixed
 - Deleting the Drive folders no longer breaks Collaboration. The tab now syncs on its own every time it opens and once a minute while it stays open, with no button to press. It rebuilds missing or trashed class folders, replaces stale shortcuts, drops list entries for deleted files and re-syncs everything.
 
 ### Changed

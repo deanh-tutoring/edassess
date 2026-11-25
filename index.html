@@ -14957,10 +14957,16 @@ async function setStudentAccess(c,open){
   if(open&&!any.length)await linkPerm(col.studentFolderId,'reader');
   if(!open)for(const p of any)await dcall('files/'+col.studentFolderId+'/permissions/'+p.id,{method:'DELETE'});
   const r=await apiPost({action:'collabSetup',classId:c.id,studentOpen:!!open});if(r&&r.ok)c.collab=r.collab}
+/* Moves a file between the two class folders. Drive hides a file's parents from people who do not own it,
+   so the other class folder is passed as the parent to remove. */
 async function moveFile(id,to,from){
-  const cur=await dcall('files/'+id+'?fields=parents');const rm=(cur.parents||[]).filter(p=>p!==to).join(',');
-  if((cur.parents||[]).includes(to)&&!rm)return;
-  await dcall('files/'+id+'?addParents='+to+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'})}
+  let ps=[];try{ps=(await dcall('files/'+id+'?fields=parents')).parents||[]}catch(x){}
+  if(ps.includes(to)&&ps.length===1)return 'same';
+  const rm=(ps.length?ps.filter(p=>p!==to):(from&&from!==to?[from]:[])).join(',');
+  await dcall('files/'+id+'?addParents='+to+(rm?'&removeParents='+rm:'')+'&fields=id',{method:'PATCH',body:'{}'});return 'moved'}
+const otherOf=(c,dest)=>{const col=c.collab||{};return dest===col.studentFolderId?col.folderId:col.studentFolderId};
+/* when a move is not allowed (the file belongs to another teacher), put a copy in the destination folder instead */
+async function copyTo(id,name,dest){const f=await dcall('files/'+id+'/copy?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name,parents:[dest]})});return f}
 /* everything inside either Drive folder shows up in the list, whoever put it there */
 async function syncFolder(c){
   const col=c.collab||{};let added=0;
@@ -14977,7 +14983,7 @@ window.cbAfterMat=async function(cid,links){
     const col=c.collab||{};const dest=live?col.studentFolderId:col.folderId;
     g.forEach(f=>f.where=live?'students':'teachers');
     const r=await apiPost({action:'collabAdd',classId:cid,files:g});if(r&&r.collab)c.collab=r.collab;
-    if(dest&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){for(const f of g){try{await moveFile(f.id,dest)}catch(x){}}}
+    if(dest&&typeof GD!=='undefined'&&GD.token&&Date.now()<GD.exp){for(const f of g){try{await moveFile(f.id,dest,otherOf(c,dest))}catch(x){}}}
   }catch(x){}};
 
 /* ───── the Collaboration tab ───── */
@@ -15011,7 +15017,7 @@ async function syncMaterials(c){
   if(!g.length)return 0;let n=0;
   for(const f of g){const dest=f.live?col.studentFolderId:col.folderId;f.where=f.live?'students':'teachers';
     const r=await apiPost({action:'collabAdd',classId:c.id,files:[f]});if(r&&r.collab){c.collab=r.collab;n+=r.added||0}
-    if(dest){try{await moveFile(f.id,dest)}catch(x){}}}
+    if(dest){try{await moveFile(f.id,dest,otherOf(c,dest))}catch(x){}}}
   return n}
 async function autoSync(){
   try{if(!CB.cfg||CB.busy||!CB.on||typeof GD==='undefined'||(typeof FXC!=='undefined'&&FXC.tab!=='collab'))return;
@@ -15035,8 +15041,12 @@ window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google
   CB.busy=1;try{await ensureFolders(c);await ensureShortcuts(c);msg(c,'The teacher and student folders are ready in EdAssess, then '+c.name+'.')}catch(e){msg(c,e.message,true)}CB.busy='';paint()};
 window.cbAccess=async(id,open)=>{const c=cls(id);try{await setStudentAccess(c,!!open);msg(c,open?'Student access restored.':'Student access paused. Students cannot open the student folder until you restore it.')}catch(e){msg(c,e.message,true)}};
 window.cbMove=async(cid,fid,toStudents)=>{const c=cls(cid),col=c.collab||{},f=(col.files||[]).find(x=>x.id===fid);if(!f)return;
-  try{await moveFile(f.id,toStudents?col.studentFolderId:col.folderId);const r=await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where:toStudents?'students':'teachers'}]});if(r&&r.collab)c.collab=r.collab;
-    msg(c,toStudents?'Moved to the student folder. Students with the folder link can view it.':'Moved back to the teacher folder. Anyone with the teacher link can edit it.')}catch(e){msg(c,'Could not move the file: '+e.message,true)}};
+  const dest=toStudents?col.studentFolderId:col.folderId,i=window.gInfo&&gInfo(f.url),gid=i?i.id:f.id,where=toStudents?'students':'teachers';
+  try{await moveFile(gid,dest,otherOf(c,dest));const r=await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where}]});if(r&&r.collab)c.collab=r.collab;
+    msg(c,toStudents?'Moved to the student folder. Students with the folder link can view it.':'Moved back to the teacher folder. Anyone with the teacher link can edit it.')}
+  catch(e){try{const cp=await copyTo(gid,f.name,dest);const r=await apiPost({action:'collabAdd',classId:cid,files:[{id:cp.id,url:cp.webViewLink,name:cp.name,where}]});if(r&&r.collab)c.collab=r.collab;
+      msg(c,'Google does not let you move a file that another teacher owns, so a copy was placed in the '+(toStudents?'student':'teacher')+' folder. The original stays where it is.')}
+    catch(e2){msg(c,'Could not move the file: '+e.message,true)}}};
 window.cbNew=async(id,kind)=>{const c=cls(id);const nm={document:'Untitled document',presentation:'Untitled presentation',spreadsheets:'Untitled spreadsheet'}[kind];
   if(!(await cfg())){window.open(NEWURL[kind],'_blank','noopener');return msg(c,'Google opened a new file in another tab. Paste its link below to add it to this class.')}
   try{const fid=await ensureFolders(c);await ensureShortcuts(c);const f=await dcall('files?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name:nm,mimeType:MIME[kind],parents:[fid]})});
@@ -15057,7 +15067,7 @@ window.cbPushModal=function(cid,fid){const c=cls(cid),f=((c.collab||{}).files||[
   <div class="form-group"><label class="form-label">Topic (optional)</label><input id="cbp-topic" class="form-control" maxlength="40" list="cbp-topics"><datalist id="cbp-topics">${topics.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>${pubBlock('cbp','live','',' ')}
   <div id="cbp-err" class="hidden fx-autherr"></div><div class="cb-mfoot"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cbPush('${esc(cid)}','${esc(fid)}')">Push</button></div></div>`,'520px')};
 window.cbPush=async(cid,fid)=>{const st=$('cbp-state').value,at=$('cbp-at').value;const r=await apiPost({action:'collabPush',classId:cid,fileId:fid,topic:$('cbp-topic').value,state:st,publishAt:st==='scheduled'&&at?new Date(at).toISOString():null});
-  if(r&&r.ok){const c=cls(cid);c.collab=r.collab;try{const col=c.collab||{},f=(col.files||[]).find(x=>x.id===fid);if(f&&GDlive()){const dest=st==='live'?col.studentFolderId:col.folderId;if(dest){await moveFile(f.id,dest);await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where:st==='live'?'students':'teachers'}]})}}}catch(x){}closeModal();toast(st==='live'?'Pushed to classwork.':'Saved to classwork as '+(st==='draft'?'a draft':'scheduled')+'.','success');fxClsReload()}else{const e=$('cbp-err');e.textContent=(r&&r.error)||'Could not push.';e.classList.remove('hidden')}};
+  if(r&&r.ok){const c=cls(cid);c.collab=r.collab;try{const col=c.collab||{},f=(col.files||[]).find(x=>x.id===fid);if(f&&GDlive()){const dest=st==='live'?col.studentFolderId:col.folderId;if(dest){await moveFile((window.gInfo&&gInfo(f.url)||f).id,dest,otherOf(c,dest));await apiPost({action:'collabAdd',classId:cid,files:[{id:f.id,url:f.url,name:f.name,where:st==='live'?'students':'teachers'}]})}}}catch(x){}closeModal();toast(st==='live'?'Pushed to classwork.':'Saved to classwork as '+(st==='draft'?'a draft':'scheduled')+'.','success');fxClsReload()}else{const e=$('cbp-err');e.textContent=(r&&r.error)||'Could not push.';e.classList.remove('hidden')}};
 window.cbShareTests=function(cid){const mine=(APP.tests||[]).filter(t=>!t.ownerId||String(t.ownerId).toLowerCase()===me());
   openModal(`<div class="modal-header"><h2 style="font-size:22px">Share tests with co-teachers</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="margin:0 0 10px">Everyone teaching this class gets edit access to the tests you tick.</p>
   <div class="cb-tests">${mine.map(t=>`<label class="checkbox-wrap"><input type="checkbox" class="cb-tchk" value="${esc(t.id)}"><span>${esc(t.title||'Untitled')}</span></label>`).join('')||'<div class="cb-hint">You have no tests yet.</div>'}</div>
