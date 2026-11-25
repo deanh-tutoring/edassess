@@ -4,6 +4,9 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Fixed
+- Deleting the Drive folders no longer breaks Collaboration. A Sync button sits at the top of the tab. It rebuilds missing or trashed class folders, replaces stale shortcuts, drops list entries for deleted files and re-syncs everything.
+
 ### Changed
 - Class folders no longer share with anyone by name or email. Each class has a teacher folder (anyone with the link can edit) and a student folder (anyone with the link can view), shown as shortcuts under EdAssess, then the class name, for every teacher. Google sign-in no longer asks for the account email, and any email saved earlier is deleted.
 
