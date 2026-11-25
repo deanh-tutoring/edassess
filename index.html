@@ -1992,6 +1992,47 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .cb-file.open .cb-nwrap>.cb-notes{margin-top:10px;padding-top:10px;border-top:2px solid rgba(0,0,0,.12);opacity:1}
 .cb-menu{transform-origin:top right;animation:cb-pop .16s ease both}
 @media(prefers-reduced-motion:reduce){.cb *,.cb-anim *{animation:none!important;transition:none!important}}
+
+/* ===== Classroom tidy-up (v1.6) ===== */
+.lms-t-top~.page-body,.lms-t-top+.page-body{padding-left:32px!important;padding-right:32px!important}
+.lms-head{margin-bottom:18px!important}.lms-head h1{font-size:32px!important}.lms-tabs{margin-bottom:22px!important;gap:26px!important}
+.cw-create{margin-bottom:20px}.cw-cbtn{padding:10px 18px 10px 14px;font-size:14px}
+.cw-cols{grid-template-columns:190px 1fr!important;gap:36px!important}
+.cw-tp{padding:9px 14px!important;font-size:13.5px!important;font-weight:600!important;border-radius:8px!important}
+.cw-tp.on{box-shadow:none!important;background:var(--hl-soft)!important;color:var(--accent)!important}
+.cw-sec{margin-bottom:30px!important}
+.cw-th{border-bottom:1.5px solid var(--border)!important;padding-bottom:8px!important;margin-bottom:0!important}
+.cw-th h3{font:700 19px var(--f-display)!important;color:var(--ink)!important;letter-spacing:-.02em!important}
+.cw-th .lms-grip{opacity:0;transition:opacity .15s}.cw-th:hover .lms-grip,.cw-item:hover .lms-grip{opacity:.7}
+.cw-dots{width:30px!important;height:30px!important;font-size:18px!important}.cw-dots:hover{background:var(--hl-soft)}
+.cw-item{background:transparent!important;border-bottom:1px solid var(--border)!important}
+.cw-h{padding:12px 6px!important;gap:12px!important;border-radius:8px!important}
+.cw-ico{width:32px!important;height:32px!important;background:var(--hl-soft)!important;color:var(--accent)!important}
+.cw-ico svg{width:17px!important;height:17px!important}
+.cw-ico.svy{color:#6B4DE6!important}.cw-ico.mat{color:var(--ink-soft,var(--muted))!important}
+.cw-t{font-size:15px!important;font-weight:600!important}
+.cw-m{font-size:12.5px!important;font-weight:500!important}
+.cw-fold>.cw-in{padding-left:50px!important}
+.cw-stats b{font-size:24px!important}.cw-stats{gap:28px!important}
+.cw-aud{font-size:11.5px;font-weight:700;color:var(--accent);background:var(--hl-soft);border-radius:999px;padding:3px 9px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.cw-th .cw-aud{margin-right:4px}
+.cw-sub{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px;margin:16px 0 6px}.cw-sub a{color:var(--accent);cursor:pointer;font-weight:600}
+.cw-opt{display:flex;gap:10px;align-items:center;padding:8px 0;cursor:pointer}
+.cw-chk{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 12px;max-height:200px;overflow:auto}
+.cw-chk label{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}.cw-chk i{font-style:normal;color:var(--muted);font-size:12px}
+.cw-hint{color:var(--muted);font-size:13px;margin:0 0 8px}
+.cw-grp{border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px}.cw-grp-h{display:flex;gap:8px;margin-bottom:10px}
+.cw-grp-h input{flex:1}
+@media(max-width:820px){.lms-t-top~.page-body,.lms-t-top+.page-body{padding-left:16px!important;padding-right:16px!important}.cw-cols{grid-template-columns:1fr!important}.cw-th h3{font-size:17px!important}.lms-head h1{font-size:26px!important}}
+/* What's new */
+#ea-wn{position:fixed;inset:0;z-index:4000;display:grid;place-items:center;background:rgba(10,20,50,.45);padding:16px;animation:wnBg .25s ease both}
+.ea-wn-c{background:var(--surface,#fff);color:var(--ink);border:1.5px solid var(--border-dark);border-radius:18px;width:min(520px,100%);max-height:86vh;overflow:auto;padding:26px 26px 20px;box-shadow:0 30px 80px -20px rgba(12,36,80,.55);animation:wnIn .4s cubic-bezier(.34,1.4,.64,1) both}
+.ea-wn-c small{font-weight:700;color:var(--accent);letter-spacing:.04em}.ea-wn-c h2{font:800 26px var(--f-display);letter-spacing:-.03em;margin:4px 0 12px}
+.ea-wn-c ul{margin:0 0 16px;padding-left:20px;line-height:1.55;font-size:14.5px}.ea-wn-c li{margin-bottom:6px}
+.ea-wn-a{display:flex;gap:10px;justify-content:flex-end;align-items:center}.ea-wn-a a{color:var(--accent);font-weight:600;cursor:pointer;margin-right:auto;font-size:13.5px}
+@keyframes wnBg{from{opacity:0}}@keyframes wnIn{from{opacity:0;transform:translateY(18px) scale(.96)}}
+.hp-foot a.gh{display:inline}
+@media(prefers-reduced-motion:reduce){#ea-wn,.ea-wn-c{animation:none}}
 </style>
 </head>
 <body>
@@ -2076,7 +2117,7 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
     <svg class="hp-w hp-w1" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="M0 100c150-34 300-34 450 0s300 34 450 0 300-34 450 0V200H0z"/></svg>
     <div class="hp-floats"></div>
   </div>
-  <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a> <a href="#/welcome" onclick="event.preventDefault();window.fxTermsOpen&&fxTermsOpen()">Terms</a><span>·</span><span>Made for classrooms</span></footer>
+  <footer class="hp-foot"><a href="#/welcome" onclick="event.preventDefault();window.fxPrivacyOpen&&fxPrivacyOpen()">Privacy</a> <a href="#/welcome" onclick="event.preventDefault();window.fxTermsOpen&&fxTermsOpen()">Terms</a> <a class="gh" href="https://github.com/deanh-tutoring/edassess" target="_blank" rel="noopener noreferrer">GitHub</a><span>·</span><span>Made for classrooms</span></footer>
 </div>
 <div id="login-page" class="hidden">
   <!-- Art panel -->
@@ -14057,6 +14098,9 @@ const st=isT=>isT?FXC:STU;
 const sel=(isT)=>{const o=st(isT);return o.cwTopic||'';};
 function topicsOf(c,asg){const t=(typeof fxCwTopicList==='function'?fxCwTopicList(c):(c.topics||[]).slice());asg.forEach(a=>{if(a.topic&&!t.includes(a.topic))t.push(a.topic);});return t;}
 function posted(d){return d?(typeof fxPosted==='function'?fxPosted(d):new Date(d).toLocaleDateString()):'';}
+function audOf(c,item){return item&&item.aud?item.aud:null;}
+function audText(c,aud){if(!aud||(!(aud.groups||[]).length&&!(aud.keys||[]).length))return '';const g=(aud.groups||[]).map(id=>((c.groups||[]).find(x=>x.id===id)||{}).name).filter(Boolean),n=(aud.keys||[]).length;return g.concat(n?[n+(n===1?' student':' students')]:[]).join(', ');}
+function audChip(c,item,topic){const t=audText(c,item&&item.aud)||(topic&&c.topicAud&&audText(c,c.topicAud[topic]));return t?`<span class="cw-aud" title="Only these students can see this">${E(t)}</span>`:'';}
 function asgRow(a,c,isT){
   const open=OPEN.has(a.id),title=a.title||'Assessment',svy=a.survey;
   let right='',fold='';
@@ -14066,7 +14110,7 @@ function asgRow(a,c,isT){
     right=`<span class="cw-m">${a.dueAt?E(stuWhen(a.dueAt)):'Posted '+E(posted(a.createdAt))}</span>`;
     fold=`<div class="cw-stats"><div><b>${subs.length}</b><span>Turned in</span></div><div><b>${Math.max(0,n-subs.length)}</b><span>Assigned</span></div>${svy?'':`<div class="${need?'warn':''}"><b>${need}</b><span>To grade</span></div>`}</div>
      <div class="cw-meta">${a.createdAt?'Posted '+E(posted(a.createdAt))+' · ':''}${a.dueAt?'Due '+E(stuWhen(a.dueAt)):'No due date'} · ${a.requireAccount?'Account required':'Link also works'}</div>
-     <div class="cw-acts"><button class="btn btn-primary btn-sm" onclick="${svy?`showPage('analytics')`:`showPage('grading')`}">${svy?'View results':'Grade'}</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${E(a.id)}')">Monitor</button><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${E(a.id)}')">Settings</button><button class="btn btn-ghost btn-sm" onclick="cwMoveTopic('${E(c.id)}','${E(a.id)}')">Move to topic</button></div>`;
+     <div class="cw-acts"><button class="btn btn-primary btn-sm" onclick="${svy?`showPage('analytics')`:`showPage('grading')`}">${svy?'View results':'Grade'}</button><button class="btn btn-secondary btn-sm" onclick="showPage('live');fxLiveOpen('${E(a.id)}')">Monitor</button><button class="btn btn-secondary btn-sm" onclick="fxAsgAccessModal('${E(a.id)}')">Settings</button><button class="btn btn-ghost btn-sm" onclick="cwMoveTopic('${E(c.id)}','${E(a.id)}')">Move to topic</button><button class="btn btn-ghost btn-sm" onclick="cwAud('${E(c.id)}','asg','${E(a.id)}')">Who can see this</button></div>`;
   }else{
     const sub=stuSubFor(a.id),s=stuState(a,sub),pct=stuPct(a,sub);
     const late=a.dueAt&&s!=='done'&&new Date(a.dueAt)<new Date();
@@ -14079,14 +14123,14 @@ function asgRow(a,c,isT){
     else if(s==='scheduled')btn=`<span class="cw-meta">Opens ${E(new Date(a.opensAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span>`;
     fold=`<div class="cw-meta">${[a.questions?a.questions+' questions':'',a.timed&&a.maxMinutes?a.maxMinutes+' minutes':'',a.dueAt?'Due '+stuWhen(a.dueAt):'No due date'].filter(Boolean).map(E).join(' · ')}</div><div class="cw-acts">${btn}</div>`;
   }
-  return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${window.cbChip?cbChip(a):''}${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
+  return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${isT?audChip(c,a,a.topic):''}${window.cbChip?cbChip(a):''}${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
 }
 function matRow(m,c,isT){
   const wu=m.by||c.ownerId||'',who=wu?(isT?(typeof fxTName==='function'?fxTName(wu):wu):(typeof tN==='function'?tN(wu):wu)):'your teacher';
   const open=OPEN.has(m.id),nl=(m.links||[]).length;
   const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">⋮⋮</span>`:'';
-  const acts=isT?`<div class="cw-acts">${m.state&&m.state!=='live'?`<button class="btn btn-primary btn-sm" onclick="cbPublishMat('${E(c.id)}','${E(m.id)}')">Publish now</button>`:''}<button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
-  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span>${window.cbChip?cbChip(m):''}<span class="cw-m">Posted by ${E(who)} · ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
+  const acts=isT?`<div class="cw-acts">${m.state&&m.state!=='live'?`<button class="btn btn-primary btn-sm" onclick="cbPublishMat('${E(c.id)}','${E(m.id)}')">Publish now</button>`:''}<button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="cwAud('${E(c.id)}','mat','${E(m.id)}')">Who can see this</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
+  const head=`<div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${grip}<span class="cw-ico mat">${ICO.mat}</span><span class="cw-t">${E(m.title)}</span>${isT?audChip(c,m,m.topic):''}${window.cbChip?cbChip(m):''}<span class="cw-m">Posted by ${E(who)} · ${E(posted(m.at))}</span><i class="cw-caret"></i></div>`;
   const body=`<div class="cw-fold"><div class="cw-in">${m.body?`<div class="cw-body">${E(m.body)}</div>`:''}${nl?`<div class="lms-links">${m.links.map(lmsLink).join('')}</div>`:''}${(!m.body&&!nl)?'<div class="cw-meta">No description.</div>':''}${acts}</div></div>`;
   const cls='cw-item cw-mat'+(open?' open':'');
   return isT?`<div class="${cls}" data-cw="${E(m.id)}" data-mid="${E(m.id)}" draggable="true" ondragstart="fxDragMat(event,'${E(c.id)}','${E(m.id)}')" ondragend="fxDragEnd()" ondragover="fxOverMat(event)" ondrop="fxDropMat(event,'${E(m.id)}')">${head}${body}</div>`:`<div class="${cls}" data-cw="${E(m.id)}">${head}${body}</div>`;
@@ -14105,13 +14149,55 @@ window.cwMoveSave=function(cid,aid){
   const c=(APP.classes||[]).find(x=>x.id===cid),a=(APP.assignments||[]).find(x=>x.id===aid);let v=document.getElementById('cw-topic-sel').value;
   if(v==='__new')v=(document.getElementById('cw-new').value||'').trim().slice(0,40);
   a.topic=v;if(v){c.topics=c.topics||[];if(!c.topics.includes(v)){c.topics.push(v);}}
-  save();closeModal();
-  if(v&&typeof fxCwSave==='function')fxCwSave(c);else fxRenderClasses();
+  closeModal();fxRenderClasses();
+  apiPost({action:'setAsgTopic',classId:cid,asgId:aid,topic:v}).then(r=>{if(!r||!r.ok){toast((r&&r.error)||'Could not move it.','error');if(typeof fxClsReload==='function')fxClsReload();}});
+};
+const gOf=(c)=>c.groups=c.groups||[];
+window.cwAud=function(cid,kind,id){
+  const c=(APP.classes||[]).find(x=>x.id===cid);if(!c)return;
+  const item=kind==='asg'?(APP.assignments||[]).find(x=>x.id===id):kind==='mat'?(c.materials||[]).find(x=>x.id===id):null;
+  const aud=(kind==='topic'?(c.topicAud||{})[id]:item&&item.aud)||{groups:[],keys:[]};
+  const sub=kind==='topic'?'topic '+id:(item&&(item.title||'item'))||'item';
+  const sts=(c.students||[]).slice().sort((a,b)=>String(a.name).localeCompare(b.name));
+  const sel=(aud.groups||[]).length||(aud.keys||[]).length;
+  openModal(`<div class="modal-header"><h2 class="serif">Who can see this</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p class="cw-hint">${E(sub)}</p>
+  <label class="cw-opt"><input type="radio" name="cwa" value="all" ${sel?'':'checked'}><span><b>Everyone in the class</b></span></label>
+  <label class="cw-opt"><input type="radio" name="cwa" value="sel" ${sel?'checked':''}><span><b>Only people I choose</b></span></label>
+  <div id="cwa-box" class="${sel?'':'hidden'}"><div class="cw-sub">Groups <a onclick="cwGroups('${E(cid)}')">Manage groups</a></div>
+  <div class="cw-chk">${gOf(c).length?gOf(c).map(g=>`<label><input type="checkbox" data-g="${E(g.id)}" ${(aud.groups||[]).includes(g.id)?'checked':''}>${E(g.name)} <i>${(g.keys||[]).length}</i></label>`).join(''):'<span class="cw-hint">No groups yet. Make one to reuse it.</span>'}</div>
+  <div class="cw-sub">Individual students</div><div class="cw-chk">${sts.length?sts.map(x=>`<label><input type="checkbox" data-k="${E(x.key)}" ${(aud.keys||[]).includes(x.key)?'checked':''}>${E(x.name)}</label>`).join(''):'<span class="cw-hint">No students have joined yet.</span>'}</div></div></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cwAudSave('${E(cid)}','${kind}','${E(id)}')">Save</button></div>`);
+  document.querySelectorAll('input[name=cwa]').forEach(r=>r.onchange=()=>document.getElementById('cwa-box').classList.toggle('hidden',document.querySelector('input[name=cwa]:checked').value!=='sel'));
+};
+window.cwAudSave=function(cid,kind,id){
+  const c=(APP.classes||[]).find(x=>x.id===cid);if(!c)return;
+  const all=document.querySelector('input[name=cwa]:checked').value==='all';
+  const aud=all?null:{groups:[...document.querySelectorAll('#cwa-box [data-g]:checked')].map(x=>x.dataset.g),keys:[...document.querySelectorAll('#cwa-box [data-k]:checked')].map(x=>x.dataset.k)};
+  if(aud&&!aud.groups.length&&!aud.keys.length){toast('Pick at least one group or student, or choose everyone.','error');return;}
+  const done=()=>{closeModal();fxRenderClasses();};
+  if(kind==='asg'){const a=(APP.assignments||[]).find(x=>x.id===id);if(!a)return;if(aud)a.aud=aud;else delete a.aud;save();done();return;}
+  if(kind==='mat'){const m=(c.materials||[]).find(x=>x.id===id);if(m){if(aud)m.aud=aud;else delete m.aud;}}
+  else{c.topicAud=c.topicAud||{};if(aud)c.topicAud[id]=aud;else delete c.topicAud[id];}
+  done();
+  apiPost({action:'setAudience',classId:cid,kind,itemId:id,aud}).then(r=>{if(!r||!r.ok){toast((r&&r.error)||'Could not save who can see this.','error');fxClsReload();}});
+};
+window.cwGroups=function(cid){
+  const c=(APP.classes||[]).find(x=>x.id===cid);if(!c)return;
+  const sts=(c.students||[]).slice().sort((a,b)=>String(a.name).localeCompare(b.name));
+  const row=g=>`<div class="cw-grp" data-id="${E(g.id||'')}"><div class="cw-grp-h"><input class="form-input" maxlength="40" placeholder="Group name" value="${E(g.name||'')}"><button class="btn btn-ghost btn-sm" onclick="this.closest('.cw-grp').remove()">Remove</button></div><div class="cw-chk">${sts.map(x=>`<label><input type="checkbox" data-k="${E(x.key)}" ${(g.keys||[]).includes(x.key)?'checked':''}>${E(x.name)}</label>`).join('')||'<span class="cw-hint">No students yet.</span>'}</div></div>`;
+  window.cwGrpRow=()=>{document.getElementById('cwg-list').insertAdjacentHTML('beforeend',row({}));};
+  openModal(`<div class="modal-header"><h2 class="serif">Groups</h2><button class="btn btn-ghost btn-icon" onclick="closeModal()">✕</button></div><div class="modal-body"><p class="cw-hint">Groups let you share classwork with part of the class. Students are never told which groups exist.</p><div id="cwg-list">${gOf(c).map(row).join('')}</div><button class="btn btn-secondary btn-sm" onclick="cwGrpRow()">Add a group</button></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="cwGroupsSave('${E(cid)}')">Save groups</button></div>`);
+};
+window.cwGroupsSave=function(cid){
+  const c=(APP.classes||[]).find(x=>x.id===cid);if(!c)return;
+  const groups=[...document.querySelectorAll('#cwg-list .cw-grp')].map(el=>({id:el.dataset.id||'',name:el.querySelector('input.form-input').value.trim(),keys:[...el.querySelectorAll('[data-k]:checked')].map(x=>x.dataset.k)})).filter(g=>g.name);
+  apiPost({action:'setGroups',classId:cid,groups}).then(r=>{if(!r||!r.ok){toast((r&&r.error)||'Could not save groups.','error');return;}c.groups=r.groups;closeModal();fxRenderClasses();toast('Groups saved.');});
 };
 window.lmsClasswork=function(c,isT,asg){
-  const topics=topicsOf(c,asg),secs=typeof fxCwSecs==='function'?fxCwSecs(c):[{t:'',items:c.materials||[]}];
+  asg=asg||[];const topics=topicsOf(c,asg),secs=typeof fxCwSecs==='function'?fxCwSecs(c):[{t:'',items:c.materials||[]}];
   let cur=sel(isT);if(cur&&!topics.includes(cur)){cur='';st(isT).cwTopic='';}
   const total=asg.length+(c.materials||[]).length;
+  const seen=new Set();asg=asg.filter(a=>a&&!seen.has(a.id)&&seen.add(a.id));
   const sorted=asg.slice().sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
   const blocks=[{t:'',label:''}].concat(topics.map(t=>({t,label:t}))).map(b=>{
     const A=sorted.filter(a=>(a.topic||'')===b.t),M=((secs.find(s=>s.t===b.t)||{}).items)||[];
@@ -14119,7 +14205,7 @@ window.lmsClasswork=function(c,isT,asg){
     const n=A.length+M.length;
     if(!isT&&!n)return '';
     if(!b.t&&!n&&(isT?topics.length:1))return '';
-    const head=b.t?`<div class="cw-th">${isT?`<span class="lms-grip" draggable="true" title="Drag to reorder topic" ondragstart="fxDragTopic(event,'${E(c.id)}','${E(b.t)}')" ondragend="fxDragEnd()">⋮⋮</span>`:''}<h3>${E(b.t)}</h3>${isT?`<span class="cw-tm"><button class="cw-dots" aria-label="Topic options" onclick="cwMenu(this)">⋮</button><div class="cw-menu"><a onclick="fxTopicRename('${E(c.id)}','${E(b.t)}')">Rename</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',-1)">Move up</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',1)">Move down</a><a class="del" onclick="fxTopicDelete('${E(c.id)}','${E(b.t)}')">Delete</a></div></span>`:''}</div>`:'';
+    const head=b.t?`<div class="cw-th">${isT?`<span class="lms-grip" draggable="true" title="Drag to reorder topic" ondragstart="fxDragTopic(event,'${E(c.id)}','${E(b.t)}')" ondragend="fxDragEnd()">⋮⋮</span>`:''}<h3>${E(b.t)}</h3>${isT?audChip(c,null,b.t):''}${isT?`<span class="cw-tm"><button class="cw-dots" aria-label="Topic options" onclick="cwMenu(this)">⋮</button><div class="cw-menu"><a onclick="fxTopicRename('${E(c.id)}','${E(b.t)}')">Rename</a><a onclick="cwAud('${E(c.id)}','topic',this.dataset.t)" data-t="${E(b.t)}">Who can see this</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',-1)">Move up</a><a onclick="fxTopicMove('${E(c.id)}','${E(b.t)}',1)">Move down</a><a class="del" onclick="fxTopicDelete('${E(c.id)}','${E(b.t)}')">Delete</a></div></span>`:''}</div>`:'';
     const rows=A.map(a=>asgRow(a,c,isT)).join('')+M.map(m=>matRow(m,c,isT)).join('');
     return `<section class="cw-sec"${isT?` data-t="${E(b.t)}" ondragover="fxOverSec(event)" ondrop="fxDropSec(event,'${E(b.t)}')"`:''}>${head}<div class="cw-list">${rows||`<p class="cw-empty">${isT?'Nothing in this topic yet. Drag a material here or use Create.':''}</p>`}</div></section>`;
   }).join('');
@@ -15307,6 +15393,32 @@ document.addEventListener('keydown',e=>{
   if(gp&&Date.now()-gp<1200){const m={d:'dashboard',t:'tests',c:'classes',g:'grading',a:'analytics',p:'peer'}[e.key.toLowerCase()];gp=0;if(m){window.closeModal();window.showPage(m);}return;}
   if(e.key.toLowerCase()==='g')gp=Date.now();
 });
+})();
+
+/* What's new pop-up: shown once per release */
+(function(){
+const REL={v:'1.6.0',date:'November 25, 2026',items:[
+'Share with part of a class. Choose who can see any topic, material or assignment: whole groups you create, or students you pick by hand. Students never see who else was included.',
+'A calmer classroom. Consistent spacing, quieter icons, lighter topic headings and tidier rows across the class page.',
+'Moving an assignment to a topic now saves in one step and never creates a second copy.',
+'The code is open source on GitHub, linked in the footer next to Terms and Privacy.']};
+const K='ea-wn-seen';
+function seen(){try{return localStorage.getItem(K)===REL.v;}catch(e){return true;}}
+function mark(){try{localStorage.setItem(K,REL.v);}catch(e){}}
+window.eaWhatsNew=function(){
+  if(document.getElementById('ea-wn'))return;
+  const d=document.createElement('div');d.id='ea-wn';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','What is new');
+  d.innerHTML='<div class="ea-wn-c"><small>WHAT’S NEW · '+REL.v+'</small><h2>EdAssess just got better</h2><ul>'+REL.items.map(x=>'<li>'+x.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</li>').join('')+'</ul><div class="ea-wn-a"><a href="https://github.com/deanh-tutoring/edassess/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Full changelog</a><button class="btn btn-primary" id="ea-wn-ok">Got it</button></div></div>';
+  document.body.appendChild(d);
+  const close=()=>{mark();d.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape')close();};
+  document.addEventListener('keydown',esc);
+  d.addEventListener('click',e=>{if(e.target===d)close();});
+  d.querySelector('#ea-wn-ok').onclick=close;d.querySelector('#ea-wn-ok').focus();
+};
+const q=new URLSearchParams(location.search);
+if(!['exam','results','portal','peerreview','upload','scan'].some(k=>q.has(k)))
+  setTimeout(()=>{if(!seen()&&!document.querySelector('.modal-backdrop.open,.modal-overlay.open'))window.eaWhatsNew();},1800);
 })();
 
 </script>

@@ -4,6 +4,19 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.6.0 (2026-11-25)
+
+### Added
+- Share with part of a class. Any topic, material or assignment can be limited to groups you create or to students you pick by hand, from Who can see this. Groups are managed in one place and reused. Students only ever receive what they are allowed to see, and a restricted assignment cannot be opened by guessing its link. Rows show a small tag naming the audience.
+- A What's new pop-up inside EdAssess that appears once per release.
+- A GitHub link in the site footer next to Terms and Privacy.
+
+### Changed
+- A calmer classroom. The class page now has consistent side spacing, smaller and quieter icons, lighter topic headings, tidier rows and fewer competing colors, on desktop and phone.
+
+### Fixed
+- Moving an assignment to a topic saves in a single step on the server and the list removes duplicate entries, so an assignment never shows up twice.
+
 ### Changed
 - Solo teachers see a **Files** tab instead of Collaboration. Their class has one Drive folder that anyone with the link can view, and posting a material simply makes its file available. Files are listed as Published to students and Not published yet. The tab becomes Collaboration, with separate teacher and student folders and lists, as soon as a co-teacher is added.
 - Posting a material moves its files into the student folder. A scheduled material moves at the time it goes live, and until a file is in place students see the material without the link.

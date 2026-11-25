@@ -687,7 +687,7 @@ function classRole(c, user) {
   if (ownerOf(c) === me) return 'owner';
   return (c.coTeachers || []).map(lc).includes(me) ? 'edit' : null;
 }
-const clsClean = (c) => ({ id: c.id, no: c.no || null, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [], topics: c.topics || [], collab: c.collab || null });
+const clsClean = (c) => ({ id: c.id, no: c.no || null, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], joinCode: c.joinCode, archived: !!c.archived, createdAt: c.createdAt, students: c.students || [], invites: c.invites || [], announcements: c.announcements || [], materials: c.materials || [], topics: c.topics || [], groups: c.groups || [], topicAud: c.topicAud || {}, collab: c.collab || null });
 async function classesForTeacher(user) {
   const mine = (await allClasses()).filter((c) => classRole(c, user));
   const out = [];
@@ -786,6 +786,7 @@ async function studentHome(s) {
   const assignments = [];
   for (const a of wanted.values()) {
     if (!asgLive(a)) continue;
+    if (!s.preview && !subs.some((x) => x.assignmentId === a.id) && !mine.some((c) => (a.classIds || []).includes(c.id) && visTo(c, a, s.key))) continue;
     if (!(a.testId in tcache)) { const r = okId(a.testId) ? await getJ(P.test + a.testId) : null; tcache[a.testId] = r ? r.data : null; }
     const t = tcache[a.testId];
     assignments.push({ id: a.id, title: a.title || (t && t.title) || 'Assessment', testId: a.testId, code: a.code, classIds: (a.classIds || []).filter((id) => ids.has(id)), requireAccount: !!a.requireAccount, dueAt: a.dueAt || null, opensAt: a.opensAt || null, closesAt: a.closesAt || null, closedAt: a.closedAt || null, timed: !!a.timed, maxMinutes: a.maxMinutes || null, releaseScores: !!a.releaseScores, survey: !!(a.survey || (t && t.kind === 'survey')), questions: ((t && t.questions) || []).length, maxPoints: testMax(t), satSubject: (t && t.satSubject) || null, sheet: !!(t && t.sheetCfg && t.sheetCfg.studentScan !== false), topic: String(a.topic || '').slice(0, 40), createdAt: a.createdAt || null, ownerId: ownerOf(a), coTeachers: a.coTeachers || [] });
@@ -795,7 +796,7 @@ async function studentHome(s) {
   for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); (c.materials || []).forEach((m) => m.by && set.add(lc(m.by))); }
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
-  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive).map((m) => m.pendingPlace ? { ...m, links: [], preparing: true } : m), studentFolderUrl: c.collab && c.collab.studentOpen && c.collab.studentFolderUrl ? c.collab.studentFolderUrl : '', topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
+  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive).filter((m) => s.preview || visTo(c, m, s.key)).map((m) => m.pendingPlace ? { ...m, links: [], preparing: true } : m), studentFolderUrl: c.collab && c.collab.studentOpen && c.collab.studentFolderUrl ? c.collab.studentFolderUrl : '', topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
   const peer = await peerSummary(s, subs);
   return { peer, student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
@@ -943,6 +944,10 @@ async function studentAction(body, student) {
 }
 const sepFolders = (c) => !!(c.collab && c.collab.folderId && c.collab.studentFolderId && c.collab.folderId !== c.collab.studentFolderId);
 const needsPlace = (c, links) => sepFolders(c) && (links || []).some((l) => { const g = googleInfo(l.url); return g && g.kind !== 'folder'; });
+const audSet = (aud, c) => { const ks = new Set((aud && aud.keys) || []); for (const g of (c.groups || [])) if (((aud && aud.groups) || []).includes(g.id)) (g.keys || []).forEach((k) => ks.add(k)); return ks; };
+const audOpen = (aud) => !aud || (!((aud.groups || []).length) && !((aud.keys || []).length));
+const visTo = (c, item, key) => { for (const a of [c.topicAud && item.topic ? c.topicAud[item.topic] : null, item.aud]) if (!audOpen(a) && !audSet(a, c).has(key)) return false; return true; };
+const cleanAud = (c, aud) => { if (!aud) return null; const gids = new Set((c.groups || []).map((g) => g.id)), keys = new Set((c.students || []).map((x) => x.key)); const o = { groups: [...new Set((aud.groups || []).map(String))].filter((g) => gids.has(g)).slice(0, 40), keys: [...new Set((aud.keys || []).map(String))].filter((k) => keys.has(k)).slice(0, 400) }; return audOpen(o) ? null : o; };
 const matLive = (m) => !m.state || m.state === 'live' || (m.state === 'scheduled' && m.publishAt && new Date(m.publishAt) <= new Date());
 const asgLive = (a) => !(a.draft === true || (a.publishAt && new Date(a.publishAt) > new Date()));
 const gmailOk = (e) => /^[^\s@]{1,64}@[^\s@]{1,120}\.[A-Za-z]{2,}$/.test(e);
@@ -953,7 +958,7 @@ const cleanFile = (f) => {
 };
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1173,6 +1178,24 @@ async function classAction(body, user) {
     await saveClass(c); if (!old && state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id });
     return reply(200, { ok: true });
   }
+  if (a === 'setGroups') {
+    const out = [];
+    for (const g of (Array.isArray(body.groups) ? body.groups : []).slice(0, 30)) { const name = String((g && g.name) || '').trim().slice(0, 40); if (!name) continue; const have = new Set((c.students || []).map((x) => x.key)); out.push({ id: okId(g.id) ? g.id : crypto.randomBytes(5).toString('hex'), name, keys: [...new Set((g.keys || []).map(String))].filter((k) => have.has(k)) }); }
+    c.groups = out; await saveClass(c); return reply(200, { ok: true, groups: out });
+  }
+  if (a === 'setAudience') {
+    const aud = cleanAud(c, body.aud);
+    if (body.kind === 'topic') { const t = String(body.itemId || '').slice(0, 40); c.topicAud = c.topicAud || {}; if (aud) c.topicAud[t] = aud; else delete c.topicAud[t]; }
+    else if (body.kind === 'mat') { const m = (c.materials || []).find((x) => x.id === body.itemId); if (!m) return bad('Material not found.', 404); if (aud) m.aud = aud; else delete m.aud; }
+    else return bad('Unknown item.');
+    await saveClass(c); return reply(200, { ok: true, aud });
+  }
+  if (a === 'setAsgTopic') {
+    const as = okId(body.asgId) ? await getJ(P.asg + body.asgId) : null; if (!as || !(as.classIds || []).includes(c.id) || !asgRole(as, user)) return bad('Assignment not found.', 404);
+    const t = String(body.topic || '').trim().slice(0, 40); as.topic = t; await putJ(P.asg + as.id, as); dropAsgCache();
+    if (t) { c.topics = c.topics || []; if (!c.topics.includes(t)) c.topics.push(t); await saveClass(c); }
+    return reply(200, { ok: true });
+  }
   if (a === 'setClasswork') {
     const names = [];
     for (const t of (Array.isArray(body.topics) ? body.topics : []).slice(0, 30)) { const n = String(t || '').trim().slice(0, 40); if (n && !names.includes(n)) names.push(n); }
@@ -1195,6 +1218,13 @@ async function classAction(body, user) {
 async function accessCheckAssignment(asg, student) {
   // returns an error reply when this assignment needs an account the caller doesn't have
   if (asg && !asgLive(asg)) return reply(403, { error: 'This assignment is not available yet.' });
+  if (asg && (asg.classIds || []).length && !(student && student.preview)) {
+    const cls = (await allClasses()).filter((c) => asg.classIds.includes(c.id));
+    if (cls.some((c) => !audOpen(asg.aud) || (c.topicAud && asg.topic && !audOpen(c.topicAud[asg.topic])))) {
+      if (!student) return STU_ERR();
+      if (!cls.some((c) => (c.students || []).some((x) => x.key === student.key) && visTo(c, asg, student.key))) return reply(403, { error: 'This assignment is not shared with you.', notInClass: true });
+    }
+  }
   if (!asg || !asg.requireAccount) return null;
   if (!student) return STU_ERR();
   if ((asg.classIds || []).length) {
