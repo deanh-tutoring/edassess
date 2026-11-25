@@ -92,7 +92,7 @@ Teachers sign in with Google once. After that everything syncs on its own: whene
 The **Collaboration** tab is visible only to a class's teachers. It lists every file in both folders, whoever added it, and offers:
 
 - a **Create** menu for a blank Doc, Slides or Sheet in the teacher folder
-- **Move to student folder** and **Back to teachers only** for each file
+- **Move to student folder** and **Back to teachers only** for each file. Everything students see is owned by the class owner. Google does not let one person move or give away another person's file, so a file owned by a co-teacher is copied into the student folder by the owner, and a co-teacher's request waits until the owner's tab syncs
 - **Pause student access** while you are editing, and **Restore student access** when you are done. Pausing removes the link permission, so students cannot open the folder until you restore it.
 - notes on each file, so co-teachers can talk about it in place
 - **Push to classwork**, live, as a draft or scheduled

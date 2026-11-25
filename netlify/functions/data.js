@@ -928,11 +928,11 @@ const gmailOk = (e) => /^[^\s@]{1,64}@[^\s@]{1,120}\.[A-Za-z]{2,}$/.test(e);
 const cleanFile = (f) => {
   let u = String((f && f.url) || '').trim().slice(0, 600); try { const x = new URL(u); if (!/^https?:$/.test(x.protocol)) return null; u = x.href; } catch (e) { return null; }
   const g = googleInfo(u); const kind = g ? g.kind : 'link';
-  return { where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
+  return { src: f && f.src === 'folder' ? 'folder' : 'link', where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
 };
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1032,14 +1032,36 @@ async function classAction(body, user) {
     if (body.shortcut === true) col.shortcuts[lc(user.username)] = true;
     await saveClass(c); return reply(200, { ok: true, collab: col });
   }
+  if (a === 'collabSync') {
+    const col = c.collab = c.collab || { files: [], shortcuts: {} };
+    const map = new Map(); let ch = 0;
+    for (const w of ['teachers', 'students']) {
+      if (!body['ok_' + w]) continue;
+      for (const f of (Array.isArray(body[w]) ? body[w] : []).slice(0, 200)) { const cf = cleanFile({ ...f, src: 'folder', where: w }); if (cf) map.set(cf.id, cf); }
+    }
+    const okAny = body.ok_teachers || body.ok_students;
+    col.files = (col.files || []).filter((x) => {
+      const m = map.get(x.id);
+      if (m) { if (x.where !== m.where || x.name !== m.name || x.url !== m.url) ch++; x.where = m.where; x.name = m.name; x.url = m.url; x.src = 'folder'; map.delete(x.id); return true; }
+      if (x.src === 'folder' && okAny && body['ok_' + x.where]) { ch++; return false; }   // gone from Drive
+      return true;
+    });
+    for (const m of map.values()) { col.files.push({ ...m, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); ch++; }
+    col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
+  }
+  if (a === 'collabMoveRequest') {
+    const f = ((c.collab || {}).files || []).find((x) => x.id === body.fileId); if (!f) return bad('File not found.', 404);
+    f.moveTo = body.to === 'students' ? 'students' : body.to === 'teachers' ? 'teachers' : null; f.moveBy = lc(user.username);
+    await saveClass(c); return reply(200, { ok: true, collab: c.collab });
+  }
   if (a === 'collabAdd') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
     let added = 0;
     for (const f of (Array.isArray(body.files) ? body.files : []).slice(0, 25)) {
       const cf = cleanFile(f); if (!cf) continue;
       const ex = col.files.find((x) => x.id === cf.id || x.url === cf.url);
-      if (ex) { if (f && f.where) ex.where = cf.where; continue; }
-      col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null }); added++;
+      if (ex) { if (f && f.where) { ex.where = cf.where; ex.moveTo = null; } continue; }
+      col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); added++;
     }
     col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, added, collab: col });
   }

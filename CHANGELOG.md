@@ -4,6 +4,10 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Changed
+- The Collaboration list now mirrors the Drive folders exactly. Every sync compares the two folders with the list and removes files that were deleted, renames files that were renamed and notices files that moved. It checks every 15 seconds while the tab is open and again whenever you return to the window.
+- Only the class owner can place files in the student folder, so the owner holds ownership of everything students see. When the owner presses Move, a file they do not own is copied into the student folder so the owner owns the copy. When a co-teacher presses Move, the request is queued and the owner's session completes it automatically, and the file shows Waiting for owner until then.
+
 ### Fixed
 - Moving a file between the teacher and student folders no longer fails with "Increasing the number of parents is not allowed". If Google still refuses because another teacher owns the file, a copy is placed in the destination folder instead.
 
