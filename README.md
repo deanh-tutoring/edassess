@@ -92,7 +92,7 @@ Teachers sign in with Google once. After that everything syncs on its own: whene
 The **Collaboration** tab is visible only to a class's teachers. It lists every file in both folders, whoever added it, and offers:
 
 - a **Create** menu for a blank Doc, Slides or Sheet in the teacher folder
-- **Move to student folder** and **Back to teachers only** for each file. Everything students see is owned by the class owner. Google does not let one person move or give away another person's file, so a file owned by a co-teacher is copied into the student folder by the owner, and a co-teacher's request waits until the owner's tab syncs
+- **Move to student folder** and **Back to teachers only** for each file. Everything students see is owned by the class owner. Google does not let one person move or give away another person's file, so a file owned by a co-teacher is copied into the student folder by the owner, and the class owner can press **Allow instant moves** once so that a co-teacher's Move happens immediately. Without that approval a co-teacher's request waits until the owner's tab syncs
 - **Pause student access** while you are editing, and **Restore student access** when you are done. Pausing removes the link permission, so students cannot open the folder until you restore it.
 - notes on each file, so co-teachers can talk about it in place
 - **Push to classwork**, live, as a draft or scheduled
@@ -209,6 +209,7 @@ EdAssess is one page (`index.html`), one service worker (`sw.js`) and one server
 | `EA_TEACHER_KEYWORD` | The secret word teachers type to create an account. Required. |
 | `EA_PUSH_CONTACT` | A `mailto:` address push services can see. Optional. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY`, `GOOGLE_APP_ID` | Turn on Google Drive. Optional. |
+| `GOOGLE_CLIENT_SECRET` | The OAuth client's secret. Only needed for instant moves. Optional. |
 
 Notifications use Web Push through `sw.js`, which must be deployed at the site root next to `index.html`.
 
@@ -221,7 +222,7 @@ This takes about ten minutes, and without it everything else still works.
 3. Create an API key and restrict it to your site and the Picker API.
 4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
 
-Sign-in asks for full Drive access. That is what lets EdAssess create the class folders, add each co-teacher's shortcut and list everything inside a class folder. It does not ask for the account email. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
+For instant moves, copy the OAuth client's secret into `GOOGLE_CLIENT_SECRET`. The owner's approval stores one encrypted long-term token on the server, which is removed when they turn instant moves off. Sign-in asks for full Drive access. That is what lets EdAssess create the class folders, add each co-teacher's shortcut and list everything inside a class folder. It does not ask for the account email. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
 
 ### Running it locally
 

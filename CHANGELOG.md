@@ -4,6 +4,9 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Added
+- Instant moves. The class owner approves once with Allow instant moves, and from then on a co-teacher's Move places the file in the student folder immediately, with no waiting on the owner. EdAssess keeps an encrypted long-term Google token for this, never an email address. The owner can turn it off at any time, which also revokes the token. Without it, co-teacher moves still queue until the owner's tab syncs.
+
 ### Changed
 - The Collaboration list now mirrors the Drive folders exactly. Every sync compares the two folders with the list and removes files that were deleted, renames files that were renamed and notices files that moved. It checks every 15 seconds while the tab is open and again whenever you return to the window.
 - Only the class owner can place files in the student folder, so the owner holds ownership of everything students see. When the owner presses Move, a file they do not own is copied into the student folder so the owner owns the copy. When a co-teacher presses Move, the request is queued and the owner's session completes it automatically, and the file shows Waiting for owner until then.

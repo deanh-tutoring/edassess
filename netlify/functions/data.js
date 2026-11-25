@@ -90,6 +90,24 @@ function googleInfo(u) {
   } catch (e) { /* not a URL */ }
   return null;
 }
+
+/* ── Google Drive access held for the class owner, so co-teachers can place files without waiting ──
+   The owner approves once. Only a refresh token is kept (encrypted), never an email address. */
+const gKey = () => crypto.createHash('sha256').update('gdrive:' + (process.env.EA_AUTH_SECRET || '')).digest();
+const gEnc = (t) => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', gKey(), iv), e = Buffer.concat([c.update(t, 'utf8'), c.final()]); return [iv, c.getAuthTag(), e].map((b) => b.toString('base64')).join('.'); };
+const gDec = (t) => { const [iv, tag, e] = String(t).split('.').map((x) => Buffer.from(x, 'base64')); const d = crypto.createDecipheriv('aes-256-gcm', gKey(), iv); d.setAuthTag(tag); return Buffer.concat([d.update(e), d.final()]).toString('utf8'); };
+async function gToken(form) {
+  const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID || '', client_secret: process.env.GOOGLE_CLIENT_SECRET || '', ...form }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error_description || j.error || 'Google refused the request.'); return j;
+}
+async function ownerDrive(c) {
+  const rec = await getJ(U_PREFIX + ownerOf(c)); if (!rec || !rec.gRefresh) return null;
+  try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(rec.gRefresh) }); return t.access_token || null; } catch (e) { return null; }
+}
+async function dr(tok, path, opt) {
+  const r = await fetch('https://www.googleapis.com/drive/v3/' + path, { ...(opt || {}), headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' } });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error((j.error && j.error.message) || ('Drive ' + r.status)); return j;
+}
 const bad = (msg, code = 400, more) => reply(code, { error: msg, ...(more || {}) });
 const okId = (id) => typeof id === 'string' && ID_RE.test(id);
 const okRev = (r) => /^\d{1,9}$/.test(String(r));
@@ -676,6 +694,7 @@ async function classesForTeacher(user) {
   for (const c of mine) {
     try { if (!c.no) { for (let i = 0; i < 60 && !c.no; i++) { const n = String(crypto.randomInt(1000, 10000)); if (!(await getJ(CNO_PREFIX + n))) { await putJ(CNO_PREFIX + n, { id: c.id }); c.no = n; await saveClass(c); } } } } catch (e) { /* optional */ }
     const x = clsClean(c);
+    if (x.collab) { const orec = await getJ(U_PREFIX + ownerOf(c)).catch(() => null); x.collab = { ...x.collab, serverOn: !!(orec && orec.gRefresh) }; }
     x.students = await Promise.all((c.students || []).map(async (st) => { const r = { ...st }; try { if (st.key) { const rec = await getJ(S_PREFIX + st.key); if (rec) { if (!rec.sid) { rec.sid = await newSid(rec.key); await putJ(S_PREFIX + rec.key, rec); } r.sid = rec.sid; } } } catch (e) { /* optional */ } return r; }));
     x.invites = await Promise.all((c.invites || []).map(async (i) => ({ ...i, registered: !!(await getJ(S_PREFIX + i.key)) })));
     out.push(x);
@@ -1050,9 +1069,29 @@ async function classAction(body, user) {
     col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
   }
   if (a === 'collabMoveRequest') {
-    const f = ((c.collab || {}).files || []).find((x) => x.id === body.fileId); if (!f) return bad('File not found.', 404);
-    f.moveTo = body.to === 'students' ? 'students' : body.to === 'teachers' ? 'teachers' : null; f.moveBy = lc(user.username);
-    await saveClass(c); return reply(200, { ok: true, collab: c.collab });
+    const col = c.collab || {}, f = (col.files || []).find((x) => x.id === body.fileId); if (!f) return bad('File not found.', 404);
+    const to = body.to === 'students' ? 'students' : body.to === 'teachers' ? 'teachers' : null; if (!to) return bad('Choose where to move it.');
+    const dest = to === 'students' ? col.studentFolderId : col.folderId, other = to === 'students' ? col.folderId : col.studentFolderId;
+    const tok = dest ? await ownerDrive(c) : null, gi = googleInfo(f.url);
+    if (tok && gi) {
+      try {
+        let how = 'moved', ps = [];
+        try { ps = (await dr(tok, 'files/' + gi.id + '?fields=parents')).parents || []; } catch (e) { /* parents hidden */ }
+        try {
+          const rm = (ps.length ? ps.filter((x) => x !== dest) : (other ? [other] : [])).join(',');
+          if (!(ps.length === 1 && ps[0] === dest)) await dr(tok, 'files/' + gi.id + '?addParents=' + dest + (rm ? '&removeParents=' + rm : '') + '&fields=id', { method: 'PATCH', body: '{}' });
+          f.where = to; f.moveTo = null;
+        } catch (e) {
+          const cp = await dr(tok, 'files/' + gi.id + '/copy?fields=id,name,webViewLink', { method: 'POST', body: JSON.stringify({ name: f.name, parents: [dest] }) });
+          f.moveTo = null; how = 'copied';
+          const cf = cleanFile({ id: cp.id, name: cp.name, url: cp.webViewLink, src: 'folder', where: to });
+          if (cf && !col.files.some((x) => x.id === cf.id)) col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
+        }
+        await saveClass(c); return reply(200, { ok: true, done: true, how, collab: c.collab });
+      } catch (e) { /* fall through to the queue */ }
+    }
+    f.moveTo = to; f.moveBy = lc(user.username);
+    await saveClass(c); return reply(200, { ok: true, done: false, collab: c.collab });
   }
   if (a === 'collabAdd') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
@@ -1302,6 +1341,14 @@ async function handlePost(body, user, student) {
   const publicOp = body.action === 'instructorOp' && body.op && body.op.type === 'upload';
   if (!user && !PUBLIC.includes(body.action) && !publicOp) return AUTH_ERR();
   switch (body.action) {
+    case 'gdConnect': {
+      if (!process.env.GOOGLE_CLIENT_SECRET) return bad('Add GOOGLE_CLIENT_SECRET on the site to turn this on.');
+      let t; try { t = await gToken({ grant_type: 'authorization_code', code: String(body.code || ''), redirect_uri: 'postmessage' }); } catch (e) { return bad(e.message); }
+      if (!t.refresh_token) return bad('Google did not return long-term access. Remove EdAssess from your Google account permissions and try again.');
+      const r = await getJ(U_PREFIX + lc(user.username)); if (!r) return bad('Account not found.', 404); r.gRefresh = gEnc(t.refresh_token); await putJ(U_PREFIX + lc(user.username), r);
+      return reply(200, { ok: true });
+    }
+    case 'gdDisconnect': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gRefresh) { try { await fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(gDec(r.gRefresh)), { method: 'POST' }); } catch (e) {} delete r.gRefresh; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'forgetGoogleEmail': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gEmail) { delete r.gEmail; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'putTest': return putTest(body.test, body.baseRev, !!body.force, user);
     case 'putAssignment': return putSimple(P.asg, body.assignment, user);
