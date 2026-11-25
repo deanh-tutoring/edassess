@@ -2041,6 +2041,9 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .sv-body{animation:cwIn .25s ease both}@keyframes cwIn{from{opacity:0;transform:translateY(6px)}}
 .sv-body .cw-act,.sv-body .cw-dots{display:none}
 @media(max-width:820px){.sv-bar select{max-width:100%;width:100%}}
+.topbar .sv-seg{margin:0 auto 0 18px}
+.enr .lms-head{margin-top:4px}
+.page-body.enr{padding-left:32px!important;padding-right:32px!important}@media(max-width:820px){.page-body.enr{padding-left:16px!important;padding-right:16px!important}}
 </style>
 </head>
 <body>
@@ -12084,7 +12087,7 @@ function eaStudentPage(){const p=new URLSearchParams(location.search);return ['e
   const f=window.fetch.bind(window);
   window.fetch=function(u,o){
     const isApi=typeof u==='string'&&u.indexOf(API_URL)===0;
-    if(isApi&&!eaStudentPage()){const t=eaToken();if(t){o=Object.assign({},o);o.headers=Object.assign({},o.headers,{Authorization:'Bearer '+t});}}
+    if(isApi&&!eaStudentPage()&&!(o&&o.headers&&o.headers['X-EA-Self'])){const t=eaToken();if(t){o=Object.assign({},o);o.headers=Object.assign({},o.headers,{Authorization:'Bearer '+t});}}
     return f(u,o).then(r=>{if(isApi&&r.status===401&&!eaStudentPage()&&eaToken()){window.EA_AUTH_FAILED=true;fxSessionExpired();}return r;});
   };
 })();
@@ -12360,10 +12363,10 @@ function fxPrivacyOpen(){
 <p>These tools let teachers see EdAssess the way students do. They are built so they cannot be used quietly.</p>
 <ul><li><b>Preview this class</b> shows a teacher the stream, classwork and grades as students see them. It is read-only. Nothing the teacher clicks is saved.</li>
 <li><b>View as a student</b> lets the teacher of a class use the app as one of that class’s students, including starting or submitting an assignment. Work is saved to that student’s record and is marked as done by a teacher. A banner shows who is being viewed at all times. These sessions last two hours. Changing the student’s password, and joining or leaving classes, are switched off.</li>
-<li><b>Student mode for teachers.</b> A teacher invited into someone else’s class as a student uses their own separate student identity, described in section 6.</li></ul>
+<li><b>Student classes for teachers.</b> A teacher invited into someone else’s class as a student uses their own separate student identity, described in section 6.</li></ul>
 <div class="note"><b>Join links and codes.</b> Anyone who has an assessment’s link or join code can open that assessment. Treat them like a classroom door key and share them only with your students. A results link shows one student’s results, so students should not share it.</div>
 <div class="note"><b>Names shown to students.</b> Teachers choose the name students see. Use a name your students and school would expect (for example “Ms. Rivera”), not private contact details.</div></section><section id="pv5"><h2><i>6</i>Teachers who are also students</h2><p>A teacher can join another teacher’s class as a student, for example for staff training or peer observation.</p>
-<ul><li>The class owner invites the teacher by typing <b>@username</b> in the invite box. The invited teacher presses <b>Student mode</b> in the sidebar, which opens a new tab as a student identity named after their teacher profile. They can then accept the invite or enter a class code.</li>
+<ul><li>The class owner invites the teacher by typing <b>@username</b> in the invite box. The invited teacher opens <b>Classes</b> and switches to <b>My student classes</b>, which shows those classes as a student under a student identity named after their teacher profile. They can accept the invite or enter a class code there.</li>
 <li>This student identity is linked to the teacher account. It has no password of its own and cannot be signed into from the student sign-in page. It is not listed in the administrator’s student list.</li>
 <li>The student identity, its class membership, submissions and grades are visible to the teachers of the classes it joins, in the same way as any other student’s.</li>
 <li>Student-mode sessions last up to 12 hours. If the teacher account is disabled, the student identity stops working too.</li>
@@ -12445,7 +12448,7 @@ function fxTermsOpen(){
 <ul><li>You are allowed to use it with your students, and you have any permission your school, district or the law requires (including parent permission, and obligations under laws like FERPA and COPPA).</li>
 <li>You will only collect information from students that you need for teaching. Do not use surveys or questions to collect health details, financial details, government ID numbers, passwords, precise locations or other sensitive information.</li>
 <li>You will treat student work and results as confidential and share them only with people who have a proper reason to see them.</li>
-<li>You will use <b>Student view</b>, <b>View as a student</b> and <b>Student mode</b> only to help students, check what they see or learn alongside colleagues. You will not use them to impersonate a student in a way that harms them, to read private messages that are not yours to read, or to change a student’s work dishonestly.</li>
+<li>You will use <b>Student view</b>, <b>View as a student</b> and <b>My student classes</b> only to help students, check what they see or learn alongside colleagues. You will not use them to impersonate a student in a way that harms them, to read private messages that are not yours to read, or to change a student’s work dishonestly.</li>
 <li>You will keep join codes and links within your classes, and you will not post them publicly.</li>
 <li>You will make sure the files, links and embeds you attach (including Google Drive files) are ones you have the right to share, and that sharing them with students is appropriate.</li>
 <li>You will keep your own copies of anything important. EdAssess is not a records system.</li></ul></section><section id="pv5"><h2><i>6</i>What students agree to</h2><ul><li><b>Do your own work</b> unless the teacher says otherwise. Do not look up answers, share answers, use someone else’s work, or help others cheat during an assessment.</li>
@@ -12509,7 +12512,6 @@ window.fxSelfStudent=async function(){
   try{localStorage.setItem('ea_imp_handoff',JSON.stringify({token:r.token,student:r.student,self:true,exp:Date.now()+30000}));}catch(e){try{w.close();}catch(_){}return toast('Your browser blocked student mode (storage).','error');}
   w.location.href=location.origin+'/'+'?imp=1';
 };
-document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector('.sidebar-footer');if(f&&!IMP)f.insertAdjacentHTML('afterbegin','<a class="nav-item" onclick="fxSelfStudent()" title="Join classes and do work as a student" style="margin-bottom:6px"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg>Student mode</a>');});
 window.fxImpExit=function(){try{sessionStorage.removeItem('ea_imp');}catch(e){}window.close();setTimeout(()=>{location.href=location.origin+'/';},150);};
 if(IMP){document.addEventListener('DOMContentLoaded',()=>{
   document.body.classList.add('imp-on');document.title=(IMP.self?'Student mode · ':'Student view · ')+(IMP.preview?(IMP.className||'class'):IMP.student.name);
@@ -12525,7 +12527,8 @@ const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
     let kind='';
     if(isApi){
       const sp=eaStudentPage(),tt=eaToken(),st=stuToken();
-      const tok=sp?st:(tt||st);kind=sp?(st?'s':''):(tt?'t':(st?'s':''));
+      let tok=sp?st:(tt||st);kind=sp?(st?'s':''):(tt?'t':(st?'s':''));
+      if(!sp&&window.__selfTok&&o&&typeof o.body==='string'){let ac='';try{ac=JSON.parse(o.body).action;}catch(e){}if(['studentMe','joinClass','leaveClass','respondInvite','teacherStudentSession'].includes(ac)&&ac!=='teacherStudentSession'){tok=window.__selfTok;kind='x';o=Object.assign({},o);o.headers=Object.assign({},o.headers,{'X-EA-Self':'1'});}}
       if(tok){o=Object.assign({},o);o.headers=Object.assign({},o.headers,{Authorization:'Bearer '+tok});}
     }
     return f(u,o).then(r=>{
@@ -14271,6 +14274,42 @@ window.fxClassDetail=function(c){
 const of=window.cwFilter;window.cwFilter=function(isT,t){if(!isT&&FXC.sv&&typeof FXC==='object'&&document.querySelector('.sv-body')){FXC.cwTopic=t||'';fxRenderClasses();return;}return of(isT,t);};
 })();
 
+/* ── Teachers who are students in someone else's class: embedded in the Classes page, no separate mode ── */
+(function(){
+const seg=on=>`<div class="sv-seg" role="group" aria-label="Classes"><button class="${on?'':'on'}" onclick="cwEnr(0)">Teaching</button><button class="${on?'on':''}" onclick="cwEnr(1)">My student classes</button></div>`;
+let loading=false,loaded=false;
+async function selfLoad(){
+  if(loading)return;loading=true;
+  try{
+    if(!window.__selfTok){const r=await apiPost({action:'teacherStudentSession'});if(!(r&&r.ok&&r.token))throw new Error((r&&r.error)||'Could not open your student classes.');window.__selfTok=r.token;try{stuSave({token:r.token,student:r.student});}catch(e){}}
+    await stuRefresh(true);loaded=true;STU.error='';
+  }catch(e){STU.error=e.message;}
+  loading=false;fxRenderClasses();
+}
+window.cwEnr=function(on){FXC.enrolled=!!on;FXC.open=null;if(on){STU.page=STU.page==='review'?'home':(STU.page||'home');if(!loaded)selfLoad();}fxRenderClasses();};
+window.cwRetry=function(){STU.error='';loaded=false;selfLoad();fxRenderClasses();};
+const base=window.fxRenderClasses;
+window.fxRenderClasses=function(){
+  const pg=document.getElementById('page-classes');
+  if(!FXC.enrolled||FXC.open){const r=base.apply(this,arguments);if(pg&&!FXC.open&&!FXC.enrolled){const tb=pg.querySelector('.topbar');if(tb){const h=tb.querySelector('.page-title');if(h)h.insertAdjacentHTML('afterend',seg(false));}}return r;}
+  if(!pg)return;
+  let body;
+  if(STU.error&&!STU.data)body=`<div class="lms-panel lms-empty">${E(STU.error)} <a class="lms-link" onclick="cwRetry()">Try again</a></div>`;
+  else if(!STU.data)body='<div class="lms-panel lms-empty">Loading your student classes...</div>';
+  else{
+    const pgk=STU.page;
+    const tabs=`<div class="lms-tabs">${[['home','Classes'],['assignments','Assignments'],['grades','Grades']].map(([k,l])=>`<button class="${(pgk===k||(pgk==='class'&&k==='home'))?'on':''}" onclick="stuGo('${k}')">${l}</button>`).join('')}</div>`;
+    const inner=pgk==='class'?lmsClassView():pgk==='assignments'?stuAssignments():pgk==='grades'?stuGrades():stuHome();
+    body=(pgk==='class'?'':tabs)+inner.replace(/<h1>[^<]*’s work<\/h1>/,'<h1>Your student classes</h1>');
+  }
+  pg.innerHTML=`<div class="topbar"><h1 class="page-title">Classes</h1>${seg(true)}</div><div class="page-body enr" style="max-width:1040px">${body}</div>`;
+};
+const op=window.stuPaint;
+window.stuPaint=function(){if(FXC.enrolled&&APP.currentPage==='classes'&&!FXC.open){fxRenderClasses();return;}return op.apply(this,arguments);};
+const og=window.stuGo;
+window.stuGo=function(p){if(FXC.enrolled&&APP.currentPage==='classes'){const h=location.hash;og.apply(this,arguments);try{history.replaceState(null,'',location.pathname+location.search+h);}catch(e){}return;}return og.apply(this,arguments);};
+})();
+
 </script>
 <script id="ea-notify">
 /* Desktop notifications for students: asked for by default, delivered through Web Push when supported */
@@ -15455,6 +15494,7 @@ document.addEventListener('keydown',e=>{
 /* What's new pop-up: shown once per release */
 (function(){
 const REL={v:'1.7.0',date:'November 25, 2026',items:[
+'No more Student mode. If you are a student in a colleague\u2019s class, open Classes and switch to My student classes. Everything is right there.',
 'Student view in place. Flip any class between Teacher and Student with the switch at the top, no new tab and no separate mode.',
 'Check exactly what one student can see by picking them under Viewing as.',
 'Instant moves are on by default, and the class owner can deny them.',

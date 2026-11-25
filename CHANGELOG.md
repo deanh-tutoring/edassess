@@ -9,6 +9,8 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 ### Added
 - Student view, in place. The class page has a Teacher and Student switch, like Google Classroom. Student shows the Stream and Classwork exactly as students see them, in the same tab, with no separate student mode. Pick a student in Viewing as to check what they can see, including items limited to groups. Taking work as a student is still one click away.
 
+- Teachers who are students in someone else's class no longer need Student mode. Classes has a Teaching and My student classes switch, and the second one shows invites, classes, classwork and grades right inside the normal teacher interface. The Student mode button in the sidebar is gone.
+
 ### Fixed
 - Topic names that are limited to certain students are no longer listed for students who cannot see them.
 
