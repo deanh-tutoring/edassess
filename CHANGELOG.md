@@ -4,6 +4,14 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.7.0 (2026-11-25)
+
+### Added
+- Student view, in place. The class page has a Teacher and Student switch, like Google Classroom. Student shows the Stream and Classwork exactly as students see them, in the same tab, with no separate student mode. Pick a student in Viewing as to check what they can see, including items limited to groups. Taking work as a student is still one click away.
+
+### Fixed
+- Topic names that are limited to certain students are no longer listed for students who cannot see them.
+
 ## 1.6.1 (2026-11-25)
 
 ### Changed
