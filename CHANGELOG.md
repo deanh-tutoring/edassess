@@ -4,6 +4,11 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+### Changed
+- Solo teachers see a **Files** tab instead of Collaboration. Their class has one Drive folder that anyone with the link can view, and posting a material simply makes its file available. Files are listed as Published to students and Not published yet. The tab becomes Collaboration, with separate teacher and student folders and lists, as soon as a co-teacher is added.
+- Posting a material moves its files into the student folder. A scheduled material moves at the time it goes live, and until a file is in place students see the material without the link.
+- Smoother Collaboration tab: gentle entrance animation, notes that slide open, a highlight on files that just moved, spinners on busy buttons, and clearer button labels (Move to student folder, Make teachers only, Post to classwork, Remove from list).
+
 ### Added
 - Instant moves. The class owner approves once with Allow instant moves, and from then on a co-teacher's Move places the file in the student folder immediately, with no waiting on the owner. EdAssess keeps an encrypted long-term Google token for this, never an email address. The owner can turn it off at any time, which also revokes the token. Without it, co-teacher moves still queue until the owner's tab syncs.
 

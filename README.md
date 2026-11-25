@@ -80,7 +80,9 @@ Every class has Stream, Classwork, Collaboration, Grades and People tabs. Post a
 
 Classwork works like Google Classroom: a Create menu (Assignment, Material, Topic), a topic list, and one stack of items per topic that you can drag into order. Materials can be published now, saved as drafts or scheduled, and each item carries a chip showing its state. Posting sends a push notification to students (see Notifications).
 
-#### Collaboration and Google Drive
+#### Files and Collaboration (Google Drive)
+
+A teacher who works alone sees a **Files** tab. The class has a single Drive folder that anyone with the link can view, and posting a material makes its file available to students. As soon as a co-teacher joins, the tab becomes **Collaboration** with the two folders described below. Files in both tabs are shown in separate lists.
 
 Anonymity comes first, so **nothing is ever shared by name or email.** Each class has two Google Drive folders that work by link:
 
@@ -98,7 +100,7 @@ The **Collaboration** tab is visible only to a class's teachers. It lists every 
 - **Push to classwork**, live, as a draft or scheduled
 - a one-step **Share my tests with co-teachers** for everyone teaching the class
 
-Files attached to class materials are moved into the right folder automatically: the student folder once published, and the teacher folder while a draft or scheduled. Students see an **Open the class files folder** link in Classwork while access is on. Pasted Google links work too: any Docs, Sheets, Slides, Forms or Drive link is recognized, and **Embed** lets students preview the file on the page. In **Post material** you can also press **Add from Google Drive** to pick files.
+Files attached to class materials move into the student folder when the material is posted. A scheduled material moves at the time it goes live, and until then students see the material without the link. Students see an **Open the class files folder** link in Classwork while access is on. Pasted Google links work too: any Docs, Sheets, Slides, Forms or Drive link is recognized, and **Embed** lets students preview the file on the page. In **Post material** you can also press **Add from Google Drive** to pick files.
 
 Without the Google settings below, all of this still works with pasted links. See [Turning on Google Drive](#turning-on-google-drive).
 

@@ -795,7 +795,7 @@ async function studentHome(s) {
   for (const c of [...mine, ...invites]) { set.add(ownerOf(c)); (c.coTeachers || []).forEach((u) => set.add(lc(u))); (c.materials || []).forEach((m) => m.by && set.add(lc(m.by))); }
   assignments.forEach((a) => set.add(a.ownerId));
   subs.forEach((x) => x.gradedBy && set.add(lc(x.gradedBy)));
-  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive), studentFolderUrl: c.collab && c.collab.studentOpen && c.collab.studentFolderUrl ? c.collab.studentFolderUrl : '', topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
+  const strip = (c) => ({ id: c.id, name: c.name, subject: c.subject || '', period: c.period || '', ownerId: ownerOf(c), coTeachers: c.coTeachers || [], announcements: (c.announcements || []).slice(-15).reverse(), materials: (c.materials || []).filter(matLive).map((m) => m.pendingPlace ? { ...m, links: [], preparing: true } : m), studentFolderUrl: c.collab && c.collab.studentOpen && c.collab.studentFolderUrl ? c.collab.studentFolderUrl : '', topics: c.topics || [], joinedAt: ((c.students || []).find((x) => x.key === s.key) || {}).joinedAt || null, archived: !!c.archived, size: (c.students || []).length });
   const peer = await peerSummary(s, subs);
   return { peer, student: pubStudent(s), classes: mine.map(strip), invites: invites.map((c) => ({ id: c.id, name: c.name, ownerId: ownerOf(c), invitedAt: ((c.invites || []).find((i) => i.key === s.key) || {}).at || null })), assignments, submissions: subOut, teachers: await namesFor(set), serverTime: new Date().toISOString() };
 }
@@ -941,17 +941,19 @@ async function studentAction(body, student) {
   if (a === 'leaveClass') { c.students = (c.students || []).filter((x) => x.key !== student.key); await saveClass(c); return reply(200, { ok: true }); }
   return null;
 }
+const sepFolders = (c) => !!(c.collab && c.collab.folderId && c.collab.studentFolderId && c.collab.folderId !== c.collab.studentFolderId);
+const needsPlace = (c, links) => sepFolders(c) && (links || []).some((l) => { const g = googleInfo(l.url); return g && g.kind !== 'folder'; });
 const matLive = (m) => !m.state || m.state === 'live' || (m.state === 'scheduled' && m.publishAt && new Date(m.publishAt) <= new Date());
 const asgLive = (a) => !(a.draft === true || (a.publishAt && new Date(a.publishAt) > new Date()));
 const gmailOk = (e) => /^[^\s@]{1,64}@[^\s@]{1,120}\.[A-Za-z]{2,}$/.test(e);
 const cleanFile = (f) => {
   let u = String((f && f.url) || '').trim().slice(0, 600); try { const x = new URL(u); if (!/^https?:$/.test(x.protocol)) return null; u = x.href; } catch (e) { return null; }
   const g = googleInfo(u); const kind = g ? g.kind : 'link';
-  return { src: f && f.src === 'folder' ? 'folder' : 'link', where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
+  return { placedUrl: f && typeof f.placedUrl === 'string' && /^https:\/\//.test(f.placedUrl) ? f.placedUrl.slice(0, 600) : undefined, src: f && f.src === 'folder' ? 'folder' : 'link', where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
 };
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1040,12 +1042,19 @@ async function classAction(body, user) {
     m.state = 'live'; m.publishAt = null; m.at = new Date().toISOString(); await saveClass(c);
     await notifyClass(c.id, { title: c.name + ': new material', body: m.title, tag: 'mat-' + c.id }); return reply(200, { ok: true });
   }
+  if (a === 'materialPlaced') {
+    const m = (c.materials || []).find((x) => x.id === body.matId); if (!m) return bad('Material not found.', 404);
+    const re = body.relink && typeof body.relink === 'object' ? body.relink : {};
+    m.links = (m.links || []).map((l) => (re[l.url] ? { ...l, url: String(re[l.url]).slice(0, 600) } : l));
+    m.pendingPlace = false; await saveClass(c); return reply(200, { ok: true });
+  }
   if (a === 'collabSetup') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
     const gid = (v) => String(v || '').replace(/[^\w-]/g, '').slice(0, 120);
     if (ownerOf(c) === lc(user.username)) {
       if (body.folderId) { col.folderId = gid(body.folderId); col.folderUrl = 'https://drive.google.com/drive/folders/' + col.folderId; }
-      if (body.studentFolderId) { col.studentFolderId = gid(body.studentFolderId); col.studentFolderUrl = 'https://drive.google.com/drive/folders/' + col.studentFolderId; col.studentOpen = true; }
+      if (body.solo === true) { col.folderId = col.studentFolderId = gid(body.studentFolderId || body.folderId); col.folderUrl = col.studentFolderUrl = 'https://drive.google.com/drive/folders/' + col.folderId; col.studentOpen = true; }
+      else if (body.studentFolderId) { col.studentFolderId = gid(body.studentFolderId); col.studentFolderUrl = 'https://drive.google.com/drive/folders/' + col.studentFolderId; col.studentOpen = true; }
     }
     if (typeof body.studentOpen === 'boolean') col.studentOpen = body.studentOpen;
     if (body.shortcut === true) col.shortcuts[lc(user.username)] = true;
@@ -1083,11 +1092,11 @@ async function classAction(body, user) {
           f.where = to; f.moveTo = null;
         } catch (e) {
           const cp = await dr(tok, 'files/' + gi.id + '/copy?fields=id,name,webViewLink', { method: 'POST', body: JSON.stringify({ name: f.name, parents: [dest] }) });
-          f.moveTo = null; how = 'copied';
+          f.moveTo = null; how = 'copied'; f.placedUrl = cp.webViewLink;
           const cf = cleanFile({ id: cp.id, name: cp.name, url: cp.webViewLink, src: 'folder', where: to });
           if (cf && !col.files.some((x) => x.id === cf.id)) col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
         }
-        await saveClass(c); return reply(200, { ok: true, done: true, how, collab: c.collab });
+        await saveClass(c); return reply(200, { ok: true, done: true, how, url: how === 'copied' ? f.placedUrl : f.url, collab: c.collab });
       } catch (e) { /* fall through to the queue */ }
     }
     f.moveTo = to; f.moveBy = lc(user.username);
@@ -1099,7 +1108,7 @@ async function classAction(body, user) {
     for (const f of (Array.isArray(body.files) ? body.files : []).slice(0, 25)) {
       const cf = cleanFile(f); if (!cf) continue;
       const ex = col.files.find((x) => x.id === cf.id || x.url === cf.url);
-      if (ex) { if (f && f.where) { ex.where = cf.where; ex.moveTo = null; } continue; }
+      if (ex) { if (f && f.where) { ex.where = cf.where; ex.moveTo = null; } if (cf.placedUrl) ex.placedUrl = cf.placedUrl; continue; }
       col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); added++;
     }
     col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, added, collab: col });
@@ -1126,7 +1135,7 @@ async function classAction(body, user) {
     const topic = String(body.topic || '').trim().slice(0, 40);
     if (topic) { c.topics = c.topics || []; if (!c.topics.includes(topic)) c.topics.push(topic); }
     c.materials = c.materials || [];
-    c.materials.push({ id: crypto.randomBytes(6).toString('hex'), title: f.name, body: '', topic, links: [{ url: f.url, label: f.name, ...(f.kind !== 'link' && f.kind !== 'folder' ? { embed: true } : {}) }], state, publishAt, by: lc(user.username), at: new Date().toISOString(), fromCollab: f.id });
+    c.materials.push({ id: crypto.randomBytes(6).toString('hex'), title: f.name, body: '', topic, links: [{ url: f.url, label: f.name, ...(f.kind !== 'link' && f.kind !== 'folder' ? { embed: true } : {}) }], state, publishAt, pendingPlace: needsPlace(c, [{ url: f.url }]) && f.where !== 'students', by: lc(user.username), at: new Date().toISOString(), fromCollab: f.id });
     f.pushedAt = new Date().toISOString(); await saveClass(c);
     if (state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: f.name, tag: 'mat-' + c.id });
     return reply(200, { ok: true, collab: c.collab });
@@ -1157,7 +1166,7 @@ async function classAction(body, user) {
     c.materials = c.materials || [];
     let state = body.state === 'draft' ? 'draft' : body.state === 'scheduled' ? 'scheduled' : 'live', publishAt = null;
     if (state === 'scheduled') { const d = new Date(body.publishAt); if (isNaN(d)) return bad('Pick a valid date and time to publish.'); publishAt = d.toISOString(); }
-    const base = { title, body: String(body.body || '').trim().slice(0, 4000), topic: String(body.topic || '').trim().slice(0, 40), links, state, publishAt };
+    const base = { title, body: String(body.body || '').trim().slice(0, 4000), topic: String(body.topic || '').trim().slice(0, 40), links, state, publishAt, pendingPlace: needsPlace(c, links) };
     const old = body.matId ? c.materials.find((m) => m.id === body.matId) : null;
     if (old) Object.assign(old, base, { editedAt: new Date().toISOString() });
     else { if (base.topic) { c.topics = c.topics || []; if (!c.topics.includes(base.topic)) c.topics.push(base.topic); } c.materials.push({ id: crypto.randomBytes(6).toString('hex'), ...base, by: lc(user.username), at: new Date().toISOString() }); c.materials = c.materials.slice(-100); }
