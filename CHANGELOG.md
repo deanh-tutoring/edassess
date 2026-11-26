@@ -4,6 +4,13 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.9.0 (2026-11-26)
+
+### Changed
+- Class pages follow the familiar classroom layout. The Stream opens with a full-width banner in the class color that carries the class code (teachers) or the teachers' names (students), a collapsed New announcement button that expands into the composer, and stream rows with round icons for announcements, materials and assignments.
+- Classwork has a Topic filter dropdown, large collapsible topic headings, Collapse all and Add topic, and thin-ruled rows with the posted date on the right. The old side list of topics is gone.
+- Your classes are listed under Classes in the left sidebar as colored initials, with the open class highlighted.
+
 ## 1.8.1 (2026-11-26)
 
 ### Changed
