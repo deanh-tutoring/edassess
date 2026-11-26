@@ -34,3 +34,7 @@ Thank you for helping. EdAssess is open source under the MIT License, and fixes,
 ## Reporting problems
 
 Open an issue with what you did, what you expected and what happened. For anything involving student privacy or security, please say so in the title and avoid posting real student names.
+
+## Releasing
+
+Bump the version in `package.json`, `version.json` and the `BUILD` constant at the end of `shell.js`, add a CHANGELOG entry, and deploy. Open pages notice the new `version.json` and ask people to refresh.

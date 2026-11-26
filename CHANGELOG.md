@@ -4,6 +4,16 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.0.0 (2026-11-26)
+
+### Changed
+- A complete visual refresh in the spirit of Pear Assessment: a white sidebar with a green active state, a bright page with clean white cards, Pear-style green buttons, crisper type and calmer tables, in light and dark mode.
+- Update notices are gone. The What's new pop-up no longer opens on its own and lives under Search (Ctrl K), What's new.
+- When a new version is deployed, EdAssess asks every open page to refresh. The check reads a tiny `version.json` file, so keep it and the BUILD constant in `shell.js` in step when you release.
+
+### Fixed
+- The Collaboration and Files tab was dark on dark and light on light because a new banner style reused its class name. The banner has its own classes now.
+
 ## 1.9.0 (2026-11-26)
 
 ### Changed
