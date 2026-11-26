@@ -2060,6 +2060,25 @@ body.fx-ui-dark #home-page{--hp-sky1:#061317;--hp-sky2:#0B2A30;--hp-wv1:#0E3A42;
 .cc-wrap .cw-th{border-bottom-color:var(--cc)!important}
 .cc-wrap .cw-tp.on{color:var(--cc)!important}
 .cc-wrap .cw-ico{color:var(--cc)!important}
+
+/* Roster and dashboard polish (v1.8) */
+.ro{padding:0!important;overflow:hidden}
+.ro-h,.ro-r{display:grid;grid-template-columns:minmax(150px,1.4fr) minmax(120px,1fr) 70px auto;gap:16px;align-items:center;padding:12px 18px}
+.ro-h{font:700 11.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1.5px solid var(--border)}
+.ro-r{border-bottom:1px solid var(--border);transition:background .15s}.ro-r:last-child{border-bottom:0}.ro-r:hover{background:var(--hl-soft)}
+.ro-n{display:flex;gap:12px;align-items:center;min-width:0}.ro-n b{display:block;font-size:15px}.ro-n small,.ro-p small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.ro-av{width:34px;height:34px;border-radius:50%;background:var(--cc,var(--accent));color:#fff;display:grid;place-items:center;font:700 14px var(--f-body);font-style:normal;flex:none}
+.ro-bar{display:block;height:7px;border-radius:99px;background:var(--hl-soft);overflow:hidden}.ro-bar i{display:block;height:100%;background:var(--cc,var(--accent));border-radius:99px;transition:width .5s ease}
+.ro-a{font-weight:700;font-size:15px}.ro-x{display:flex;gap:6px;justify-content:flex-end}.ro-rm{color:var(--rust)!important}
+@media(max-width:700px){.ro-h{display:none}.ro-r{grid-template-columns:1fr auto;row-gap:10px}.ro-p{grid-column:1/2}.ro-x{grid-column:1/3;justify-content:flex-start}}
+.dh{margin-bottom:26px}.dh-t h2{font:800 30px var(--f-display);letter-spacing:-.03em;margin:0}.dh-t p{margin:4px 0 16px;color:var(--muted);font-weight:500}
+.dh-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.dh-c{display:flex;flex-direction:column;gap:4px;align-items:flex-start;border:1.5px solid var(--border);border-left:6px solid var(--cc);border-radius:12px;padding:12px 14px;cursor:pointer;background:var(--surface,#fff);transition:transform .2s,border-color .2s;color:var(--ink)}
+.dh-c:hover{transform:translateY(-2px);border-color:var(--cc)}.dh-c b{font-size:15px}.dh-c small{color:var(--muted);font-size:12.5px}.dh-c .fxc-pill,.dh-c .fxc-ok{margin-top:6px}
+.fxc-two{grid-template-columns:minmax(0,1fr) 300px!important}
+.ro-h,.ro-r{grid-template-columns:minmax(130px,1.3fr) minmax(90px,1fr) 56px 200px!important;gap:12px!important;padding:12px 14px!important}
+.ro-h span:nth-child(3){text-align:left}.ro-x .btn{padding:6px 10px;font-size:12.5px}
+@media(max-width:1100px){.fxc-two{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
@@ -3476,18 +3495,19 @@ function renderDashboard(){
     </button>
   </div>
   <div class="page-content">
+    ${window.dashHero?dashHero():''}
     <div class="grid-4 mb-6">
       <div class="stat-card">
         <div class="stat-label">Total Tests</div>
         <div class="stat-value">${totalTests}</div>
       </div>
-      <div class="stat-card" style="--before-color:var(--rust)">
+      <div class="stat-card">
         <div class="stat-label">Published</div>
-        <div class="stat-value" style="color:var(--rust)">${published}</div>
+        <div class="stat-value">${published}</div>
       </div>
-      <div class="stat-card" style="--before-color:var(--ochre)">
+      <div class="stat-card">
         <div class="stat-label">In Progress</div>
-        <div class="stat-value" style="color:var(--ochre)">${activeSubs}</div>
+        <div class="stat-value">${activeSubs}</div>
       </div>
       <div class="stat-card" style="--before-color:var(--sage)">
         <div class="stat-label">Submitted</div>
@@ -12842,8 +12862,8 @@ function fxClassDetail(c){
   let body='';
   if(FXC.tab==='roster'){
     const st=fxClassStats(c);
-    body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
-     ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="lms-link" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</a> <a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the code.</td></tr>'}</tbody></table></div>
+    body=`<div class="fxc-two"><div class="fxc-panel ro"><div class="ro-h"><span>Student</span><span>Progress</span><span>Average</span><span></span></div>
+     ${st.map(r=>`<div class="ro-r"><span class="ro-n"><i class="ro-av">${E((r.s.name||'?').trim().charAt(0).toUpperCase())}</i><span><b>${E(r.s.name)}</b><small>Joined ${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</small></span></span><span class="ro-p"><span class="ro-bar"><i style="width:${r.total?Math.round(r.done/r.total*100):0}%"></i></span><small>${r.done} of ${r.total}</small></span><span class="ro-a">${r.avg==null?'—':r.avg+'%'}</span><span class="ro-x"><button class="btn btn-secondary btn-sm" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</button><button class="btn btn-ghost btn-sm ro-rm" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</button></span></div>`).join('')||'<div class="fxc-none">No students yet. Invite by name or share the class code.</div>'}</div>
      <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K — or @username to invite a fellow teacher as a student"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
       ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
   }else if(FXC.tab==='assignments'){
@@ -13760,8 +13780,8 @@ window.fxClassDetail=function(c){
     body=`<div class="lms-panel" style="overflow-x:auto;padding:0">${cols.length&&rows.length?`<table class="lms-gb"><thead><tr><th class="s">Student</th>${cols.map(a=>`<th title="${E(a.title)}">${E((a.title||'Assessment').slice(0,18))}</th>`).join('')}<th>Average</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="s">${E(r.st.name)}</td>${r.cs.map(x=>`<td>${x.h}</td>`).join('')}<td><b>${r.avg==null?'—':r.avg+'%'}</b></td></tr>`).join('')}<tr class="avg"><td class="s">Class average</td>${colAvg.map(v=>`<td>${v}</td>`).join('')}<td></td></tr></tbody></table>`:'<div class="fxc-none" style="padding:24px">Add students and assign a test to see the gradebook.</div>'}</div><div class="lms-row-m" style="margin-top:8px">Click a score to open and grade that student’s work. “grade” marks work that still needs grading.</div>`;
   }else{
     const st=fxClassStats(c);
-    body=`<div class="fxc-two"><div class="fxc-panel"><table class="fxc-table"><thead><tr><th>Student</th><th>Joined</th><th>Completed</th><th>Average</th><th></th></tr></thead><tbody>
-     ${st.map(r=>`<tr><td><b>${E(r.s.name)}</b></td><td>${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</td><td>${r.done}/${r.total}</td><td>${r.avg==null?'—':r.avg+'%'}</td><td><a class="lms-link" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</a> <a class="fxc-x" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</a></td></tr>`).join('')||'<tr><td colspan="5" class="fxc-none">No students yet. Invite by name or share the class code.</td></tr>'}</tbody></table></div>
+    body=`<div class="fxc-two"><div class="fxc-panel ro"><div class="ro-h"><span>Student</span><span>Progress</span><span>Average</span><span></span></div>
+     ${st.map(r=>`<div class="ro-r"><span class="ro-n"><i class="ro-av">${E((r.s.name||'?').trim().charAt(0).toUpperCase())}</i><span><b>${E(r.s.name)}</b><small>Joined ${E(r.s.joinedAt?new Date(r.s.joinedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'')}</small></span></span><span class="ro-p"><span class="ro-bar"><i style="width:${r.total?Math.round(r.done/r.total*100):0}%"></i></span><small>${r.done} of ${r.total}</small></span><span class="ro-a">${r.avg==null?'—':r.avg+'%'}</span><span class="ro-x"><button class="btn btn-secondary btn-sm" onclick="fxViewAs('${c.id}','${r.s.key}')">View as student</button><button class="btn btn-ghost btn-sm ro-rm" onclick="fxClassRemove('${c.id}','${r.s.key}','${E(r.s.name)}')">Remove</button></span></div>`).join('')||'<div class="fxc-none">No students yet. Invite by name or share the class code.</div>'}</div>
      <div class="fxc-side"><div class="fxc-panel"><div class="fxc-h">Invite by name</div><textarea id="fxc-names" rows="4" placeholder="One per line, like Sam K — or @username to invite a fellow teacher as a student"></textarea><button class="btn btn-primary btn-sm" onclick="fxClassInvite('${c.id}')">Send invites</button>
       ${c.invites.length?`<div class="fxc-h" style="margin-top:16px">Pending</div>${c.invites.map(i=>`<div class="fxc-inv"><span>${E(i.name)}<i>${i.registered?'has an account':'no account yet'}</i></span><a class="fxc-x" onclick="fxClassCancel('${c.id}','${i.key}')">Cancel</a></div>`).join('')}`:''}</div></div></div>`;
   }
@@ -14334,6 +14354,17 @@ window.clsColor=function(c){const k=String((c&&(c.id||c.name))||'');let h=0;for(
 const base=window.fxClassDetail;
 window.fxClassDetail=function(c){const h=base(c);return `<div class="cc-wrap" style="--cc:${clsColor(c)}">${h}</div>`;};
 })();
+
+/* ── Dashboard hero: greeting plus your classes at a glance ── */
+window.dashHero=function(){
+  const cs=(APP.classes||[]).filter(c=>!c.archived);
+  const hr=new Date().getHours(),g=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  let nm='';try{const w=String(fxMe().name||'').trim().split(/\s+/);nm=/^(mr|mrs|ms|miss|mx|dr|prof)\.?$/i.test(w[0])&&w.length>1?w[0]+' '+w[w.length-1]:w[0];}catch(e){}
+  const day=new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+  const tg=c=>{const ids=new Set((APP.assignments||[]).filter(a=>(a.classIds||[]).includes(c.id)).map(a=>a.id));return (APP.submissions||[]).filter(x=>ids.has(x.assignmentId)&&x.status==='submitted'&&needsGrading(x,(APP.tests||[]).find(t=>t.id===x.testId))).length;};
+  const rows=cs.slice(0,6).map(c=>{const n=tg(c);return `<a class="dh-c" style="--cc:${clsColor(c)}" onclick="FXC.open='${E(c.id)}';FXC.tab='stream';showPage('classes')"><b>${E(c.name)}</b><small>${(c.students||[]).length} students</small>${n?`<span class="fxc-pill"><b>${n}</b> to review</span>`:'<span class="fxc-ok">All caught up</span>'}</a>`;}).join('');
+  return `<section class="dh"><div class="dh-t"><h2>${g}${nm?', '+E(nm):''}.</h2><p>${E(day)}</p></div>${rows?`<div class="dh-row">${rows}</div>`:''}</section>`;
+};
 
 </script>
 <script id="ea-notify">
@@ -15521,11 +15552,10 @@ document.addEventListener('keydown',e=>{
 
 /* What's new pop-up: shown once per release */
 (function(){
-const REL={v:'1.8.0',date:'November 26, 2026',items:[
-'Every class now has its own color, on its card, its header, its tabs and its topics, so classes are easy to tell apart.',
-'Class cards show how many submissions are waiting for review and the next due date.',
-'Search finds students and assignments as well as classes and tests, and forgives typos. Press Ctrl K, or use the new Search button in the sidebar.',
-'No more Student mode. Classes you take as a student live under My student classes.']};
+const REL={v:'1.8.1',date:'November 26, 2026',items:[
+'A friendlier Dashboard. It greets you and shows every class with what is waiting for review, and the stat cards now share one calm color scheme.',
+'A cleaner People list with student initials, a progress bar, the average and tidy actions, instead of a cramped table.',
+'Every class has its own color, and Search finds students and assignments. Press Ctrl K.']};
 const K='ea-wn-seen';
 function seen(){try{return localStorage.getItem(K)===REL.v;}catch(e){return true;}}
 function mark(){try{localStorage.setItem(K,REL.v);}catch(e){}}

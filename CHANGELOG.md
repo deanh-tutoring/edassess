@@ -4,6 +4,12 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.8.1 (2026-11-26)
+
+### Changed
+- The Dashboard opens with a greeting and a row of your classes, each showing what is waiting for review. The stat cards use one consistent color scheme.
+- The class People tab is a clean list with initials avatars in the class color, a completion bar, the average and clear actions, and it adapts to phone width.
+
 ## 1.8.0 (2026-11-26)
 
 ### Added
