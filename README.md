@@ -80,6 +80,8 @@ Every class has Stream, Classwork, Collaboration, Grades and People tabs. Post a
 
 Classwork works like Google Classroom: a Create menu (Assignment, Material, Topic), a topic list, and one stack of items per topic that you can drag into order. Materials can be published now, saved as drafts or scheduled, and each item carries a chip showing its state. Posting sends a push notification to students (see Notifications).
 
+Each class gets its own color and the Classes page shows what needs your attention. Press Ctrl K anywhere to jump to a class, test, student or assignment.
+
 Not everything has to go to everyone. Choose Who can see this on any topic, material or assignment to limit it to groups you create or to students you pick by hand. Students only receive what they are allowed to see, and nobody is told who else was included.
 
 #### Files and Collaboration (Google Drive)

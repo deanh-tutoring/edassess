@@ -4,6 +4,13 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 1.8.0 (2026-11-26)
+
+### Added
+- Class identity colors. Every class keeps one color across its card, header, tabs and topic headings.
+- Class cards show submissions waiting for review and the next due date.
+- Search (Ctrl K) now finds students and assignments, matches loosely so small typos still work, and has a Search button in the sidebar.
+
 ## 1.7.0 (2026-11-25)
 
 ### Added
