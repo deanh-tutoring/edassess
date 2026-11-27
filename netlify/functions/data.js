@@ -1398,6 +1398,8 @@ async function handlePost(body, user, student) {
       try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(r.gRefresh) }); return reply(200, { ok: true, token: t.access_token, expires_in: t.expires_in || 3000 }); }
       catch (e) { delete r.gRefresh; await putJ(U_PREFIX + lc(user.username), r); return reply(200, { ok: false }); }
     }
+    case 'tourState': { const r = await getJ(U_PREFIX + lc(user.username)) || {}; return reply(200, { ok: true, v: r.tourV || 0, classId: r.tourClass || null }); }
+    case 'tourSet': { const r = await getJ(U_PREFIX + lc(user.username)); if (!r) return bad('Account not found.', 404); if (body.v !== undefined) r.tourV = Math.max(0, Math.min(99, parseInt(body.v, 10) || 0)); if (body.classId !== undefined) r.tourClass = okId(body.classId) ? body.classId : null; await putJ(U_PREFIX + lc(user.username), r); return reply(200, { ok: true }); }
     case 'gdDisconnect': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gRefresh) { try { await fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(gDec(r.gRefresh)), { method: 'POST' }); } catch (e) {} delete r.gRefresh; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'forgetGoogleEmail': { const r = await getJ(U_PREFIX + lc(user.username)); if (r && r.gEmail) { delete r.gEmail; await putJ(U_PREFIX + lc(user.username), r); } return reply(200, { ok: true }); }
     case 'putTest': return putTest(body.test, body.baseRev, !!body.force, user);

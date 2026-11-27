@@ -82,6 +82,8 @@ Classwork works like Google Classroom: a Create menu (Assignment, Material, Topi
 
 Each class gets its own color and the Classes page shows what needs your attention. Press Ctrl K anywhere to jump to a class, test, student or assignment.
 
+New teachers (and every existing one) get a short guided tour with a practice class and sample test. It walks through building an assessment, the lockdown settings, a preview from inside a test, classes and collaboration, and shows where to join a class as a student. You can replay it any time from Search, Take the tour.
+
 Not everything has to go to everyone. Choose Who can see this on any topic, material or assignment to limit it to groups you create or to students you pick by hand. Students only receive what they are allowed to see, and nobody is told who else was included.
 
 #### Files and Collaboration (Google Drive)

@@ -4,6 +4,18 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.1.0 (2026-11-26)
+
+### Added
+- A guided tour for teachers. It starts once for every teacher, new and existing, and can be replayed from Search (Ctrl K), Take the tour. Students never see it. The tour creates a practice class named Tour Class (practice) with sample students, a material, an announcement and a sample test (Tour Quiz: Photosynthesis) so every step has something real to point at.
+- The tour covers the navigation, Search, the dashboard, building questions, math, every assignment setting including Secure Mode, strikes and Ultra Lockdown, an illustration of what students see when locked, a full preview inside a test, the live monitor, grading, peer review, analytics, classes, classwork and topics, People, Student view, Collaboration and Files, joining a class as a student, and backup.
+- Two small server actions, `tourState` and `tourSet`, remember each teacher's progress. Raise `TV` in `tour.js` to show the tour to everyone again after a major change.
+
+### Fixed
+- The page no longer asks you to refresh repeatedly. It asks once per update per tab and never during a tour or an exam.
+- Insert math, Message instructor and the time zone picker were dark on dark in some themes. They are readable in light and dark.
+- Speed: background checks run less often, and the class list only redraws when something actually changed, so typing is never interrupted.
+
 ## 2.0.0 (2026-11-26)
 
 ### Changed
