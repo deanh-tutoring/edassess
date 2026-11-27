@@ -1063,6 +1063,7 @@ async function classAction(body, user) {
       else if (body.studentFolderId) { col.studentFolderId = gid(body.studentFolderId); col.studentFolderUrl = 'https://drive.google.com/drive/folders/' + col.studentFolderId; col.studentOpen = true; }
     }
     if (typeof body.studentOpen === 'boolean') col.studentOpen = body.studentOpen;
+    if (body.ext === true && ownerOf(c) === lc(user.username)) col.ext = true;
     if (body.shortcut === true) col.shortcuts[lc(user.username)] = true;
     await saveClass(c); return reply(200, { ok: true, collab: col });
   }

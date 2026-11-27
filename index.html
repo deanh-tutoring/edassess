@@ -15372,7 +15372,7 @@ async function classContainer(c){
 async function linkPerm(id,role){await dcall('files/'+id+'/permissions',{method:'POST',body:JSON.stringify({type:'anyone',role,allowFileDiscovery:false})})}
 const alive=async id=>{try{const f=await dcall('files/'+id+'?fields=id,trashed');return !!f&&!f.trashed}catch(x){return false}};
 const sep=c=>!!((c.collab||{}).folderId&&(c.collab||{}).studentFolderId&&c.collab.folderId!==c.collab.studentFolderId);
-const solo=c=>!(c.coTeachers||[]).length;
+const solo=c=>!(c.coTeachers||[]).length&&!((c.collab||{}).ext);
 const ONE_NAME='Class files';
 async function ensureFolders(c){
   const col=c.collab||{};
@@ -15427,9 +15427,28 @@ async function moveFile(id,to,from){
 const otherOf=(c,dest)=>{const col=c.collab||{};return dest===col.studentFolderId?col.folderId:col.studentFolderId};
 /* when a move is not allowed (the file belongs to another teacher), put a copy in the destination folder instead */
 async function copyTo(id,name,dest){const f=await dcall('files/'+id+'/copy?fields=id,name,webViewLink',{method:'POST',body:JSON.stringify({name,parents:[dest]})});return f}
+/* Co-teachers never need to be named or emailed. Anyone with the teacher folder link can add files. Each time the
+   owner's session sees a file that someone else owns, it makes its own copy (so the owner is the only name on it)
+   and then removes the other person's original. Only the ownedByMe flag is read: no owner, email or name is requested. */
+const FOLDQ=fid=>encodeURIComponent("'"+fid+"' in parents and trashed=false and mimeType!='"+SHORT+"'");
+async function dropOriginal(id,from){try{await dcall('files/'+id,{method:'DELETE'});return 'deleted'}catch(x){}
+  await dcall('files/'+id+'?removeParents='+from+'&fields=id',{method:'PATCH',body:'{}'});return 'unlinked'}
+async function cloneInto(f,dest,depth){
+  if(f.mimeType===FOLD){const nf=await dcall('files?fields=id',{method:'POST',body:JSON.stringify({name:f.name,mimeType:FOLD,parents:[dest]})});
+    if(depth<3){const l=await dcall('files?q='+FOLDQ(f.id)+'&pageSize=100&fields=files(id,name,mimeType)');for(const k of (l.files||[])){try{await cloneInto(k,nf.id,depth+1)}catch(x){}}}return nf}
+  return dcall('files/'+f.id+'/copy?fields=id',{method:'POST',body:JSON.stringify({name:f.name,parents:[dest]})})}
+async function adopt(c){
+  const col=c.collab||{};if(c.ownerId!==me()||!sep(c)||!col.folderId)return 0;
+  const done=CB.adopted||(CB.adopted={});let n=0;
+  const l=await dcall('files?q='+FOLDQ(col.folderId)+'&pageSize=100&fields=files(id,name,mimeType,ownedByMe)');
+  for(const f of (l.files||[])){if(f.ownedByMe!==false)continue;
+    try{if(!done[f.id]){await cloneInto(f,col.folderId,0);done[f.id]=1}
+      await dropOriginal(f.id,col.folderId);n++}catch(x){CB.adoptErr=(CB.adoptErr||0)+1}}
+  return n}
 /* everything inside either Drive folder shows up in the list, whoever put it there */
 async function syncFolder(c){
   const col=c.collab||{},p={action:'collabSync',classId:c.id};
+  let adopted=0;try{adopted=await adopt(c)}catch(x){}
   for(const [fid,w] of [[col.folderId,'teachers'],[col.studentFolderId,'students']]){if(!fid||(w==='teachers'&&fid===col.studentFolderId))continue;
     try{let all=[],tok='';
       for(let i=0;i<5;i++){const q=encodeURIComponent("'"+fid+"' in parents and trashed=false and mimeType!='"+SHORT+"'");
@@ -15437,7 +15456,7 @@ async function syncFolder(c){
         all=all.concat((l.files||[]).filter(f=>f.webViewLink).map(f=>({id:f.id,name:f.name,url:f.webViewLink})));tok=l.nextPageToken;if(!tok)break}
       p[w]=all;p['ok_'+w]=true}catch(x){}}
   if(!p.ok_teachers&&!p.ok_students)return 0;
-  const r=await apiPost(p);if(r&&r.collab){c.collab=r.collab;return r.changed||0}return 0}
+  const r=await apiPost(p);if(r&&r.collab){c.collab=r.collab;return (r.changed||0)+adopted}return adopted}
 /* a teacher who does not own the class cannot put files in the student folder, so the owner's session does it for them */
 async function place(c,f,toStudents){
   const col=c.collab||{},dest=toStudents?col.studentFolderId:col.folderId,i=window.gInfo&&gInfo(f.url),gid=i?i.id:f.id,where=toStudents?'students':'teachers';
@@ -15485,6 +15504,10 @@ function fileRow(c,f,mode,i){
    <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Write a note for the other teachers"></textarea><button class="btn btn-primary btn-sm cb-b" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Save note</button></div></div></div></div>`}
 function listBlock(title,sub,files,c,mode,empty){
   return `<section class="cb-sec"><div class="cb-sh"><h4>${title}</h4><span class="cb-count">${files.length}</span><span class="cb-hint">${sub}</span></div><div class="cb-files">${files.map((f,i)=>fileRow(c,f,mode,i)).join('')||`<div class="cb-empty">${empty}</div>`}</div></section>`}
+function extCard(c,col,owner,two,has){
+  if(!owner||!has)return '';
+  if(two)return `<div class="cb-card"><b>Co-teacher link</b><div class="cb-hint">Anyone with this link can add and edit files, even if they do not use EdAssess. Nobody is added by email. When someone adds a file, you get your own copy and theirs is removed, so only your name stays on the files in Drive. Your session does this every few seconds while EdAssess is open and signed in to Google.</div><div class="cb-add"><input class="form-control" readonly value="${esc(col.folderUrl)}" onclick="this.select()"><button class="btn btn-secondary btn-sm cb-b" onclick="navigator.clipboard.writeText('${esc(col.folderUrl)}');toast('Link copied.','success')">Copy link</button></div></div>`;
+  return `<div class="cb-card"><b>Work with a co-teacher who is not on EdAssess</b><div class="cb-hint">Create a link they can use to add and edit files. No email or account is needed, and no one is named in Drive but you.</div><div class="cb-add">${btn('ext','Create co-teacher link','','btn-primary',`cbExt('${esc(c.id)}')`)}</div></div>`}
 window.cbFresh=()=>{CB.shown=''};
 window.collabTab=function(c){
   const col=c.collab||{files:[]},files=(col.files||[]).slice().reverse(),owner=c.ownerId===me(),m=CB.msg[c.id],sp=solo(c),two=sep(c);
@@ -15501,6 +15524,7 @@ window.collabTab=function(c){
   ${m?`<div class="cb-msg ${m.bad?'bad':''}" role="status">${esc(m.t)}</div>`:''}
   ${has?`<div class="cb-card"><b>Student access: ${open?'on':'paused'}</b><div class="cb-hint">${open?'Anyone with the '+(two?'student ':'')+'folder link can view it. Pause access while you are editing, then restore it when you are done.':'Students cannot open the '+(two?'student ':'')+'folder right now. Restore access when your edits are finished.'}</div><div class="cb-add">${btn('acc',open?'Pause student access':'Restore student access','',open?'btn-secondary':'btn-primary',`cbAccess('${esc(c.id)}',${open?0:1})`).replace('>','>'+'',1)}${live?'':'<span class="cb-hint">Sign in with Google to change this.</span>'}</div></div>`:''}
   <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm cb-b" onclick="cbAddLink('${esc(c.id)}')">Add to list</button>${g?`<button class="btn btn-secondary btn-sm cb-b" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
+  ${extCard(c,col,owner,two,has)}
   ${lists}
   <div class="cb-card"><b>Google Drive</b><div class="cb-hint">Sign in with Google once. EdAssess then creates your EdAssess folder${sp?' and a folder for each class':', the class folders and a shortcut for every co-teacher'}. It never reads or stores anyone's email.</div>
    <div class="cb-add">${g?(live?`<span class="cb-hint">${CB.busy?'Syncing with Google Drive...':'Syncs automatically'+(CB.last?' · last checked '+when(CB.last):'')}</span>`:`<button class="btn btn-primary btn-sm cb-b" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.on?'Reconnect Google':'Sign in with Google'}</button>`):'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}${sp?'':`<button class="btn btn-secondary btn-sm cb-b" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button>`}</div>${g&&two?(owner?`<div class="cb-hint" style="margin-top:6px">${col.instantOff?'Instant moves are denied: a co-teacher\u2019s Move waits until your Collaboration tab syncs and approves it.':'Co-teachers can move files into the student folder right away, without waiting for you.'}</div><div class="cb-add"><button class="btn ${col.instantOff?'btn-primary':'btn-secondary'} btn-sm cb-b" onclick="cbInstant(${col.instantOff?1:0})">${col.instantOff?'Allow instant moves':'Deny instant moves'}</button></div>`:`<div class="cb-hint" style="margin-top:6px">${col.instantOff?'The class owner has turned off instant moves, so moves wait for them.':'Your moves reach the student folder right away.'}</div>`):''}</div></div>`};
@@ -15517,6 +15541,11 @@ async function autoSync(){
     if(!GDlive()){if(CB.silent)return;CB.silent=1;try{await gToken()}catch(x){return}}
     if(GDlive())cbGoogle(true)}catch(x){}}
 setInterval(()=>{if(!document.hidden)autoSync()},60000);
+/* every 10 seconds the owner's open session looks for files that co-teachers added and swaps them for the owner's own copies */
+async function quickAdopt(){if(document.hidden||CB.busy||CB.qa||!CB.on||!GDlive())return;CB.qa=1;
+  try{for(const c of (APP.classes||[]).filter(x=>!x.archived&&x.ownerId===me()&&sep(x))){const n=await adopt(c);if(n){await syncFolder(c);paint()}}}catch(x){}CB.qa=''}
+window.cbAdopt=adopt;
+setInterval(quickAdopt,10000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){CB.last=0;autoSync()}});
 window.addEventListener('focus',()=>{CB.last=0;autoSync()});
 window.cbGoogle=async(silent)=>{if(CB.busy)return;CB.busy=1;CB.last=Date.now();const quiet=silent===true;let chg=false;if(!quiet)paint();const note=[];let made=0,synced=0,short=0;
@@ -15531,6 +15560,11 @@ window.cbGoogle=async(silent)=>{if(CB.busy)return;CB.busy=1;CB.last=Date.now();c
     if(c0&&!(silent===true&&!made&&!synced&&!short&&!note.length)){if(c0)msg(c0,'Synced. '+(made?made+' class'+(made===1?' was':'es were')+' set up or rebuilt. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' class'+(short===1?'':'es')+' added to your Drive. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}}
   catch(e){const c0=(APP.classes||[]).find(x=>x.id===FXC.open);if(c0)msg(c0,e.message,true)}
   CB.busy='';CB.last=Date.now();if(!quiet||made||synced||short||note.length||CB.errShown)paint()};
+window.cbExt=async id=>{const c=cls(id);if(!c)return;
+  try{if(!(await cfg()))throw new Error('Google Drive is not connected for this site yet.');CB.pend.ext='Creating...';paint();await gToken();
+    const r=await apiPost({action:'collabSetup',classId:id,ext:true});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not turn that on.');c.collab=r.collab;
+    await ensureFolders(c);msg(c,'The co-teacher link is ready. Copy it from the card below.')}catch(e){msg(c,e.message,true)}
+  delete CB.pend.ext;paint()};
 window.cbSetup=async id=>{const c=cls(id);if(!(await cfg()))return msg(c,'Google Drive is not connected for this site yet. You can still add files by pasting links. The README explains how to turn it on.',true);
   CB.busy=1;try{await ensureFolders(c);await ensureShortcuts(c);msg(c,'The teacher and student folders are ready in EdAssess, then '+c.name+'.')}catch(e){msg(c,e.message,true)}CB.busy='';paint()};
 window.cbServerOn=async()=>{const c0=(APP.classes||[]).find(x=>x.id===FXC.open);
