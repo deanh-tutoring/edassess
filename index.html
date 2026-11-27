@@ -15971,11 +15971,9 @@ document.addEventListener('keydown',e=>{
 
 /* What's new pop-up: shown once per release */
 (function(){
-const REL={v:'2.1.1',date:'November 26, 2026',items:[
-'A guided tour for teachers walks through every feature with a practice class and sample test, including assessment building, lockdown settings, previews inside a test, classes, collaboration and joining a class as a student. Replay it from Search, Take the tour.',
-'The page no longer asks you to refresh over and over. It asks once per update.',
-'Insert math, Message instructor and the time zone picker are readable in both themes.',
-'Faster: background checks run less often and do not redraw the page while you type.']};
+const REL={v:'2.2.0',date:'November 27, 2026',items:[
+'Co-teachers no longer need an EdAssess account or an email. The class owner shares one editing link, and anything a co-teacher adds is replaced by the owner\u2019s own copy within seconds, so only the owner\u2019s name is on files in Drive.',
+'No email addresses are read, stored or shown anywhere in collaboration, except the class owner\u2019s own.']};
 const K='ea-wn-seen';
 function seen(){try{return localStorage.getItem(K)===REL.v;}catch(e){return true;}}
 function mark(){try{localStorage.setItem(K,REL.v);}catch(e){}}
@@ -16001,7 +15999,7 @@ document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector
 
 /* Version guard: when a new release is deployed, ask for a refresh (no nagging pop-ups in between). */
 (function(){
-const BUILD='2.1.1';let shown=false;
+const BUILD='2.2.0';let shown=false;
 async function check(){
   if(shown||document.hidden)return;
   try{

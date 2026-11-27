@@ -4,6 +4,18 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.2.0 (2026-11-27)
+
+### Added
+- Co-teachers without an EdAssess account. On the Files or Collaboration tab the class owner creates a co-teacher link (an edit-by-link teacher folder) and shares it however they like. No email address or account is needed.
+- Automatic ownership. While the owner has EdAssess open and signed in to Google, every 10 seconds the owner's session looks in the teacher folder for files someone else owns, makes its own copy, and removes the original (it deletes it when Drive allows, and otherwise takes it out of the folder). Folders are copied with their contents. The owner is the only name on files in the class folder.
+
+### Privacy
+- The sync asks Drive only whether the owner owns a file (`ownedByMe`). It never requests or stores owner, editor or email details of anyone. The only email EdAssess may touch is the owner's own Google sign-in, which is discarded after sign-in.
+
+### Notes
+- This runs from the owner's open session, so a co-teacher's file stays theirs until the owner next has EdAssess open. A co-teacher who is signed in to Google appears under their own Google account in Drive until the swap happens.
+
 ## 2.1.1 (2026-11-26)
 
 ### Fixed
