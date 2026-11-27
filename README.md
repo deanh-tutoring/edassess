@@ -84,7 +84,7 @@ Each class gets its own color and the Classes page shows what needs your attenti
 
 New teachers (and every existing one) get a short guided tour with a practice class and sample test. It walks through building an assessment, the lockdown settings, a preview from inside a test, classes and collaboration, and shows where to join a class as a student. You can replay it any time from Search, Take the tour.
 
-Co-teachers do not need an EdAssess account or to share an email address. The class owner creates one editing link for the teacher folder. When a co-teacher adds a file, the owner's session makes its own copy and removes the original, so the owner is the only name on files in Google Drive. EdAssess never reads or stores anyone's email for this.
+Co-teachers do not need an EdAssess account or to share an email address. The class owner creates one editing link for the teacher folder. When a co-teacher adds a file, the owner's session makes its own copy and removes the original, so the owner is the only name on files in Google Drive. EdAssess never reads or stores anyone's email for this. After the owner connects Google once, the server does this on its own every minute, so nobody has to be signed in. Create, upload and posting to classwork (which moves files to the student folder) all work the same way.
 
 Not everything has to go to everyone. Choose Who can see this on any topic, material or assignment to limit it to groups you create or to students you pick by hand. Students only receive what they are allowed to see, and nobody is told who else was included.
 

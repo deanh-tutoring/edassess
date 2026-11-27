@@ -957,9 +957,121 @@ const cleanFile = (f) => {
   const g = googleInfo(u); const kind = g ? g.kind : 'link';
   return { placedUrl: f && typeof f.placedUrl === 'string' && /^https:\/\//.test(f.placedUrl) ? f.placedUrl.slice(0, 600) : undefined, src: f && f.src === 'folder' ? 'folder' : 'link', where: f && f.where === 'students' ? 'students' : 'teachers', id: String((f && f.id) || '').replace(/[^\w-]/g, '').slice(0, 120) || crypto.randomBytes(6).toString('hex'), name: String((f && f.name) || '').trim().slice(0, 140) || 'Untitled', kind, url: u };
 };
+
+/* ───── Drive work done by the server with the class owner's one-time grant ─────
+   Nobody has to be signed in. Co-teachers are never named or emailed: anything they add to the teacher folder is
+   copied by the owner (so only the owner owns it) and their original is removed. Only the ownedByMe flag is read. */
+const DFOLD = 'application/vnd.google-apps.folder', DSHORT = 'application/vnd.google-apps.shortcut';
+const DMIME = { document: 'application/vnd.google-apps.document', presentation: 'application/vnd.google-apps.presentation', spreadsheets: 'application/vnd.google-apps.spreadsheet' };
+const DNAME = { document: 'Untitled document', presentation: 'Untitled presentation', spreadsheets: 'Untitled spreadsheet' };
+const dfq = (id) => encodeURIComponent("'" + id + "' in parents and trashed=false and mimeType!='" + DSHORT + "'");
+async function ownerTok(c) {
+  if (!process.env.GOOGLE_CLIENT_SECRET) return null;
+  const rec = await getJ(U_PREFIX + ownerOf(c)); if (!rec || !rec.gRefresh) return null;
+  try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(rec.gRefresh) }); return t.access_token || null; } catch (e) { return null; }
+}
+function mergeFolders(col, body, by) {
+  const map = new Map(); let ch = 0;
+  for (const w of ['teachers', 'students']) {
+    if (!body['ok_' + w]) continue;
+    for (const f of (Array.isArray(body[w]) ? body[w] : []).slice(0, 200)) { const cf = cleanFile({ ...f, src: 'folder', where: w }); if (cf) map.set(cf.id, cf); }
+  }
+  const okAny = body.ok_teachers || body.ok_students;
+  col.files = (col.files || []).filter((x) => {
+    const m = map.get(x.id);
+    if (m) { if (x.where !== m.where || x.name !== m.name || x.url !== m.url) ch++; x.where = m.where; x.name = m.name; x.url = m.url; x.src = 'folder'; map.delete(x.id); return true; }
+    if (x.src === 'folder' && okAny && body['ok_' + x.where]) { ch++; return false; }   // gone from Drive
+    return true;
+  });
+  for (const m of map.values()) { col.files.push({ ...m, by, at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); ch++; }
+  col.files = col.files.slice(-300);
+  return ch;
+}
+async function dCloneInto(tok, f, dest, depth) {
+  if (f.mimeType === DFOLD) {
+    const nf = await dr(tok, 'files?fields=id', { method: 'POST', body: JSON.stringify({ name: f.name, mimeType: DFOLD, parents: [dest] }) });
+    if (depth < 3) { const l = await dr(tok, 'files?q=' + dfq(f.id) + '&pageSize=100&fields=files(id,name,mimeType)'); for (const k of (l.files || [])) { try { await dCloneInto(tok, k, nf.id, depth + 1); } catch (e) { /* skip */ } } }
+    return nf;
+  }
+  return dr(tok, 'files/' + f.id + '/copy?fields=id', { method: 'POST', body: JSON.stringify({ name: f.name, parents: [dest] }) });
+}
+async function adoptForeign(c, tok) {
+  const col = c.collab || {}; if (!sepFolders(c) || !col.folderId) return 0;
+  col.adoptMap = col.adoptMap || {}; let n = 0;
+  const l = await dr(tok, 'files?q=' + dfq(col.folderId) + '&pageSize=100&fields=files(id,name,mimeType,ownedByMe)');
+  for (const f of (l.files || [])) {
+    if (f.ownedByMe !== false) continue;
+    try {
+      if (!col.adoptMap[f.id]) { const cp = await dCloneInto(tok, f, col.folderId, 0); col.adoptMap[f.id] = cp.id; }
+      try { await dr(tok, 'files/' + f.id, { method: 'DELETE' }); } catch (e) { await dr(tok, 'files/' + f.id + '?removeParents=' + col.folderId + '&fields=id', { method: 'PATCH', body: '{}' }); }
+      n++;
+    } catch (e) { /* try again next sweep */ }
+  }
+  const ks = Object.keys(col.adoptMap); if (ks.length > 150) ks.slice(0, ks.length - 150).forEach((k) => delete col.adoptMap[k]);
+  return n;
+}
+async function listFolder(tok, fid) {
+  let all = [], pt = '';
+  for (let i = 0; i < 5; i++) {
+    const l = await dr(tok, 'files?q=' + dfq(fid) + '&pageSize=200&fields=nextPageToken,files(id,name,webViewLink)' + (pt ? '&pageToken=' + pt : ''));
+    all = all.concat((l.files || []).filter((f) => f.webViewLink).map((f) => ({ id: f.id, name: f.name, url: f.webViewLink }))); pt = l.nextPageToken; if (!pt) break;
+  }
+  return all;
+}
+/* put a file where students can open it: move it when the owner owns it, otherwise make the owner's own copy */
+async function placeForStudents(c, tok, url) {
+  const col = c.collab || {}, gi = googleInfo(url); if (!gi || gi.kind === 'folder' || !col.studentFolderId) return null;
+  const m = await dr(tok, 'files/' + gi.id + '?fields=id,name,ownedByMe,parents,webViewLink');
+  if ((m.parents || []).includes(col.studentFolderId)) return url;
+  if (m.ownedByMe) {
+    const rm = (m.parents || []).filter((p) => p !== col.studentFolderId).join(',');
+    await dr(tok, 'files/' + gi.id + '?addParents=' + col.studentFolderId + (rm ? '&removeParents=' + rm : '') + '&fields=id', { method: 'PATCH', body: '{}' });
+    return url;
+  }
+  const cp = await dr(tok, 'files/' + gi.id + '/copy?fields=id,webViewLink', { method: 'POST', body: JSON.stringify({ name: m.name, parents: [col.studentFolderId] }) });
+  return cp.webViewLink;
+}
+async function placeMaterial(c, m, tok) {
+  if (!sepFolders(c) || !m.pendingPlace || !matLive(m)) return false;
+  let ok = true; const links = [];
+  for (const l of (m.links || [])) {
+    const gi = googleInfo(l.url);
+    if (!gi || gi.kind === 'folder') { links.push(l); continue; }
+    try { const u = await placeForStudents(c, tok, l.url); links.push(u ? { ...l, url: u } : l); if (!u) ok = false; } catch (e) { links.push(l); ok = false; }
+  }
+  m.links = links; if (ok) m.pendingPlace = false;
+  return ok;
+}
+const swInflight = new Set();
+/* one pass for one class: take ownership of co-teacher files, refresh the file list, place live materials for students */
+async function driveSweep(c) {
+  if (!c.collab || !sepFolders(c) || swInflight.has(c.id)) return null;
+  swInflight.add(c.id);
+  try {
+    const tok = await ownerTok(c); if (!tok) return null;
+    const col = c.collab; let ch = 0;
+    ch += await adoptForeign(c, tok);
+    const p = { ok_teachers: false, ok_students: false };
+    try { p.teachers = await listFolder(tok, col.folderId); p.ok_teachers = true; } catch (e) { /* keep list */ }
+    try { p.students = await listFolder(tok, col.studentFolderId); p.ok_students = true; } catch (e) { /* keep list */ }
+    ch += mergeFolders(col, p, ownerOf(c));
+    for (const m of (c.materials || []).filter((x) => x.pendingPlace && matLive(x))) { if (await placeMaterial(c, m, tok)) ch++; }
+    if (ch) await saveClass(c);
+    return ch;
+  } finally { swInflight.delete(c.id); }
+}
+async function sweepAll() {
+  const keys = await listKeys(C_PREFIX); const t0 = Date.now();
+  await mapLimit(keys, 4, async (k) => {
+    if (Date.now() - t0 > 40000) return;
+    const c = await getJ(k); if (!c || !c.collab || !sepFolders(c)) return;
+    if (!(c.collab.ext || (c.coTeachers || []).length || (c.materials || []).some((m) => m.pendingPlace))) return;
+    try { await driveSweep(c); } catch (e) { /* next minute */ }
+  });
+}
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['collabInstant', 'setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['collabAdopt', 'collabCreate', 'collabUploadStart', 'collabUploadDone', 'collabInstant', 'setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1046,6 +1158,7 @@ async function classAction(body, user) {
   if (a === 'publishMaterial') {
     const m = (c.materials || []).find((x) => x.id === body.matId); if (!m) return bad('Material not found.', 404);
     m.state = 'live'; m.publishAt = null; m.at = new Date().toISOString(); await saveClass(c);
+    if (m.pendingPlace) { try { const tok = await ownerTok(c); if (tok && (await placeMaterial(c, m, tok))) await saveClass(c); } catch (e) { /* the sweep retries */ } }
     await notifyClass(c.id, { title: c.name + ': new material', body: m.title, tag: 'mat-' + c.id }); return reply(200, { ok: true });
   }
   if (a === 'materialPlaced') {
@@ -1069,20 +1182,38 @@ async function classAction(body, user) {
   }
   if (a === 'collabSync') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
-    const map = new Map(); let ch = 0;
-    for (const w of ['teachers', 'students']) {
-      if (!body['ok_' + w]) continue;
-      for (const f of (Array.isArray(body[w]) ? body[w] : []).slice(0, 200)) { const cf = cleanFile({ ...f, src: 'folder', where: w }); if (cf) map.set(cf.id, cf); }
-    }
-    const okAny = body.ok_teachers || body.ok_students;
-    col.files = (col.files || []).filter((x) => {
-      const m = map.get(x.id);
-      if (m) { if (x.where !== m.where || x.name !== m.name || x.url !== m.url) ch++; x.where = m.where; x.name = m.name; x.url = m.url; x.src = 'folder'; map.delete(x.id); return true; }
-      if (x.src === 'folder' && okAny && body['ok_' + x.where]) { ch++; return false; }   // gone from Drive
-      return true;
-    });
-    for (const m of map.values()) { col.files.push({ ...m, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); ch++; }
-    col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
+    const ch = mergeFolders(col, body, lc(user.username));
+    await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
+  }
+  if (a === 'collabAdopt') {
+    if (!c.collab || !sepFolders(c)) return reply(200, { ok: true, collab: c.collab || null, changed: 0 });
+    let ch = 0; try { ch = (await driveSweep(c)) || 0; } catch (e) { /* ignore */ }
+    return reply(200, { ok: true, changed: ch, collab: c.collab });
+  }
+  if (a === 'collabCreate') {
+    const kind = DMIME[body.kind] ? body.kind : null; if (!kind) return bad('Choose Doc, Slides or Sheet.');
+    const col = c.collab || {}; if (!col.folderId) return bad('The class folders are not set up yet. The class owner needs to open the Files tab once.');
+    const tok = await ownerTok(c); if (!tok) return bad('The class owner needs to sign in to Google once in EdAssess before files can be created.');
+    const name = String(body.name || '').trim().slice(0, 120) || DNAME[kind];
+    let f; try { f = await dr(tok, 'files?fields=id,name,webViewLink', { method: 'POST', body: JSON.stringify({ name, mimeType: DMIME[kind], parents: [col.folderId] }) }); } catch (e) { return bad('Google Drive said: ' + e.message); }
+    const cf = cleanFile({ id: f.id, name: f.name, url: f.webViewLink, src: 'folder', where: 'teachers' });
+    c.collab.files = c.collab.files || []; if (cf && !c.collab.files.some((x) => x.id === cf.id)) c.collab.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
+    await saveClass(c); return reply(200, { ok: true, url: f.webViewLink, collab: c.collab });
+  }
+  if (a === 'collabUploadStart') {
+    const col = c.collab || {}; if (!col.folderId) return bad('The class folders are not set up yet. The class owner needs to open the Files tab once.');
+    const size = parseInt(body.size, 10) || 0; if (size < 1 || size > 200 * 1024 * 1024) return bad('Files up to 200 MB can be uploaded.');
+    const tok = await ownerTok(c); if (!tok) return bad('The class owner needs to sign in to Google once in EdAssess before files can be uploaded.');
+    const name = String(body.name || 'Upload').replace(/[\/\x00-\x1f]/g, ' ').trim().slice(0, 150) || 'Upload', mime = /^[\w.+-]+\/[\w.+-]+$/.test(String(body.mime || '')) ? body.mime : 'application/octet-stream';
+    const origin = /^https?:\/\/[\w.:-]{1,120}$/.test(String(body.origin || '')) ? body.origin : '';
+    const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', { method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': mime, 'X-Upload-Content-Length': String(size), ...(origin ? { Origin: origin } : {}) }, body: JSON.stringify({ name, parents: [col.folderId] }) });
+    const loc = r.headers.get('location'); if (!r.ok || !loc) return bad('Google Drive would not start the upload.');
+    return reply(200, { ok: true, uploadUrl: loc });
+  }
+  if (a === 'collabUploadDone') {
+    const col = c.collab || {}; const tok = await ownerTok(c); if (!tok) return bad('The class owner needs to sign in to Google once.');
+    let ch = 0; try { ch = (await driveSweep(c)) || 0; } catch (e) { /* ignore */ }
+    return reply(200, { ok: true, changed: ch, collab: c.collab });
   }
   if (a === 'collabMoveRequest') {
     const col = c.collab || {}, f = (col.files || []).find((x) => x.id === body.fileId); if (!f) return bad('File not found.', 404);
@@ -1144,6 +1275,7 @@ async function classAction(body, user) {
     c.materials = c.materials || [];
     c.materials.push({ id: crypto.randomBytes(6).toString('hex'), title: f.name, body: '', topic, links: [{ url: f.url, label: f.name, ...(f.kind !== 'link' && f.kind !== 'folder' ? { embed: true } : {}) }], state, publishAt, pendingPlace: needsPlace(c, [{ url: f.url }]) && f.where !== 'students', by: lc(user.username), at: new Date().toISOString(), fromCollab: f.id });
     f.pushedAt = new Date().toISOString(); await saveClass(c);
+    { const m2 = c.materials[c.materials.length - 1]; if (m2 && m2.pendingPlace && matLive(m2)) { try { const tok = await ownerTok(c); if (tok && (await placeMaterial(c, m2, tok))) await saveClass(c); } catch (e) { /* the sweep retries */ } } }
     if (state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: f.name, tag: 'mat-' + c.id });
     return reply(200, { ok: true, collab: c.collab });
   }
@@ -1177,7 +1309,9 @@ async function classAction(body, user) {
     const old = body.matId ? c.materials.find((m) => m.id === body.matId) : null;
     if (old) Object.assign(old, base, { editedAt: new Date().toISOString() });
     else { if (base.topic) { c.topics = c.topics || []; if (!c.topics.includes(base.topic)) c.topics.push(base.topic); } c.materials.push({ id: crypto.randomBytes(6).toString('hex'), ...base, by: lc(user.username), at: new Date().toISOString() }); c.materials = c.materials.slice(-100); }
-    await saveClass(c); if (!old && state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id });
+    await saveClass(c);
+    { const m2 = old || c.materials[c.materials.length - 1]; if (m2 && m2.pendingPlace && matLive(m2)) { try { const tok = await ownerTok(c); if (tok && (await placeMaterial(c, m2, tok))) await saveClass(c); } catch (e) { /* the sweep retries */ } } }
+    if (!old && state === 'live') await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id });
     return reply(200, { ok: true });
   }
   if (a === 'collabInstant') {
@@ -1554,6 +1688,7 @@ async function handlePost(body, user, student) {
   }
 }
 
+exports.sweepAll = sweepAll;
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   try {

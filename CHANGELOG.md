@@ -4,6 +4,22 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.3.0 (2026-11-27)
+
+### Changed
+- Collaboration no longer needs anyone to be signed in. Once the class owner has connected Google one time, the server does the Drive work with that stored grant: a scheduled function (`collab-sweep`, every minute) and a `collabAdopt` call (every 10 seconds while a teacher has the Collaboration tab open).
+- The ownership swap from 2.2.0 now runs on the server instead of in the owner's browser. Co-teacher files and folders are copied into the owner's Drive and the originals are deleted (or taken out of the folder when Drive does not allow a delete).
+- Blank Doc, Slides and Sheet are created in the class owner's Drive in the teacher folder, whoever clicks the button.
+- Posting something to classwork moves its files to the student folder automatically, right away for live posts and at publish time for scheduled ones. A file the owner does not own gets an owner copy in the student folder, and the material links to that copy.
+- Pick from Drive copies files the picker does not own into the teacher folder so the owner's copy replaces them.
+
+### Added
+- An Upload file button next to Create. The file goes straight to the owner's teacher folder in Drive, up to 200 MB, started by the server and sent directly to Google.
+- `@netlify/functions` is a new dependency so the sweep can be scheduled. Netlify installs it on deploy.
+
+### Notes
+- The class owner still approves Google once. After that nothing else needs a sign-in. No email addresses are read or stored, and only the ownedByMe flag is requested from Drive.
+
 ## 2.2.0 (2026-11-27)
 
 ### Added
