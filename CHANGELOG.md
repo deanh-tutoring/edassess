@@ -4,6 +4,11 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.1.1 (2026-11-26)
+
+### Fixed
+- A block of code text appeared at the bottom of every page and slowed the site down. The tour script had been inserted into the middle of the print code by mistake. The build now inserts it in its own place, so the page is clean and fast again.
+
 ## 2.1.0 (2026-11-26)
 
 ### Added
