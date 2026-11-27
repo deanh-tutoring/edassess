@@ -15479,9 +15479,9 @@ function fileRow(c,f,mode,i){
   const wait=f.moveTo&&f.moveTo!==f.where;
   const mv=mode==='sep'&&CB.cfg?btn(f.id,st?'Make teachers only':'Move to student folder','',st?'btn-ghost':'btn-secondary',`cbMove('${esc(c.id)}','${esc(f.id)}',${st?0:1})`):'';
   const ps=f.pushedAt?'':btn('p'+f.id,'Post to classwork','','btn-secondary',`cbPushModal('${esc(c.id)}','${esc(f.id)}')`);
-  return `<div class="cb-file${CB.flash===f.id?' cb-flash':''}${open?' open':''}" data-f="${esc(f.id)}" style="--i:${Math.min(i,10)}"><div class="cb-fr"><span class="cb-k" style="--k:${k[1]}">${k[0]}</span><a class="cb-name" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a><span class="cb-by">${esc(f.by||'')} · ${esc(when(f.at))}</span>${wait?'<span class="cb-chip d">Waiting for owner</span>':''}${f.pushedAt?'<span class="cb-chip s">Posted to classwork</span>':''}${pub&&!f.pushedAt?'<span class="cb-chip s">In classwork</span>':''}
+  return `<div class="cb-file${CB.flash===f.id?' cb-flash':''}${open?' open':''}" data-f="${esc(f.id)}" style="--i:${Math.min(i,10)}"><div class="cb-fr"><span class="cb-k" style="--k:${k[1]}">${k[0]}</span><a class="cb-name" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a><span class="cb-by">${esc(f.creator||f.by||'')} · ${esc(when(f.at))}</span>${wait?'<span class="cb-chip d">Waiting for owner</span>':''}${f.pushedAt?'<span class="cb-chip s">Posted to classwork</span>':''}${pub&&!f.pushedAt?'<span class="cb-chip s">In classwork</span>':''}
    <span class="cb-acts"><button class="btn btn-ghost btn-sm cb-b" onclick="cbToggle('${esc(f.id)}')">${open?'Hide notes':(n?'Notes ('+n+')':'Add note')}</button>${mv}${ps}<button class="btn btn-ghost btn-sm cb-b cw-del" onclick="cbRemove('${esc(c.id)}','${esc(f.id)}')">Remove from list</button></span></div>
-   <div class="cb-nwrap"><div class="cb-notes">${(f.notes||[]).map(x=>`<div class="cb-note"><b>${esc(x.by)}</b> <small>${esc(when(x.at))}</small>${x.by===me()||c.ownerId===me()?` <a class="fxc-x" onclick="cbNoteDel('${esc(c.id)}','${esc(f.id)}','${esc(x.id)}')">Delete</a>`:''}<div>${esc(x.text)}</div></div>`).join('')||'<div class="cb-hint">No notes yet.</div>'}
+   <div class="cb-nwrap"><div class="cb-notes">${(f.notes||[]).map(x=>`<div class="cb-note"><b>${esc(x.byName||x.by)}</b> <small>${esc(when(x.at))}</small>${x.by===me()||c.ownerId===me()?` <a class="fxc-x" onclick="cbNoteDel('${esc(c.id)}','${esc(f.id)}','${esc(x.id)}')">Delete</a>`:''}<div>${esc(x.text)}</div></div>`).join('')||'<div class="cb-hint">No notes yet.</div>'}
    <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Write a note for the other teachers"></textarea><button class="btn btn-primary btn-sm cb-b" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Save note</button></div></div></div></div>`}
 function listBlock(title,sub,files,c,mode,empty){
   return `<section class="cb-sec"><div class="cb-sh"><h4>${title}</h4><span class="cb-count">${files.length}</span><span class="cb-hint">${sub}</span></div><div class="cb-files">${files.map((f,i)=>fileRow(c,f,mode,i)).join('')||`<div class="cb-empty">${empty}</div>`}</div></section>`}
@@ -15977,11 +15977,8 @@ document.addEventListener('keydown',e=>{
 
 /* What's new pop-up: shown once per release */
 (function(){
-const REL={v:'2.3.0',date:'November 27, 2026',items:[
-'Nobody has to be signed in for collaboration. After the class owner connects Google once, the server keeps the class folders in order on its own.',
-'Create Doc, Slides or Sheet and the new Upload file button always put the file in the class owner\u2019s Drive, whoever clicks them.',
-'Files a co-teacher adds are copied to the owner\u2019s Drive automatically and the co-teacher\u2019s original is removed.',
-'Posting a file to classwork moves it to the student folder automatically, including scheduled posts.']};
+const REL={v:'2.3.1',date:'November 27, 2026',items:[
+'Files on the Collaboration tab show the creator\u2019s name instead of a username, even when the owner now owns the copy.']};
 const K='ea-wn-seen';
 function seen(){try{return localStorage.getItem(K)===REL.v;}catch(e){return true;}}
 function mark(){try{localStorage.setItem(K,REL.v);}catch(e){}}
@@ -16007,7 +16004,7 @@ document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector
 
 /* Version guard: when a new release is deployed, ask for a refresh (no nagging pop-ups in between). */
 (function(){
-const BUILD='2.3.0';let shown=false;
+const BUILD='2.3.1';let shown=false;
 async function check(){
   if(shown||document.hidden)return;
   try{

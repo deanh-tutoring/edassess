@@ -4,6 +4,11 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.3.1 (2026-11-27)
+
+### Changed
+- The Collaboration tab shows who created each file by name instead of by username, even when the class owner now owns the copy. For a file a co-teacher added, the name comes from Drive's display name for the original owner. Only that name is requested, never an email address. Notes also show names.
+
 ## 2.3.0 (2026-11-27)
 
 ### Changed

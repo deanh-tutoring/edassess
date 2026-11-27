@@ -970,7 +970,9 @@ async function ownerTok(c) {
   const rec = await getJ(U_PREFIX + ownerOf(c)); if (!rec || !rec.gRefresh) return null;
   try { const t = await gToken({ grant_type: 'refresh_token', refresh_token: gDec(rec.gRefresh) }); return t.access_token || null; } catch (e) { return null; }
 }
-function mergeFolders(col, body, by) {
+const uName = (u) => String((u && (u.name || u.username)) || '').trim().slice(0, 60);
+async function ownerNameOf(c) { const r = await getJ(U_PREFIX + ownerOf(c)); return uName(r) || ownerOf(c); }
+function mergeFolders(col, body, by, ownerName) {
   const map = new Map(); let ch = 0;
   for (const w of ['teachers', 'students']) {
     if (!body['ok_' + w]) continue;
@@ -983,7 +985,8 @@ function mergeFolders(col, body, by) {
     if (x.src === 'folder' && okAny && body['ok_' + x.where]) { ch++; return false; }   // gone from Drive
     return true;
   });
-  for (const m of map.values()) { col.files.push({ ...m, by, at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); ch++; }
+  col.creators = col.creators || {}; col.pendingBy = (col.pendingBy || []).filter((p) => Date.now() - p.at < 3600000);
+  for (const m of map.values()) { const cr = col.creators[m.id] || (col.pendingBy.length ? col.pendingBy.shift().name : '') || ownerName || ''; col.files.push({ ...m, by, creator: cr, at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); ch++; }
   col.files = col.files.slice(-300);
   return ch;
 }
@@ -998,16 +1001,18 @@ async function dCloneInto(tok, f, dest, depth) {
 async function adoptForeign(c, tok) {
   const col = c.collab || {}; if (!sepFolders(c) || !col.folderId) return 0;
   col.adoptMap = col.adoptMap || {}; let n = 0;
-  const l = await dr(tok, 'files?q=' + dfq(col.folderId) + '&pageSize=100&fields=files(id,name,mimeType,ownedByMe)');
+  const l = await dr(tok, 'files?q=' + dfq(col.folderId) + '&pageSize=100&fields=files(id,name,mimeType,ownedByMe,owners(displayName))');
+  col.creators = col.creators || {};
   for (const f of (l.files || [])) {
     if (f.ownedByMe !== false) continue;
     try {
-      if (!col.adoptMap[f.id]) { const cp = await dCloneInto(tok, f, col.folderId, 0); col.adoptMap[f.id] = cp.id; }
+      if (!col.adoptMap[f.id]) { const cp = await dCloneInto(tok, f, col.folderId, 0); col.adoptMap[f.id] = cp.id; const dn = f.owners && f.owners[0] && String(f.owners[0].displayName || '').trim().slice(0, 60); if (dn) col.creators[cp.id] = dn; }
       try { await dr(tok, 'files/' + f.id, { method: 'DELETE' }); } catch (e) { await dr(tok, 'files/' + f.id + '?removeParents=' + col.folderId + '&fields=id', { method: 'PATCH', body: '{}' }); }
       n++;
     } catch (e) { /* try again next sweep */ }
   }
   const ks = Object.keys(col.adoptMap); if (ks.length > 150) ks.slice(0, ks.length - 150).forEach((k) => delete col.adoptMap[k]);
+  const kc = Object.keys(col.creators); if (kc.length > 300) kc.slice(0, kc.length - 300).forEach((k) => delete col.creators[k]);
   return n;
 }
 async function listFolder(tok, fid) {
@@ -1054,7 +1059,7 @@ async function driveSweep(c) {
     const p = { ok_teachers: false, ok_students: false };
     try { p.teachers = await listFolder(tok, col.folderId); p.ok_teachers = true; } catch (e) { /* keep list */ }
     try { p.students = await listFolder(tok, col.studentFolderId); p.ok_students = true; } catch (e) { /* keep list */ }
-    ch += mergeFolders(col, p, ownerOf(c));
+    ch += mergeFolders(col, p, ownerOf(c), await ownerNameOf(c));
     for (const m of (c.materials || []).filter((x) => x.pendingPlace && matLive(x))) { if (await placeMaterial(c, m, tok)) ch++; }
     if (ch) await saveClass(c);
     return ch;
@@ -1182,7 +1187,7 @@ async function classAction(body, user) {
   }
   if (a === 'collabSync') {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
-    const ch = mergeFolders(col, body, lc(user.username));
+    const ch = mergeFolders(col, body, lc(user.username), await ownerNameOf(c));
     await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
   }
   if (a === 'collabAdopt') {
@@ -1197,7 +1202,7 @@ async function classAction(body, user) {
     const name = String(body.name || '').trim().slice(0, 120) || DNAME[kind];
     let f; try { f = await dr(tok, 'files?fields=id,name,webViewLink', { method: 'POST', body: JSON.stringify({ name, mimeType: DMIME[kind], parents: [col.folderId] }) }); } catch (e) { return bad('Google Drive said: ' + e.message); }
     const cf = cleanFile({ id: f.id, name: f.name, url: f.webViewLink, src: 'folder', where: 'teachers' });
-    c.collab.files = c.collab.files || []; if (cf && !c.collab.files.some((x) => x.id === cf.id)) c.collab.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
+    c.collab.files = c.collab.files || []; if (cf && !c.collab.files.some((x) => x.id === cf.id)) c.collab.files.push({ ...cf, by: lc(user.username), creator: uName(user), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
     await saveClass(c); return reply(200, { ok: true, url: f.webViewLink, collab: c.collab });
   }
   if (a === 'collabUploadStart') {
@@ -1208,6 +1213,7 @@ async function classAction(body, user) {
     const origin = /^https?:\/\/[\w.:-]{1,120}$/.test(String(body.origin || '')) ? body.origin : '';
     const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', { method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': mime, 'X-Upload-Content-Length': String(size), ...(origin ? { Origin: origin } : {}) }, body: JSON.stringify({ name, parents: [col.folderId] }) });
     const loc = r.headers.get('location'); if (!r.ok || !loc) return bad('Google Drive would not start the upload.');
+    c.collab.pendingBy = (c.collab.pendingBy || []).slice(-9); c.collab.pendingBy.push({ name: uName(user), at: Date.now() }); await saveClass(c);
     return reply(200, { ok: true, uploadUrl: loc });
   }
   if (a === 'collabUploadDone') {
@@ -1232,7 +1238,7 @@ async function classAction(body, user) {
           const cp = await dr(tok, 'files/' + gi.id + '/copy?fields=id,name,webViewLink', { method: 'POST', body: JSON.stringify({ name: f.name, parents: [dest] }) });
           f.moveTo = null; how = 'copied'; f.placedUrl = cp.webViewLink;
           const cf = cleanFile({ id: cp.id, name: cp.name, url: cp.webViewLink, src: 'folder', where: to });
-          if (cf && !col.files.some((x) => x.id === cf.id)) col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
+          if (cf && !col.files.some((x) => x.id === cf.id)) col.files.push({ ...cf, by: lc(user.username), creator: uName(user), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null });
         }
         await saveClass(c); return reply(200, { ok: true, done: true, how, url: how === 'copied' ? f.placedUrl : f.url, collab: c.collab });
       } catch (e) { /* fall through to the queue */ }
@@ -1247,14 +1253,14 @@ async function classAction(body, user) {
       const cf = cleanFile(f); if (!cf) continue;
       const ex = col.files.find((x) => x.id === cf.id || x.url === cf.url);
       if (ex) { if (f && f.where) { ex.where = cf.where; ex.moveTo = null; } if (cf.placedUrl) ex.placedUrl = cf.placedUrl; continue; }
-      col.files.push({ ...cf, by: lc(user.username), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); added++;
+      col.files.push({ ...cf, by: lc(user.username), creator: uName(user), at: new Date().toISOString(), notes: [], pushedAt: null, moveTo: null }); added++;
     }
     col.files = col.files.slice(-300); await saveClass(c); return reply(200, { ok: true, added, collab: col });
   }
   if (a === 'collabNote') {
     const f = ((c.collab || {}).files || []).find((x) => x.id === body.fileId); if (!f) return bad('File not found.', 404);
     const text = String(body.text || '').trim().slice(0, 1000); if (!text) return bad('Write a note first.');
-    f.notes = f.notes || []; f.notes.push({ id: crypto.randomBytes(5).toString('hex'), by: lc(user.username), at: new Date().toISOString(), text }); f.notes = f.notes.slice(-50);
+    f.notes = f.notes || []; f.notes.push({ id: crypto.randomBytes(5).toString('hex'), by: lc(user.username), byName: uName(user), at: new Date().toISOString(), text }); f.notes = f.notes.slice(-50);
     await saveClass(c); return reply(200, { ok: true, collab: c.collab });
   }
   if (a === 'collabNoteDelete') {
