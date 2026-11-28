@@ -4,6 +4,19 @@ All notable changes to EdAssess are listed here, newest first. Add new entries u
 
 ## Unreleased
 
+## 2.4.0 (2026-11-27)
+
+### Added
+- A teacher form for co-teachers who do not have EdAssess. The class owner creates it on the Files or Collaboration tab. EdAssess builds a Google Form in the owner's Google account with a teacher key, a name, and a choice to post a material or move existing files to the student folder. The list of existing Teacher collaboration files in the form stays up to date on its own.
+- Submissions are read by the server every minute (and every 10 seconds while a teacher has the tab open) using the owner's Google grant. A submission with a wrong or missing key is ignored. A material posted this way shows the name typed in the form, and its files move to the student folder like any other post.
+- New key and Turn off buttons. A new key makes the old link stop working.
+
+### Setup
+- Turn on the Google Forms API in the same Google Cloud project. The owner is asked for form permissions only when they create the form, and the form scopes (`forms.body` and `forms.responses.readonly`) must be on the OAuth consent screen.
+
+### Privacy
+- The form never asks for an email and EdAssess never reads one. Google Forms is left on its defaults so responders do not have to sign in.
+
 ## 2.3.1 (2026-11-27)
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "edassess",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "EdAssess: tests, surveys and classes in one calm place",
   "dependencies": {
     "@netlify/blobs": "^8.1.0",

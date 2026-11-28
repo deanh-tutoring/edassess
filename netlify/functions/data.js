@@ -696,6 +696,7 @@ async function classesForTeacher(user) {
     try { if (!c.no) { for (let i = 0; i < 60 && !c.no; i++) { const n = String(crypto.randomInt(1000, 10000)); if (!(await getJ(CNO_PREFIX + n))) { await putJ(CNO_PREFIX + n, { id: c.id }); c.no = n; await saveClass(c); } } } } catch (e) { /* optional */ }
     const x = clsClean(c);
     if (x.collab) { const orec = await getJ(U_PREFIX + ownerOf(c)).catch(() => null); x.collab = { ...x.collab, serverOn: !!(orec && orec.gRefresh) && !x.collab.instantOff }; }
+    x.tform = c.tform ? (ownerOf(c) === lc(user.username) ? formPub(c.tform) : { on: true }) : null;
     x.students = await Promise.all((c.students || []).map(async (st) => { const r = { ...st }; try { if (st.key) { const rec = await getJ(S_PREFIX + st.key); if (rec) { if (!rec.sid) { rec.sid = await newSid(rec.key); await putJ(S_PREFIX + rec.key, rec); } r.sid = rec.sid; } } } catch (e) { /* optional */ } return r; }));
     x.invites = await Promise.all((c.invites || []).map(async (i) => ({ ...i, registered: !!(await getJ(S_PREFIX + i.key)) })));
     out.push(x);
@@ -1047,6 +1048,89 @@ async function placeMaterial(c, m, tok) {
   m.links = links; if (ok) m.pendingPlace = false;
   return ok;
 }
+
+/* ───── Google Form for co-teachers who do not use EdAssess ─────
+   The owner turns it on once. The form lets anyone holding its link (with the teacher key filled in) post a material
+   or move existing teacher-folder files to the student folder. The server reads the responses with the owner's grant. */
+async function fapi(tok, path, opt) {
+  const r = await fetch('https://forms.googleapis.com/v1/' + path, { ...(opt || {}), headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' } });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error((j.error && j.error.message) || ('Forms ' + r.status)); e.status = r.status; throw e; }
+  return j;
+}
+const fq = (title, q, extra) => ({ createItem: { item: { title, ...(extra || {}), questionItem: { question: q } }, location: { index: 0 } } });
+function formChoices(c) {
+  const col = c.collab || {}, seen = {}, map = {};
+  const fl = (col.files || []).filter((f) => f.where === 'teachers' && f.src === 'folder').slice(-100);
+  const opts = fl.map((f) => { let n = String(f.name || 'Untitled').replace(/\s+/g, ' ').trim().slice(0, 90) || 'Untitled'; seen[n] = (seen[n] || 0) + 1; if (seen[n] > 1) n += ' (' + seen[n] + ')'; map[n] = f.id; return n; });
+  if (!opts.length) opts.push('(no files in Teacher collaboration yet)');
+  return { opts, map };
+}
+async function formBuild(c, tok, key) {
+  const col = c.collab, ch = formChoices(c);
+  const f = await fapi(tok, 'forms', { method: 'POST', body: JSON.stringify({ info: { title: c.name + ': teacher form', documentTitle: c.name + ': teacher form' } }) });
+  const T = (title, required, para, desc) => ({ item: { title, ...(desc ? { description: desc } : {}), questionItem: { question: { required: !!required, textQuestion: { paragraph: !!para } } } } });
+  const items = [
+    T('Teacher key', true, false, 'Already filled in if you opened the link from your class owner.'),
+    T('Your name', true, false, 'Shown to students as the person who posted.'),
+    { item: { title: 'What would you like to do?', questionItem: { question: { required: true, choiceQuestion: { type: 'RADIO', options: [{ value: 'Post a material' }, { value: 'Move existing files to the student folder' }] } } } } },
+    { item: { title: 'Existing files in Teacher collaboration', description: 'Choose the files to attach to your post or to move. Leave empty if none.', questionItem: { question: { required: false, choiceQuestion: { type: 'CHECKBOX', options: ch.opts.map((value) => ({ value })) } } } } },
+    T('Material title', false, false, 'Only needed when posting a material.'),
+    T('Details', false, true, 'Optional message for students.'),
+    T('Topic', false, false, 'Optional. Matches a classwork topic.'),
+    T('Links, one per line', false, true, 'Optional web links to include.')
+  ];
+  const reqs = [{ updateFormInfo: { info: { description: 'Post to ' + c.name + ' or move files to the student folder. Nothing here needs an EdAssess account.' }, updateMask: 'description' } }]
+    .concat(items.map((it, i) => ({ createItem: { item: it.item, location: { index: i } } })));
+  const u = await fapi(tok, 'forms/' + f.formId + ':batchUpdate', { method: 'POST', body: JSON.stringify({ requests: reqs, includeFormInResponse: true }) });
+  const its = (u.form && u.form.items) || [];
+  const q = (i) => its[i] && its[i].questionItem && its[i].questionItem.question && its[i].questionItem.question.questionId;
+  const g = await fapi(tok, 'forms/' + f.formId);
+  c.tform = { id: f.formId, url: g.responderUri || f.responderUri, key, qids: { key: q(0), name: q(1), act: q(2), files: q(3), title: q(4), body: q(5), topic: q(6), links: q(7) }, sig: ch.opts.join('|'), map: ch.map, done: {}, since: new Date().toISOString() };
+  c.tform.link = formLink(c.tform); return c.tform;
+}
+const formLink = (fm) => fm && fm.url ? fm.url + (fm.url.includes('?') ? '&' : '?') + 'usp=pp_url&entry.' + parseInt(fm.qids.key, 16) + '=' + encodeURIComponent(fm.key) : '';
+const formPub = (fm) => fm ? { on: true, link: formLink(fm), key: fm.key } : null;
+async function formRefreshChoices(c, tok) {
+  const fm = c.tform; if (!fm || !fm.id) return false;
+  const ch = formChoices(c), sig = ch.opts.join('|'); fm.map = ch.map; if (sig === fm.sig) return false;
+  const g = await fapi(tok, 'forms/' + fm.id);
+  const idx = (g.items || []).findIndex((it) => it.questionItem && it.questionItem.question && it.questionItem.question.questionId === fm.qids.files);
+  if (idx < 0) return false;
+  await fapi(tok, 'forms/' + fm.id + ':batchUpdate', { method: 'POST', body: JSON.stringify({ requests: [{ updateItem: { item: { itemId: g.items[idx].itemId, title: g.items[idx].title, description: g.items[idx].description, questionItem: { question: { questionId: fm.qids.files, required: false, choiceQuestion: { type: 'CHECKBOX', options: ch.opts.map((value) => ({ value })) } } } }, location: { index: idx }, updateMask: 'questionItem.question.choiceQuestion.options' } }] }) });
+  fm.sig = sig; return true;
+}
+async function formProcess(c, tok) {
+  const fm = c.tform; if (!fm || !fm.id || !sepFolders(c)) return 0;
+  const j = await fapi(tok, 'forms/' + fm.id + '/responses?pageSize=100&filter=' + encodeURIComponent('timestamp >= ' + fm.since));
+  let n = 0; const col = c.collab;
+  for (const r of (j.responses || [])) {
+    if (fm.done[r.responseId]) continue; fm.done[r.responseId] = 1; n++;
+    const ans = (id) => { const a = r.answers && r.answers[id]; return a && a.textAnswers ? (a.textAnswers.answers || []).map((x) => String(x.value || '')) : []; };
+    const one = (id) => (ans(id)[0] || '').trim();
+    if (one(fm.qids.key) !== fm.key) continue;                                   // wrong or missing teacher key: ignored
+    const picked = ans(fm.qids.files).map((l) => (fm.map || {})[l]).filter(Boolean).map((id) => (col.files || []).find((f) => f.id === id)).filter(Boolean);
+    if (/^Move/i.test(one(fm.qids.act))) {
+      for (const f of picked) { try { const u = await placeForStudents(c, tok, f.url); if (u) { f.where = 'students'; f.moveTo = null; if (u !== f.url) f.placedUrl = u; } } catch (e) { /* skip */ } }
+      continue;
+    }
+    const title = one(fm.qids.title).slice(0, 120) || (picked[0] && picked[0].name) || ''; if (!title) continue;
+    const links = [];
+    for (const f of picked) links.push({ url: f.url, label: f.name, ...(f.kind !== 'link' && f.kind !== 'folder' ? { embed: true } : {}) });
+    for (let u of ans(fm.qids.links).join('\n').split(/\s+/).slice(0, 10)) {
+      if (!u) continue; if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      try { const x = new URL(u); if (!/^https?:$/.test(x.protocol) || !x.hostname.includes('.')) continue; links.push({ url: x.href, label: '' }); } catch (e) { /* skip */ }
+    }
+    const topic = one(fm.qids.topic).slice(0, 40); if (topic) { c.topics = c.topics || []; if (!c.topics.includes(topic)) c.topics.push(topic); }
+    c.materials = c.materials || [];
+    const m = { id: crypto.randomBytes(6).toString('hex'), title, body: one(fm.qids.body).slice(0, 4000), topic, links, state: 'live', publishAt: null, pendingPlace: needsPlace(c, links), byName: one(fm.qids.name).slice(0, 60) || 'A co-teacher', at: new Date().toISOString() };
+    c.materials.push(m); c.materials = c.materials.slice(-100);
+    try { await placeMaterial(c, m, tok); } catch (e) { /* the sweep retries */ }
+    try { await notifyClass(c.id, { title: c.name + ': new material', body: title, tag: 'mat-' + c.id }); } catch (e) { /* ignore */ }
+  }
+  const ks = Object.keys(fm.done); if (ks.length > 300) ks.slice(0, ks.length - 300).forEach((k) => delete fm.done[k]);
+  return n;
+}
 const swInflight = new Set();
 /* one pass for one class: take ownership of co-teacher files, refresh the file list, place live materials for students */
 async function driveSweep(c) {
@@ -1060,6 +1144,10 @@ async function driveSweep(c) {
     try { p.teachers = await listFolder(tok, col.folderId); p.ok_teachers = true; } catch (e) { /* keep list */ }
     try { p.students = await listFolder(tok, col.studentFolderId); p.ok_students = true; } catch (e) { /* keep list */ }
     ch += mergeFolders(col, p, ownerOf(c), await ownerNameOf(c));
+    if (c.tform) {
+      try { if (await formRefreshChoices(c, tok)) ch++; } catch (e) { /* retry */ }
+      try { ch += await formProcess(c, tok); } catch (e) { /* retry */ }
+    }
     for (const m of (c.materials || []).filter((x) => x.pendingPlace && matLive(x))) { if (await placeMaterial(c, m, tok)) ch++; }
     if (ch) await saveClass(c);
     return ch;
@@ -1070,13 +1158,13 @@ async function sweepAll() {
   await mapLimit(keys, 4, async (k) => {
     if (Date.now() - t0 > 40000) return;
     const c = await getJ(k); if (!c || !c.collab || !sepFolders(c)) return;
-    if (!(c.collab.ext || (c.coTeachers || []).length || (c.materials || []).some((m) => m.pendingPlace))) return;
+    if (!(c.collab.ext || c.tform || (c.coTeachers || []).length || (c.materials || []).some((m) => m.pendingPlace))) return;
     try { await driveSweep(c); } catch (e) { /* next minute */ }
   });
 }
 async function classAction(body, user) {
   const a = body.action;
-  const CA = ['collabAdopt', 'collabCreate', 'collabUploadStart', 'collabUploadDone', 'collabInstant', 'setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
+  const CA = ['collabForm', 'collabAdopt', 'collabCreate', 'collabUploadStart', 'collabUploadDone', 'collabInstant', 'setGroups', 'setAudience', 'setAsgTopic', 'materialPlaced', 'collabSync', 'collabMoveRequest', 'publishMaterial', 'collabSetup', 'collabAdd', 'collabNote', 'collabNoteDelete', 'collabRemove', 'collabPush', 'shareTestsToClass', 'createClass', 'updateClass', 'deleteClass', 'setClassCoTeachers', 'inviteStudents', 'cancelInvite', 'removeStudent', 'regenClassCode', 'postAnnouncement', 'deleteAnnouncement', 'postMaterial', 'deleteMaterial', 'setClasswork', 'listClasses', 'adminListStudents', 'adminResetStudentPassword', 'adminSetStudentDisabled', 'impersonateStudent'];
   if (!CA.includes(a)) return null;
   if (!user) return AUTH_ERR();
   if (a === 'listClasses') return reply(200, { classes: await classesForTeacher(user) });
@@ -1189,6 +1277,21 @@ async function classAction(body, user) {
     const col = c.collab = c.collab || { files: [], shortcuts: {} };
     const ch = mergeFolders(col, body, lc(user.username), await ownerNameOf(c));
     await saveClass(c); return reply(200, { ok: true, changed: ch, collab: col });
+  }
+  if (a === 'collabForm') {
+    if (role !== 'owner') return bad('Only the class owner can manage the teacher form.', 403);
+    const col = c.collab = c.collab || { files: [], shortcuts: {} };
+    if (body.on === false) { delete c.tform; await saveClass(c); return reply(200, { ok: true, form: null }); }
+    if (!sepFolders(c)) return bad('Create the co-teacher link first so the class has teacher and student folders.');
+    const tok = await ownerTok(c); if (!tok) return bad('Sign in with Google once first.');
+    try {
+      if (c.tform && body.rotate) { c.tform.key = crypto.randomBytes(5).toString('hex'); c.tform.link = formLink(c.tform); }
+      else if (!c.tform) { await formBuild(c, tok, crypto.randomBytes(5).toString('hex')); }
+    } catch (e) {
+      if (e.status === 403 || e.status === 401) return reply(200, { ok: false, needScope: true, error: 'Google needs your permission to create forms. Choose Allow forms and try again.' });
+      return bad('Google Forms said: ' + e.message);
+    }
+    await saveClass(c); return reply(200, { ok: true, form: formPub(c.tform) });
   }
   if (a === 'collabAdopt') {
     if (!c.collab || !sepFolders(c)) return reply(200, { ok: true, collab: c.collab || null, changed: 0 });

@@ -13648,7 +13648,7 @@ window.stuGrades=function(){
 /* ── CLASS (student) ── */
 function lmsStream(c,asg,isT){
   const items=[...(c.materials||[]).map(m=>({k:'mat',at:m.at,by:m.by,m})),...(c.announcements||[]).map(x=>({k:'ann',at:x.at,by:x.by,text:x.text,id:x.id})),...asg.map(a=>({k:'asg',at:a.createdAt,by:a.ownerId,a}))].sort((x,y)=>new Date(y.at||0)-new Date(x.at||0));
-  return items.map(it=>it.k==='mat'?`<div class="lms-post mat"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(it.by))}</b> posted material<span>${E(lmsAgo(it.at))}</span></div>${lmsMat(it.m,isT,c.id)}</div></div>`:it.k==='ann'
+  return items.map(it=>it.k==='mat'?`<div class="lms-post mat"><div class="lms-post-b"><div class="lms-post-h"><b>${E((it.m&&it.m.byName)||tN(it.by))}</b> posted material<span>${E(lmsAgo(it.at))}</span></div>${lmsMat(it.m,isT,c.id)}</div></div>`:it.k==='ann'
    ?`<div class="lms-post ann"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(it.by))}</b><span>${E(lmsAgo(it.at))}</span>${isT?`<a class="fxc-x" style="margin-left:auto" onclick="fxClassUnpost('${E(c.id)}','${E(it.id)}')">Delete</a>`:''}</div><div class="lms-post-t">${E(it.text)}</div></div></div>`
    :(()=>{const a=it.a;return isT
      ?`<div class="lms-post asg"><div class="lms-post-b"><div class="lms-post-h"><b>${E(tN(a.ownerId))}</b> posted an assignment<span>${E(lmsAgo(a.createdAt))}</span></div><div class="lms-post-t"><b>${E(a.title||'Assessment')}</b><div class="lms-row-m">${a.dueAt?E(stuWhen(a.dueAt)):'No due date'}</div></div></div></div>`
@@ -14326,7 +14326,7 @@ function asgRow(a,c,isT){
   return `<div class="cw-item cw-asg${open?' open':''}" data-cw="${E(a.id)}"><div class="cw-h" role="button" tabindex="0" aria-expanded="${open}" onclick="cwToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cwToggle(this)}">${isT?'<span class="lms-grip ph">⋮⋮</span>':''}<span class="cw-ico ${svy?'svy':'asg'}">${svy?ICO.svy:ICO.asg}</span><span class="cw-t">${E(title)}</span>${isT?audChip(c,a,a.topic):''}${window.cbChip?cbChip(a):''}${right}<i class="cw-caret"></i></div><div class="cw-fold"><div class="cw-in">${fold}</div></div></div>`;
 }
 function matRow(m,c,isT){
-  const wu=m.by||c.ownerId||'',who=wu?(isT?(typeof fxTName==='function'?fxTName(wu):wu):(typeof tN==='function'?tN(wu):wu)):'your teacher';
+  const wu=m.by||c.ownerId||'',who=m.byName?m.byName:wu?(isT?(typeof fxTName==='function'?fxTName(wu):wu):(typeof tN==='function'?tN(wu):wu)):'your teacher';
   const open=OPEN.has(m.id),nl=(m.links||[]).length;
   const grip=isT?`<span class="lms-grip" title="Drag to reorder" onclick="event.stopPropagation()">⋮⋮</span>`:'';
   const acts=isT?`<div class="cw-acts">${m.state&&m.state!=='live'?`<button class="btn btn-primary btn-sm" onclick="cbPublishMat('${E(c.id)}','${E(m.id)}')">Publish now</button>`:''}<button class="btn btn-secondary btn-sm" onclick="fxMatModal('${E(c.id)}','${E(m.id)}')">Edit</button><button class="btn btn-ghost btn-sm" onclick="cwAud('${E(c.id)}','mat','${E(m.id)}')">Who can see this</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',-1)">Move up</button><button class="btn btn-ghost btn-sm" onclick="fxMatMove('${E(c.id)}','${E(m.id)}',1)">Move down</button><button class="btn btn-ghost btn-sm cw-del" onclick="fxMatDelete('${E(c.id)}','${E(m.id)}')">Delete</button></div>`:'';
@@ -15485,6 +15485,11 @@ function fileRow(c,f,mode,i){
    <div class="cb-noteadd"><textarea id="cb-nt-${esc(f.id)}" class="form-control" rows="2" maxlength="1000" placeholder="Write a note for the other teachers"></textarea><button class="btn btn-primary btn-sm cb-b" onclick="cbNote('${esc(c.id)}','${esc(f.id)}')">Save note</button></div></div></div></div>`}
 function listBlock(title,sub,files,c,mode,empty){
   return `<section class="cb-sec"><div class="cb-sh"><h4>${title}</h4><span class="cb-count">${files.length}</span><span class="cb-hint">${sub}</span></div><div class="cb-files">${files.map((f,i)=>fileRow(c,f,mode,i)).join('')||`<div class="cb-empty">${empty}</div>`}</div></section>`}
+function formCard(c,owner,two,has){
+  if(!owner||!has||!two)return '';const f=c.tform;
+  const connect=`<span class="cb-hint">If Google asks again, allow forms. </span>`;
+  if(!f||!f.on)return `<div class="cb-card"><b>Teacher form</b><div class="cb-hint">For co-teachers who do not have EdAssess. EdAssess makes a Google Form in your Google account. They fill it in to post a material, with or without files, or to move existing Teacher collaboration files to the student folder. Their name is typed in the form and no email is collected by EdAssess.</div><div class="cb-add">${btn('form','Create teacher form','','btn-primary',`cbForm('${esc(c.id)}',true)`)}</div></div>`;
+  return `<div class="cb-card"><b>Teacher form</b><div class="cb-hint">Share this link with co-teachers who do not use EdAssess. It already contains the teacher key, so they only fill in their name and what they want to do. Submissions are handled on the server within about a minute.</div><div class="cb-add"><input class="form-control" readonly value="${esc(f.link||'')}" onclick="this.select()"><button class="btn btn-secondary btn-sm cb-b" onclick="navigator.clipboard.writeText('${esc(f.link||'')}');toast('Link copied.','success')">Copy link</button></div><div class="cb-hint">Teacher key: <b>${esc(f.key||'')}</b>. Anyone with the link can post, so share it only with teachers. If it spreads, make a new key and the old link stops working.</div><div class="cb-add"><button class="btn btn-secondary btn-sm cb-b" onclick="cbForm('${esc(c.id)}',true,true)">New key</button><button class="btn btn-ghost btn-sm cb-b" onclick="cbForm('${esc(c.id)}',false)">Turn off</button></div></div>`}
 function extCard(c,col,owner,two,has){
   if(!owner||!has)return '';
   if(two)return `<div class="cb-card"><b>Co-teacher link</b><div class="cb-hint">Anyone with this link can add and edit files, even if they do not use EdAssess. Nobody is added by email. When someone adds a file, you get your own copy and theirs is removed, so only your name stays on the files in Drive. This happens on the server within about a minute (and every 10 seconds while this tab is open), so nobody has to be signed in.</div><div class="cb-add"><input class="form-control" readonly value="${esc(col.folderUrl)}" onclick="this.select()"><button class="btn btn-secondary btn-sm cb-b" onclick="navigator.clipboard.writeText('${esc(col.folderUrl)}');toast('Link copied.','success')">Copy link</button></div></div>`;
@@ -15506,6 +15511,7 @@ window.collabTab=function(c){
   ${has?`<div class="cb-card"><b>Student access: ${open?'on':'paused'}</b><div class="cb-hint">${open?'Anyone with the '+(two?'student ':'')+'folder link can view it. Pause access while you are editing, then restore it when you are done.':'Students cannot open the '+(two?'student ':'')+'folder right now. Restore access when your edits are finished.'}</div><div class="cb-add">${btn('acc',open?'Pause student access':'Restore student access','',open?'btn-secondary':'btn-primary',`cbAccess('${esc(c.id)}',${open?0:1})`).replace('>','>'+'',1)}${live?'':'<span class="cb-hint">Sign in with Google to change this.</span>'}</div></div>`:''}
   <div class="cb-card"><b>Add a file</b><div class="cb-add"><input id="cb-url" class="form-control" placeholder="Paste a Google Docs, Sheets, Slides or Drive link"><input id="cb-nm" class="form-control" placeholder="Name (optional)"><button class="btn btn-secondary btn-sm cb-b" onclick="cbAddLink('${esc(c.id)}')">Add to list</button>${g?`<button class="btn btn-secondary btn-sm cb-b" onclick="cbPick('${esc(c.id)}')">Pick from Drive</button>`:''}</div></div>
   ${extCard(c,col,owner,two,has)}
+  ${formCard(c,owner,two,has)}
   ${lists}
   <div class="cb-card"><b>Google Drive</b><div class="cb-hint">The class owner signs in with Google once. After that the server keeps files in order without anyone being signed in. EdAssess creates the EdAssess folder${sp?' and a folder for each class':', the class folders and a shortcut for every co-teacher'}. It never reads or stores anyone's email.</div>
    <div class="cb-add">${g?(live?`<span class="cb-hint">${CB.busy?'Syncing with Google Drive...':'Syncs automatically'+(CB.last?' · last checked '+when(CB.last):'')}</span>`:`<button class="btn btn-primary btn-sm cb-b" ${CB.busy?'disabled':''} onclick="cbGoogle()">${CB.on?'Reconnect Google':'Sign in with Google'}</button>`):'<span class="cb-hint">Google sign-in is not turned on for this site yet.</span>'}${sp?'':`<button class="btn btn-secondary btn-sm cb-b" onclick="cbShareTests('${esc(c.id)}')">Share my tests with co-teachers</button>`}</div>${g&&two?(owner?`<div class="cb-hint" style="margin-top:6px">${col.instantOff?'Instant moves are denied: a co-teacher\u2019s Move waits until your Collaboration tab syncs and approves it.':'Co-teachers can move files into the student folder right away, without waiting for you.'}</div><div class="cb-add"><button class="btn ${col.instantOff?'btn-primary':'btn-secondary'} btn-sm cb-b" onclick="cbInstant(${col.instantOff?1:0})">${col.instantOff?'Allow instant moves':'Deny instant moves'}</button></div>`:`<div class="cb-hint" style="margin-top:6px">${col.instantOff?'The class owner has turned off instant moves, so moves wait for them.':'Your moves reach the student folder right away.'}</div>`):''}</div></div>`};
@@ -15544,6 +15550,18 @@ window.cbGoogle=async(silent)=>{if(CB.busy)return;CB.busy=1;CB.last=Date.now();c
     if(c0&&!(silent===true&&!made&&!synced&&!short&&!note.length)){if(c0)msg(c0,'Synced. '+(made?made+' class'+(made===1?' was':'es were')+' set up or rebuilt. ':'')+(synced?synced+' file'+(synced===1?'':'s')+' synced. ':'')+(short?short+' class'+(short===1?'':'es')+' added to your Drive. ':'')+(note.length?'Could not finish: '+note.join(', ')+'.':''),!!note.length)}}
   catch(e){const c0=(APP.classes||[]).find(x=>x.id===FXC.open);if(c0)msg(c0,e.message,true)}
   CB.busy='';CB.last=Date.now();if(!quiet||made||synced||short||note.length||CB.errShown)paint()};
+window.cbForm=async(id,on,rotate)=>{const c=cls(id);if(!c)return;
+  if(on===false&&!confirm('Turn off the teacher form? The old link will stop working.'))return;
+  CB.pend.form='Working...';paint();
+  try{let r=await apiPost({action:'collabForm',classId:id,on,rotate:!!rotate});
+    if(r&&r.needScope){await cbFormConsent();r=await apiPost({action:'collabForm',classId:id,on,rotate:!!rotate})}
+    if(!r||!r.ok)throw new Error((r&&r.error)||'Could not change the teacher form.');
+    c.tform=r.form;msg(c,on===false?'The teacher form is off.':rotate?'A new key is ready. Share the new link.':'The teacher form is ready. Copy the link below.')}catch(e){msg(c,e.message,true)}
+  delete CB.pend.form;paint()};
+/* forms need extra permission, asked for only when the owner turns the form on */
+async function cbFormConsent(){if(!(await cfg()))throw new Error('Google is not turned on for this site yet.');await gLoad('https://accounts.google.com/gsi/client');
+  const code=await new Promise((ok,no)=>{google.accounts.oauth2.initCodeClient({client_id:GD.cfg.clientId,scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/forms.body https://www.googleapis.com/auth/forms.responses.readonly',include_granted_scopes:true,prompt:'consent',ux_mode:'popup',callback:r=>r.code?ok(r.code):no(new Error(r.error||'Cancelled')),error_callback:()=>no(new Error('The Google window was closed.'))}).requestCode()});
+  const r=await apiPost({action:'gdConnect',code});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not save the permission.')}
 window.cbExt=async id=>{const c=cls(id);if(!c)return;
   try{if(!(await cfg()))throw new Error('Google Drive is not connected for this site yet.');CB.pend.ext='Creating...';paint();await gToken();
     const r=await apiPost({action:'collabSetup',classId:id,ext:true});if(!r||!r.ok)throw new Error((r&&r.error)||'Could not turn that on.');c.collab=r.collab;
@@ -15977,8 +15995,9 @@ document.addEventListener('keydown',e=>{
 
 /* What's new pop-up: shown once per release */
 (function(){
-const REL={v:'2.3.1',date:'November 27, 2026',items:[
-'Files on the Collaboration tab show the creator\u2019s name instead of a username, even when the owner now owns the copy.']};
+const REL={v:'2.4.0',date:'November 27, 2026',items:[
+'Co-teachers who do not have EdAssess can use a Google Form. The class owner creates it from the Files tab. Through the form they can post a material, with or without files, or move existing Teacher collaboration files to the student folder.',
+'Materials posted through the form show the name typed in the form. No email is collected.']};
 const K='ea-wn-seen';
 function seen(){try{return localStorage.getItem(K)===REL.v;}catch(e){return true;}}
 function mark(){try{localStorage.setItem(K,REL.v);}catch(e){}}
@@ -16004,7 +16023,7 @@ document.addEventListener('DOMContentLoaded',()=>{const f=document.querySelector
 
 /* Version guard: when a new release is deployed, ask for a refresh (no nagging pop-ups in between). */
 (function(){
-const BUILD='2.3.1';let shown=false;
+const BUILD='2.4.0';let shown=false;
 async function check(){
   if(shown||document.hidden)return;
   try{

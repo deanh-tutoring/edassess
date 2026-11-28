@@ -86,6 +86,8 @@ New teachers (and every existing one) get a short guided tour with a practice cl
 
 Co-teachers do not need an EdAssess account or to share an email address. The class owner creates one editing link for the teacher folder. When a co-teacher adds a file, the owner's session makes its own copy and removes the original, so the owner is the only name on files in Google Drive. EdAssess never reads or stores anyone's email for this. After the owner connects Google once, the server does this on its own every minute, so nobody has to be signed in. Create, upload and posting to classwork (which moves files to the student folder) all work the same way.
 
+For a co-teacher who does not use EdAssess at all, the owner can make a teacher form from the Files tab. They use it to post materials or move existing files to the student folder. It needs the Google Forms API turned on, described in the Google setup section below.
+
 Not everything has to go to everyone. Choose Who can see this on any topic, material or assignment to limit it to groups you create or to students you pick by hand. Students only receive what they are allowed to see, and nobody is told who else was included.
 
 #### Files and Collaboration (Google Drive)
@@ -233,6 +235,8 @@ This takes about ten minutes, and without it everything else still works.
 4. In Netlify, set `GOOGLE_CLIENT_ID`, `GOOGLE_API_KEY` and `GOOGLE_APP_ID` (the project number), then redeploy.
 
 For instant moves, copy the OAuth client's secret into `GOOGLE_CLIENT_SECRET`. The owner's approval stores one encrypted long-term token on the server, which is removed when they turn instant moves off. Sign-in asks for full Drive access. That is what lets EdAssess create the class folders, add each co-teacher's shortcut and list everything inside a class folder. It does not ask for the account email. For a school or small team, keep the Google Cloud app in Testing or Internal mode. Public use needs Google's app verification.
+
+For the teacher form, also enable the Google Forms API in the same project and add the scopes `https://www.googleapis.com/auth/forms.body` and `https://www.googleapis.com/auth/forms.responses.readonly` to the consent screen. Owners are asked for them only when they create a form.
 
 ### Running it locally
 
